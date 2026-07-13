@@ -1,0 +1,9 @@
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+        public: true
+
+    c975L\GalleryBundle\:
+        resource: '../src/'
+        exclude: '../src/Entity'

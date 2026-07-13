@@ -1,0 +1,60 @@
+{
+    "name": "c975l/gallery-bundle",
+    "type": "symfony-bundle",
+    "description": "Symfony bundle providing a photo gallery (categories, batch upload, thumb/medium/highres derivatives) managed through EasyAdmin.",
+    "keywords": ["symfony", "bundle", "gallery", "photos"],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Laurent Marquet",
+            "email": "laurent.marquet@laposte.net",
+            "homepage": "https://github.com/LaurentMarquet",
+            "role": "Developer"
+        },
+        {
+            "name": "975L Community",
+            "homepage": "https://github.com/975L"
+        }
+    ],
+    "require": {
+        "php": ">=8.0",
+        "c975l/config-bundle": "*",
+        "c975l/ui-bundle": "*",
+        "doctrine/orm": "*",
+        "easycorp/easyadmin-bundle": "*",
+        "symfony/form": "*",
+        "vich/uploader-bundle": "*"
+    },
+    "require-dev": {
+        "doctrine/doctrine-fixtures-bundle": "*",
+        "phpunit/phpunit": "^13.2",
+        "symfony/browser-kit": "*",
+        "symfony/css-selector": "*",
+        "symfony/phpunit-bridge": "*",
+        "symfony/var-dumper": "*"
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "autoload": {
+        "psr-4": {
+            "c975L\\GalleryBundle\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "c975L\\GalleryBundle\\Tests\\": "tests/"
+        }
+    },
+    "config": {
+        "sort-packages": true,
+        "vendor-dir": ".vendor"
+    },
+    "scripts": {
+        "test": "phpunit"
+    },
+    "support": {
+        "email": "contact@975l.com",
+        "source": "https://github.com/975L/GalleryBundle",
+        "issues": "https://github.com/975L/GalleryBundle/issues"
+    }
+}

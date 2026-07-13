@@ -1,0 +1,31 @@
+{% extends '@EasyAdmin/crud/index.html.twig' %}
+
+{# Same flat thumbnail grid as UiBundle's own media_index.html.twig, using the "-thumb" derivative
+   (square, light) instead of the full medium file - see GalleryPhoto::getThumbnailFilename(). Reuses
+   UiBundle's .management-media-grid CSS (loaded admin-wide since GalleryBundle depends on UiBundle),
+   no need to duplicate it here. #}
+{% block main %}
+    <div class="management-media-grid">
+        {% for entity in entities %}
+            {% if entity.isAccessible %}
+                {% set photo = entity.instance %}
+                <a href="{{ entity.defaultActionUrl }}" class="management-media-grid__item">
+                    {% if photo.thumbnailFilename %}
+                        <img src="{{ asset(photo.thumbnailFilename) }}" alt="{{ photo.alt }}" width="150" height="150" class="management-media-grid__thumb">
+                    {% else %}
+                        <div class="management-media-grid__placeholder">{{ photo.filename }}</div>
+                    {% endif %}
+                    <p class="text-center small">{{ photo.category }}</p>
+                </a>
+            {% endif %}
+        {% endfor %}
+    </div>
+
+    {% if entities|length > 0 %}
+        <div class="content-panel-footer without-padding without-border">
+            {{ include(ea.templatePath('crud/paginator'), {render_detailed_pagination: true}) }}
+        </div>
+    {% endif %}
+
+    {{ include('@EasyAdmin/crud/includes/_action_confirmation_modal.html.twig', with_context: false) }}
+{% endblock main %}

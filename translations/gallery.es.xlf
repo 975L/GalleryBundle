@@ -1,0 +1,76 @@
+<?xml version="1.0"?>
+<xliff version="1.2"
+    xmlns="urn:oasis:names:tc:xliff:document:1.2">
+    <file source-language="en" target-language="es" datatype="plaintext" original="gallery.en.xlf">
+        <body>
+            <trans-unit id="1">
+                <source>label.title</source>
+                <target>Título</target>
+            </trans-unit>
+            <trans-unit id="2">
+                <source>label.slug</source>
+                <target>Slug</target>
+            </trans-unit>
+            <trans-unit id="3">
+                <source>label.slug_help</source>
+                <target>Usado en la URL</target>
+            </trans-unit>
+            <trans-unit id="4">
+                <source>label.position</source>
+                <target>Posición</target>
+            </trans-unit>
+            <trans-unit id="5">
+                <source>label.alt_text</source>
+                <target>Texto Alternativo</target>
+            </trans-unit>
+            <trans-unit id="6">
+                <source>label.credits</source>
+                <target>Créditos</target>
+            </trans-unit>
+            <trans-unit id="7">
+                <source>label.rights_reserved</source>
+                <target>Derechos reservados</target>
+            </trans-unit>
+            <trans-unit id="8">
+                <source>label.file</source>
+                <target>Archivo</target>
+            </trans-unit>
+            <trans-unit id="9">
+                <source>label.gallery_category</source>
+                <target>Categoría</target>
+            </trans-unit>
+            <trans-unit id="10">
+                <source>label.gallery_categories</source>
+                <target>Categorías</target>
+            </trans-unit>
+            <trans-unit id="11">
+                <source>label.gallery_photo</source>
+                <target>Foto</target>
+            </trans-unit>
+            <trans-unit id="12">
+                <source>label.gallery_photos</source>
+                <target>Fotos</target>
+            </trans-unit>
+            <trans-unit id="13">
+                <source>label.gallery_uncategorized</source>
+                <target>Sin clasificar</target>
+            </trans-unit>
+            <trans-unit id="14">
+                <source>label.gallery_upload_photos</source>
+                <target>Añadir fotos</target>
+            </trans-unit>
+            <trans-unit id="15">
+                <source>label.gallery_batch_credits_help</source>
+                <target>Se aplica a todas las fotos de este lote</target>
+            </trans-unit>
+            <trans-unit id="16">
+                <source>label.gallery_photos_uploaded</source>
+                <target>Fotos añadidas</target>
+            </trans-unit>
+            <trans-unit id="17">
+                <source>label.gallery_manage_categories</source>
+                <target>Gestionar categorías</target>
+            </trans-unit>
+        </body>
+    </file>
+</xliff>
