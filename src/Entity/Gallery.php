@@ -1,4 +1,5 @@
 <?php
+
 /*
  * (c) 2026: 975L <contact@975l.com>
  * (c) 2026: Laurent Marquet <laurent.marquet@laposte.net>
@@ -6,16 +7,14 @@
  * This source file is subject to the MIT license that is bundled
  * with this source code in the file LICENSE.
  */
+
 namespace c975L\GalleryBundle\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
-// Top-level container so a site can host more than one independent photo gallery (e.g. a main
-// portfolio plus a separate one-off event gallery), each with its own categories/photos. The
-// "default" gallery's public routes omit the {gallery} slug segment (see GalleryController) so
-// the common single-gallery case keeps the same short, already-indexed URLs.
+// Top-level container so a site can host more than one independent photo gallery (e.g. a main portfolio plus a separate one-off event gallery), each with its own categories/photos. The "default" gallery's public routes omit the {gallery} slug segment (see GalleryController) so the common single-gallery case keeps the same short, already-indexed URLs.
 #[ORM\Entity(repositoryClass: \c975L\GalleryBundle\Repository\GalleryRepository::class)]
 #[ORM\Table(name: 'gallery')]
 class Gallery
@@ -34,9 +33,9 @@ class Gallery
     #[ORM\Column]
     private int $position = 0;
 
-    // Enforced at the application level (like Media::isSingletonRole in UiBundle), not a DB
-    // constraint - only one Gallery is expected to carry this at a time
-    #[ORM\Column(options: ['default' => false])]
+    // Enforced at the application level (like Media::isSingletonRole in UiBundle), not a DB constraint - only one Gallery is expected to carry this at a time
+    // Column named "is_default", not "default": that one is a reserved word every engine quotes in DDL and none quotes in the INSERT Doctrine writes, so a plain "default" only ever fails at the first persist
+    #[ORM\Column(name: 'is_default', options: ['default' => false])]
     private bool $default = false;
 
     #[ORM\OneToMany(mappedBy: 'gallery', targetEntity: GalleryCategory::class, cascade: ['persist', 'remove'], orphanRemoval: true)]

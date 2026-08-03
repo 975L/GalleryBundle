@@ -1,0 +1,37 @@
+/* This site's GalleryBundle tokens: every line ships commented out at its default, so what stays active is what the design decides */
+/* Format in c975l/site-bundle's readme ("Themes"), defaults in this bundle's sass/_variables.scss */
+/* One file per bundle - this one is the photo gallery; the shapes it shares with every screen are UiBundle's, in themes/ui.css */
+/* Colors and fonts are absent on purpose: admin-editable, compiled into bundles/build/site-theme.css */
+:root {
+    /* Square side of a thumbnail, in the category grid as in the photo grid */
+    /* --gallery-thumb-size: 150px; */
+    /* --gallery-grid-gap: 1em; */
+
+    /* Measure of the two photo pages - the stored (medium) view, then the high-resolution one */
+    /* --gallery-photo-max-width: 800px; */
+    /* --gallery-photo-highres-max-width: 1200px; */
+
+    /* The passe-partout framing a displayed photo, a print's own mount - set the width to 0 for a design
+       laying photos flat on the page */
+    /* --gallery-photo-frame-width: 10px; */
+    /* --gallery-photo-frame-color: var(--white); */
+
+    /* The discreet overlay arrows, sitting on the photo itself rather than under it */
+    /* --gallery-nav-size: 2.5rem; */
+    /* --gallery-nav-color: var(--white); */
+    /* --gallery-nav-opacity: 0.35; */
+    /* --gallery-nav-shadow: 0 1px 3px rgba(0, 0, 0, 0.6); */
+
+    /* The breadcrumb above a photo - toward the background rather than a flat grey, so it stays legible
+       on a dark page too */
+    /* --gallery-breadcrumb-font-size: 0.9rem; */
+    /* --gallery-breadcrumb-color: color-mix(in srgb, var(--text) 60%, var(--background)); */
+
+    /* The badge marking a grid entry that opens on a player instead of a still */
+    /* --gallery-video-badge-background: color-mix(in srgb, var(--black) 55%, transparent); */
+    /* --gallery-video-badge-color: var(--white); */
+
+    /* Aspect ratios the two platforms serve their players in - landscape and portrait */
+    /* --gallery-video-ratio-youtube: 16 / 9; */
+    /* --gallery-video-ratio-tiktok: 9 / 16; */
+}

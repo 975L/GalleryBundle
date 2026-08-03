@@ -1,4 +1,5 @@
 <?php
+
 /*
  * (c) 2026: 975L <contact@975l.com>
  * (c) 2026: Laurent Marquet <laurent.marquet@laposte.net>
@@ -16,9 +17,7 @@ use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Vich\UploaderBundle\Form\Type\VichImageType;
 
-// One row of GalleryPhotoBatchUploadType's "photos" collection - credits/category/rightsReserved are
-// shared across the whole batch (set on the parent form, see GalleryPhotoUploadController), only the
-// file itself and its alt text vary row to row
+// One row of GalleryPhotoBatchUploadType's "photos" collection - credits/category/rightsReserved are shared across the whole batch (set on the parent form, see GalleryPhotoUploadController), only the file itself and its alt text vary row to row
 class GalleryPhotoUploadRowType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
@@ -26,14 +25,18 @@ class GalleryPhotoUploadRowType extends AbstractType
         $builder
             ->add('file', VichImageType::class, [
                 'label' => false,
-                // Not required: an empty added-then-untouched row must not block submission of the
-                // others - GalleryPhotoUploadController skips any row with no file instead
+                // Not required: an empty added-then-untouched row must not block submission of the others - GalleryPhotoUploadController skips any row with no file instead
                 'required' => false,
                 'allow_delete' => false,
                 'download_label' => false,
             ])
             ->add('alt', TextType::class, [
                 'label' => 'label.alt_text',
+                'required' => false,
+            ])
+            // Ignored while the batch's own type stays "image", which is the whole point of keeping it optional here rather than showing a second screen for videos
+            ->add('externalId', TextType::class, [
+                'label' => 'label.gallery_external_id',
                 'required' => false,
             ])
         ;

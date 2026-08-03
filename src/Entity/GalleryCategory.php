@@ -1,4 +1,5 @@
 <?php
+
 /*
  * (c) 2026: 975L <contact@975l.com>
  * (c) 2026: Laurent Marquet <laurent.marquet@laposte.net>
@@ -6,14 +7,17 @@
  * This source file is subject to the MIT license that is bundled
  * with this source code in the file LICENSE.
  */
+
 namespace c975L\GalleryBundle\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
+// (gallery, slug) is the category's natural key - the front-office url resolves on it (see GalleryController::resolveCategory) and the import matches on it (see GalleryImportProvider), so it can't be allowed to collide
 #[ORM\Entity(repositoryClass: \c975L\GalleryBundle\Repository\GalleryCategoryRepository::class)]
 #[ORM\Table(name: 'gallery_category')]
+#[ORM\UniqueConstraint(name: 'gallery_category_slug_unique', columns: ['gallery_id', 'slug'])]
 class GalleryCategory
 {
     #[ORM\Id]
@@ -38,9 +42,7 @@ class GalleryCategory
     #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
     private ?GalleryPhoto $coverPhoto = null;
 
-    // Auto-created catch-all category a Gallery's photos fall back to when no real category is
-    // picked at upload time (see GalleryCategoryRepository::findOrCreateUncategorized) - flagged
-    // rather than matched by slug so it survives a title/slug translation or edit
+    // Auto-created catch-all category a Gallery's photos fall back to when no real category is picked at upload time (see GalleryCategoryRepository::findOrCreateUncategorized) - flagged rather than matched by slug so it survives a title/slug translation or edit
     #[ORM\Column(options: ['default' => false])]
     private bool $uncategorized = false;
 

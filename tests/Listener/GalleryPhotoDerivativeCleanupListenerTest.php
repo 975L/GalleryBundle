@@ -1,4 +1,5 @@
 <?php
+
 /*
  * (c) 2026: 975L <contact@975l.com>
  * (c) 2026: Laurent Marquet <laurent.marquet@laposte.net>
@@ -13,6 +14,7 @@ use c975L\GalleryBundle\Entity\GalleryPhoto;
 use c975L\GalleryBundle\Listener\GalleryPhotoDerivativeCleanupListener;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Event\PostFlushEventArgs;
+use Doctrine\ORM\Event\PreRemoveEventArgs;
 use Doctrine\ORM\Event\PreUpdateEventArgs;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
@@ -56,8 +58,7 @@ class GalleryPhotoDerivativeCleanupListenerTest extends TestCase
         $this->touch('medias/gallery/main/vacances/photo-old-thumb.webp');
         $this->touch('medias/gallery/main/vacances/photo-old-highres.webp');
 
-        // Simulates the form having bound a newly uploaded file - before Vich (which runs later, at
-        // a lower listener priority) renames it and overwrites this entity's own filename
+        // Simulates the form having bound a newly uploaded file - before Vich (which runs later, at a lower listener priority) renames it and overwrites this entity's own filename
         $photo->setFile(new UploadedFile(__FILE__, 'new.webp', test: true));
 
         $em = $this->createStub(EntityManagerInterface::class);
@@ -97,5 +98,50 @@ class GalleryPhotoDerivativeCleanupListenerTest extends TestCase
         $listener->postFlush(new PostFlushEventArgs($em));
 
         $this->addToAssertionCount(1);
+    }
+
+    // Covers every removal path at once - CRUD delete, category cascade, and the import replacing a category's photo collection through orphanRemoval
+    public function testPostFlushRemovesTheDerivativesOfARemovedPhoto(): void
+    {
+        $photo = new GalleryPhoto();
+        $photo->setFilename('medias/gallery/main/vacances/photo.webp');
+        $this->touch('medias/gallery/main/vacances/photo-thumb.webp');
+        $this->touch('medias/gallery/main/vacances/photo-highres.webp');
+
+        $em = $this->createStub(EntityManagerInterface::class);
+
+        $listener = $this->createListener();
+        $listener->preRemove(new PreRemoveEventArgs($photo, $em));
+        $listener->postFlush(new PostFlushEventArgs($em));
+
+        $this->assertFileDoesNotExist($this->projectDir . '/public/medias/gallery/main/vacances/photo-thumb.webp');
+        $this->assertFileDoesNotExist($this->projectDir . '/public/medias/gallery/main/vacances/photo-highres.webp');
+    }
+
+    public function testPreRemoveToleratesAlreadyMissingDerivativeFiles(): void
+    {
+        $photo = new GalleryPhoto();
+        $photo->setFilename('medias/gallery/main/vacances/photo.webp');
+
+        $em = $this->createStub(EntityManagerInterface::class);
+
+        $listener = $this->createListener();
+        $listener->preRemove(new PreRemoveEventArgs($photo, $em));
+        $listener->postFlush(new PostFlushEventArgs($em));
+
+        $this->addToAssertionCount(1);
+    }
+
+    public function testPreRemoveIgnoresEntitiesThatAreNotGalleryPhoto(): void
+    {
+        $this->touch('medias/gallery/main/vacances/photo-thumb.webp');
+
+        $em = $this->createStub(EntityManagerInterface::class);
+
+        $listener = $this->createListener();
+        $listener->preRemove(new PreRemoveEventArgs(new \stdClass(), $em));
+        $listener->postFlush(new PostFlushEventArgs($em));
+
+        $this->assertFileExists($this->projectDir . '/public/medias/gallery/main/vacances/photo-thumb.webp');
     }
 }

@@ -1,7 +1,7 @@
 {
     "name": "c975l/gallery-bundle",
     "type": "symfony-bundle",
-    "description": "Symfony bundle providing a photo gallery (categories, batch upload, thumb/medium/highres derivatives) managed through EasyAdmin.",
+    "description": "Symfony bundle providing photo galleries on the c975L core — galleries, categories and photos, with batch upload, automatic thumb/medium/highres derivatives and a public viewer.",
     "keywords": ["symfony", "bundle", "gallery", "photos"],
     "license": "MIT",
     "authors": [
@@ -17,21 +17,20 @@
         }
     ],
     "require": {
-        "php": ">=8.0",
-        "c975l/config-bundle": "*",
-        "c975l/ui-bundle": "*",
-        "doctrine/orm": "*",
-        "easycorp/easyadmin-bundle": "*",
-        "symfony/form": "*",
-        "vich/uploader-bundle": "*"
+        "php": ">=8.4",
+        "c975l/core-bundle": "^1.0",
+        "doctrine/orm": "^3.6",
+        "easycorp/easyadmin-bundle": "^5.1",
+        "symfony/form": "^8.0",
+        "vich/uploader-bundle": "^2.9"
     },
     "require-dev": {
-        "doctrine/doctrine-fixtures-bundle": "*",
+        "doctrine/doctrine-fixtures-bundle": "^4.3",
         "phpunit/phpunit": "^13.2",
-        "symfony/browser-kit": "*",
-        "symfony/css-selector": "*",
-        "symfony/phpunit-bridge": "*",
-        "symfony/var-dumper": "*"
+        "symfony/browser-kit": "^8.0",
+        "symfony/css-selector": "^8.0",
+        "symfony/phpunit-bridge": "^8.0",
+        "symfony/var-dumper": "^8.0"
     },
     "minimum-stability": "dev",
     "prefer-stable": true,
@@ -46,8 +45,7 @@
         }
     },
     "config": {
-        "sort-packages": true,
-        "vendor-dir": ".vendor"
+        "sort-packages": true
     },
     "scripts": {
         "test": "phpunit"

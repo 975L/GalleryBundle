@@ -1,75 +1,146 @@
 <?xml version="1.0"?>
-<xliff version="1.2"
-    xmlns="urn:oasis:names:tc:xliff:document:1.2">
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
     <file source-language="en" target-language="en" datatype="plaintext" original="gallery.en.xlf">
         <body>
-            <trans-unit id="1">
-                <source>label.title</source>
-                <target>Title</target>
+            <trans-unit id="DYrEVzQ">
+                <source>action.export_selection</source>
+                <target>Export selection</target>
             </trans-unit>
-            <trans-unit id="2">
-                <source>label.slug</source>
-                <target>Slug</target>
-            </trans-unit>
-            <trans-unit id="3">
-                <source>label.slug_help</source>
-                <target>Used in the URL</target>
-            </trans-unit>
-            <trans-unit id="4">
-                <source>label.position</source>
-                <target>Position</target>
-            </trans-unit>
-            <trans-unit id="5">
+            <trans-unit id="ZeoyzAJ">
                 <source>label.alt_text</source>
                 <target>Alt Text</target>
             </trans-unit>
-            <trans-unit id="6">
+            <trans-unit id="efSspGE">
                 <source>label.credits</source>
                 <target>Credits</target>
             </trans-unit>
-            <trans-unit id="7">
-                <source>label.rights_reserved</source>
-                <target>Rights Reserved</target>
-            </trans-unit>
-            <trans-unit id="8">
+            <trans-unit id="DmcAvc0">
                 <source>label.file</source>
                 <target>File</target>
             </trans-unit>
-            <trans-unit id="9">
-                <source>label.gallery_category</source>
-                <target>Category</target>
-            </trans-unit>
-            <trans-unit id="10">
-                <source>label.gallery_categories</source>
-                <target>Categories</target>
-            </trans-unit>
-            <trans-unit id="11">
-                <source>label.gallery_photo</source>
-                <target>Photo</target>
-            </trans-unit>
-            <trans-unit id="12">
-                <source>label.gallery_photos</source>
-                <target>Photos</target>
-            </trans-unit>
-            <trans-unit id="13">
-                <source>label.gallery_uncategorized</source>
-                <target>Uncategorized</target>
-            </trans-unit>
-            <trans-unit id="14">
-                <source>label.gallery_upload_photos</source>
-                <target>Add photos</target>
-            </trans-unit>
-            <trans-unit id="15">
+            <trans-unit id="dPUFmj4">
                 <source>label.gallery_batch_credits_help</source>
                 <target>Applied to every photo in this batch</target>
             </trans-unit>
-            <trans-unit id="16">
+            <trans-unit id="9YDASxA">
+                <source>label.gallery_batch_media_type_help</source>
+                <target>Applied to every photo of this batch</target>
+            </trans-unit>
+            <trans-unit id="KeejqV_">
+                <source>label.gallery_categories</source>
+                <target>Categories</target>
+            </trans-unit>
+            <trans-unit id=".1Ld4rw">
+                <source>label.gallery_category</source>
+                <target>Category</target>
+            </trans-unit>
+            <trans-unit id="jqYQiJ1">
+                <source>label.gallery_external_id</source>
+                <target>Video id</target>
+            </trans-unit>
+            <trans-unit id="bTz5hKn">
+                <source>label.gallery_external_id_help</source>
+                <target>The id the platform gives the video, nothing else - the url is built from it</target>
+            </trans-unit>
+            <trans-unit id="3xeb7Jf">
+                <source>label.gallery_home</source>
+                <target>Gallery</target>
+            </trans-unit>
+            <trans-unit id=".Xke2cq">
+                <source>label.gallery_manage_categories</source>
+                <target>Manage categories</target>
+            </trans-unit>
+            <trans-unit id="idlCeLh">
+                <source>label.gallery_media_type</source>
+                <target>Type</target>
+            </trans-unit>
+            <trans-unit id="rJve7_N">
+                <source>label.gallery_media_type_image</source>
+                <target>Photo</target>
+            </trans-unit>
+            <trans-unit id="XvFRzuS">
+                <source>label.gallery_media_type_tiktok</source>
+                <target>TikTok</target>
+            </trans-unit>
+            <trans-unit id="4AIUuLC">
+                <source>label.gallery_media_type_youtube</source>
+                <target>YouTube</target>
+            </trans-unit>
+            <trans-unit id="0QkaIdu">
+                <source>label.gallery_next_photo</source>
+                <target>Next photo</target>
+            </trans-unit>
+            <trans-unit id="OCO_Wst">
+                <source>label.gallery_page_title</source>
+                <target>Photo gallery</target>
+            </trans-unit>
+            <trans-unit id="IBD0D56">
+                <source>label.gallery_photo</source>
+                <target>Photo</target>
+            </trans-unit>
+            <trans-unit id="H7qi5pN">
+                <source>label.gallery_photos</source>
+                <target>Photos</target>
+            </trans-unit>
+            <trans-unit id="0Z7Csw.">
                 <source>label.gallery_photos_uploaded</source>
                 <target>Photos added</target>
             </trans-unit>
-            <trans-unit id="17">
-                <source>label.gallery_manage_categories</source>
-                <target>Manage categories</target>
+            <trans-unit id="9KzPTpF">
+                <source>label.gallery_previous_photo</source>
+                <target>Previous photo</target>
+            </trans-unit>
+            <trans-unit id="1ciaFx5">
+                <source>label.gallery_resolution_high</source>
+                <target>High resolution</target>
+            </trans-unit>
+            <trans-unit id="A9DfAQb">
+                <source>label.gallery_resolution_medium</source>
+                <target>Standard resolution</target>
+            </trans-unit>
+            <trans-unit id="90B21eD">
+                <source>label.gallery_uncategorized</source>
+                <target>Uncategorized</target>
+            </trans-unit>
+            <trans-unit id="aCkK8DD">
+                <source>label.gallery_upload_photos</source>
+                <target>Add photos</target>
+            </trans-unit>
+            <trans-unit id="u7e3TST">
+                <source>label.gallery_video</source>
+                <target>Video</target>
+            </trans-unit>
+            <trans-unit id="IJ3OllR">
+                <source>label.info_gallery_category</source>
+                <target>Photo categories. "Uncategorized" is a fallback and can't be deleted. Create, edit or delete a category, and reorder their display position.</target>
+            </trans-unit>
+            <trans-unit id="1H5YyI.">
+                <source>label.info_gallery_photo</source>
+                <target>Gallery photos, every category. Without one, filed under "Uncategorized". Edit a photo's caption, credits or position; adding photos is only done via the upload screen.</target>
+            </trans-unit>
+            <trans-unit id="Rfi.GLm">
+                <source>label.position</source>
+                <target>Position</target>
+            </trans-unit>
+            <trans-unit id="uKaQklK">
+                <source>label.rights_reserved</source>
+                <target>Rights Reserved</target>
+            </trans-unit>
+            <trans-unit id="0kGqgMZ">
+                <source>label.slug</source>
+                <target>Slug</target>
+            </trans-unit>
+            <trans-unit id="dtyJZly">
+                <source>label.slug_help</source>
+                <target>Used in the URL</target>
+            </trans-unit>
+            <trans-unit id=".SmM2FN">
+                <source>label.thumbnail</source>
+                <target>Thumbnail</target>
+            </trans-unit>
+            <trans-unit id="ZIbme0L">
+                <source>label.title</source>
+                <target>Title</target>
             </trans-unit>
         </body>
     </file>

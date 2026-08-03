@@ -1,0 +1,9 @@
+{% extends 'layout.html.twig' %}
+
+{# Defines specific variables #}
+{% set title = 'label.gallery_page_title'|trans({}, 'gallery') ~ ' - ' ~ category.title %}
+
+{% block content %}
+    <twig:c975LGallery:Gallery:Photos category="{{ category }}" photos="{{ photos }}"/>
+    <twig:c975LUi:Button:Button label="{{ 'label.gallery_home'|trans({}, 'gallery') }}" url="{{ path('gallery_index') }}" />
+{% endblock %}

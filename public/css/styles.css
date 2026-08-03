@@ -1,0 +1,162 @@
+@charset "UTF-8";
+/*
+ * (c) 2026: 975L <contact@975l.com>
+ * (c) 2026: Laurent Marquet <laurent.marquet@laposte.net>
+ *
+ * This source file is subject to the MIT license that is bundled
+ * with this source code in the file LICENSE.
+ */
+/* TOKEN DEFAULTS */
+:root {
+  /* Square side of a thumbnail, in the category grid as in the photo grid */
+  --gallery-thumb-size: 150px;
+  --gallery-grid-gap: 1em;
+  /* Measure of the two photo pages - the stored (medium) view, then the high-resolution one */
+  --gallery-photo-max-width: 800px;
+  --gallery-photo-highres-max-width: 1200px;
+  /* The passe-partout framing a displayed photo, a print's own mount */
+  --gallery-photo-frame-width: 10px;
+  --gallery-photo-frame-color: var(--white);
+  /* The discreet overlay arrows, sitting on the photo itself rather than under it */
+  --gallery-nav-size: 2.5rem;
+  --gallery-nav-color: var(--white);
+  --gallery-nav-opacity: 0.35;
+  --gallery-nav-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+  /* The breadcrumb above a photo - toward the background rather than a flat grey, so it stays legible on a dark page too */
+  --gallery-breadcrumb-font-size: 0.9rem;
+  --gallery-breadcrumb-color: color-mix(in srgb, var(--text) 60%, var(--background));
+  /* The badge marking a grid entry that opens on a player instead of a still */
+  --gallery-video-badge-background: color-mix(in srgb, var(--black) 55%, transparent);
+  --gallery-video-badge-color: var(--white);
+  /* Aspect ratios the two platforms serve their players in - landscape and portrait */
+  --gallery-video-ratio-youtube: 16 / 9;
+  --gallery-video-ratio-tiktok: 9 / 16;
+}
+
+/* GALLERY */
+.gallery-grid {
+  flex-wrap: wrap;
+  gap: var(--gallery-grid-gap);
+}
+
+.gallery-thumb {
+  position: relative;
+  display: inline-block;
+}
+
+.gallery-thumb p {
+  margin: 0;
+}
+
+.gallery-thumb .img-thumbnail {
+  width: var(--gallery-thumb-size);
+  height: var(--gallery-thumb-size);
+  object-fit: cover;
+}
+
+.gallery-thumb--video::after {
+  content: "▶";
+  position: absolute;
+  right: 0.5em;
+  bottom: 0.5em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.8em;
+  height: 1.8em;
+  border-radius: 50%;
+  background: var(--gallery-video-badge-background);
+  color: var(--gallery-video-badge-color);
+  font-size: 0.8rem;
+  line-height: 1;
+  pointer-events: none;
+}
+
+.gallery-breadcrumb {
+  font-family: var(--font-family-body);
+  font-size: var(--gallery-breadcrumb-font-size);
+  color: var(--gallery-breadcrumb-color);
+  margin-bottom: 0.5rem;
+  text-align: center;
+}
+
+.gallery-breadcrumb a {
+  color: inherit;
+  text-decoration: underline;
+}
+
+.gallery-breadcrumb__resolution {
+  margin-left: 0.5rem;
+  opacity: 0.7;
+}
+
+.photo-container {
+  position: relative;
+  display: block;
+  margin: 0 auto;
+  max-width: var(--gallery-photo-max-width);
+}
+
+.photo-container.high-res {
+  max-width: var(--gallery-photo-highres-max-width);
+}
+
+.photo-display {
+  display: block;
+  width: 100%;
+  margin: 0 auto;
+  padding: 0;
+  border: var(--gallery-photo-frame-width) solid var(--gallery-photo-frame-color);
+}
+
+.gallery-photo-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2;
+  padding: 0.25rem 0.75rem;
+  font-size: var(--gallery-nav-size);
+  line-height: 1;
+  color: var(--gallery-nav-color);
+  text-decoration: none;
+  opacity: var(--gallery-nav-opacity);
+  text-shadow: var(--gallery-nav-shadow);
+  transition: opacity 0.2s ease;
+}
+
+.gallery-photo-nav:hover,
+.gallery-photo-nav:focus-visible {
+  opacity: 1;
+}
+
+.gallery-photo-nav--previous {
+  left: 0;
+}
+
+.gallery-photo-nav--next {
+  right: 0;
+}
+
+.gallery-video {
+  width: 100%;
+  border: var(--gallery-photo-frame-width) solid var(--gallery-photo-frame-color);
+}
+
+.gallery-video iframe {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+.gallery-video--youtube {
+  aspect-ratio: var(--gallery-video-ratio-youtube);
+}
+
+.gallery-video--tiktok {
+  aspect-ratio: var(--gallery-video-ratio-tiktok);
+  max-width: min(100%, 60vh);
+  margin: 0 auto;
+}
+
+/*# sourceMappingURL=styles.css.map */

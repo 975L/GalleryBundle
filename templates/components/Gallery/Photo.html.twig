@@ -1,0 +1,7 @@
+{# A video entry's thumbnail is its own uploaded still, so one grid holds both kinds - the badge is what tells them apart before opening. A div, not a span: Image:Link wraps its own markup in a <p> #}
+<div class="gallery-thumb{{ photo.video ? ' gallery-thumb--video' : '' }}">
+    <twig:c975LUi:Image:Link
+        src="{{ photo.thumbnailFilename }}"
+        url="{{ path('gallery_photo', { category: category.slug, id: photo.id }) }}"
+        class="img-thumbnail" alt="{{ photo.alt }}" width="150" height="150"/>
+</div>

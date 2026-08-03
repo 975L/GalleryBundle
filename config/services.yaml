@@ -7,3 +7,11 @@ services:
     c975L\GalleryBundle\:
         resource: '../src/'
         exclude: '../src/Entity'
+
+    c975L\GalleryBundle\Service\ScriptProvider:
+        tags:
+            - { name: 'ui.script', priority: 100 }
+
+    c975L\GalleryBundle\Service\StylesheetProvider:
+        tags:
+            - { name: 'ui.stylesheet', priority: 100 }

@@ -1,4 +1,5 @@
 <?php
+
 /*
  * (c) 2026: 975L <contact@975l.com>
  * (c) 2026: Laurent Marquet <laurent.marquet@laposte.net>
@@ -10,17 +11,17 @@
 namespace c975L\GalleryBundle\Form;
 
 use c975L\GalleryBundle\Entity\GalleryCategory;
+use c975L\GalleryBundle\Entity\GalleryPhoto;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\CollectionType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
-// Not bound to any single entity (data_class null): "category"/"credits"/"rightsReserved" are applied
-// to every row of "photos" by GalleryPhotoUploadController itself, not mapped here - each row only
-// carries what actually varies per photo (file, alt), see GalleryPhotoUploadRowType
+// Not bound to any single entity (data_class null): "category"/"credits"/"rightsReserved" are applied to every row of "photos" by GalleryPhotoUploadController itself, not mapped here - each row only carries what actually varies per photo (file, alt), see GalleryPhotoUploadRowType
 class GalleryPhotoBatchUploadType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
@@ -41,6 +42,16 @@ class GalleryPhotoBatchUploadType extends AbstractType
                 'label' => 'label.credits',
                 'help' => 'label.gallery_batch_credits_help',
                 'required' => false,
+            ])
+            // Shared like the credits: a batch is a run of stills of the same nature, so the platform is picked once and only each row's own video id varies (see GalleryPhotoUploadRowType)
+            ->add('mediaType', ChoiceType::class, [
+                'label' => 'label.gallery_media_type',
+                'help' => 'label.gallery_batch_media_type_help',
+                'choices' => array_combine(
+                    array_map(static fn (string $type): string => 'label.gallery_media_type_' . $type, GalleryPhoto::MEDIA_TYPES),
+                    GalleryPhoto::MEDIA_TYPES,
+                ),
+                'data' => GalleryPhoto::MEDIA_TYPE_IMAGE,
             ])
             ->add('rightsReserved', CheckboxType::class, [
                 'label' => 'label.rights_reserved',

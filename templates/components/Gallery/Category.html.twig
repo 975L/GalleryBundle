@@ -1,0 +1,11 @@
+{# Falls back to a random photo rather than category.coverPhoto alone - that field is only ever set on import, so a manually created category would otherwise never show a thumbnail (and never be reachable) on the public index - same fallback as the admin's _gallery_category_thumbnail.html.twig #}
+{% set coverPhoto = category.coverPhoto ?: (category.photos|length > 0 ? random(category.photos) : null) %}
+{% if coverPhoto %}
+    <div class="gallery-thumb">
+        <twig:c975LUi:Image:Link
+            label="{{ category.title }} ({{ category.photos|length }})"
+            src="{{ coverPhoto.thumbnailFilename }}"
+            url="{{ path('gallery_category', { category: category.slug }) }}"
+            class="img-thumbnail" alt="{{ category.title }}" width="150" height="150"/>
+    </div>
+{% endif %}

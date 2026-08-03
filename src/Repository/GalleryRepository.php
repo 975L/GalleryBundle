@@ -1,4 +1,5 @@
 <?php
+
 /*
  * (c) 2026: 975L <contact@975l.com>
  * (c) 2026: Laurent Marquet <laurent.marquet@laposte.net>
@@ -34,9 +35,7 @@ class GalleryRepository extends ServiceEntityRepository
         return $this->findOneBy(['slug' => $slug]);
     }
 
-    // The Management CRUD doesn't expose a Gallery picker yet (see GalleryCategoryCrudController) -
-    // every category/photo it creates is attached to this one, lazily created on first use, so a site
-    // never needs to set one up manually to start using the gallery
+    // The Management CRUD doesn't expose a Gallery picker yet (see GalleryCategoryCrudController) - every category/photo it creates is attached to this one, lazily created on first use, so a site never needs to set one up manually to start using the gallery
     public function findOrCreateDefault(): Gallery
     {
         $gallery = $this->findDefault();

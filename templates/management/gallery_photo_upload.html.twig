@@ -1,8 +1,6 @@
 {% extends '@EasyAdmin/layout.html.twig' %}
 
-{# Not a CRUD form (see GalleryPhotoUploadController) - EasyAdmin only applies its own form theme
-   (collection add/remove widget, Vich file preview...) to CRUD-driven forms by default (see
-   ConfigBundle's DashboardController::configureCrud()), so it's requested explicitly here #}
+{# Not a CRUD form, so EasyAdmin's form theme has to be requested explicitly #}
 {% form_theme form with ['@EasyAdmin/crud/form_theme.html.twig'] %}
 
 {% block content_title %}{{ 'label.gallery_upload_photos'|trans({}, 'gallery') }}{% endblock %}
@@ -11,10 +9,10 @@
     {{ form_start(form) }}
         {{ form_row(form.category) }}
         {{ form_row(form.credits) }}
+        {{ form_row(form.mediaType) }}
         {{ form_row(form.rightsReserved) }}
 
-        {# form_row (not form_widget): the "collection_row" block is what adds the
-           data-ea-collection-field attribute the add/remove JS hooks into #}
+        {# form_row, not form_widget: only it adds the attribute the add/remove JS hooks into #}
         {{ form_row(form.photos) }}
 
         <button type="submit" class="btn btn-primary">{{ 'label.gallery_upload_photos'|trans({}, 'gallery') }}</button>

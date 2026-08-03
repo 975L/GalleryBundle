@@ -1,0 +1,8 @@
+{% extends 'layout.html.twig' %}
+
+{# Defines specific variables #}
+{% set title = 'label.gallery_page_title'|trans({}, 'gallery') %}
+
+{% block content %}
+    <twig:c975LGallery:Gallery:Categories categories="{{ categories }}"/>
+{% endblock %}

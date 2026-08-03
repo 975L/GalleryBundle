@@ -1,4 +1,5 @@
 <?php
+
 /*
  * (c) 2026: 975L <contact@975l.com>
  * (c) 2026: Laurent Marquet <laurent.marquet@laposte.net>
@@ -25,8 +26,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 class GalleryPhotoUploadController extends AbstractController
 {
-    // Used by GalleryPhotoCrudController's index action button (NEW is disabled there - photos are
-    // only ever created here, in bulk)
+    // Used by GalleryPhotoCrudController's index action button (NEW is disabled there - photos are only ever created here, in bulk)
     public const UPLOAD_ROUTE = 'management_gallery_photo_upload';
 
     public function __construct(
@@ -72,6 +72,7 @@ class GalleryPhotoUploadController extends AbstractController
                     ->setCategory($category)
                     ->setCredits($data['credits'] ?: null)
                     ->setRightsReserved($data['rightsReserved'] ?? false)
+                    ->setMediaType($data['mediaType'] ?? null)
                     ->setPosition($position++)
                 ;
                 $this->entityManager->persist($photo);

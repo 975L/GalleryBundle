@@ -1,0 +1,136 @@
+/* GALLERY */
+
+// The grids, laid over UiBundle's own .flex-center rather than re-centering anything here
+.gallery-grid {
+    flex-wrap: wrap;
+    gap: var(--gallery-grid-gap);
+}
+
+// One grid entry. Image:Link wraps its own markup in a centered <p>, whose margin would otherwise
+// double the grid's gap - and the badge below needs a positioned box to sit on
+.gallery-thumb {
+    position: relative;
+    display: inline-block;
+}
+
+.gallery-thumb p {
+    margin: 0;
+}
+
+.gallery-thumb .img-thumbnail {
+    width: var(--gallery-thumb-size);
+    height: var(--gallery-thumb-size);
+    object-fit: cover;
+}
+
+// Marks an entry opening on a player rather than on a still - the thumbnail itself is a plain image,
+// so nothing else would tell the two apart before the visitor clicks
+.gallery-thumb--video::after {
+    content: "\25B6";
+    position: absolute;
+    right: 0.5em;
+    bottom: 0.5em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.8em;
+    height: 1.8em;
+    border-radius: 50%;
+    background: var(--gallery-video-badge-background);
+    color: var(--gallery-video-badge-color);
+    font-size: 0.8rem;
+    line-height: 1;
+    pointer-events: none;
+}
+
+// The breadcrumb above a photo - deliberately quieter than a row of buttons, the photo being the point of the page
+.gallery-breadcrumb {
+    font-family: var(--font-family-body);
+    font-size: var(--gallery-breadcrumb-font-size);
+    color: var(--gallery-breadcrumb-color);
+    margin-bottom: 0.5rem;
+    text-align: center;
+}
+
+.gallery-breadcrumb a {
+    color: inherit;
+    text-decoration: underline;
+}
+
+.gallery-breadcrumb__resolution {
+    margin-left: 0.5rem;
+    opacity: 0.7;
+}
+
+// The photo (or the player) and the two arrows overlaying it
+.photo-container {
+    position: relative;
+    display: block;
+    margin: 0 auto;
+    max-width: var(--gallery-photo-max-width);
+}
+
+.photo-container.high-res {
+    max-width: var(--gallery-photo-highres-max-width);
+}
+
+.photo-display {
+    display: block;
+    width: 100%;
+    margin: 0 auto;
+    padding: 0;
+    border: var(--gallery-photo-frame-width) solid var(--gallery-photo-frame-color);
+}
+
+.gallery-photo-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 2;
+    padding: 0.25rem 0.75rem;
+    font-size: var(--gallery-nav-size);
+    line-height: 1;
+    color: var(--gallery-nav-color);
+    text-decoration: none;
+    opacity: var(--gallery-nav-opacity);
+    text-shadow: var(--gallery-nav-shadow);
+    transition: opacity 0.2s ease;
+}
+
+.gallery-photo-nav:hover,
+.gallery-photo-nav:focus-visible {
+    opacity: 1;
+}
+
+.gallery-photo-nav--previous {
+    left: 0;
+}
+
+.gallery-photo-nav--next {
+    right: 0;
+}
+
+// The embed, framed exactly like a still so a video and a photo read as one gallery. aspect-ratio
+// rather than the padding-top trick: the iframe is the only child and each platform serves one shape
+.gallery-video {
+    width: 100%;
+    border: var(--gallery-photo-frame-width) solid var(--gallery-photo-frame-color);
+}
+
+.gallery-video iframe {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border: 0;
+}
+
+.gallery-video--youtube {
+    aspect-ratio: var(--gallery-video-ratio-youtube);
+}
+
+// Portrait, so it is capped by the viewport's height instead of running past the fold on a phone
+.gallery-video--tiktok {
+    aspect-ratio: var(--gallery-video-ratio-tiktok);
+    max-width: min(100%, 60vh);
+    margin: 0 auto;
+}

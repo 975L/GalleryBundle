@@ -1,0 +1,7 @@
+{# Breadcrumb rather than full buttons - kept discreet, the photo itself is the point of this page #}
+<nav class="gallery-breadcrumb">
+    <a href="{{ path('gallery_index') }}">{{ 'label.gallery_home'|trans({}, 'gallery') }}</a>
+    <span aria-hidden="true">&rsaquo;</span>
+    <a href="{{ path('gallery_category', { category: category.slug }) }}">{{ category.title }} ({{ category.photos|length }})</a>
+    <span class="gallery-breadcrumb__resolution">&mdash; {{ resolution }}</span>
+</nav>
