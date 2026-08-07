@@ -110,12 +110,9 @@ class GalleryMedia implements VichMultiSizeImageInterface, VichMediaNamableInter
     #[ORM\Column(options: ['default' => false])]
     private bool $rightsReserved = false;
 
-    // Whether the site's signature is stamped into this media's derivatives, and in which corner - columns, unlike keepOriginal above, whose outcome originalFilename already records: nothing in a stamped webp says it was stamped, and a thumbnail rebuilt years later has to come back signed the same way (see GalleryThumbnailRebuilder)
-    // A null corner takes the one set site-wide, so a gallery follows a change of mind about where signatures go without every row being rewritten
-    #[ORM\Column(options: ['default' => false])]
-    private bool $watermarked = false;
-
-    #[ORM\Column(length: 20, nullable: true)]
+    // Whether the site's signature is stamped into this media's derivatives, and in which corner. Not columns, same as keepOriginal above: the signature is laid by the pipeline that stores a file (see UiBundle's VichImageResizeListener), so the question is only ever asked when a file is being stored - by the batch that uploads it, and by the edit form when it is replaced (see GalleryMediaCrudController). Once stamped it lives in the derivatives' own pixels, and a rebuilt thumbnail carries it down with them (see GalleryThumbnailRebuilder), nothing being left for a stored flag to answer
+    // A null corner takes the one set site-wide, so a gallery follows a change of mind about where signatures go
+    private bool $watermark = false;
     private ?string $watermarkPosition = null;
 
     #[ORM\ManyToOne]
@@ -335,15 +332,15 @@ class GalleryMedia implements VichMultiSizeImageInterface, VichMediaNamableInter
         return self::HIGHRES_WIDTH;
     }
 
-    // Asked for by the batch that uploaded the media, and kept afterwards: a media whose file is replaced comes back signed, having been signed before
+    // Asked for by whoever is putting a file on the media, and never remembered afterwards: a file already stored carries the signature it was given, and a replacement is an upload of its own, answering the question again
     public function wantsWatermark(): bool
     {
-        return $this->watermarked;
+        return $this->watermark;
     }
 
-    public function setWatermarked(bool $watermarked): self
+    public function setWatermark(bool $watermark): self
     {
-        $this->watermarked = $watermarked;
+        $this->watermark = $watermark;
 
         return $this;
     }

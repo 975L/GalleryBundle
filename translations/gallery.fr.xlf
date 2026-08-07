@@ -198,6 +198,10 @@
                 <source>label.gallery_media_type_youtube</source>
                 <target>YouTube</target>
             </trans-unit>
+            <trans-unit id="HCvgA8A">
+                <source>label.gallery_media_watermark_help</source>
+                <target>Ne s'applique qu'à un nouveau fichier envoyé ci-dessus : un fichier déjà stocké porte la signature qui lui a été apposée, et l'apposer à nouveau en poserait une seconde par-dessus la première.</target>
+            </trans-unit>
             <trans-unit id="xGcRomG">
                 <source>label.gallery_medias</source>
                 <target>Médias</target>

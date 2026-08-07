@@ -2,6 +2,25 @@
 
 ## Unreleased
 
+### The watermark is no longer stored on a media
+
+`GalleryMedia::$watermarked` and `$watermarkPosition` were columns, and answered a question that only
+ever comes up while a file is being stored: UiBundle's `VichImageResizeListener` reads them at upload
+and burns the signature into the pixels, after which nothing reads them again. They are plain properties
+now, like `keepOriginal`, and the media's edit screen asks the pair again so a **replaced file** can be
+signed — a replacement being an upload of its own.
+
+`setWatermarked()` is now `setWatermark()`; `wantsWatermark()` and `getWatermarkPosition()/setWatermarkPosition()`
+are unchanged.
+
+The two columns are dead weight and can go:
+
+```sql
+ALTER TABLE gallery_media DROP COLUMN watermarked, DROP COLUMN watermark_position;
+```
+
+Nothing to do about the medias themselves: their files carry whatever signature was stamped into them.
+
 ### `GalleryPhoto` is now `GalleryMedia`, and every "photo" with it
 
 An entry has been a photo, a YouTube video or a TikTok since v0.2, while everything naming it still said

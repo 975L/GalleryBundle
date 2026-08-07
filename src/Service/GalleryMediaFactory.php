@@ -48,7 +48,7 @@ class GalleryMediaFactory
                 ->setCredits('' === (string) $batch->credits ? null : $batch->credits)
                 ->setRightsReserved($batch->rightsReserved)
                 ->setKeepOriginal($batch->keepOriginals)
-                ->setWatermarked($batch->watermark)
+                ->setWatermark($batch->watermark)
                 ->setWatermarkPosition($batch->watermarkPosition)
                 ->setPosition($index)
             ;

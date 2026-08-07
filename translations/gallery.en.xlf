@@ -198,6 +198,10 @@
                 <source>label.gallery_media_type_youtube</source>
                 <target>YouTube</target>
             </trans-unit>
+            <trans-unit id="HCvgA8A">
+                <source>label.gallery_media_watermark_help</source>
+                <target>Only applies to a new file sent above: a file already stored carries the signature it was given, and stamping it again would lay a second one over the first.</target>
+            </trans-unit>
             <trans-unit id="xGcRomG">
                 <source>label.gallery_medias</source>
                 <target>Media</target>

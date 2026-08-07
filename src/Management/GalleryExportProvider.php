@@ -102,7 +102,7 @@ class GalleryExportProvider implements ExportProviderInterface
             'slug' => $media->getSlug(),
             'credits' => $media->getCredits(),
             'rightsReserved' => $media->isRightsReserved(),
-            // Deliberately not exported: the watermark flags (see GalleryMedia::wantsWatermark). What is archived here is the stored file, which already carries the signature in its pixels, and the import re-uploads it through the very pipeline that stamps - carrying the flag over would lay a second logo on top of the first. An imported media therefore comes back signed but flagged as unsigned, the archive holding no unsigned copy the flag could be honoured against
+            // Nothing here about the watermark, and nothing to say: it is not stored on the media (see GalleryMedia::wantsWatermark), only answered when a file is. What is archived is the stored file, which already carries the signature in its pixels, and an import that asked for one again would lay a second logo on top of the first
             'mediaType' => $media->getMediaType(),
             'externalId' => $media->getExternalId(),
             'position' => $media->getPosition(),

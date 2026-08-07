@@ -198,6 +198,10 @@
                 <source>label.gallery_media_type_youtube</source>
                 <target>YouTube</target>
             </trans-unit>
+            <trans-unit id="HCvgA8A">
+                <source>label.gallery_media_watermark_help</source>
+                <target>Solo se aplica a un nuevo archivo enviado arriba: un archivo ya almacenado lleva la firma que se le estampó, y estamparla de nuevo pondría una segunda sobre la primera.</target>
+            </trans-unit>
             <trans-unit id="xGcRomG">
                 <source>label.gallery_medias</source>
                 <target>Medios</target>

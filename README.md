@@ -267,6 +267,11 @@ empty by default, which takes the site's corner. It is there for the gallery who
 same corner busy. The two others are site-wide only: the signature is measured on the source photo, so a
 media's whole set carries one signature at one size.
 
+**Nothing about the watermark is stored on the media.** The question belongs to the file being uploaded,
+not to the media holding it, so a media's edit screen asks it again — unchecked by default — and only
+answers for a **new file sent from that screen**. A file already stored carries the signature it was given,
+and stamping it again would lay a second one over the first.
+
 ### Renaming a media
 
 A media's **title** is its name and its `alt` text. It is **not** what its slug is built from: the two are
@@ -513,10 +518,10 @@ archive, and are replaced wholesale on import — the same way `PageImportProvid
 archive exported before categories gained a heading imports as a category without one.
 
 A media that [kept its original](#uploading-a-batch) carries it into the archive too, put back under
-`private/` on import, so an imported gallery can still be re-processed without a re-upload. What does *not*
-travel is the watermark flag: the archived file already carries the signature in its pixels, and the import
-re-uploads it through the pipeline that stamps — an imported media therefore comes back signed, but flagged
-as unsigned.
+`private/` on import, so an imported gallery can still be re-processed without a re-upload. Nothing travels
+about the [watermark](#watermarking-the-batch), there being nothing stored to travel: the archived file
+already carries the signature in its pixels, and the import asks for none, which would lay a second one
+over the first.
 
 ### Sitemap and health check
 

@@ -19,6 +19,7 @@ use c975L\GalleryBundle\Entity\GalleryCategory;
 use c975L\GalleryBundle\Entity\GalleryMedia;
 use c975L\GalleryBundle\Service\GalleryMediaSlugger;
 use c975L\GalleryBundle\Service\GalleryUrlRedirector;
+use c975L\UiBundle\Contract\VichWatermarkableInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\UnitOfWork;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
@@ -30,6 +31,12 @@ use EasyCorp\Bundle\EasyAdminBundle\Dto\FieldDto;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGeneratorInterface;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\DependencyInjection\Container;
+use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\Form\FormEvent;
+use Symfony\Component\Form\FormEvents;
+use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\String\Slugger\AsciiSlugger;
@@ -218,6 +225,86 @@ class GalleryMediaCrudControllerTest extends TestCase
         $this->assertArrayNotHasKey('disabled', $slugField->getFormTypeOptions());
         $this->assertStringContainsString('title-confirm', $slugField->getFormTypeOptions()['attr']['data-controller']);
         $this->assertSame('confirm.media_slug_change', $slugField->getFormTypeOptions()['attr']['data-title-confirm-message-value']);
+    }
+
+    // Nothing about the watermark is stored on the media, so the edit screen asks the pair again - a replaced file being an upload of its own, and the only file this answer can reach
+    // Unmapped, both of them: they answer for the file, and the media has no property for either one to be written to
+    public function testConfigureFieldsAsksTheWatermarkAgainOnTheEditForm(): void
+    {
+        $fields = $this->createController()->configureFields(Crud::PAGE_EDIT);
+
+        $watermarkField = $this->findField($fields, 'watermark');
+        $this->assertNotNull($watermarkField);
+        $this->assertSame(CheckboxType::class, $watermarkField->getFormType());
+        $this->assertFalse($watermarkField->getFormTypeOptions()['mapped']);
+
+        $positionField = $this->findField($fields, 'watermarkPosition');
+        $this->assertNotNull($positionField);
+        $this->assertSame(ChoiceType::class, $positionField->getFormType());
+        $this->assertFalse($positionField->getFormTypeOptions()['mapped']);
+        $this->assertSame(
+            [VichWatermarkableInterface::POSITION_TOP_LEFT, VichWatermarkableInterface::POSITION_TOP_RIGHT, VichWatermarkableInterface::POSITION_BOTTOM_RIGHT, VichWatermarkableInterface::POSITION_BOTTOM_LEFT],
+            array_values($positionField->getFormTypeOptions()['choices']),
+        );
+    }
+
+    // Both halves of the answer reach the media, which is what the listener that stamps reads - and they have to be there before the flush that stores the uploaded file
+    public function testTheWatermarkAnsweredOnTheEditFormReachesTheMedia(): void
+    {
+        $media = new GalleryMedia();
+
+        ($this->captureWatermarkListener())(new FormEvent(
+            $this->createEditForm(true, VichWatermarkableInterface::POSITION_TOP_LEFT),
+            $media
+        ));
+
+        $this->assertTrue($media->wantsWatermark());
+        $this->assertSame(VichWatermarkableInterface::POSITION_TOP_LEFT, $media->getWatermarkPosition());
+    }
+
+    // An unanswered corner is none at all, which takes the one set site-wide (see GalleryMedia::setWatermarkPosition)
+    public function testAMediaLeftUnsignedOnTheEditFormWantsNoWatermark(): void
+    {
+        $media = (new GalleryMedia())->setWatermark(true);
+
+        ($this->captureWatermarkListener())(new FormEvent($this->createEditForm(false, null), $media));
+
+        $this->assertFalse($media->wantsWatermark());
+        $this->assertNull($media->getWatermarkPosition());
+    }
+
+    private function createEditForm(bool $watermark, ?string $watermarkPosition): FormInterface
+    {
+        $children = [];
+        foreach (['watermark' => $watermark, 'watermarkPosition' => $watermarkPosition] as $name => $data) {
+            $child = $this->createStub(FormInterface::class);
+            $child->method('getData')->willReturn($data);
+            $children[$name] = $child;
+        }
+
+        $form = $this->createStub(FormInterface::class);
+        $form->method('get')->willReturnCallback(static fn (string $name): FormInterface => $children[$name]);
+
+        return $form;
+    }
+
+    private function captureWatermarkListener(): callable
+    {
+        $listener = null;
+        $builder = $this->createStub(FormBuilderInterface::class);
+        $builder->method('addEventListener')->willReturnCallback(function (string $eventName, callable $callback) use (&$listener, $builder) {
+            if (FormEvents::POST_SUBMIT === $eventName) {
+                $listener = $callback;
+            }
+
+            return $builder;
+        });
+
+        (new \ReflectionMethod(GalleryMediaCrudController::class, 'addWatermark'))->invoke($this->createController(), $builder);
+
+        $this->assertIsCallable($listener);
+
+        return $listener;
     }
 
     private function findField(iterable $fields, string $property): ?FieldDto

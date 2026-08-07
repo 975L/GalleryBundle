@@ -15,6 +15,7 @@ use c975L\GalleryBundle\Entity\GalleryCategory;
 use c975L\GalleryBundle\Entity\GalleryMedia;
 use c975L\GalleryBundle\Service\GalleryMediaSlugger;
 use c975L\GalleryBundle\Service\GalleryUrlRedirector;
+use c975L\UiBundle\Contract\VichWatermarkableInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
@@ -22,6 +23,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Config\KeyValueStore;
 use EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
+use EasyCorp\Bundle\EasyAdminBundle\Dto\EntityDto;
 use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\BooleanField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ChoiceField;
@@ -29,6 +31,11 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\Field;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IntegerField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGeneratorInterface;
+use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\Form\FormEvent;
+use Symfony\Component\Form\FormEvents;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Validator\Constraints\File as FileConstraint;
 use Symfony\Contracts\Translation\TranslatorInterface;
@@ -107,6 +114,31 @@ class GalleryMediaCrudController extends AbstractCrudController
         ;
     }
 
+    public function createEditFormBuilder(EntityDto $entityDto, KeyValueStore $formOptions, AdminContext $context): FormBuilderInterface
+    {
+        return $this->addWatermark(parent::createEditFormBuilder($entityDto, $formOptions, $context));
+    }
+
+    // The watermark answered on the form is carried to the media it applies to, the two fields being unmapped (see configureFields) - on submit, so it is in place before the flush that stores the uploaded file and has UiBundle's VichImageResizeListener stamp it
+    // Answered for nothing when the form carries no new file: what would be stamped is not stored again, and the media goes on carrying the signature its file already holds
+    private function addWatermark(FormBuilderInterface $formBuilder): FormBuilderInterface
+    {
+        $formBuilder->addEventListener(FormEvents::POST_SUBMIT, static function (FormEvent $event): void {
+            $media = $event->getData();
+            if (!$media instanceof GalleryMedia) {
+                return;
+            }
+
+            $form = $event->getForm();
+            $media
+                ->setWatermark((bool) $form->get('watermark')->getData())
+                ->setWatermarkPosition($form->get('watermarkPosition')->getData())
+            ;
+        });
+
+        return $formBuilder;
+    }
+
     // Updated media - a media's public url moves when its slug is edited, and when it is moved to another category, the category's own slug being the segment above it
     public function updateEntity(EntityManagerInterface $entityManager, object $entityInstance): void
     {
@@ -158,6 +190,39 @@ class GalleryMediaCrudController extends AbstractCrudController
                     'delete_label_translation_domain' => 'messages',
                     'constraints' => [
                         new FileConstraint(maxSize: '10M'),
+                    ],
+                ])
+                ->onlyOnForms(),
+
+            // Same pair as the batch screens', asked again here because a replacement is an upload of its own: the media keeps no flag from the batch that created it (see GalleryMedia::wantsWatermark), and the file already stored carries whatever signature it was given
+            // Unmapped, and read back on submit (see createEditFormBuilder): they answer for the file being uploaded, not for the media
+            Field::new('watermark')
+                ->setLabel(t('label.gallery_watermark', [], 'gallery'))
+                ->setHelp(t('label.gallery_media_watermark_help', [], 'gallery'))
+                ->setFormType(CheckboxType::class)
+                ->setFormTypeOptions([
+                    'mapped' => false,
+                    'required' => false,
+                    'label_attr' => ['class' => 'checkbox-switch'],
+                ])
+                ->onlyOnForms(),
+
+            Field::new('watermarkPosition')
+                ->setLabel(t('label.gallery_watermark_position', [], 'gallery'))
+                ->setHelp(t('label.gallery_batch_watermark_position_help', [], 'gallery'))
+                ->setFormType(ChoiceType::class)
+                // Choice labels are translation keys, not t() calls: they are array keys, and an array key can only be a string
+                ->setFormTypeOptions([
+                    'mapped' => false,
+                    'required' => false,
+                    // t() rather than the key alone: "choice_translation_domain" only covers the choices, the placeholder being translated in the form's own domain - EasyAdmin's here, where the key does not exist
+                    'placeholder' => t('label.gallery_watermark_position_default', [], 'gallery'),
+                    'choice_translation_domain' => 'gallery',
+                    'choices' => [
+                        'label.gallery_watermark_top_left' => VichWatermarkableInterface::POSITION_TOP_LEFT,
+                        'label.gallery_watermark_top_right' => VichWatermarkableInterface::POSITION_TOP_RIGHT,
+                        'label.gallery_watermark_bottom_right' => VichWatermarkableInterface::POSITION_BOTTOM_RIGHT,
+                        'label.gallery_watermark_bottom_left' => VichWatermarkableInterface::POSITION_BOTTOM_LEFT,
                     ],
                 ])
                 ->onlyOnForms(),

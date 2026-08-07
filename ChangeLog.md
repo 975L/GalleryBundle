@@ -1,5 +1,16 @@
 # ChangeLog
 
+## v1.1
+
+Stop storing the watermark on a media, asking it at upload instead
+
+- The watermark is no longer stored on a media, only asked when a file is uploaded (07/08/2026) [BC-Break]
+- `GalleryMedia::setWatermarked()` is now `setWatermark()` (07/08/2026) [BC-Break]
+- The media edit screen asks for the watermark, applied to a replaced file (07/08/2026)
+- Added the `label.gallery_media_watermark_help` translation (07/08/2026)
+- README states nothing about the watermark is stored on a media (07/08/2026)
+- UPGRADE documents the dropped columns and the renamed setter (07/08/2026)
+
 ## v1.0
 
 First production release

@@ -13,6 +13,7 @@ namespace c975L\GalleryBundle\Tests\Entity;
 use c975L\GalleryBundle\Entity\GalleryCategory;
 use c975L\GalleryBundle\Entity\GalleryMedia;
 use c975L\UiBundle\Contract\VichWatermarkableInterface;
+use Doctrine\ORM\Mapping\Column;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
@@ -185,10 +186,22 @@ class GalleryMediaTest extends TestCase
         $this->assertNull($media->getWatermarkPosition());
     }
 
-    // Off unless the batch that created the media asked for it
+    // Off unless whoever is uploading the file asked for it
     public function testAMediaWantsNoWatermarkUnlessItWasAskedFor(): void
     {
         $this->assertFalse((new GalleryMedia())->wantsWatermark());
-        $this->assertTrue((new GalleryMedia())->setWatermarked(true)->wantsWatermark());
+        $this->assertTrue((new GalleryMedia())->setWatermark(true)->wantsWatermark());
+    }
+
+    // The watermark answers for the file being stored, not for the media: a stamped file carries the signature in its pixels, so nothing is kept once the upload is over and a media read back from the database asks the question again
+    public function testTheWatermarkIsNotStoredOnTheMedia(): void
+    {
+        $properties = (new \ReflectionClass(GalleryMedia::class))->getProperties();
+
+        foreach ($properties as $property) {
+            if (in_array($property->getName(), ['watermark', 'watermarkPosition'], true)) {
+                $this->assertSame([], $property->getAttributes(Column::class), $property->getName() . ' must not be a column');
+            }
+        }
     }
 }
