@@ -1,7 +1,17 @@
-{# Breadcrumb rather than full buttons - kept discreet, the photo itself is the point of this page #}
-<nav class="gallery-breadcrumb">
-    <a href="{{ path('gallery_index') }}">{{ 'label.gallery_home'|trans({}, 'gallery') }}</a>
-    <span aria-hidden="true">&rsaquo;</span>
-    <a href="{{ path('gallery_category', { category: category.slug }) }}">{{ category.title }} ({{ category.photos|length }})</a>
-    <span class="gallery-breadcrumb__resolution">&mdash; {{ resolution }}</span>
+{# The one navigation of the public viewer - the same strip, at the same place, on the index as on a category and on a media page, a breadcrumb rather than a row of buttons #}
+{# "category" is left out on the index and "current" on a category page: each of them stops the trail one level earlier, the level a page sits on being printed as text, a page never linking to itself #}
+<nav class="gallery-breadcrumb" aria-label="{{ 'label.gallery_breadcrumb'|trans({}, 'gallery') }}">
+    {% if category|default(null) is null %}
+        <span class="gallery-breadcrumb__current" aria-current="page">{{ 'label.gallery_home'|trans({}, 'gallery') }}</span>
+    {% else %}
+        <a href="{{ path('gallery_index') }}">{{ 'label.gallery_home'|trans({}, 'gallery') }}</a>
+        <span class="gallery-breadcrumb__separator" aria-hidden="true">&rsaquo;</span>
+        {% if current|default('') is empty %}
+            <span class="gallery-breadcrumb__current" aria-current="page">{{ category.title }} ({{ category.medias|length }})</span>
+        {% else %}
+            <a href="{{ path('gallery_category', { category: category.slug }) }}">{{ category.title }} ({{ category.medias|length }})</a>
+            <span class="gallery-breadcrumb__separator" aria-hidden="true">&rsaquo;</span>
+            <span class="gallery-breadcrumb__current" aria-current="page">{{ current }}</span>
+        {% endif %}
+    {% endif %}
 </nav>

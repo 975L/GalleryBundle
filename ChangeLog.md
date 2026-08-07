@@ -1,4 +1,164 @@
-ChangeLog
+# ChangeLog
+
+## v1.0
+
+First production release
+
+- Export carries a category's blocks, the import replacing them (07/08/2026)
+- Export carries a media's kept original, the import putting it back under `private/` (07/08/2026)
+- Removed the export's unread `originalFilename` key, `originalFile` replacing it (07/08/2026)
+- README states what an export carries of a media's original and watermark (07/08/2026)
+- README states an export carries a category's blocks (07/08/2026)
+- The media page shows an edit button over the media (07/08/2026)
+- A category page shows one over its grid, opening the category itself (07/08/2026)
+- Added `Twig\Extension\GalleryEditUrlExtension`, with `gallery_category_edit_url()` and `gallery_media_edit_url()` (07/08/2026)
+- The gallery back-office moved from `ROLE_ADMIN` to the `site-role-editor` config (07/08/2026) [BC-Break]
+- README describes editing from the public pages (07/08/2026)
+- A category's edit screen carries its own delete button, hidden for "Non classé" (07/08/2026)
+- `GalleryMediaDerivativeCleanupListener` removes a media directory left empty, in `public/` and `private/` (07/08/2026)
+- The watermark position's placeholder carries its own translation domain (07/08/2026)
+- The categories screen says the watermark exists and where its three settings are (07/08/2026)
+- Added the `label.info_gallery_watermark` translation (07/08/2026)
+- README describes watermarking a batch and the `ui-watermark-*` configs (07/08/2026)
+- README describes deleting a gallery (07/08/2026)
+- Thumbnails bounce on hover, and the `--gallery-thumb-hover-animation` token sets or removes it (07/08/2026)
+- Thumbnails hold the whole photo, both grids squaring them in CSS (07/08/2026) [BC-Break]
+- Requires the `c975l/core-bundle` version generating inset thumbnails (07/08/2026)
+- `GalleryMedia::THUMBNAIL_SIZE` raised to 600, the cropped display keeping only the shortest side (07/08/2026)
+- Added the `gallery-thumbnail-whole` config, off by default, and the `--gallery-thumb-background` token (07/08/2026)
+- Added the `label.gallery_thumbnail_whole` and `description.gallery_thumbnail_whole` translations (07/08/2026)
+- Added `c975l:gallery:rebuild-thumbnails`, with `--dry-run`, and `Service\GalleryThumbnailRebuilder` (07/08/2026)
+- `imagine/imagine` is now required explicitly, in `^1.5` (07/08/2026)
+- README describes the thumbnail framing setting and the rebuild command (07/08/2026)
+- `GalleryMedia::$alt` became `$title`, serving as name, alt text and slug source (07/08/2026)
+- Added `GalleryMedia::$slug`, unique per category (07/08/2026)
+- The media page is reached by slug, `/{prefix}/{category}/{slug}` (07/08/2026)
+- The media edit form shows its slug, editable, warning before it is changed (07/08/2026)
+- Added the `label.gallery_media_slug_help` translation (07/08/2026)
+- Stored files are named after the media's slug (07/08/2026)
+- Added `Service\GalleryMediaSlugger`, suffixing a slug already taken in the category (07/08/2026)
+- Added `Service\GalleryUrlRedirector`, shared by the category and media CRUDs (07/08/2026)
+- Added `GalleryMediaCrudController::updateEntity()`, redirecting a re-slugged or moved media's old url (07/08/2026)
+- A renamed category redirects the media urls under it, wildcarded (07/08/2026)
+- Added `c975l:gallery:fill-slugs`, with `--dry-run` (07/08/2026)
+- Export carries `title` and `slug`, import reads the legacy `alt` (07/08/2026)
+- Removed the `label.alt_text` translation, added `label.gallery_media_title_help` and `confirm.media_slug_change` (07/08/2026)
+- Renamed the `label.gallery_showcase_media_alt` translation to `label.gallery_showcase_media_title` (07/08/2026)
+- README describes renaming a media (07/08/2026)
+- A media's slug no longer follows its title, so retitling moves no url (07/08/2026) [BC-Break]
+- The slug field is editable, carrying the confirmation the title used to (07/08/2026)
+- An emptied slug is rebuilt from the title (07/08/2026)
+- Added the batch title root, numbering every title from where the category leaves off (07/08/2026)
+- A rooted batch takes its slug from a 6-character hash of the photo's EXIF capture date (07/08/2026)
+- Added `Model\GalleryMediaBatch`, replacing `GalleryMediaFactory::createFromUploads()`'s trailing arguments (07/08/2026) [BC-Break]
+- Added the batch "keep the originals" option, `GalleryMedia` implementing `VichOriginalKeepableInterface` (07/08/2026)
+- Added `GalleryMedia::$originalFilename` and `ORIGINAL_DIRECTORY`, the original living under `private/` (07/08/2026)
+- `GalleryMediaDerivativeCleanupListener` removes a kept original along with the derivatives (07/08/2026)
+- Added the `label.gallery_title_root`, `label.gallery_keep_originals`, `label.gallery_batch_title_root_help` and `label.gallery_batch_keep_originals_help` translations (07/08/2026)
+- Suggests `ext-exif` (07/08/2026)
+- Requires the `c975l/core-bundle` version providing `VichOriginalKeepableInterface` (07/08/2026)
+- README describes uploading a batch and keeping the originals (07/08/2026)
+- A category's medias are reordered by dragging their thumbnails (07/08/2026)
+- Added `assets/js/gallery-media-sort.js`, registered in `controllers-admin.js` (07/08/2026)
+- The drag is UiBundle's `addSortGesture()`, reordering by finger as by mouse (07/08/2026)
+- Each tile carries a move handle, the tile itself staying mouse-only (07/08/2026)
+- Added the `action.move` translation (07/08/2026)
+- Needs the `@c975l/ui-bundle/pointer-sort.js` importmap entry in the consuming app (07/08/2026)
+- The cover is picked among the medias, or left random (07/08/2026)
+- The order and the cover save themselves as they are changed (07/08/2026)
+- Added `GalleryCategoryCrudController::saveMediasLayout()`, csrf token read from the `X-CSRF-Token` header (07/08/2026)
+- Added the `label.gallery_cover`, `label.gallery_cover_random`, `label.gallery_cover_select` and `label.gallery_medias_layout_failed` translations (07/08/2026)
+- Rewrote `label.info_gallery_category_medias` (07/08/2026)
+- README describes ordering the medias and picking a cover (07/08/2026)
+- README describes the medias list's toolbar and its "Add medias" button (05/08/2026)
+- README's import section no longer says a colliding slug is suffixed (05/08/2026)
+- The "Add medias" button moved from the edit toolbar to the medias' own list, before the "Select all" box (05/08/2026)
+- A category with no media shows the button and says so (05/08/2026)
+- Added the `label.info_gallery_category_medias_empty` translation (05/08/2026)
+- Documented the CSP directives a site's videos need (05/08/2026)
+- A renamed category has its slug rebuilt from its new title (05/08/2026)
+- The title field asks to confirm first, through UiBundle's `title-confirm` controller (05/08/2026)
+- Added `GalleryCategoryCrudController::updateEntity()`, redirecting the category's old url to its new one (05/08/2026)
+- The slug field gained its help text, and `label.slug_help` was rewritten (05/08/2026)
+- Added the `confirm.title_change` translation (05/08/2026)
+- Documented renaming a category in the readme (05/08/2026)
+- The gallery's ten colors are admin-editable, as `theme-color-gallery-*` configs in the gallery group (05/08/2026)
+- Each color token reads its `--c975l-color-gallery-*` first, keeping the bundle's default as fallback (05/08/2026)
+- Requires `c975l/core-bundle` ^1.3 (05/08/2026)
+- Added the `--gallery-nav-hover-color` token, used by the arrows' hover and focus rule (05/08/2026)
+- Added the `label.theme_color_gallery_*` and `description.theme_color_gallery_*` translations (05/08/2026)
+- Each color's description names the default applying while it is empty, and the syntax expected (05/08/2026)
+- The category creation form takes a batch of medias, added with the category (05/08/2026)
+- Added `Service\GalleryMediaFactory`, shared by the creation form and the upload screen (05/08/2026)
+- Added `UploadLimits::isTruncatedRequest()`, used by both screens (05/08/2026)
+- The upload screen's flashes are translated in this bundle's domain (05/08/2026)
+- Each media of a category's edit screen carries a checkbox, with a "Select all" box (05/08/2026)
+- Added `GalleryCategoryCrudController::deleteMedias()`, deleting the checked medias in one go (05/08/2026)
+- The deletion is confirmed through EasyAdmin's own action confirmation modal (05/08/2026)
+- Added `assets/js/gallery-media-selection.js`, registered in `controllers-admin.js` (05/08/2026)
+- Added the `action.select`, `action.select_all`, `action.delete_selection`, `label.gallery_select_media`, `label.gallery_medias_delete_confirm` and `label.gallery_medias_deleted` translations (05/08/2026)
+- A category whose slug is already used is refused with a form error instead of being suffixed (05/08/2026) [BC-Break]
+- Removed `GalleryCategoryRepository::makeSlugUnique()` (05/08/2026) [BC-Break]
+- The submitted slug is slugified before validation, `persistEntity()`/`updateEntity()` no longer doing it (05/08/2026)
+- The medias block offers every category, two sharing a title being told apart by their slug (05/08/2026)
+- The EasyAdmin menu entry opens the categories, on `/management/gallery` (05/08/2026) [BC-Break]
+- The category listing gained a media count column, with `GalleryCategory::getMediasCount()` (05/08/2026)
+- A category's medias are listed under its edit form, each thumbnail opening that media's edit screen (05/08/2026)
+- Removed the all-medias listing, `GalleryMediaCrudController::index()` redirecting to the category instead (05/08/2026) [BC-Break]
+- Removed the media CRUD's category filter, its `manageCategories` action and `management/gallery_photo_index.html.twig` (05/08/2026) [BC-Break]
+- The media edit screen carries its own delete button, there being no listing left to offer one (05/08/2026)
+- The upload screen moves to `/management/gallery-upload` and returns to the category filled (05/08/2026) [BC-Break]
+- Added the `label.info_gallery_category_medias` translations, `label.gallery_manage_categories` being removed (05/08/2026)
+- The public routes move from `/photos` to `/gallery` (05/08/2026) [BC-Break]
+- Added `config/configs.json` and its `gallery-route-prefix` entry, in a `gallery` group of its own (05/08/2026)
+- Added `Routing\GalleryRoutePrefix`, the routes' condition matching that entry at each request (05/08/2026)
+- Added `Listener\GalleryRoutePrefixListener`, carrying the prefix to the url generator (05/08/2026)
+- Added the `site_config` and `config` translations of that entry and its group (05/08/2026)
+- `symfony/expression-language` is now required, in `^8.0`, route conditions needing it (05/08/2026)
+- The EasyAdmin menu entry is labelled `label.gallery`, with the new translation (05/08/2026)
+- Removed the `Gallery` entity and its repository, the category becoming the top-level unit (05/08/2026) [BC-Break]
+- Photo files move from `medias/gallery/{gallery}/{category}/` to `medias/gallery/{category}/` (05/08/2026) [BC-Break]
+- Photos are added from a category's row action and edit screen, the photo index losing its upload button (05/08/2026) [BC-Break]
+- The upload screen takes every file at once, the category being read-only and the per-row fields gone (05/08/2026) [BC-Break]
+- The uploaded filename seeds each photo's alt text (05/08/2026)
+- The category index shows its row actions inlined (05/08/2026)
+- Added `Service\UploadLimits`, reading php's `max_file_uploads`/`upload_max_filesize`/`post_max_size` (05/08/2026)
+- `UploadLimits` caps a batch at 100 files and 20M per file of its own, whichever is smaller applying (05/08/2026)
+- The upload screen states those ceilings and refuses a batch before sending it (05/08/2026)
+- Added `assets/js/gallery-upload-limits.js` and `assets/controllers-admin.js` (05/08/2026)
+- `ScriptProvider` implements `BundleScriptAdminProviderInterface`, and `ImportmapProvider` declares the admin entrypoint (05/08/2026)
+- A batch php emptied past `post_max_size` is reported (05/08/2026)
+- The batch upload accepts a file up to 20M instead of 10M, stated in bytes (05/08/2026)
+- README documents the PHP ceilings a bulk upload meets (05/08/2026)
+- Removed `c975l:gallery:import-legacy` and its command class (05/08/2026) [BC-Break]
+- README replaces it with the back-office walkthrough for bringing an existing gallery in (05/08/2026)
+- The video embed keeps its ratio, UiBundle's global `iframe` rule being reset (05/08/2026)
+- The high resolution opens in a lightbox, the `gallery_photo_hr` route and its page being removed (05/08/2026) [BC-Break]
+- Added `assets/js/gallery-lightbox.js` and its `--gallery-lightbox-*` tokens (05/08/2026)
+- Added `assets/js/gallery-photo-protect.js`, blocking right click and drag on the grids and the photo page (05/08/2026)
+- The breadcrumb's `resolution` parameter is now `mention`, only carrying a video entry (05/08/2026) [BC-Break]
+- The photo previous/next arrows are shaped as buttons, with three new `--gallery-nav-*` tokens (05/08/2026)
+- Added the `gallery_categories` and `gallery_photos` block kinds, with `Twig\Extension\GalleryBlockExtension` (05/08/2026)
+- `GalleryCategory` implements `HasBlocksInterface`, its blocks rendering above the category grid (05/08/2026)
+- Added `Management\GalleryBlockOwnerResolver` and the blocks field of the category CRUD (05/08/2026)
+- Added `Service\GalleryShowcaseProvider`, showing both block kinds in the block showcase (05/08/2026)
+- `GallerySitemapProvider` titles the index and the categories, feeding `llms.txt` (05/08/2026)
+- README restructured on SiteBundle's outline, and its requirements now name `c975l/core-bundle` (05/08/2026)
+- Added the `qa` Composer script and its steps, which the CI workflow now calls (03/08/2026)
+- Added `bin/ci.sh`, replaying the CI checks on dependencies freshly resolved from Packagist (03/08/2026)
+- The `gallery_medias` block gained a "draw them at random" option, applied before its maximum (05/08/2026)
+- `GalleryPhoto` is renamed `GalleryMedia`, the `gallery_photo` table becoming `gallery_media` (05/08/2026) [BC-Break]
+- The repository, both controllers, both forms and both listeners follow that name (05/08/2026) [BC-Break]
+- `GalleryCategory`'s photo collection, cover and count are now `medias`/`coverMedia`/`mediasCount` (05/08/2026) [BC-Break]
+- The `gallery_photo` route is now `gallery_media`, and the `gallery_photos` block kind `gallery_medias` (05/08/2026) [BC-Break]
+- The `Photo`/`Photos` components and the `gallery/photo`, `blocks/Photos` and `management/gallery_photo_*` templates follow (05/08/2026) [BC-Break]
+- The `photo` translation keys are renamed, their wording moving to "media" in the three locales (05/08/2026) [BC-Break]
+- The export writes `medias`/`coverMediaIndex`, the import still reading the former keys (05/08/2026) [BC-Break]
+- New uploads are named `media-*` instead of `photo-*`, stored files being untouched (05/08/2026)
+- The `--gallery-photo-*` tokens are now `--gallery-media-*`, in the sass, the compiled css and the scaffolded theme (05/08/2026) [BC-Break]
+- `.photo-container`/`.photo-display`/`.photo-zoom`/`.gallery-photo-nav` become `.gallery-media-*` (05/08/2026) [BC-Break]
+- The `gallery-photo-preload`/`gallery-photo-protect` controllers and their files are renamed `gallery-media-*` (05/08/2026) [BC-Break]
+- UPGRADE documents the rename, the table rename and the `site_block.kind` update it needs (05/08/2026)
 
 ## v0.2
 

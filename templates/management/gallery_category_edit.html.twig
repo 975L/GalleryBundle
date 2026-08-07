@@ -4,4 +4,183 @@
     <p>{{ ('label.info_gallery_category'|trans({}, 'gallery')) }}</p>
 
     {{ parent() }}
+
+    {# The category's own medias, each opening its edit form (media_edit_urls comes from GalleryCategoryCrudController::configureResponseParameters) - same grid as UiBundle's media_index, on the "-thumb" derivative and reusing its CSS #}
+    {% set category = entity.instance %}
+    <h2 class="mt-4">{{ ('label.gallery_medias'|trans({}, 'gallery')) }}</h2>
+
+    {# Rendered here rather than as an edit action, which put it up in the toolbar above the blocks collection - "Ajouter un UiBlock" was then the button under the hand of an admin meaning to add a media (media_upload_url comes from the same configureResponseParameters) #}
+    {% set upload_medias_button %}
+        <a href="{{ media_upload_url|default('') }}" class="btn btn-secondary">
+            <i class="fas fa-upload"></i> {{ ('label.gallery_upload_medias'|trans({}, 'gallery')) }}
+        </a>
+    {% endset %}
+
+    {% if category.medias|length > 0 %}
+        <p>{{ ('label.info_gallery_category_medias'|trans({}, 'gallery')) }}</p>
+
+        {# The checked medias are posted to GalleryCategoryCrudController::deleteMedias(), or to editMedias() by the buttons carrying their own "formaction". A form of its own, after the edit form parent() has already closed above: an html form never nests in another #}
+        {# It carries the sort controller too, rather than a wrapper of its own: the cover's "random" radio sits in the toolbar and the medias in the grid, and the form is the smallest element holding both #}
+        <form method="post"
+            action="{{ ea_url().setAction('deleteMedias') }}"
+            data-controller="gallery-media-selection gallery-media-sort"
+            data-gallery-media-sort-url-value="{{ ea_url().setAction('saveMediasLayout') }}"
+            data-gallery-media-sort-token-value="{{ csrf_token('gallery_medias_layout') }}"
+            data-gallery-media-sort-failed-label-value="{{ ('label.gallery_medias_layout_failed'|trans({}, 'gallery')) }}">
+            <input type="hidden" name="_token" value="{{ csrf_token('gallery_media_delete_selection') }}">
+
+            {# Every action here works off the same checked medias, each button posting the selection to its own route (see the "formaction" ones below) #}
+            <div class="mb-3 d-flex flex-wrap gap-3 align-items-center">
+                {{ upload_medias_button }}
+
+                <label class="d-flex align-items-center gap-2 p-1" style="cursor: pointer;">
+                    <input type="checkbox"
+                        class="form-check-input m-0"
+                        style="width: 1.25rem; height: 1.25rem;"
+                        data-gallery-media-selection-target="toggle"
+                        data-action="gallery-media-selection#toggleAll">
+                    {{ ('action.select_all'|trans({}, 'gallery')) }}
+                </label>
+
+                {# The way back to a random cover once one has been picked - no media checked is exactly what the public components fall back on #}
+                <label class="d-flex align-items-center gap-2 p-1" style="cursor: pointer;">
+                    <input type="radio"
+                        class="form-check-input m-0"
+                        style="width: 1.25rem; height: 1.25rem;"
+                        name="coverMediaId"
+                        value=""
+                        {{ category.coverMedia is null ? 'checked' : '' }}
+                        data-action="gallery-media-sort#save">
+                    {{ ('label.gallery_cover_random'|trans({}, 'gallery')) }}
+                </label>
+
+                {# The same value written on the whole selection at once, rather than opened media by media - one button per field, so setting the credits never touches the rights and the other way round #}
+                <input type="hidden" name="_edit_token" value="{{ csrf_token('gallery_media_edit_selection') }}">
+
+                <div class="d-flex flex-wrap gap-2 align-items-center">
+                    <input type="text"
+                        name="credits"
+                        class="form-control w-auto"
+                        placeholder="{{ ('label.credits'|trans({}, 'gallery')) }}"
+                        aria-label="{{ ('label.credits'|trans({}, 'gallery')) }}">
+
+                    {# Kept the form's first submit button, which is the one a keystroke on Enter in the box above triggers - the deletion further down must never be what that reaches #}
+                    <button type="submit"
+                        name="field"
+                        value="credits"
+                        formaction="{{ ea_url().setAction('editMedias') }}"
+                        class="btn btn-secondary"
+                        disabled
+                        data-gallery-media-selection-target="submit">
+                        <i class="fa fa-copyright"></i> {{ ('action.apply_credits'|trans({}, 'gallery')) }}
+                    </button>
+                </div>
+
+                <div class="d-flex flex-wrap gap-2 align-items-center">
+                    <label class="d-flex align-items-center gap-2 p-1" style="cursor: pointer;">
+                        <input type="checkbox"
+                            class="form-check-input m-0"
+                            style="width: 1.25rem; height: 1.25rem;"
+                            name="rightsReserved"
+                            value="1">
+                        {{ ('label.rights_reserved'|trans({}, 'gallery')) }}
+                    </label>
+
+                    {# Unchecked is a value of its own: the same button is what takes the rights back off a selection #}
+                    <button type="submit"
+                        name="field"
+                        value="rightsReserved"
+                        formaction="{{ ea_url().setAction('editMedias') }}"
+                        class="btn btn-secondary"
+                        disabled
+                        data-gallery-media-selection-target="submit">
+                        <i class="fa fa-lock"></i> {{ ('action.apply_rights_reserved'|trans({}, 'gallery')) }}
+                    </button>
+                </div>
+
+                {# Disabled until something is checked, the controller above enabling it on the first box ticked. The confirmation is EasyAdmin's own modal, the one its delete actions open: app.js submits this form once confirmed (its "standalone button inside a form" case), so nothing here has to ask on its own #}
+                <button type="submit"
+                    class="btn btn-danger"
+                    disabled
+                    data-bs-toggle="modal"
+                    data-bs-target="#modal-action-confirmation"
+                    data-action-confirmation="true"
+                    data-action-variant="danger"
+                    data-action-confirmation-message="{{ ('label.gallery_medias_delete_confirm'|trans({}, 'gallery')) }}"
+                    data-action-confirmation-content="{{ ('delete_modal.content'|trans({}, 'EasyAdminBundle')) }}"
+                    data-gallery-media-selection-target="submit">
+                    <i class="fa fa-trash"></i> {{ ('action.delete_selection'|trans({}, 'gallery')) }}
+                </button>
+            </div>
+
+            <div class="management-media-grid" data-gallery-media-sort-target="grid">
+                {% for media in category.medias %}
+                    {# The thumbnail keeps opening the media's edit screen, so the checkbox sits under it rather than inside the link it would otherwise swallow the click of #}
+                    {# The id the new order is posted with, read off the tiles themselves: dragging one moves it with the tile, so nothing has to be renumbered client-side #}
+                    <div class="text-center"
+                        style="cursor: grab;"
+                        data-media-id="{{ media.id }}"
+                        data-gallery-media-sort-target="item">
+                        {# The grab point a finger gets, the whole tile being reserved to the mouse (see gallery-media-sort.js). Inline svg rather than an icon class: it is the move icon UiBundle draws on a block's own handle, and this bundle knows nothing of the icon set the dashboard ships #}
+                        <div class="d-flex align-items-center justify-content-center p-1 border rounded"
+                            style="cursor: grab;"
+                            role="button"
+                            aria-label="{{ ('action.move'|trans({}, 'gallery')) }}"
+                            title="{{ ('action.move'|trans({}, 'gallery')) }}"
+                            data-gallery-media-sort-handle>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <polyline points="5 9 2 12 5 15"/><polyline points="9 5 12 2 15 5"/>
+                                <polyline points="15 19 12 22 9 19"/><polyline points="19 9 22 12 19 15"/>
+                                <line x1="2" y1="12" x2="22" y2="12"/><line x1="12" y1="2" x2="12" y2="22"/>
+                            </svg>
+                        </div>
+
+                        {# draggable="false" on the link and its image, which the browser would otherwise drag as a url of their own, its native drag fighting the pointer gesture above #}
+                        <a href="{{ media_edit_urls[media.id]|default('') }}" class="management-media-grid__item" draggable="false">
+                            {% if media.thumbnailFilename %}
+                                {# object-fit: cover inline - overrides UiBundle's shared .management-media-grid__thumb (object-fit: contain), which stays "contain" for its own generic media_index.html.twig where arbitrary-aspect originals must not be cropped #}
+                                <img src="{{ asset(media.thumbnailFilename) }}" alt="{{ media.title }}" width="150" height="150" class="management-media-grid__thumb" style="object-fit: cover;" draggable="false">
+                            {% else %}
+                                <div class="management-media-grid__placeholder">{{ media.filename }}</div>
+                            {% endif %}
+                            <p class="text-center small">
+                                {{ media.title }}
+                                {% if media.video %}<span class="badge bg-secondary">{{ ('label.gallery_media_type_' ~ media.mediaType)|trans({}, 'gallery') }}</span>{% endif %}
+                            </p>
+                        </a>
+
+                        {# Same labelled bar as the selection one below, the radio group spanning the whole grid: a category is represented by one media, or by a random one #}
+                        <label class="d-flex align-items-center justify-content-center gap-2 p-1 border rounded" style="cursor: pointer;">
+                            <input type="radio"
+                                class="form-check-input m-0"
+                                style="width: 1.25rem; height: 1.25rem;"
+                                name="coverMediaId"
+                                value="{{ media.id }}"
+                                aria-label="{{ ('label.gallery_cover_select'|trans({'%media%': media.title}, 'gallery')) }}"
+                                {{ category.coverMedia is same as(media) ? 'checked' : '' }}
+                                data-action="gallery-media-sort#save">
+                            <span class="small">{{ ('label.gallery_cover'|trans({}, 'gallery')) }}</span>
+                        </label>
+
+                        {# A labelled bar rather than a bare box: under a 150px thumbnail a checkbox on its own reads as an artefact of the image, and the whole bar is the click target #}
+                        <label class="d-flex align-items-center justify-content-center gap-2 p-1 border rounded" style="cursor: pointer;">
+                            <input type="checkbox"
+                                class="form-check-input m-0"
+                                style="width: 1.25rem; height: 1.25rem;"
+                                name="mediaIds[]"
+                                value="{{ media.id }}"
+                                aria-label="{{ ('label.gallery_select_media'|trans({'%media%': media.title}, 'gallery')) }}"
+                                data-gallery-media-selection-target="checkbox"
+                                data-action="gallery-media-selection#update">
+                            <span class="small">{{ ('action.select'|trans({}, 'gallery')) }}</span>
+                        </label>
+                    </div>
+                {% endfor %}
+            </div>
+        </form>
+    {% else %}
+        <p>{{ ('label.info_gallery_category_medias_empty'|trans({}, 'gallery')) }}</p>
+
+        <div class="mb-3">{{ upload_medias_button }}</div>
+    {% endif %}
 {% endblock main %}

@@ -23,6 +23,30 @@
     object-fit: cover;
 }
 
+// The bounce is UiBundle's own bounceHorizontal (see its sass/_animations.scss), reused rather than
+// declared a second time here - its animations.min.css is served on every page by its StylesheetProvider.
+// The image alone moves, not .gallery-thumb: the video badge is positioned on the wrapper and would
+// otherwise slide along with the still it marks
+.gallery-thumb img:hover {
+    animation: var(--gallery-thumb-hover-animation);
+}
+
+// UiBundle only silences the animations its own ".animation"/".block-animation" classes carry, and this
+// one is on neither - so the grid states its own opt-out
+@media (prefers-reduced-motion: reduce) {
+    .gallery-thumb img:hover {
+        animation: none;
+    }
+}
+
+// The whole photo in the same square (config "gallery-thumbnail-whole"): the grid keeps its alignment,
+// the bands left by a photo that is not square taking the background token. The file served never
+// changes - it always holds the whole photo, and "cover" above is what crops the tile
+.gallery-thumb--whole .img-thumbnail {
+    object-fit: contain;
+    background: var(--gallery-thumb-background);
+}
+
 // Marks an entry opening on a player rather than on a still - the thumbnail itself is a plain image,
 // so nothing else would tell the two apart before the visitor clicks
 .gallery-thumb--video::after {
@@ -43,12 +67,13 @@
     pointer-events: none;
 }
 
-// The breadcrumb above a photo - deliberately quieter than a row of buttons, the photo being the point of the page
+// The breadcrumb opening every page of the viewer - quieter than a row of buttons, the medias being the
+// point of the page, but read at a glance from the back of a room, which a footnote size would not be
 .gallery-breadcrumb {
     font-family: var(--font-family-body);
     font-size: var(--gallery-breadcrumb-font-size);
     color: var(--gallery-breadcrumb-color);
-    margin-bottom: 0.5rem;
+    margin-bottom: 1rem;
     text-align: center;
 }
 
@@ -57,71 +82,152 @@
     text-decoration: underline;
 }
 
-.gallery-breadcrumb__resolution {
-    margin-left: 0.5rem;
-    opacity: 0.7;
+.gallery-breadcrumb__separator {
+    margin: 0 0.4em;
 }
 
-// The photo (or the player) and the two arrows overlaying it
-.photo-container {
+// The level the page itself sits on - there is no link to follow there, and the weight is what says so
+.gallery-breadcrumb__current {
+    font-weight: 600;
+}
+
+// The media (or the player) and the two arrows overlaying it
+.gallery-media-container {
     position: relative;
     display: block;
     margin: 0 auto;
-    max-width: var(--gallery-photo-max-width);
+    max-width: var(--gallery-media-max-width);
 }
 
-.photo-container.high-res {
-    max-width: var(--gallery-photo-highres-max-width);
-}
-
-.photo-display {
+.gallery-media-display {
     display: block;
     width: 100%;
     margin: 0 auto;
     padding: 0;
-    border: var(--gallery-photo-frame-width) solid var(--gallery-photo-frame-color);
+    border: var(--gallery-media-frame-width) solid var(--gallery-media-frame-color);
 }
 
-.gallery-photo-nav {
+// The link wrapping the displayed media - it opens the lightbox rather than a page, which the cursor is
+// the only thing to announce
+.gallery-media-zoom {
+    display: block;
+    cursor: zoom-in;
+}
+
+// Shaped as a button rather than a bare glyph - the padding is tighter sideways than vertically, which
+// is what makes the standing rectangle a chevron sits in
+.gallery-media-nav {
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
     z-index: 2;
-    padding: 0.25rem 0.75rem;
+    padding: 0.3em 0.2em;
+    border-radius: var(--gallery-nav-radius);
+    background: var(--gallery-nav-background);
+    box-shadow: var(--gallery-nav-shadow);
+    font-family: var(--font-family-title);
     font-size: var(--gallery-nav-size);
-    line-height: 1;
+    line-height: 1.4;
     color: var(--gallery-nav-color);
     text-decoration: none;
     opacity: var(--gallery-nav-opacity);
-    text-shadow: var(--gallery-nav-shadow);
     transition: opacity 0.2s ease;
 }
 
-.gallery-photo-nav:hover,
-.gallery-photo-nav:focus-visible {
+// Restates color and text-decoration: a site's own a:hover would otherwise underline the arrow and
+// repaint it in the link color, these being links and not .btn
+.gallery-media-nav:hover,
+.gallery-media-nav:focus-visible {
+    color: var(--gallery-nav-hover-color);
+    text-decoration: none;
     opacity: 1;
 }
 
-.gallery-photo-nav--previous {
-    left: 0;
+.gallery-media-nav--previous {
+    left: var(--gallery-nav-offset);
 }
 
-.gallery-photo-nav--next {
+.gallery-media-nav--next {
+    right: var(--gallery-nav-offset);
+}
+
+// The credits line, under the media rather than over it - a flex row so the credits and the reserved
+// rights sit apart on one line, and wrap onto two on a narrow screen instead of running into each other
+.gallery-media-credits {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0 var(--gallery-credits-gap);
+    margin: 0.5em auto 0;
+    max-width: var(--gallery-media-max-width);
+    font-size: var(--gallery-credits-font-size);
+    color: var(--gallery-credits-color);
+}
+
+// The high resolution, over the page rather than on a page of its own. A native <dialog>, so the
+// backdrop, the escape key and the focus trap are the browser's own - the rules below only undo the
+// frame a dialog is drawn with, a media needing none
+.gallery-lightbox {
+    max-width: var(--gallery-lightbox-max-width);
+    max-height: var(--gallery-lightbox-max-height);
+    padding: 0;
+    border: 0;
+    background: transparent;
+    overflow: hidden;
+}
+
+.gallery-lightbox::backdrop {
+    background: var(--gallery-lightbox-backdrop);
+}
+
+// Capped by the dialog's own measure, so a portrait is bound by the height and a landscape by the width
+.gallery-lightbox__image {
+    display: block;
+    max-width: 100%;
+    max-height: var(--gallery-lightbox-max-height);
+    cursor: zoom-out;
+}
+
+.gallery-lightbox__close {
+    position: absolute;
+    top: 0;
     right: 0;
+    padding: 0 0.3em;
+    border: 0;
+    background: var(--gallery-lightbox-close-background);
+    color: var(--gallery-lightbox-close-color);
+    font-size: var(--gallery-lightbox-close-size);
+    line-height: 1.2;
+    cursor: pointer;
 }
 
-// The embed, framed exactly like a still so a video and a photo read as one gallery. aspect-ratio
+// The long press is the touch equivalent of the right click, and dragging the file out is the other way
+// off the page - both are blocked here, the context menu itself in gallery-media-protect.js
+.gallery-thumb img,
+.gallery-media-display,
+.gallery-lightbox__image {
+    user-select: none;
+    -webkit-touch-callout: none;
+    -webkit-user-drag: none;
+}
+
+// The embed, framed exactly like a still so a video and a still read as one gallery. aspect-ratio
 // rather than the padding-top trick: the iframe is the only child and each platform serves one shape
 .gallery-video {
     width: 100%;
-    border: var(--gallery-photo-frame-width) solid var(--gallery-photo-frame-color);
+    border: var(--gallery-media-frame-width) solid var(--gallery-media-frame-color);
 }
 
+// max-width, margin and border-radius are reset because UiBundle styles every bare iframe as a small
+// rounded card (max-width: 400px), which would crop the player inside its wrapper
 .gallery-video iframe {
     display: block;
     width: 100%;
+    max-width: 100%;
     height: 100%;
+    margin: 0;
     border: 0;
+    border-radius: 0;
 }
 
 .gallery-video--youtube {

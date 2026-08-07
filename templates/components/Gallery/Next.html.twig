@@ -1,4 +1,4 @@
-{# Discreet overlay arrow (see sass/_gallery.scss) rather than a full button - aria-label carries the meaning now that there's no visible text #}
-<a href="{{ path(route, { category: category.slug, id: previousNext.next.id }) }}"
-    class="gallery-photo-nav gallery-photo-nav--next"
-    aria-label="{{ 'label.gallery_next_photo'|trans({}, 'gallery') }}">&rsaquo;</a>
+{# Overlay arrow shaped as a button (see sass/_gallery.scss) - aria-label carries the meaning, the glyph alone having no visible text #}
+<a href="{{ path(route, { category: category.slug, slug: previousNext.next.slug }) }}"
+    class="gallery-media-nav gallery-media-nav--next"
+    aria-label="{{ 'label.gallery_next_media'|trans({}, 'gallery') }}">&gt;</a>

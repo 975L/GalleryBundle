@@ -11,7 +11,9 @@
 namespace c975L\GalleryBundle\Tests\Entity;
 
 use c975L\GalleryBundle\Entity\GalleryCategory;
-use c975L\GalleryBundle\Entity\GalleryPhoto;
+use c975L\GalleryBundle\Entity\GalleryMedia;
+use c975L\UiBundle\Contract\HasBlocksInterface;
+use c975L\UiBundle\Entity\Block;
 use PHPUnit\Framework\TestCase;
 
 class GalleryCategoryTest extends TestCase
@@ -40,41 +42,87 @@ class GalleryCategoryTest extends TestCase
         $this->assertFalse($category->isUncategorized());
     }
 
-    public function testAddPhotoSetsBothSidesOfTheRelationOnlyOnce(): void
+    public function testAddMediaSetsBothSidesOfTheRelationOnlyOnce(): void
     {
         $category = new GalleryCategory();
-        $photo = new GalleryPhoto();
+        $media = new GalleryMedia();
 
-        $category->addPhoto($photo);
-        $category->addPhoto($photo);
+        $category->addMedia($media);
+        $category->addMedia($media);
 
-        $this->assertCount(1, $category->getPhotos());
-        $this->assertSame($category, $photo->getCategory());
+        $this->assertCount(1, $category->getMedias());
+        $this->assertSame($category, $media->getCategory());
     }
 
-    public function testRemovePhotoClearsBothSidesOfTheRelation(): void
+    // What the back-office category listing shows instead of the medias themselves
+    public function testGetMediasCountCountsTheCategoryMedias(): void
     {
         $category = new GalleryCategory();
-        $photo = new GalleryPhoto();
-        $category->addPhoto($photo);
 
-        $category->removePhoto($photo);
+        $this->assertSame(0, $category->getMediasCount());
 
-        $this->assertCount(0, $category->getPhotos());
-        $this->assertNull($photo->getCategory());
+        $category->addMedia(new GalleryMedia());
+        $category->addMedia(new GalleryMedia());
+
+        $this->assertSame(2, $category->getMediasCount());
     }
 
-    // A photo already reassigned to another category must not be de-parented by the category it no longer belongs to
-    public function testRemovePhotoDoesNotClearCategoryWhenItAlreadyBelongsElsewhere(): void
+    public function testRemoveMediaClearsBothSidesOfTheRelation(): void
+    {
+        $category = new GalleryCategory();
+        $media = new GalleryMedia();
+        $category->addMedia($media);
+
+        $category->removeMedia($media);
+
+        $this->assertCount(0, $category->getMedias());
+        $this->assertNull($media->getCategory());
+    }
+
+    // A media already reassigned to another category must not be de-parented by the category it no longer belongs to
+    public function testRemoveMediaDoesNotClearCategoryWhenItAlreadyBelongsElsewhere(): void
     {
         $category = new GalleryCategory();
         $otherCategory = new GalleryCategory();
-        $photo = new GalleryPhoto();
-        $category->addPhoto($photo);
-        $photo->setCategory($otherCategory);
+        $media = new GalleryMedia();
+        $category->addMedia($media);
+        $media->setCategory($otherCategory);
 
-        $category->removePhoto($photo);
+        $category->removeMedia($media);
 
-        $this->assertSame($otherCategory, $photo->getCategory());
+        $this->assertSame($otherCategory, $media->getCategory());
+    }
+
+    // What makes a category's editorial heading composable in the back-office with UiBundle's own block kinds
+    public function testCategoryOwnsBlocks(): void
+    {
+        $category = new GalleryCategory();
+        $block = new Block();
+
+        $this->assertInstanceOf(HasBlocksInterface::class, $category);
+        $this->assertCount(0, $category->getBlocks());
+
+        $category->addBlock($block);
+        $this->assertCount(1, $category->getBlocks());
+
+        $category->addBlock($block);
+        $this->assertCount(1, $category->getBlocks(), 'the same block is never added twice');
+
+        $category->removeBlock($block);
+        $this->assertCount(0, $category->getBlocks());
+    }
+
+    // BlockRelocator renumbers what's left after a block has been moved out
+    public function testReorderBlocksRenumbersFromZero(): void
+    {
+        $category = new GalleryCategory();
+        $first = (new Block())->setPosition(3);
+        $second = (new Block())->setPosition(7);
+        $category->addBlock($first)->addBlock($second);
+
+        $category->reorderBlocks();
+
+        $this->assertSame(0, $first->getPosition());
+        $this->assertSame(1, $second->getPosition());
     }
 }

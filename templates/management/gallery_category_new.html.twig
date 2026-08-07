@@ -3,5 +3,21 @@
 {% block main %}
     <p>{{ ('label.info_gallery_category'|trans({}, 'gallery')) }}</p>
 
-    {{ parent() }}
+    {# Wraps the form rather than being carried by it: the alert the check writes into has to sit within the controller's scope, and EasyAdmin renders the form as a whole (see the "files" field in GalleryCategoryCrudController for the input it watches) #}
+    <div data-controller="gallery-upload-limits"
+        data-gallery-upload-limits-max-files-value="{{ upload_limits.maxFiles }}"
+        data-gallery-upload-limits-max-file-size-value="{{ upload_limits.maxFileSize }}"
+        data-gallery-upload-limits-max-batch-size-value="{{ upload_limits.maxBatchSize }}"
+        data-gallery-upload-limits-files-message-value="{{ 'label.gallery_upload_too_many_files'|trans({}, 'gallery') }}"
+        data-gallery-upload-limits-size-message-value="{{ 'label.gallery_upload_file_too_large'|trans({}, 'gallery') }}"
+        data-gallery-upload-limits-batch-message-value="{{ 'label.gallery_upload_batch_too_large'|trans({}, 'gallery') }}">
+
+        {# Filled the moment files are picked, so a batch php would truncate is seen before it is sent rather than reported as a success over part of it #}
+        <div class="alert alert-danger"
+            data-gallery-upload-limits-target="message"
+            role="alert"
+            hidden></div>
+
+        {{ parent() }}
+    </div>
 {% endblock main %}

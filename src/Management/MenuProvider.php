@@ -11,9 +11,9 @@
 namespace c975L\GalleryBundle\Management;
 
 use c975L\ConfigBundle\Management\MenuProviderInterface;
-use c975L\GalleryBundle\Controller\Management\GalleryPhotoCrudController;
+use c975L\GalleryBundle\Controller\Management\GalleryCategoryCrudController;
 
-// Only the photo CRUD is listed - category management (GalleryCategoryCrudController) is reachable from its toolbar instead of getting its own sidebar entry, so the two screens read as one linked feature rather than two unrelated ones
+// One entry for the whole feature: it opens the categories, which are the site's galleries, each holding its own medias and videos (see GalleryCategoryCrudController) - the media CRUD edits one media at a time and has nothing to list on its own
 class MenuProvider implements MenuProviderInterface
 {
     public function getMenuSection(): array
@@ -27,9 +27,9 @@ class MenuProvider implements MenuProviderInterface
     public function getMenus(): array
     {
         return [
-            'gallery_photo' => [
-                'controller' => GalleryPhotoCrudController::class,
-                'label' => 'label.gallery_photos',
+            'gallery' => [
+                'controller' => GalleryCategoryCrudController::class,
+                'label' => 'label.gallery',
                 'translation_domain' => 'gallery',
                 'icon' => 'fas fa-images',
             ],

@@ -8,10 +8,45 @@ services:
         resource: '../src/'
         exclude: '../src/Entity'
 
+    # One class, two registries: the public pages' controllers and the EasyAdmin-only ones
     c975L\GalleryBundle\Service\ScriptProvider:
         tags:
             - { name: 'ui.script', priority: 100 }
+            - { name: 'ui.admin_script' }
 
     c975L\GalleryBundle\Service\StylesheetProvider:
         tags:
             - { name: 'ui.stylesheet', priority: 100 }
+
+    # Block kinds registered in UiBundle
+    # cacheable: false on both - their templates resolve their content live via gallery_block_*()
+    # (GalleryBlockExtension), querying GalleryCategory/GalleryMedia; those entities aren't watched by
+    # BlockCacheInvalidationListener, so caching by the block's own id would go stale as soon as a media
+    # is added or a category renamed elsewhere, with nothing to invalidate it
+    gallery.block.categories:
+        class: stdClass
+        tags:
+            - name: ui.block
+              kind: gallery_categories
+              label: 'label.block_gallery_categories'
+              description: 'label.block_gallery_categories_description'
+              translation_domain: 'gallery'
+              category: 'label.category_gallery'
+              form: 'c975L\GalleryBundle\Form\Block\GalleryCategoriesBlockType'
+              template: '@c975LGallery/blocks/Categories.html.twig'
+              pickable: true
+              cacheable: false
+
+    gallery.block.medias:
+        class: stdClass
+        tags:
+            - name: ui.block
+              kind: gallery_medias
+              label: 'label.block_gallery_medias'
+              description: 'label.block_gallery_medias_description'
+              translation_domain: 'gallery'
+              category: 'label.category_gallery'
+              form: 'c975L\GalleryBundle\Form\Block\GalleryMediasBlockType'
+              template: '@c975LGallery/blocks/Medias.html.twig'
+              pickable: true
+              cacheable: false

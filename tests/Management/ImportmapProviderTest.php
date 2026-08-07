@@ -15,9 +15,15 @@ use PHPUnit\Framework\TestCase;
 
 class ImportmapProviderTest extends TestCase
 {
-    public function testGetAdminImportmapEntriesReturnsNone(): void
+    // The upload screen's own controller, loaded on the EasyAdmin dashboard only - without this entry the browser can't resolve the module and the batch check never runs
+    public function testGetAdminImportmapEntriesReturnsTheAdminControllersEntrypoint(): void
     {
-        $this->assertSame([], (new ImportmapProvider())->getAdminImportmapEntries());
+        $this->assertSame([
+            '@c975l/gallery-bundle/controllers-admin.js' => [
+                'path' => 'assets/controllers-admin.js',
+                'entrypoint' => true,
+            ],
+        ], (new ImportmapProvider())->getAdminImportmapEntries());
     }
 
     public function testGetImportmapEntriesReturnsControllersEntrypoint(): void

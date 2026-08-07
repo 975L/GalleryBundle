@@ -1,34 +1,62 @@
 /* TOKEN DEFAULTS */
 
-// The gallery's own shape tokens, and only those: colors and fonts stay admin-editable in the "theme"
-// config group, read here through UiBundle's own --primary/--text/--white/--font-family-* (see its
-// sass/_tokens.scss). A site retunes what is below in its assets/styles/themes/gallery.css
+// The gallery's own tokens. Its shapes are set here and retuned by a site in its assets/styles/themes/
+// gallery.css; its colors read a "--c975l-color-gallery-*" first, so they are admin-editable in the
+// "theme" config group like every other color of the site (see config/configs.json), and fall back on
+// UiBundle's own --text/--white/--black/--background (see its sass/_tokens.scss) when left empty.
+// Cascade: this sheet, then the compiled site-theme.css holding the admin's values, then the site's own
+// gallery.css - so a token uncommented there wins over the back-office, as everywhere else
 :root {
-    /* Square side of a thumbnail, in the category grid as in the photo grid */
+    /* Square side of a thumbnail, in the category grid as in the media grid */
     --gallery-thumb-size: 150px;
     --gallery-grid-gap: 1em;
 
-    /* Measure of the two photo pages - the stored (medium) view, then the high-resolution one */
-    --gallery-photo-max-width: 800px;
-    --gallery-photo-highres-max-width: 1200px;
+    /* How a thumbnail answers a pointer - UiBundle's own "bounce-horizontal", so a grid entry moves like
+       the rest of the site does. Set to "none" from a site's gallery.css to leave the grid still */
+    --gallery-thumb-hover-animation: bounceHorizontal 0.5s infinite ease-in-out;
 
-    /* The passe-partout framing a displayed photo, a print's own mount */
-    --gallery-photo-frame-width: 10px;
-    --gallery-photo-frame-color: var(--white);
+    /* What fills the square around a whole-photo thumbnail (config "gallery-thumbnail-whole"), a photo
+       that is not square never filling it entirely - transparent, the page's own background shows */
+    --gallery-thumb-background: transparent;
 
-    /* The discreet overlay arrows, sitting on the photo itself rather than under it */
-    --gallery-nav-size: 2.5rem;
-    --gallery-nav-color: var(--white);
-    --gallery-nav-opacity: 0.35;
-    --gallery-nav-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+    /* Measure of the media page - the stored (medium) file, the only one a page ever shows */
+    --gallery-media-max-width: 800px;
 
-    /* The breadcrumb above a photo - toward the background rather than a flat grey, so it stays legible on a dark page too */
-    --gallery-breadcrumb-font-size: 0.9rem;
-    --gallery-breadcrumb-color: color-mix(in srgb, var(--text) 60%, var(--background));
+    /* The lightbox the high resolution opens in, over the page */
+    --gallery-lightbox-max-width: 95vw;
+    --gallery-lightbox-max-height: 95vh;
+    --gallery-lightbox-backdrop: var(--c975l-color-gallery-backdrop, color-mix(in srgb, var(--black) 90%, transparent));
+    --gallery-lightbox-close-size: 2.5rem;
+    --gallery-lightbox-close-color: var(--c975l-color-gallery-lightbox-close, var(--white));
+    --gallery-lightbox-close-background: var(--c975l-color-gallery-lightbox-close-background, color-mix(in srgb, var(--black) 55%, transparent));
+
+    /* The passe-partout framing a displayed media, a print's own mount */
+    --gallery-media-frame-width: 10px;
+    --gallery-media-frame-color: var(--c975l-color-gallery-frame, var(--white));
+
+    /* The overlay arrows, sitting on the media itself rather than under it - a button's shape, so they
+       stay findable on a media of any tone */
+    --gallery-nav-size: 3rem;
+    --gallery-nav-offset: 10px;
+    --gallery-nav-radius: 5px;
+    --gallery-nav-color: var(--c975l-color-gallery-nav, var(--white));
+    --gallery-nav-hover-color: var(--c975l-color-gallery-nav-hover, var(--gallery-nav-color));
+    --gallery-nav-background: var(--c975l-color-gallery-nav-background, color-mix(in srgb, var(--white) 80%, var(--black)));
+    --gallery-nav-opacity: 0.7;
+    --gallery-nav-shadow: 0 5px 10px 0 rgba(0, 0, 0, 0.5);
+
+    /* The breadcrumb opening every page of the viewer - toward the background rather than a flat grey, so it stays legible on a dark page too */
+    --gallery-breadcrumb-font-size: 1.1rem;
+    --gallery-breadcrumb-color: var(--c975l-color-gallery-breadcrumb, color-mix(in srgb, var(--text) 60%, var(--background)));
+
+    /* The credits and reserved rights said under a media - toward the background like the breadcrumb, a mention rather than a caption */
+    --gallery-credits-font-size: 0.9rem;
+    --gallery-credits-gap: 1em;
+    --gallery-credits-color: var(--c975l-color-gallery-credits, color-mix(in srgb, var(--text) 60%, var(--background)));
 
     /* The badge marking a grid entry that opens on a player instead of a still */
-    --gallery-video-badge-background: color-mix(in srgb, var(--black) 55%, transparent);
-    --gallery-video-badge-color: var(--white);
+    --gallery-video-badge-background: var(--c975l-color-gallery-badge, color-mix(in srgb, var(--black) 55%, transparent));
+    --gallery-video-badge-color: var(--c975l-color-gallery-badge-text, var(--white));
 
     /* Aspect ratios the two platforms serve their players in - landscape and portrait */
     --gallery-video-ratio-youtube: 16 / 9;

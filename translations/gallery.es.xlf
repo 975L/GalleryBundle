@@ -2,13 +2,85 @@
 <xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
     <file source-language="en" target-language="es" datatype="plaintext" original="gallery.en.xlf">
         <body>
+            <trans-unit id="kH80qpd">
+                <source>action.apply_credits</source>
+                <target>Aplicar los créditos</target>
+            </trans-unit>
+            <trans-unit id="gyW_3Ye">
+                <source>action.apply_rights_reserved</source>
+                <target>Aplicar los derechos reservados</target>
+            </trans-unit>
+            <trans-unit id="GQsNLOF">
+                <source>action.delete_selection</source>
+                <target>Eliminar la selección</target>
+            </trans-unit>
             <trans-unit id="DYrEVzQ">
                 <source>action.export_selection</source>
                 <target>Exportar la selección</target>
             </trans-unit>
-            <trans-unit id="ZeoyzAJ">
-                <source>label.alt_text</source>
-                <target>Texto Alternativo</target>
+            <trans-unit id="CN88tnV">
+                <source>action.move</source>
+                <target>Mover</target>
+            </trans-unit>
+            <trans-unit id="egBlInb">
+                <source>action.select</source>
+                <target>Seleccionar</target>
+            </trans-unit>
+            <trans-unit id="EvJSKCG">
+                <source>action.select_all</source>
+                <target>Seleccionar todo</target>
+            </trans-unit>
+            <trans-unit id="tu7Zw96">
+                <source>confirm.media_slug_change</source>
+                <target>¿Modificar el slug cambiará la URL pública del medio, se creará una redirección automáticamente. Continuar?</target>
+            </trans-unit>
+            <trans-unit id="RYfKbzg">
+                <source>confirm.title_change</source>
+                <target>Modificar el título cambiará la URL de la categoría (slug), se establecerá automáticamente una redirección. ¿Continuar?</target>
+            </trans-unit>
+            <trans-unit id="xzaPeIL">
+                <source>label.block_category</source>
+                <target>Categoría</target>
+            </trans-unit>
+            <trans-unit id="Ebmb53l">
+                <source>label.block_category_placeholder</source>
+                <target>Elegir una categoría</target>
+            </trans-unit>
+            <trans-unit id="M1RweXW">
+                <source>label.block_display_more</source>
+                <target>Mostrar el enlace a la categoría</target>
+            </trans-unit>
+            <trans-unit id="dPqltUo">
+                <source>label.block_gallery_categories</source>
+                <target>Galería: categorías</target>
+            </trans-unit>
+            <trans-unit id="P0e2WhL">
+                <source>label.block_gallery_categories_description</source>
+                <target>Cuadrícula de las categorías de la galería, una miniatura por categoría.</target>
+            </trans-unit>
+            <trans-unit id="FW14vqs">
+                <source>label.block_gallery_medias</source>
+                <target>Galería: medios</target>
+            </trans-unit>
+            <trans-unit id="6tJoQoy">
+                <source>label.block_gallery_medias_description</source>
+                <target>Cuadrícula de las fotos y vídeos de una categoría.</target>
+            </trans-unit>
+            <trans-unit id="AvLaFXa">
+                <source>label.block_max_categories</source>
+                <target>Número de categorías (vacío = todas)</target>
+            </trans-unit>
+            <trans-unit id="9L2V5gd">
+                <source>label.block_max_medias</source>
+                <target>Número de medios (vacío = todos)</target>
+            </trans-unit>
+            <trans-unit id="LUKicrM">
+                <source>label.block_random</source>
+                <target>Sacarlos al azar</target>
+            </trans-unit>
+            <trans-unit id="uq8VpqZ">
+                <source>label.category_gallery</source>
+                <target>Galería</target>
             </trans-unit>
             <trans-unit id="efSspGE">
                 <source>label.credits</source>
@@ -18,13 +90,37 @@
                 <source>label.file</source>
                 <target>Archivo</target>
             </trans-unit>
+            <trans-unit id="xIT8oRk">
+                <source>label.gallery</source>
+                <target>Galería</target>
+            </trans-unit>
             <trans-unit id="dPUFmj4">
                 <source>label.gallery_batch_credits_help</source>
-                <target>Se aplica a todas las fotos de este lote</target>
+                <target>Se aplica a todos los medios de este lote</target>
             </trans-unit>
-            <trans-unit id="9YDASxA">
-                <source>label.gallery_batch_media_type_help</source>
-                <target>Aplicado a todas las fotos de este envío</target>
+            <trans-unit id="gYFo864">
+                <source>label.gallery_batch_files_help</source>
+                <target>Seleccione todos los archivos de una vez — hasta %files% archivos, %size% MB cada uno, %total% MB en total</target>
+            </trans-unit>
+            <trans-unit id="TZOvqdr">
+                <source>label.gallery_batch_keep_originals_help</source>
+                <target>Los archivos originales se conservan fuera del sitio, tal como se enviaron</target>
+            </trans-unit>
+            <trans-unit id="TBocwS7">
+                <source>label.gallery_batch_title_root_help</source>
+                <target>Título común numerado para cada medio de este envío. Vacío, cada título retoma el nombre del archivo.</target>
+            </trans-unit>
+            <trans-unit id="RAF21QQ">
+                <source>label.gallery_batch_watermark_help</source>
+                <target>Estampa la firma del sitio en una esquina de cada foto del lote. Las dos firmas (para fondo claro y fondo oscuro) se suben desde Gráficos del sitio.</target>
+            </trans-unit>
+            <trans-unit id="W99Hwqo">
+                <source>label.gallery_batch_watermark_position_help</source>
+                <target>Dejar vacío para usar la esquina definida para todo el sitio.</target>
+            </trans-unit>
+            <trans-unit id="wKQ8Ao1">
+                <source>label.gallery_breadcrumb</source>
+                <target>Ruta de navegación</target>
             </trans-unit>
             <trans-unit id="KeejqV_">
                 <source>label.gallery_categories</source>
@@ -34,6 +130,26 @@
                 <source>label.gallery_category</source>
                 <target>Categoría</target>
             </trans-unit>
+            <trans-unit id="PPb5rpo">
+                <source>label.gallery_close</source>
+                <target>Cerrar</target>
+            </trans-unit>
+            <trans-unit id="l789a03">
+                <source>label.gallery_cover</source>
+                <target>Portada</target>
+            </trans-unit>
+            <trans-unit id="NSzMI4q">
+                <source>label.gallery_cover_random</source>
+                <target>Portada aleatoria</target>
+            </trans-unit>
+            <trans-unit id="c2twKhn">
+                <source>label.gallery_cover_select</source>
+                <target>Usar %media% como portada</target>
+            </trans-unit>
+            <trans-unit id="piIsfVu">
+                <source>label.gallery_credits</source>
+                <target>Créditos: %credits%</target>
+            </trans-unit>
             <trans-unit id="jqYQiJ1">
                 <source>label.gallery_external_id</source>
                 <target>Identificador del vídeo</target>
@@ -42,13 +158,29 @@
                 <source>label.gallery_external_id_help</source>
                 <target>El identificador que la plataforma da al vídeo, nada más - la URL se deduce de él</target>
             </trans-unit>
+            <trans-unit id="jOBEUyc">
+                <source>label.gallery_files</source>
+                <target>Archivos</target>
+            </trans-unit>
             <trans-unit id="3xeb7Jf">
                 <source>label.gallery_home</source>
                 <target>Galería</target>
             </trans-unit>
-            <trans-unit id=".Xke2cq">
-                <source>label.gallery_manage_categories</source>
-                <target>Gestionar categorías</target>
+            <trans-unit id="t8zInxp">
+                <source>label.gallery_keep_originals</source>
+                <target>Conservar los originales</target>
+            </trans-unit>
+            <trans-unit id="HdrTU43">
+                <source>label.gallery_media</source>
+                <target>Medio</target>
+            </trans-unit>
+            <trans-unit id="HEqsH6R">
+                <source>label.gallery_media_slug_help</source>
+                <target>Forma la URL pública del medio. Fijado una vez al enviarlo y ya no sigue al título: modificarlo aquí crea una redirección desde la URL anterior. Vaciado, se reconstruye a partir del título.</target>
+            </trans-unit>
+            <trans-unit id="HTN3j6r">
+                <source>label.gallery_media_title_help</source>
+                <target>Sirve de título de la página y de texto alternativo de la imagen. Modificarlo no cambia la URL del medio.</target>
             </trans-unit>
             <trans-unit id="idlCeLh">
                 <source>label.gallery_media_type</source>
@@ -66,57 +198,161 @@
                 <source>label.gallery_media_type_youtube</source>
                 <target>YouTube</target>
             </trans-unit>
-            <trans-unit id="0QkaIdu">
-                <source>label.gallery_next_photo</source>
-                <target>Foto siguiente</target>
+            <trans-unit id="xGcRomG">
+                <source>label.gallery_medias</source>
+                <target>Medios</target>
+            </trans-unit>
+            <trans-unit id="WHkdhcj">
+                <source>label.gallery_medias_delete_confirm</source>
+                <target>¿Eliminar definitivamente los medios seleccionados y sus archivos?</target>
+            </trans-unit>
+            <trans-unit id="1iptswo">
+                <source>label.gallery_medias_deleted</source>
+                <target>Medios eliminados (%count%)</target>
+            </trans-unit>
+            <trans-unit id="ZKKrfjg">
+                <source>label.gallery_medias_layout_failed</source>
+                <target>No se han podido guardar el orden y la portada</target>
+            </trans-unit>
+            <trans-unit id="bX31DTF">
+                <source>label.gallery_medias_updated</source>
+                <target>Medios modificados (%count%)</target>
+            </trans-unit>
+            <trans-unit id="FcTlx.S">
+                <source>label.gallery_medias_uploaded</source>
+                <target>Medios añadidos</target>
+            </trans-unit>
+            <trans-unit id="XXF8ySm">
+                <source>label.gallery_next_media</source>
+                <target>Medio siguiente</target>
             </trans-unit>
             <trans-unit id="OCO_Wst">
                 <source>label.gallery_page_title</source>
-                <target>Galería de fotos</target>
+                <target>Galería</target>
             </trans-unit>
-            <trans-unit id="IBD0D56">
-                <source>label.gallery_photo</source>
-                <target>Foto</target>
+            <trans-unit id="to8DKkH">
+                <source>label.gallery_previous_media</source>
+                <target>Medio anterior</target>
             </trans-unit>
-            <trans-unit id="H7qi5pN">
-                <source>label.gallery_photos</source>
-                <target>Fotos</target>
+            <trans-unit id="_C7uCBW">
+                <source>label.gallery_rights_reserved</source>
+                <target>Todos los derechos reservados</target>
             </trans-unit>
-            <trans-unit id="0Z7Csw.">
-                <source>label.gallery_photos_uploaded</source>
-                <target>Fotos añadidas</target>
+            <trans-unit id="0jFJ6cD">
+                <source>label.gallery_see_high_resolution</source>
+                <target>Ver en alta resolución</target>
             </trans-unit>
-            <trans-unit id="9KzPTpF">
-                <source>label.gallery_previous_photo</source>
-                <target>Foto anterior</target>
+            <trans-unit id="zFS89X0">
+                <source>label.gallery_select_media</source>
+                <target>Seleccionar %media%</target>
             </trans-unit>
-            <trans-unit id="1ciaFx5">
-                <source>label.gallery_resolution_high</source>
-                <target>Alta resolución</target>
+            <trans-unit id="wvsSdt9">
+                <source>label.gallery_showcase_categories</source>
+                <target>Galería: categorías</target>
             </trans-unit>
-            <trans-unit id="A9DfAQb">
-                <source>label.gallery_resolution_medium</source>
-                <target>Resolución estándar</target>
+            <trans-unit id="NBLgQGC">
+                <source>label.gallery_showcase_categories_description</source>
+                <target>Las categorías de la galería por defecto, una miniatura cada una.</target>
+            </trans-unit>
+            <trans-unit id="jO6npyN">
+                <source>label.gallery_showcase_category_title</source>
+                <target>Categoría de ejemplo %number%</target>
+            </trans-unit>
+            <trans-unit id="E.XyL4.">
+                <source>label.gallery_showcase_media_title</source>
+                <target>Medio de ejemplo %number%</target>
+            </trans-unit>
+            <trans-unit id="nxfeIqD">
+                <source>label.gallery_showcase_medias</source>
+                <target>Galería: medios</target>
+            </trans-unit>
+            <trans-unit id="RoY17wP">
+                <source>label.gallery_showcase_medias_description</source>
+                <target>Las fotos y vídeos de una categoría, en la misma cuadrícula.</target>
+            </trans-unit>
+            <trans-unit id="K_aPgsR">
+                <source>label.gallery_title_root</source>
+                <target>Raíz de los títulos</target>
             </trans-unit>
             <trans-unit id="90B21eD">
                 <source>label.gallery_uncategorized</source>
                 <target>Sin clasificar</target>
             </trans-unit>
-            <trans-unit id="aCkK8DD">
-                <source>label.gallery_upload_photos</source>
-                <target>Añadir fotos</target>
+            <trans-unit id="ro.0LLT">
+                <source>label.gallery_upload_batch_refused</source>
+                <target>El lote superaba la capacidad del servidor y no se subió nada. Añada los archivos en lotes más pequeños o aumente post_max_size.</target>
+            </trans-unit>
+            <trans-unit id="GppscvJ">
+                <source>label.gallery_upload_batch_too_large</source>
+                <target>La selección pesa %size% MB, el límite es de %limit% MB en total.</target>
+            </trans-unit>
+            <trans-unit id="VE8m6HQ">
+                <source>label.gallery_upload_file_too_large</source>
+                <target>%name% pesa %size% MB, el límite es de %limit% MB por archivo.</target>
+            </trans-unit>
+            <trans-unit id="iJiINmC">
+                <source>label.gallery_upload_medias</source>
+                <target>Añadir medios</target>
+            </trans-unit>
+            <trans-unit id="rTovff5">
+                <source>label.gallery_upload_medias_to</source>
+                <target>Añadir medios a «%category%»</target>
+            </trans-unit>
+            <trans-unit id="e3pXXku">
+                <source>label.gallery_upload_too_many_files</source>
+                <target>%count% archivos seleccionados, %limit% como máximo a la vez — añada el resto en un segundo envío.</target>
             </trans-unit>
             <trans-unit id="u7e3TST">
                 <source>label.gallery_video</source>
                 <target>Vídeo</target>
             </trans-unit>
+            <trans-unit id="w8G1sA.">
+                <source>label.gallery_watermark</source>
+                <target>Estampar la marca de agua</target>
+            </trans-unit>
+            <trans-unit id="iq.lrBZ">
+                <source>label.gallery_watermark_bottom_left</source>
+                <target>Abajo a la izquierda</target>
+            </trans-unit>
+            <trans-unit id="vHce3i_">
+                <source>label.gallery_watermark_bottom_right</source>
+                <target>Abajo a la derecha</target>
+            </trans-unit>
+            <trans-unit id="4nxV9SN">
+                <source>label.gallery_watermark_position</source>
+                <target>Esquina de la marca de agua</target>
+            </trans-unit>
+            <trans-unit id="jdhftK7">
+                <source>label.gallery_watermark_position_default</source>
+                <target>Esquina definida para el sitio</target>
+            </trans-unit>
+            <trans-unit id="Hve.7_b">
+                <source>label.gallery_watermark_top_left</source>
+                <target>Arriba a la izquierda</target>
+            </trans-unit>
+            <trans-unit id="JvOLpdi">
+                <source>label.gallery_watermark_top_right</source>
+                <target>Arriba a la derecha</target>
+            </trans-unit>
             <trans-unit id="IJ3OllR">
                 <source>label.info_gallery_category</source>
-                <target>Categorías de las fotos. "Sin clasificar" es de reserva y no se puede eliminar. Cree, modifique o elimine una categoría, y reordene su posición de visualización.</target>
+                <target>Categorías de los medios, ellas son la galería del sitio. "Sin clasificar" es de reserva y no se puede eliminar. Cree, modifique o elimine una categoría, reordene su posición de visualización y añádale medios.</target>
             </trans-unit>
-            <trans-unit id="1H5YyI.">
-                <source>label.info_gallery_photo</source>
-                <target>Fotos de la galería, todas las categorías. Sin categoría → "Sin clasificar". Modifique la leyenda, los créditos o la posición de una foto; añadir fotos solo se hace desde la pantalla de subida.</target>
+            <trans-unit id="MN07kow">
+                <source>label.info_gallery_category_medias</source>
+                <target>Medios de la categoría, haga clic en uno de ellos para cambiar su archivo, leyenda o créditos, o marque varios para eliminarlos de una vez. Arrástrelos para reordenarlos y elija el que representa la categoría, ambos se guardan al instante.</target>
+            </trans-unit>
+            <trans-unit id="w9lrEZ2">
+                <source>label.info_gallery_category_medias_empty</source>
+                <target>Esta categoría aún no tiene ningún medio.</target>
+            </trans-unit>
+            <trans-unit id="p9AVN3s">
+                <source>label.info_gallery_media</source>
+                <target>Cambie el archivo, la leyenda, los créditos, el tipo o la posición de este medio, o muévalo a otra categoría.</target>
+            </trans-unit>
+            <trans-unit id="8u5Nm4A">
+                <source>label.info_gallery_watermark</source>
+                <target>Filigrana: al añadir un lote de medios, las fotos pueden llevar la firma del sitio, estampada en los píxeles de cada tamaño generado. Las dos firmas (fondo claro y fondo oscuro) se suben desde Gráficos del sitio; la esquina, la anchura y el margen se ajustan en Configuración, grupo General (Filigrana - Esquina, Anchura, Margen).</target>
             </trans-unit>
             <trans-unit id="Rfi.GLm">
                 <source>label.position</source>
@@ -132,7 +368,7 @@
             </trans-unit>
             <trans-unit id="dtyJZly">
                 <source>label.slug_help</source>
-                <target>Usado en la URL</target>
+                <target>Idealmente cercano al título (sin acentos, mayúsculas ni espacios). Editable con el candado; una redirección conserva el SEO.</target>
             </trans-unit>
             <trans-unit id=".SmM2FN">
                 <source>label.thumbnail</source>

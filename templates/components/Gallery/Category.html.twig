@@ -1,10 +1,12 @@
-{# Falls back to a random photo rather than category.coverPhoto alone - that field is only ever set on import, so a manually created category would otherwise never show a thumbnail (and never be reachable) on the public index - same fallback as the admin's _gallery_category_thumbnail.html.twig #}
-{% set coverPhoto = category.coverPhoto ?: (category.photos|length > 0 ? random(category.photos) : null) %}
-{% if coverPhoto %}
-    <div class="gallery-thumb">
+{# Falls back to a random media rather than category.coverMedia alone - a category is left on no cover at all as long as none is picked on its edit screen (see GalleryCategoryCrudController::saveMediasLayout()), and it would otherwise never show a thumbnail (nor ever be reachable) on the public index - same fallback as the admin's _gallery_category_thumbnail.html.twig #}
+{% set coverMedia = category.coverMedia ?: (category.medias|length > 0 ? random(category.medias) : null) %}
+{# Framed like the medias' own grid, the two reading as one gallery - see Media.html.twig #}
+{% set whole = config('gallery-thumbnail-whole') %}
+{% if coverMedia %}
+    <div class="gallery-thumb{{ whole ? ' gallery-thumb--whole' : '' }}">
         <twig:c975LUi:Image:Link
-            label="{{ category.title }} ({{ category.photos|length }})"
-            src="{{ coverPhoto.thumbnailFilename }}"
+            label="{{ category.title }} ({{ category.medias|length }})"
+            src="{{ coverMedia.thumbnailFilename }}"
             url="{{ path('gallery_category', { category: category.slug }) }}"
             class="img-thumbnail" alt="{{ category.title }}" width="150" height="150"/>
     </div>

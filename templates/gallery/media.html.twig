@@ -1,0 +1,29 @@
+{% extends 'layout.html.twig' %}
+
+{# Defines specific variables #}
+{% set title = 'label.gallery_media'|trans({}, 'gallery') ~ ' - ' ~ (media.title is not empty ? media.title : category.title) %}
+
+{# Editor-only: the hover button UiBundle already draws over an editable block, reused here as is - its "blockEditOverlay" controller is registered on sight of the attribute (see UiBundle's controllers.js) and the button itself is appended to <body>, so the media protection below never sees it #}
+{% set editUrl = is_granted(config('site-role-editor')) ? gallery_media_edit_url(media) : null %}
+
+{% block content %}
+    <twig:c975LGallery:Gallery:Navigation category="{{ category }}" current="{{ (media.video ? 'label.gallery_video' : 'label.gallery_media')|trans({}, 'gallery') }}"/>
+    {# Right click and drag are blocked here too, the lightbox being a child of this container #}
+    <div class="gallery-media-container"
+        data-controller="gallery-media-preload gallery-lightbox gallery-media-protect{{ editUrl ? ' blockEditOverlay' : '' }}"
+        data-action="contextmenu->gallery-media-protect#block dragstart->gallery-media-protect#block"
+        {% if editUrl %}data-edit-label="{{ 'label.edit'|trans({}, 'ui') }}" data-block-edit-url="{{ editUrl }}"{% endif %}
+        data-previous-url="{{ asset(previousNext.previous.filename) }}"
+        data-next-url="{{ asset(previousNext.next.filename) }}">
+        {# A video has no high resolution to open, so its still gives way to the player itself #}
+        {% if media.video %}
+            <twig:c975LGallery:Gallery:Video media="{{ media }}"/>
+        {% else %}
+            <twig:c975LGallery:Gallery:Lightbox media="{{ media }}"/>
+        {% endif %}
+        <twig:c975LGallery:Gallery:Previous category="{{ category }}" previousNext="{{ previousNext }}" route="gallery_media"/>
+        <twig:c975LGallery:Gallery:Next category="{{ category }}" previousNext="{{ previousNext }}" route="gallery_media"/>
+    </div>
+    {# Outside the container, the arrows overlaying it being positioned against it - under the media, as under a print #}
+    <twig:c975LGallery:Gallery:Credits media="{{ media }}"/>
+{% endblock %}

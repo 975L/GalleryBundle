@@ -1,0 +1,111 @@
+<?xml version="1.0"?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+    <file source-language="en" target-language="fr" datatype="plaintext" original="site_config.fr.xlf">
+        <body>
+            <trans-unit id="a033O9O">
+                <source>description.gallery_route_prefix</source>
+                <target>Premier segment des URL publiques de la galerie, ex. "gallery" pour /gallery/ma-categorie. La modification est immédiate, mais les anciennes URL renvoient une page introuvable : prévoyez une redirection si elles sont indexées. Vide, le préfixe "gallery" est appliqué.</target>
+            </trans-unit>
+            <trans-unit id="GJDJnRp">
+                <source>description.gallery_thumbnail_whole</source>
+                <target>Désactivé (défaut) : la vignette remplit son carré, recadrée au centre, ce qui masque les bords d'une photo qui n'est pas carrée. Activé : la photo entière tient dans le carré, les bandes laissées autour prenant la couleur du token --gallery-thumb-background. Le fichier vignette contient la photo entière dans les deux cas, seul l'affichage change : la bascule est immédiate et ne régénère rien.</target>
+            </trans-unit>
+            <trans-unit id="fZWM8EJ">
+                <source>description.theme_color_gallery_backdrop</source>
+                <target>Couleur voilant la page derrière la haute résolution ouverte. Vide : color-mix(in srgb, var(--black) 90%, transparent) s'applique. Une couleur CSS : hexadécimal avec son # (#ff0000), rgb() ou nom.</target>
+            </trans-unit>
+            <trans-unit id="yqacMzE">
+                <source>description.theme_color_gallery_badge</source>
+                <target>Fond de la pastille marquant une vignette qui ouvre un lecteur vidéo. Vide : color-mix(in srgb, var(--black) 55%, transparent) s'applique. Une couleur CSS : hexadécimal avec son # (#ff0000), rgb() ou nom.</target>
+            </trans-unit>
+            <trans-unit id="My2F0YV">
+                <source>description.theme_color_gallery_badge_text</source>
+                <target>Couleur du triangle de la pastille vidéo. Vide : var(--white), le blanc du thème s'applique. Une couleur CSS : hexadécimal avec son # (#ff0000), rgb() ou nom.</target>
+            </trans-unit>
+            <trans-unit id="_hsufUp">
+                <source>description.theme_color_gallery_breadcrumb</source>
+                <target>Couleur du fil d'Ariane ouvrant chaque page de la galerie. Vide : color-mix(in srgb, var(--text) 60%, var(--background)) s'applique. Une couleur CSS : hexadécimal avec son # (#ff0000), rgb() ou nom.</target>
+            </trans-unit>
+            <trans-unit id="MFMCksC">
+                <source>description.theme_color_gallery_credits</source>
+                <target>Couleur des crédits et des droits réservés affichés sous un média. Vide : color-mix(in srgb, var(--text) 60%, var(--background)) s'applique. Une couleur CSS : hexadécimal avec son # (#ff0000), rgb() ou nom.</target>
+            </trans-unit>
+            <trans-unit id="t7g1Sy9">
+                <source>description.theme_color_gallery_frame</source>
+                <target>Couleur du passe-partout encadrant un média affiché. Vide : var(--white), le blanc du thème s'applique. Une couleur CSS : hexadécimal avec son # (#ff0000), rgb() ou nom.</target>
+            </trans-unit>
+            <trans-unit id="Cu8Z9pe">
+                <source>description.theme_color_gallery_lightbox_close</source>
+                <target>Couleur de la croix fermant la lightbox. Vide : var(--white), le blanc du thème s'applique. Une couleur CSS : hexadécimal avec son # (#ff0000), rgb() ou nom.</target>
+            </trans-unit>
+            <trans-unit id="5CS18Ba">
+                <source>description.theme_color_gallery_lightbox_close_background</source>
+                <target>Fond de la croix fermant la lightbox. Vide : color-mix(in srgb, var(--black) 55%, transparent) s'applique. Une couleur CSS : hexadécimal avec son # (#ff0000), rgb() ou nom.</target>
+            </trans-unit>
+            <trans-unit id="Yy_JQfE">
+                <source>description.theme_color_gallery_nav</source>
+                <target>Couleur du chevron des flèches précédent/suivant posées sur le média. Vide : var(--white), le blanc du thème s'applique. Une couleur CSS : hexadécimal avec son # (#ff0000), rgb() ou nom.</target>
+            </trans-unit>
+            <trans-unit id="Nd0mt8u">
+                <source>description.theme_color_gallery_nav_background</source>
+                <target>Fond du bouton des flèches précédent/suivant. Vide : color-mix(in srgb, var(--white) 80%, var(--black)) s'applique. Une couleur CSS : hexadécimal avec son # (#ff0000), rgb() ou nom.</target>
+            </trans-unit>
+            <trans-unit id="4Nkzy4F">
+                <source>description.theme_color_gallery_nav_hover</source>
+                <target>Couleur du chevron au survol et au focus clavier. Vide : var(--gallery-nav-color), la couleur des flèches s'applique. Une couleur CSS : hexadécimal avec son # (#ff0000), rgb() ou nom.</target>
+            </trans-unit>
+            <trans-unit id="lbaVu72">
+                <source>label.gallery_route_prefix</source>
+                <target>Préfixe des URL de la galerie</target>
+            </trans-unit>
+            <trans-unit id="vZGtgaH">
+                <source>label.gallery_thumbnail_whole</source>
+                <target>Vignettes montrant la photo entière</target>
+            </trans-unit>
+            <trans-unit id="sk2ukrk">
+                <source>label.theme_color_gallery_backdrop</source>
+                <target>Galerie : fond de la lightbox</target>
+            </trans-unit>
+            <trans-unit id="kv_lXZe">
+                <source>label.theme_color_gallery_badge</source>
+                <target>Galerie : fond de la pastille vidéo</target>
+            </trans-unit>
+            <trans-unit id="o2chCN0">
+                <source>label.theme_color_gallery_badge_text</source>
+                <target>Galerie : couleur de la pastille vidéo</target>
+            </trans-unit>
+            <trans-unit id="26mNhZU">
+                <source>label.theme_color_gallery_breadcrumb</source>
+                <target>Galerie : couleur du fil d'Ariane</target>
+            </trans-unit>
+            <trans-unit id="YHSyo78">
+                <source>label.theme_color_gallery_credits</source>
+                <target>Galerie : couleur des crédits</target>
+            </trans-unit>
+            <trans-unit id="0k_i3KC">
+                <source>label.theme_color_gallery_frame</source>
+                <target>Galerie : couleur du passe-partout</target>
+            </trans-unit>
+            <trans-unit id="nXEoGpn">
+                <source>label.theme_color_gallery_lightbox_close</source>
+                <target>Galerie : couleur du bouton de fermeture</target>
+            </trans-unit>
+            <trans-unit id="GYSHxB9">
+                <source>label.theme_color_gallery_lightbox_close_background</source>
+                <target>Galerie : fond du bouton de fermeture</target>
+            </trans-unit>
+            <trans-unit id="2jxfe7Q">
+                <source>label.theme_color_gallery_nav</source>
+                <target>Galerie : couleur des flèches</target>
+            </trans-unit>
+            <trans-unit id="fdstJrr">
+                <source>label.theme_color_gallery_nav_background</source>
+                <target>Galerie : fond des flèches</target>
+            </trans-unit>
+            <trans-unit id="_BDgn4k">
+                <source>label.theme_color_gallery_nav_hover</source>
+                <target>Galerie : couleur des flèches au survol</target>
+            </trans-unit>
+        </body>
+    </file>
+</xliff>

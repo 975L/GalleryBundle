@@ -3,7 +3,15 @@
 {# Defines specific variables #}
 {% set title = 'label.gallery_page_title'|trans({}, 'gallery') ~ ' - ' ~ category.title %}
 
+{# Editor-only: the category is the gallery, so its own edit screen is what the grid points at - the heading blocks above carry their own button already, UiBundle drawing it for each of them #}
+{% set editUrl = is_granted(config('site-role-editor')) ? gallery_category_edit_url(category) : null %}
+
 {% block content %}
-    <twig:c975LGallery:Gallery:Photos category="{{ category }}" photos="{{ photos }}"/>
-    <twig:c975LUi:Button:Button label="{{ 'label.gallery_home'|trans({}, 'gallery') }}" url="{{ path('gallery_index') }}" />
+    <twig:c975LGallery:Gallery:Navigation category="{{ category }}"/>
+    {# Editorial heading composed in the back-office, with any of UiBundle's block kinds - renders nothing when the category has none #}
+    <twig:c975LUi:Blocks:Blocks blocks="{{ category.blocks }}"/>
+    {# UiBundle's own wrapper class: display:contents, so it hosts the hover button's attributes without taking any part in the grid's layout #}
+    <div class="block-editable"{% if editUrl %} data-controller="blockEditOverlay" data-edit-label="{{ 'label.edit'|trans({}, 'ui') }}" data-block-edit-url="{{ editUrl }}"{% endif %}>
+        <twig:c975LGallery:Gallery:Medias category="{{ category }}" medias="{{ medias }}"/>
+    </div>
 {% endblock %}

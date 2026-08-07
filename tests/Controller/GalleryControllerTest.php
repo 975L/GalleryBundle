@@ -11,35 +11,26 @@
 namespace c975L\GalleryBundle\Tests\Controller;
 
 use c975L\GalleryBundle\Controller\GalleryController;
-use c975L\GalleryBundle\Entity\Gallery;
 use c975L\GalleryBundle\Entity\GalleryCategory;
-use c975L\GalleryBundle\Entity\GalleryPhoto;
+use c975L\GalleryBundle\Entity\GalleryMedia;
 use c975L\GalleryBundle\Repository\GalleryCategoryRepository;
-use c975L\GalleryBundle\Repository\GalleryPhotoRepository;
-use c975L\GalleryBundle\Repository\GalleryRepository;
+use c975L\GalleryBundle\Repository\GalleryMediaRepository;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\DependencyInjection\Container;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\Routing\Attribute\Route;
 use Twig\Environment;
 
 // Only 'twig' is ever fetched, so a bare Container is enough and no kernel boot is needed
 class GalleryControllerTest extends TestCase
 {
-    private function setId(object $entity, int $id): void
-    {
-        $property = new \ReflectionProperty($entity::class, 'id');
-        $property->setValue($entity, $id);
-    }
-
     private function createController(
-        ?GalleryRepository $galleryRepository = null,
         ?GalleryCategoryRepository $categoryRepository = null,
-        ?GalleryPhotoRepository $photoRepository = null,
+        ?GalleryMediaRepository $mediaRepository = null,
     ): GalleryController {
         $controller = new GalleryController(
-            $galleryRepository ?? $this->createStub(GalleryRepository::class),
             $categoryRepository ?? $this->createStub(GalleryCategoryRepository::class),
-            $photoRepository ?? $this->createStub(GalleryPhotoRepository::class),
+            $mediaRepository ?? $this->createStub(GalleryMediaRepository::class),
         );
 
         $twig = $this->createStub(Environment::class);
@@ -52,16 +43,12 @@ class GalleryControllerTest extends TestCase
         return $controller;
     }
 
-    public function testIndexRendersCategoriesOfTheDefaultGallery(): void
+    public function testIndexRendersEveryCategory(): void
     {
-        $gallery = new Gallery();
-        $category = new GalleryCategory();
-        $gallery->addCategory($category);
+        $categoryRepository = $this->createStub(GalleryCategoryRepository::class);
+        $categoryRepository->method('findAllOrdered')->willReturn([new GalleryCategory()]);
 
-        $galleryRepository = $this->createStub(GalleryRepository::class);
-        $galleryRepository->method('findDefault')->willReturn($gallery);
-
-        $controller = $this->createController(galleryRepository: $galleryRepository);
+        $controller = $this->createController(categoryRepository: $categoryRepository);
 
         $response = $controller->index();
 
@@ -69,11 +56,11 @@ class GalleryControllerTest extends TestCase
         $this->assertSame('@c975LGallery/gallery/index.html.twig', $response->getContent());
     }
 
-    // Fresh install, no default Gallery configured yet - an empty list, not an error
-    public function testIndexRendersEmptyCategoriesWhenNoDefaultGalleryExists(): void
+    // Fresh install, no category created yet - an empty list, not an error
+    public function testIndexRendersEmptyCategoriesWhenNoneExists(): void
     {
-        $galleryRepository = $this->createStub(GalleryRepository::class);
-        $galleryRepository->method('findDefault')->willReturn(null);
+        $categoryRepository = $this->createStub(GalleryCategoryRepository::class);
+        $categoryRepository->method('findAllOrdered')->willReturn([]);
 
         $twig = $this->createStub(Environment::class);
         $capturedParameters = null;
@@ -86,9 +73,8 @@ class GalleryControllerTest extends TestCase
         );
 
         $controller = new GalleryController(
-            $galleryRepository,
-            $this->createStub(GalleryCategoryRepository::class),
-            $this->createStub(GalleryPhotoRepository::class),
+            $categoryRepository,
+            $this->createStub(GalleryMediaRepository::class),
         );
         $container = new Container();
         $container->set('twig', $twig);
@@ -99,18 +85,15 @@ class GalleryControllerTest extends TestCase
         $this->assertSame([], $capturedParameters['categories']);
     }
 
-    public function testCategoryRendersItsPhotosGrid(): void
+    public function testCategoryRendersItsMediasGrid(): void
     {
-        $gallery = (new Gallery())->setSlug('main');
         $category = (new GalleryCategory())->setSlug('voyages');
-        $photos = [new GalleryPhoto(), new GalleryPhoto()];
+        $medias = [new GalleryMedia(), new GalleryMedia()];
 
-        $galleryRepository = $this->createStub(GalleryRepository::class);
-        $galleryRepository->method('findDefault')->willReturn($gallery);
         $categoryRepository = $this->createMock(GalleryCategoryRepository::class);
-        $categoryRepository->expects($this->once())->method('findOneBySlug')->with($gallery, 'voyages')->willReturn($category);
-        $photoRepository = $this->createMock(GalleryPhotoRepository::class);
-        $photoRepository->expects($this->once())->method('findByCategory')->with($category)->willReturn($photos);
+        $categoryRepository->expects($this->once())->method('findOneBySlug')->with('voyages')->willReturn($category);
+        $mediaRepository = $this->createMock(GalleryMediaRepository::class);
+        $mediaRepository->expects($this->once())->method('findByCategory')->with($category)->willReturn($medias);
 
         $twig = $this->createStub(Environment::class);
         $capturedParameters = null;
@@ -122,7 +105,7 @@ class GalleryControllerTest extends TestCase
             }
         );
 
-        $controller = new GalleryController($galleryRepository, $categoryRepository, $photoRepository);
+        $controller = new GalleryController($categoryRepository, $mediaRepository);
         $container = new Container();
         $container->set('twig', $twig);
         $controller->setContainer($container);
@@ -131,50 +114,32 @@ class GalleryControllerTest extends TestCase
 
         $this->assertSame(200, $response->getStatusCode());
         $this->assertSame($category, $capturedParameters['category']);
-        $this->assertSame($photos, $capturedParameters['photos']);
+        $this->assertSame($medias, $capturedParameters['medias']);
     }
 
     public function testCategoryThrowsNotFoundWhenSlugIsUnknown(): void
     {
-        $gallery = (new Gallery())->setSlug('main');
-        $galleryRepository = $this->createStub(GalleryRepository::class);
-        $galleryRepository->method('findDefault')->willReturn($gallery);
         $categoryRepository = $this->createStub(GalleryCategoryRepository::class);
         $categoryRepository->method('findOneBySlug')->willReturn(null);
 
-        $controller = $this->createController(galleryRepository: $galleryRepository, categoryRepository: $categoryRepository);
+        $controller = $this->createController(categoryRepository: $categoryRepository);
 
         $this->expectException(NotFoundHttpException::class);
         $controller->category('unknown');
     }
 
-    public function testCategoryThrowsNotFoundWhenNoDefaultGalleryExists(): void
+    public function testMediaRendersMediumViewWithPreviousAndNext(): void
     {
-        $galleryRepository = $this->createStub(GalleryRepository::class);
-        $galleryRepository->method('findDefault')->willReturn(null);
-
-        $controller = $this->createController(galleryRepository: $galleryRepository);
-
-        $this->expectException(NotFoundHttpException::class);
-        $controller->category('voyages');
-    }
-
-    public function testPhotoRendersMediumViewWithPreviousAndNext(): void
-    {
-        $gallery = (new Gallery())->setSlug('main');
         $category = (new GalleryCategory())->setSlug('voyages');
-        $photo = new GalleryPhoto();
-        $photo->setCategory($category);
-        $this->setId($photo, 5);
-        $previousNext = ['previous' => new GalleryPhoto(), 'next' => new GalleryPhoto()];
+        $media = (new GalleryMedia())->setSlug('col-du-galibier');
+        $media->setCategory($category);
+        $previousNext = ['previous' => new GalleryMedia(), 'next' => new GalleryMedia()];
 
-        $galleryRepository = $this->createStub(GalleryRepository::class);
-        $galleryRepository->method('findDefault')->willReturn($gallery);
         $categoryRepository = $this->createStub(GalleryCategoryRepository::class);
         $categoryRepository->method('findOneBySlug')->willReturn($category);
-        $photoRepository = $this->createMock(GalleryPhotoRepository::class);
-        $photoRepository->expects($this->once())->method('find')->with(5)->willReturn($photo);
-        $photoRepository->expects($this->once())->method('findPreviousAndNext')->with($photo)->willReturn($previousNext);
+        $mediaRepository = $this->createMock(GalleryMediaRepository::class);
+        $mediaRepository->expects($this->once())->method('findOneBySlugInCategory')->with($category, 'col-du-galibier')->willReturn($media);
+        $mediaRepository->expects($this->once())->method('findPreviousAndNext')->with($media)->willReturn($previousNext);
 
         $twig = $this->createStub(Environment::class);
         $capturedParameters = null;
@@ -186,103 +151,70 @@ class GalleryControllerTest extends TestCase
             }
         );
 
-        $controller = new GalleryController($galleryRepository, $categoryRepository, $photoRepository);
+        $controller = new GalleryController($categoryRepository, $mediaRepository);
         $container = new Container();
         $container->set('twig', $twig);
         $controller->setContainer($container);
 
-        $response = $controller->photo('voyages', 5);
+        $response = $controller->media('voyages', 'col-du-galibier');
 
         $this->assertSame(200, $response->getStatusCode());
-        $this->assertSame($photo, $capturedParameters['photo']);
+        $this->assertSame($media, $capturedParameters['media']);
         $this->assertSame($previousNext, $capturedParameters['previousNext']);
     }
 
-    public function testPhotoThrowsNotFoundWhenIdIsUnknown(): void
+    public function testMediaThrowsNotFoundWhenSlugIsUnknown(): void
     {
-        $gallery = (new Gallery())->setSlug('main');
         $category = (new GalleryCategory())->setSlug('voyages');
 
-        $galleryRepository = $this->createStub(GalleryRepository::class);
-        $galleryRepository->method('findDefault')->willReturn($gallery);
         $categoryRepository = $this->createStub(GalleryCategoryRepository::class);
         $categoryRepository->method('findOneBySlug')->willReturn($category);
-        $photoRepository = $this->createStub(GalleryPhotoRepository::class);
-        $photoRepository->method('find')->willReturn(null);
+        $mediaRepository = $this->createStub(GalleryMediaRepository::class);
+        $mediaRepository->method('findOneBySlugInCategory')->willReturn(null);
 
         $controller = $this->createController(
-            galleryRepository: $galleryRepository,
             categoryRepository: $categoryRepository,
-            photoRepository: $photoRepository,
+            mediaRepository: $mediaRepository,
         );
 
         $this->expectException(NotFoundHttpException::class);
-        $controller->photo('voyages', 999);
+        $controller->media('voyages', 'unknown');
     }
 
-    // A photo id browsed under a category slug it doesn't actually belong to must not resolve - prevents cross-category id fishing
-    public function testPhotoThrowsNotFoundWhenPhotoBelongsToADifferentCategory(): void
+    // A media slug browsed under a category it doesn't belong to must not resolve - the category is part of the lookup, a slug only being unique within one
+    public function testMediaIsLookedUpWithinTheCategoryOfTheUrl(): void
     {
-        $gallery = (new Gallery())->setSlug('main');
         $category = (new GalleryCategory())->setSlug('voyages');
-        $otherCategory = (new GalleryCategory())->setSlug('portraits');
-        $photo = new GalleryPhoto();
-        $photo->setCategory($otherCategory);
-        $this->setId($photo, 5);
 
-        $galleryRepository = $this->createStub(GalleryRepository::class);
-        $galleryRepository->method('findDefault')->willReturn($gallery);
         $categoryRepository = $this->createStub(GalleryCategoryRepository::class);
         $categoryRepository->method('findOneBySlug')->willReturn($category);
-        $photoRepository = $this->createMock(GalleryPhotoRepository::class);
-        $photoRepository->expects($this->once())->method('find')->with(5)->willReturn($photo);
+        $mediaRepository = $this->createMock(GalleryMediaRepository::class);
+        $mediaRepository->expects($this->once())
+            ->method('findOneBySlugInCategory')
+            ->with($category, 'col-du-galibier')
+            ->willReturn(null);
 
         $controller = $this->createController(
-            galleryRepository: $galleryRepository,
             categoryRepository: $categoryRepository,
-            photoRepository: $photoRepository,
+            mediaRepository: $mediaRepository,
         );
 
         $this->expectException(NotFoundHttpException::class);
-        $controller->photo('voyages', 5);
+        $controller->media('voyages', 'col-du-galibier');
     }
 
-    public function testPhotoHrRendersHighResViewWithPreviousAndNext(): void
+    // The high resolution is served by the lightbox from the stored file's own url, so no route may hand out a page for it - a leftover one would keep the two navigations this bundle deliberately merged into one
+    public function testNoRouteServesAHighResolutionPage(): void
     {
-        $gallery = (new Gallery())->setSlug('main');
-        $category = (new GalleryCategory())->setSlug('voyages');
-        $photo = new GalleryPhoto();
-        $photo->setCategory($category);
-        $this->setId($photo, 7);
-        $previousNext = ['previous' => new GalleryPhoto(), 'next' => new GalleryPhoto()];
-
-        $galleryRepository = $this->createStub(GalleryRepository::class);
-        $galleryRepository->method('findDefault')->willReturn($gallery);
-        $categoryRepository = $this->createStub(GalleryCategoryRepository::class);
-        $categoryRepository->method('findOneBySlug')->willReturn($category);
-        $photoRepository = $this->createMock(GalleryPhotoRepository::class);
-        $photoRepository->expects($this->once())->method('find')->with(7)->willReturn($photo);
-        $photoRepository->expects($this->once())->method('findPreviousAndNext')->with($photo)->willReturn($previousNext);
-
-        $twig = $this->createStub(Environment::class);
-        $capturedParameters = null;
-        $twig->method('render')->willReturnCallback(
-            function (string $view, array $parameters = []) use (&$capturedParameters): string {
-                $capturedParameters = $parameters;
-
-                return $view;
+        $routes = [];
+        foreach ((new \ReflectionClass(GalleryController::class))->getMethods(\ReflectionMethod::IS_PUBLIC) as $method) {
+            foreach ($method->getAttributes(Route::class) as $attribute) {
+                $arguments = $attribute->getArguments();
+                $routes[] = (string) ($arguments['path'] ?? $arguments[0] ?? '');
             }
-        );
+        }
 
-        $controller = new GalleryController($galleryRepository, $categoryRepository, $photoRepository);
-        $container = new Container();
-        $container->set('twig', $twig);
-        $controller->setContainer($container);
-
-        $response = $controller->photoHr('voyages', 7);
-
-        $this->assertSame(200, $response->getStatusCode());
-        $this->assertSame($photo, $capturedParameters['photo']);
-        $this->assertSame($previousNext, $capturedParameters['previousNext']);
+        $this->assertNotEmpty($routes, 'No route was read, this test no longer checks anything.');
+        $this->assertSame([], array_values(array_filter($routes, static fn (string $path): bool => str_ends_with($path, '/hr'))));
     }
 }

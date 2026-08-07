@@ -12,12 +12,17 @@ namespace c975L\GalleryBundle\Management;
 
 use c975L\ConfigBundle\Management\ImportmapProviderInterface;
 
-// Same import name as ScriptProvider (BundleScriptProviderInterface) - that one tells the front layout which script to load, this one tells c975l:config:check-importmap what importmap.php entry it needs. GalleryBundle has no admin-only Stimulus controller, unlike UiBundle/SiteBundle/SocialBundle
+// Same import names as ScriptProvider - that one tells the layout which scripts to load, this one tells c975l:config:check-importmap what importmap.php entries they need
 class ImportmapProvider implements ImportmapProviderInterface
 {
     public function getAdminImportmapEntries(): array
     {
-        return [];
+        return [
+            '@c975l/gallery-bundle/controllers-admin.js' => [
+                'path' => 'assets/controllers-admin.js',
+                'entrypoint' => true,
+            ],
+        ];
     }
 
     public function getImportmapEntries(): array

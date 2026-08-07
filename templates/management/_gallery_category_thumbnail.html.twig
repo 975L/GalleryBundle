@@ -2,10 +2,10 @@
 {# @var field \EasyCorp\Bundle\EasyAdminBundle\Dto\FieldDto #}
 {# @var entity \EasyCorp\Bundle\EasyAdminBundle\Dto\EntityDto #}
 {% set category = entity.instance %}
-{# Prefers category.coverPhoto, falls back to random - same logic as the public components/Gallery/Category.html.twig #}
-{% set photo = category.coverPhoto ?: (category.photos|length > 0 ? random(category.photos) : null) %}
-{% if photo and photo.thumbnailFilename %}
-    <img src="{{ asset(photo.thumbnailFilename) }}" alt="{{ category.title }}" width="60" height="60" class="management-media-grid__thumb" style="object-fit: cover;">
+{# Prefers category.coverMedia, falls back to random - same logic as the public components/Gallery/Category.html.twig #}
+{% set media = category.coverMedia ?: (category.medias|length > 0 ? random(category.medias) : null) %}
+{% if media and media.thumbnailFilename %}
+    <img src="{{ asset(media.thumbnailFilename) }}" alt="{{ category.title }}" width="60" height="60" class="management-media-grid__thumb" style="object-fit: cover;">
 {% else %}
     <div class="management-media-grid__placeholder" style="width: 60px; height: 60px; font-size: .65rem;"></div>
 {% endif %}

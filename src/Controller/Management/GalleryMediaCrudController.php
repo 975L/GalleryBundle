@@ -1,0 +1,205 @@
+<?php
+
+/*
+ * (c) 2026: 975L <contact@975l.com>
+ * (c) 2026: Laurent Marquet <laurent.marquet@laposte.net>
+ *
+ * This source file is subject to the MIT license that is bundled
+ * with this source code in the file LICENSE.
+ */
+
+namespace c975L\GalleryBundle\Controller\Management;
+
+use c975L\ConfigBundle\Service\ConfigServiceInterface;
+use c975L\GalleryBundle\Entity\GalleryCategory;
+use c975L\GalleryBundle\Entity\GalleryMedia;
+use c975L\GalleryBundle\Service\GalleryMediaSlugger;
+use c975L\GalleryBundle\Service\GalleryUrlRedirector;
+use Doctrine\ORM\EntityManagerInterface;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
+use EasyCorp\Bundle\EasyAdminBundle\Config\KeyValueStore;
+use EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext;
+use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
+use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\BooleanField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\ChoiceField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\Field;
+use EasyCorp\Bundle\EasyAdminBundle\Field\IntegerField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
+use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGeneratorInterface;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Validator\Constraints\File as FileConstraint;
+use Symfony\Contracts\Translation\TranslatorInterface;
+use Vich\UploaderBundle\Form\Type\VichImageType;
+
+use function Symfony\Component\Translation\t;
+
+// Edits one media at a time, and nothing else: it has no listing of its own and no sidebar entry, a media being reached from the category holding it (see GalleryCategoryCrudController, the single menu entry for the whole gallery feature)
+class GalleryMediaCrudController extends AbstractCrudController
+{
+    public function __construct(
+        private readonly AdminUrlGeneratorInterface $adminUrlGenerator,
+        private readonly TranslatorInterface $translator,
+        private readonly GalleryMediaSlugger $mediaSlugger,
+        private readonly GalleryUrlRedirector $urlRedirector,
+        private readonly ConfigServiceInterface $configService,
+    ) {
+    }
+
+    public static function getEntityFqcn(): string
+    {
+        return GalleryMedia::class;
+    }
+
+    // The role every gallery management screen sits behind, ConfigBundle's own entry rather than a constant - a site decides who edits its galleries, and it is the same role the public pages offer their edit button to (see gallery/media.html.twig)
+    private function roleNeeded(): string
+    {
+        return (string) $this->configService->get('site-role-editor');
+    }
+
+    public function configureCrud(Crud $crud): Crud
+    {
+        return $crud
+            ->setEntityLabelInSingular(t('label.gallery_media', [], 'gallery'))
+            ->setEntityLabelInPlural(t('label.gallery_medias', [], 'gallery'))
+            ->setEntityPermission($this->roleNeeded())
+            ->overrideTemplate('crud/edit', '@c975LGallery/management/gallery_media_edit.html.twig')
+        ;
+    }
+
+    // There is no all-medias listing: a category's medias are shown on that category's own edit screen (see GalleryCategoryCrudController), which is where every redirect EasyAdmin sends here lands instead - after a save, after a delete, and for anyone reaching the url by hand
+    // The category is read from the query string, which the media screens carry along from the link that opened them (AdminUrlGenerator keeps the current parameters), so the admin returns to the category worked on rather than to the top of the list
+    public function index(AdminContext $context): KeyValueStore | Response
+    {
+        $categoryId = $context->getRequest()->query->getInt('category');
+
+        $url = $this->adminUrlGenerator
+            ->setController(GalleryCategoryCrudController::class)
+            ->unset('category')
+        ;
+
+        $url = $categoryId > 0
+            ? $url->setAction(Action::EDIT)->setEntityId($categoryId)
+            : $url->setAction(Action::INDEX);
+
+        return $this->redirect($url->generateUrl());
+    }
+
+    public function configureActions(Actions $actions): Actions
+    {
+        // Lets the admin back out of an edit without saving - mirrors EasyAdmin's own built-in actions (linkToCrudAction targeting INDEX, same as Action::INDEX itself), which redirects to the category above
+        $cancelAction = Action::new('cancel', $this->translator->trans('action.cancel', [], 'EasyAdminBundle'), 'fa fa-times')
+            ->linkToCrudAction(Action::INDEX)
+            ->addCssClass('btn btn-secondary');
+
+        return $actions
+            ->setPermission(Action::EDIT, $this->roleNeeded())
+            ->setPermission(Action::DELETE, $this->roleNeeded())
+            // Medias are only ever created in bulk, from a category's own "add medias" action (see GalleryCategoryCrudController) - never one at a time, and never from here, where no category is picked
+            ->disable(Action::NEW)
+            ->add(Crud::PAGE_EDIT, $cancelAction)
+            // The edit form is the only screen a media has, so it carries its own delete button - there is no listing left to offer one
+            ->add(Crud::PAGE_EDIT, Action::DELETE)
+            // Detail adds no information beyond what edit already shows
+            ->disable(Action::DETAIL)
+        ;
+    }
+
+    // Updated media - a media's public url moves when its slug is edited, and when it is moved to another category, the category's own slug being the segment above it
+    public function updateEntity(EntityManagerInterface $entityManager, object $entityInstance): void
+    {
+        if ($entityInstance instanceof GalleryMedia) {
+            $original = $entityManager->getUnitOfWork()->getOriginalEntityData($entityInstance);
+
+            // Normalized, never rebuilt from the title: a title is retouched precisely because the first one was a placeholder, and having the url follow it made every such correction cost a redirect. What an admin types into the slug field still has to be a slug and still has to be free within the category, which is what the slugger answers - and an emptied field is how one is asked to be rebuilt from the title
+            $this->mediaSlugger->assign($entityInstance, $entityInstance->getSlug());
+
+            $this->redirectUrlChange($entityManager, $original, $entityInstance);
+        }
+
+        parent::updateEntity($entityManager, $entityInstance);
+    }
+
+    // Both urls are generated rather than concatenated, the first segment being the configured route prefix (see GalleryRoutePrefix)
+    private function redirectUrlChange(EntityManagerInterface $entityManager, array $original, GalleryMedia $media): void
+    {
+        $originalCategory = $original['category'] ?? null;
+        $originalSlug = $original['slug'] ?? null;
+
+        // A media stored before slugs existed has none to redirect from, and there is no old url to preserve either - it simply starts being reachable under its new one
+        if (!$originalCategory instanceof GalleryCategory || !\is_string($originalSlug)) {
+            return;
+        }
+
+        $this->urlRedirector->record(
+            $entityManager,
+            $this->generateUrl('gallery_media', ['category' => $originalCategory->getSlug(), 'slug' => $originalSlug]),
+            $this->generateUrl('gallery_media', ['category' => $media->getCategory()?->getSlug(), 'slug' => $media->getSlug()]),
+        );
+    }
+
+    public function configureFields(string $pageName): iterable
+    {
+        return [
+            AssociationField::new('category')
+                ->setLabel(t('label.gallery_category', [], 'gallery'))
+                ->setRequired(true),
+
+            Field::new('file')
+                ->setLabel(t('label.file', [], 'gallery'))
+                ->setFormType(VichImageType::class)
+                ->setFormTypeOptions([
+                    'required' => false,
+                    'allow_delete' => false,
+                    'download_uri' => true,
+                    'asset_helper' => true,
+                    'delete_label_translation_domain' => 'messages',
+                    'constraints' => [
+                        new FileConstraint(maxSize: '10M'),
+                    ],
+                ])
+                ->onlyOnForms(),
+
+            // The media's name and its alt text (see GalleryMedia::$title) - freely retouched, and no longer the source of the slug, so nothing it does moves a public url: a batch is uploaded under a title root and the medias worth describing are described afterwards, one by one, at no cost
+            TextField::new('title')
+                ->setLabel(t('label.title', [], 'gallery'))
+                ->setRequired(true)
+                ->setHelp(t('label.gallery_media_title_help', [], 'gallery')),
+
+            // Editable, and the only field here that moves a public url - hence the confirmation the title used to carry, through UiBundle's "title-confirm" controller: an automatic rename never moves a url, a deliberate one does and is recorded as a redirect (see updateEntity)
+            // Emptied rather than retyped, it is rebuilt from the title, which is the one way to ask for a fresh slug
+            TextField::new('slug')
+                ->setLabel(t('label.slug', [], 'gallery'))
+                ->setHelp(t('label.gallery_media_slug_help', [], 'gallery'))
+                ->setFormTypeOption('attr', [
+                    'data-controller' => 'title-confirm',
+                    'data-action' => 'focus->title-confirm#confirm click->title-confirm#confirm',
+                    'data-title-confirm-message-value' => $this->translator->trans('confirm.media_slug_change', [], 'gallery'),
+                ]),
+
+            TextField::new('credits')
+                ->setLabel(t('label.credits', [], 'gallery')),
+
+            // A video entry keeps its uploaded image above - it is what the grid shows, the type only decides what the detail page opens on (see GalleryMedia::isVideo())
+            // setTranslatableChoices(), not setChoices(): a plain choice array's keys only translate under EasyAdmin's own CRUD-level domain, which isn't "gallery"
+            ChoiceField::new('mediaType')
+                ->setLabel(t('label.gallery_media_type', [], 'gallery'))
+                ->setTranslatableChoices(array_combine(
+                    GalleryMedia::MEDIA_TYPES,
+                    array_map(static fn (string $type) => t('label.gallery_media_type_' . $type, [], 'gallery'), GalleryMedia::MEDIA_TYPES),
+                )),
+
+            TextField::new('externalId')
+                ->setLabel(t('label.gallery_external_id', [], 'gallery'))
+                ->setHelp(t('label.gallery_external_id_help', [], 'gallery')),
+
+            BooleanField::new('rightsReserved')
+                ->setLabel(t('label.rights_reserved', [], 'gallery')),
+
+            IntegerField::new('position')
+                ->setLabel(t('label.position', [], 'gallery')),
+        ];
+    }
+}

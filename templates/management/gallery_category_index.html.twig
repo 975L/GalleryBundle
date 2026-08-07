@@ -3,5 +3,8 @@
 {% block main %}
     <p>{{ ('label.info_gallery_category'|trans({}, 'gallery')) }}</p>
 
+    {# Said here rather than only on the upload form's own field: the box is answered at upload time or never, so an admin has to know the signature exists before picking the files #}
+    <p>{{ ('label.info_gallery_watermark'|trans({}, 'gallery')) }}</p>
+
     {{ parent() }}
 {% endblock main %}

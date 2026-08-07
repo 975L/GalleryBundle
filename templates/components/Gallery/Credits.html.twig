@@ -1,0 +1,12 @@
+{# What the back-office holds on a media, said under it - the media page is where a credit is read, a grid of thumbnails not being where one is looked for #}
+{% if media.credits is not empty or media.rightsReserved %}
+    <p class="gallery-media-credits">
+        {% if media.credits is not empty %}
+            {# The label and its separator are the translation's own: French spaces its colon, English doesn't #}
+            <span>{{ 'label.gallery_credits'|trans({'%credits%': media.credits}, 'gallery') }}</span>
+        {% endif %}
+        {% if media.rightsReserved %}
+            <span>&copy; {{ 'label.gallery_rights_reserved'|trans({}, 'gallery') }}</span>
+        {% endif %}
+    </p>
+{% endif %}

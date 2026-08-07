@@ -10,26 +10,30 @@
 
 namespace c975L\GalleryBundle\Entity;
 
+use c975L\UiBundle\Contract\HasBlocksInterface;
+use c975L\UiBundle\Entity\Block;
+use c975L\UiBundle\Entity\Trait\HasBlocksTrait;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
-// (gallery, slug) is the category's natural key - the front-office url resolves on it (see GalleryController::resolveCategory) and the import matches on it (see GalleryImportProvider), so it can't be allowed to collide
+// The category is the top-level unit of the gallery - a site's galleries are its categories, there is no container above them
+// The slug is the category's natural key: the front-office url resolves on it (see GalleryController::resolveCategory) and the import matches on it (see GalleryImportProvider), so it can't be allowed to collide
+// A collision is reported on the form and the category isn't saved, rather than being silently worked around with a numeric suffix that would leave the admin with two look-alike categories
 #[ORM\Entity(repositoryClass: \c975L\GalleryBundle\Repository\GalleryCategoryRepository::class)]
 #[ORM\Table(name: 'gallery_category')]
-#[ORM\UniqueConstraint(name: 'gallery_category_slug_unique', columns: ['gallery_id', 'slug'])]
-class GalleryCategory
+#[UniqueEntity('slug')]
+class GalleryCategory implements HasBlocksInterface
 {
+    use HasBlocksTrait;
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\ManyToOne(targetEntity: Gallery::class, inversedBy: 'categories')]
-    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
-    private ?Gallery $gallery = null;
-
-    #[ORM\Column(length: 100)]
+    #[ORM\Column(length: 100, unique: true)]
     private ?string $slug = null;
 
     #[ORM\Column(length: 255)]
@@ -38,21 +42,28 @@ class GalleryCategory
     #[ORM\Column]
     private int $position = 0;
 
-    #[ORM\ManyToOne(targetEntity: GalleryPhoto::class)]
+    #[ORM\ManyToOne(targetEntity: GalleryMedia::class)]
     #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
-    private ?GalleryPhoto $coverPhoto = null;
+    private ?GalleryMedia $coverMedia = null;
 
-    // Auto-created catch-all category a Gallery's photos fall back to when no real category is picked at upload time (see GalleryCategoryRepository::findOrCreateUncategorized) - flagged rather than matched by slug so it survives a title/slug translation or edit
+    // Auto-created catch-all category a Gallery's medias fall back to when no real category is picked at upload time (see GalleryCategoryRepository::findOrCreateUncategorized) - flagged rather than matched by slug so it survives a title/slug translation or edit
     #[ORM\Column(options: ['default' => false])]
     private bool $uncategorized = false;
 
-    #[ORM\OneToMany(mappedBy: 'category', targetEntity: GalleryPhoto::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
+    #[ORM\OneToMany(mappedBy: 'category', targetEntity: GalleryMedia::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
     #[ORM\OrderBy(['position' => 'ASC'])]
-    private Collection $photos;
+    private Collection $medias;
+
+    // Editorial heading composed in the back-office and rendered above the grid (see gallery/category.html.twig), so a category can introduce its medias with any of UiBundle's block kinds instead of only ever being a wall of thumbnails
+    #[ORM\ManyToMany(targetEntity: Block::class, cascade: ['persist', 'remove'])]
+    #[ORM\JoinTable(name: 'gallery_category_block')]
+    #[ORM\OrderBy(['position' => 'ASC'])]
+    private Collection $blocks;
 
     public function __construct()
     {
-        $this->photos = new ArrayCollection();
+        $this->medias = new ArrayCollection();
+        $this->blocks = new ArrayCollection();
     }
 
     public function __toString(): string
@@ -63,18 +74,6 @@ class GalleryCategory
     public function getId(): ?int
     {
         return $this->id;
-    }
-
-    public function getGallery(): ?Gallery
-    {
-        return $this->gallery;
-    }
-
-    public function setGallery(?Gallery $gallery): self
-    {
-        $this->gallery = $gallery;
-
-        return $this;
     }
 
     public function getSlug(): ?string
@@ -113,14 +112,14 @@ class GalleryCategory
         return $this;
     }
 
-    public function getCoverPhoto(): ?GalleryPhoto
+    public function getCoverMedia(): ?GalleryMedia
     {
-        return $this->coverPhoto;
+        return $this->coverMedia;
     }
 
-    public function setCoverPhoto(?GalleryPhoto $coverPhoto): self
+    public function setCoverMedia(?GalleryMedia $coverMedia): self
     {
-        $this->coverPhoto = $coverPhoto;
+        $this->coverMedia = $coverMedia;
 
         return $this;
     }
@@ -137,27 +136,33 @@ class GalleryCategory
         return $this;
     }
 
-    /** @return Collection<int, GalleryPhoto> */
-    public function getPhotos(): Collection
+    /** @return Collection<int, GalleryMedia> */
+    public function getMedias(): Collection
     {
-        return $this->photos;
+        return $this->medias;
     }
 
-    public function addPhoto(GalleryPhoto $photo): self
+    // What the back-office category listing shows instead of the medias themselves, the medias being managed from the category's own edit screen (see GalleryCategoryCrudController)
+    public function getMediasCount(): int
     {
-        if (!$this->photos->contains($photo)) {
-            $this->photos->add($photo);
-            $photo->setCategory($this);
+        return $this->medias->count();
+    }
+
+    public function addMedia(GalleryMedia $media): self
+    {
+        if (!$this->medias->contains($media)) {
+            $this->medias->add($media);
+            $media->setCategory($this);
         }
 
         return $this;
     }
 
-    public function removePhoto(GalleryPhoto $photo): self
+    public function removeMedia(GalleryMedia $media): self
     {
-        if ($this->photos->removeElement($photo)) {
-            if ($photo->getCategory() === $this) {
-                $photo->setCategory(null);
+        if ($this->medias->removeElement($media)) {
+            if ($media->getCategory() === $this) {
+                $media->setCategory(null);
             }
         }
 

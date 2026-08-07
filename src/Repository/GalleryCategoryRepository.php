@@ -10,7 +10,6 @@
 
 namespace c975L\GalleryBundle\Repository;
 
-use c975L\GalleryBundle\Entity\Gallery;
 use c975L\GalleryBundle\Entity\GalleryCategory;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
@@ -30,40 +29,28 @@ class GalleryCategoryRepository extends ServiceEntityRepository
         parent::__construct($registry, GalleryCategory::class);
     }
 
-    public function findOneBySlug(Gallery $gallery, string $slug): ?GalleryCategory
+    public function findOneBySlug(string $slug): ?GalleryCategory
     {
-        return $this->findOneBy(['gallery' => $gallery, 'slug' => $slug]);
+        return $this->findOneBy(['slug' => $slug]);
     }
 
-    // Two different titles can slugify identically ("Été 2024" and "Ete 2024" both give "ete-2024"), so a colliding slug gets a numeric suffix rather than hitting the (gallery, slug) unique constraint
-    public function makeSlugUnique(GalleryCategory $category, string $slug): string
+    // What the front-office index and the blocks list, in the order the admin arranged them
+    /** @return list<GalleryCategory> */
+    public function findAllOrdered(): array
     {
-        $gallery = $category->getGallery();
-        if (null === $gallery) {
-            return $slug;
-        }
-
-        $candidate = $slug;
-        $suffix = 1;
-
-        while (null !== ($existing = $this->findOneBySlug($gallery, $candidate)) && $existing !== $category) {
-            $candidate = $slug . '-' . ++$suffix;
-        }
-
-        return $candidate;
+        return $this->findBy([], ['position' => 'ASC']);
     }
 
-    // Catch-all category a GalleryPhoto falls back to when uploaded without picking a real one. Created lazily (rather than eagerly whenever a Gallery is persisted) so it only ever exists once it's actually needed, and flushed immediately so it's safe to reference the same row from within the same request right after.
-    public function findOrCreateUncategorized(Gallery $gallery): GalleryCategory
+    // Catch-all category a GalleryMedia falls back to when imported without a real one to attach it to. Created lazily so it only ever exists once it's actually needed, and flushed immediately so it's safe to reference the same row from within the same request right after.
+    public function findOrCreateUncategorized(): GalleryCategory
     {
-        $category = $this->findOneBy(['gallery' => $gallery, 'uncategorized' => true]);
+        $category = $this->findOneBy(['uncategorized' => true]);
         if (null !== $category) {
             return $category;
         }
 
         // Translated at creation time only - like any other category it's a normal DB row afterwards, editable/renamable later from the Management CRUD
         $category = (new GalleryCategory())
-            ->setGallery($gallery)
             ->setSlug(self::UNCATEGORIZED_SLUG)
             ->setTitle($this->translator->trans('label.gallery_uncategorized', [], 'gallery'))
             ->setUncategorized(true)

@@ -1,8 +1,8 @@
-{# The embed itself, framed exactly like a still so a video and a photo sit in the same grid - the wrapper carries the platform's own aspect ratio (see sass/_gallery.scss), landscape for YouTube, portrait for TikTok #}
-<div class="gallery-video gallery-video--{{ photo.mediaType }}">
+{# The embed itself, framed exactly like a still so a video and a media sit in the same grid - the wrapper carries the platform's own aspect ratio (see sass/_gallery.scss), landscape for YouTube, portrait for TikTok #}
+<div class="gallery-video gallery-video--{{ media.mediaType }}">
     <iframe
-        src="{{ photo.embedUrl }}"
-        title="{{ photo.alt }}"
+        src="{{ media.embedUrl }}"
+        title="{{ media.title }}"
         loading="lazy"
         referrerpolicy="strict-origin-when-cross-origin"
         allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"

@@ -10,7 +10,7 @@
 
 namespace c975L\GalleryBundle\Tests\Management;
 
-use c975L\GalleryBundle\Controller\Management\GalleryPhotoCrudController;
+use c975L\GalleryBundle\Controller\Management\GalleryCategoryCrudController;
 use c975L\GalleryBundle\Management\MenuProvider;
 use PHPUnit\Framework\TestCase;
 
@@ -24,17 +24,17 @@ class MenuProviderTest extends TestCase
         $this->assertSame(['label' => 'label.management', 'translation_domain' => 'site'], $provider->getMenuSection());
     }
 
-    // Only the photo CRUD is listed - category management is reachable from its toolbar instead (see GalleryPhotoCrudController), so the two screens read as one linked feature
-    public function testGetMenusReturnsOnlyThePhotoCrudEntry(): void
+    // One entry for the whole feature, opening the categories, which are the site's galleries - the media CRUD edits one media at a time and has nothing to list on its own
+    public function testGetMenusReturnsOnlyTheCategoryCrudEntry(): void
     {
         $provider = new MenuProvider();
 
         $menus = $provider->getMenus();
 
         $this->assertCount(1, $menus);
-        $this->assertSame(GalleryPhotoCrudController::class, $menus['gallery_photo']['controller']);
-        $this->assertSame('label.gallery_photos', $menus['gallery_photo']['label']);
-        $this->assertSame('gallery', $menus['gallery_photo']['translation_domain']);
+        $this->assertSame(GalleryCategoryCrudController::class, $menus['gallery']['controller']);
+        $this->assertSame('label.gallery', $menus['gallery']['label']);
+        $this->assertSame('gallery', $menus['gallery']['translation_domain']);
     }
 
     public function testGetLinksReturnsNone(): void

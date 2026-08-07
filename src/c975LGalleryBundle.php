@@ -21,7 +21,7 @@ class c975LGalleryBundle extends AbstractBundle
         $containerConfigurator->import('../config/services.yaml');
     }
 
-    // asset_mapper needs this path so Twig's asset()/importmap can resolve "@c975l/gallery-bundle" to the bundle's own assets/ directory (the front-office photo preload controller)
+    // asset_mapper needs this path so Twig's asset()/importmap can resolve "@c975l/gallery-bundle" to the bundle's own assets/ directory (the front-office media preload controller)
     public function prependExtension(ContainerConfigurator $containerConfigurator, ContainerBuilder $containerBuilder): void
     {
         $containerBuilder->prependExtensionConfig('framework', [

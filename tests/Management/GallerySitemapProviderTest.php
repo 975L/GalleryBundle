@@ -11,13 +11,14 @@
 namespace c975L\GalleryBundle\Tests\Management;
 
 use c975L\ConfigBundle\Service\ConfigServiceInterface;
-use c975L\GalleryBundle\Entity\Gallery;
 use c975L\GalleryBundle\Entity\GalleryCategory;
-use c975L\GalleryBundle\Entity\GalleryPhoto;
+use c975L\GalleryBundle\Entity\GalleryMedia;
 use c975L\GalleryBundle\Management\GallerySitemapProvider;
-use c975L\GalleryBundle\Repository\GalleryPhotoRepository;
-use c975L\GalleryBundle\Repository\GalleryRepository;
+use c975L\GalleryBundle\Repository\GalleryCategoryRepository;
+use c975L\GalleryBundle\Repository\GalleryMediaRepository;
+use c975L\GalleryBundle\Routing\GalleryRoutePrefix;
 use PHPUnit\Framework\TestCase;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 class GallerySitemapProviderTest extends TestCase
 {
@@ -29,100 +30,115 @@ class GallerySitemapProviderTest extends TestCase
         return $configService;
     }
 
-    private function createGallery(array $categories): Gallery
-    {
-        $gallery = new Gallery();
-        foreach ($categories as $category) {
-            $gallery->addCategory($category);
-        }
-
-        return $gallery;
-    }
-
     private function createCategory(string $slug): GalleryCategory
     {
-        return (new GalleryCategory())->setSlug($slug);
+        return (new GalleryCategory())->setSlug($slug)->setTitle(ucfirst($slug));
     }
 
-    // The id is the route parameter and createdAt is set by the constructor - neither has a setter, both are written straight through reflection rather than around them
-    private function createPhoto(int $id, ?string $updatedAt = null, ?string $createdAt = null): GalleryPhoto
+    // The slug is the route parameter; createdAt is set by the constructor and has no setter, so it is written straight through reflection rather than around it
+    private function createMedia(string $slug, ?string $updatedAt = null, ?string $createdAt = null): GalleryMedia
     {
-        $photo = new GalleryPhoto();
-        (new \ReflectionProperty(GalleryPhoto::class, 'id'))->setValue($photo, $id);
-        (new \ReflectionProperty(GalleryPhoto::class, 'createdAt'))->setValue($photo, null === $createdAt ? null : new \DateTimeImmutable($createdAt));
+        $media = (new GalleryMedia())->setSlug($slug);
+        (new \ReflectionProperty(GalleryMedia::class, 'createdAt'))->setValue($media, null === $createdAt ? null : new \DateTimeImmutable($createdAt));
 
         if (null !== $updatedAt) {
-            $photo->setUpdatedAt(new \DateTimeImmutable($updatedAt));
+            $media->setUpdatedAt(new \DateTimeImmutable($updatedAt));
         }
 
-        return $photo;
+        return $media;
     }
 
-    private function createProvider(?string $siteUrl, ?Gallery $gallery, array $photosByCategorySlug = []): GallerySitemapProvider
+    private function createProvider(?string $siteUrl, array $categories, array $mediasByCategorySlug = [], string $routePrefix = GalleryRoutePrefix::DEFAULT): GallerySitemapProvider
     {
-        $galleryRepository = $this->createStub(GalleryRepository::class);
-        $galleryRepository->method('findDefault')->willReturn($gallery);
+        $categoryRepository = $this->createStub(GalleryCategoryRepository::class);
+        $categoryRepository->method('findAllOrdered')->willReturn($categories);
 
-        $photoRepository = $this->createStub(GalleryPhotoRepository::class);
-        $photoRepository->method('findByCategory')->willReturnCallback(
-            static fn (GalleryCategory $category): array => $photosByCategorySlug[$category->getSlug()] ?? []
+        $mediaRepository = $this->createStub(GalleryMediaRepository::class);
+        $mediaRepository->method('findByCategory')->willReturnCallback(
+            static fn (GalleryCategory $category): array => $mediasByCategorySlug[$category->getSlug()] ?? []
         );
 
-        return new GallerySitemapProvider($this->createConfigService($siteUrl), $galleryRepository, $photoRepository);
+        $translator = $this->createStub(TranslatorInterface::class);
+        $translator->method('trans')->willReturn('Galerie Medias');
+
+        return new GallerySitemapProvider(
+            $this->createConfigService($siteUrl),
+            $categoryRepository,
+            $mediaRepository,
+            $translator,
+            new GalleryRoutePrefix($this->createConfigService($routePrefix)),
+        );
     }
 
     public function testGetSitemapNameReturnsGallery(): void
     {
-        $this->assertSame('gallery', $this->createProvider('https://example.com', null)->getSitemapName());
+        $this->assertSame('gallery', $this->createProvider('https://example.com', [])->getSitemapName());
     }
 
     public function testGetUrlsReturnsEmptyArrayWithoutASiteUrl(): void
     {
-        $provider = $this->createProvider(null, $this->createGallery([$this->createCategory('nature')]));
+        $provider = $this->createProvider(null, [$this->createCategory('nature')]);
 
         $this->assertSame([], $provider->getUrls());
     }
 
-    // Nothing to declare before a gallery exists - the /photos page itself has no content to show either
-    public function testGetUrlsReturnsEmptyArrayWithoutAGallery(): void
+    // Nothing to declare before a single category exists - the index page itself has no content to show either
+    public function testGetUrlsReturnsEmptyArrayWithoutAnyCategory(): void
     {
-        $this->assertSame([], $this->createProvider('https://example.com', null)->getUrls());
+        $this->assertSame([], $this->createProvider('https://example.com', [])->getUrls());
     }
 
-    public function testGetUrlsDeclaresTheIndexEvenWithNoCategory(): void
+    public function testGetUrlsDeclaresTheIndexAheadOfTheCategories(): void
     {
-        $urls = $this->createProvider('https://example.com', $this->createGallery([]))->getUrls();
+        $urls = $this->createProvider('https://example.com', [$this->createCategory('nature')])->getUrls();
 
-        $this->assertCount(1, $urls);
-        $this->assertSame('https://example.com/photos', $urls[0]['loc']);
+        $this->assertSame('https://example.com/gallery', $urls[0]['loc']);
+        $this->assertSame('https://example.com/gallery/nature', $urls[1]['loc']);
     }
 
-    public function testGetUrlsDeclaresEachCategoryAndEachPhoto(): void
+    public function testGetUrlsDeclaresEachCategoryAndEachMedia(): void
     {
         $provider = $this->createProvider(
             'https://example.com/',
-            $this->createGallery([$this->createCategory('nature'), $this->createCategory('ville')]),
-            ['nature' => [$this->createPhoto(12, '2026-05-04'), $this->createPhoto(13, '2026-06-08')]],
+            [$this->createCategory('nature'), $this->createCategory('ville')],
+            ['nature' => [$this->createMedia('col-du-galibier', '2026-05-04'), $this->createMedia('mont-blanc', '2026-06-08')]],
         );
 
         $urls = array_column($provider->getUrls(), 'loc');
 
         $this->assertSame([
-            'https://example.com/photos',
-            'https://example.com/photos/nature',
-            'https://example.com/photos/nature/12',
-            'https://example.com/photos/nature/13',
-            'https://example.com/photos/ville',
+            'https://example.com/gallery',
+            'https://example.com/gallery/nature',
+            'https://example.com/gallery/nature/col-du-galibier',
+            'https://example.com/gallery/nature/mont-blanc',
+            'https://example.com/gallery/ville',
         ], $urls);
     }
 
-    // A category holds no date of its own: its content is the photo list, so the most recently touched one dates it
-    public function testGetUrlsDatesACategoryFromItsMostRecentPhoto(): void
+    // The declared urls follow the configured route prefix, the routes themselves being mounted on it
+    public function testGetUrlsFollowsTheConfiguredRoutePrefix(): void
     {
         $provider = $this->createProvider(
             'https://example.com',
-            $this->createGallery([$this->createCategory('nature')]),
-            ['nature' => [$this->createPhoto(12, '2026-05-04'), $this->createPhoto(13, '2026-06-08')]],
+            [$this->createCategory('nature')],
+            ['nature' => [$this->createMedia('col-du-galibier', '2026-05-04')]],
+            'galerie',
+        );
+
+        $this->assertSame([
+            'https://example.com/galerie',
+            'https://example.com/galerie/nature',
+            'https://example.com/galerie/nature/col-du-galibier',
+        ], array_column($provider->getUrls(), 'loc'));
+    }
+
+    // A category holds no date of its own: its content is the media list, so the most recently touched one dates it
+    public function testGetUrlsDatesACategoryFromItsMostRecentMedia(): void
+    {
+        $provider = $this->createProvider(
+            'https://example.com',
+            [$this->createCategory('nature')],
+            ['nature' => [$this->createMedia('col-du-galibier', '2026-05-04'), $this->createMedia('mont-blanc', '2026-06-08')]],
         );
 
         $urls = $provider->getUrls();
@@ -131,13 +147,13 @@ class GallerySitemapProviderTest extends TestCase
         $this->assertSame('2026-05-04', $urls[2]['lastmod']);
     }
 
-    // A photo never edited since upload is dated by its creation instead
-    public function testGetUrlsFallsBackToThePhotoCreationDate(): void
+    // A media never edited since upload is dated by its creation instead
+    public function testGetUrlsFallsBackToTheMediaCreationDate(): void
     {
         $provider = $this->createProvider(
             'https://example.com',
-            $this->createGallery([$this->createCategory('nature')]),
-            ['nature' => [$this->createPhoto(12, null, '2026-02-01')]],
+            [$this->createCategory('nature')],
+            ['nature' => [$this->createMedia('col-du-galibier', null, '2026-02-01')]],
         );
 
         $this->assertSame('2026-02-01', $provider->getUrls()[2]['lastmod']);
@@ -148,13 +164,40 @@ class GallerySitemapProviderTest extends TestCase
     {
         $provider = $this->createProvider(
             'https://example.com',
-            $this->createGallery([$this->createCategory('nature')]),
-            ['nature' => [$this->createPhoto(12, '2026-05-04')]],
+            [$this->createCategory('nature')],
+            ['nature' => [$this->createMedia('col-du-galibier', '2026-05-04')]],
         );
 
         foreach ($provider->getUrls() as $url) {
-            $this->assertSame(['loc', 'lastmod', 'changefreq', 'priority'], array_keys($url));
+            $this->assertSame(['loc', 'lastmod', 'changefreq', 'priority'], array_slice(array_keys($url), 0, 4));
             $this->assertIsInt($url['priority']);
         }
+    }
+
+    // "title" is what ConfigBundle's SeoFilesWriter builds llms.txt from - the index and the categories carry one
+    public function testGetUrlsTitlesTheIndexAndTheCategories(): void
+    {
+        $provider = $this->createProvider(
+            'https://example.com',
+            [$this->createCategory('nature')],
+            ['nature' => [$this->createMedia('col-du-galibier', '2026-05-04')]],
+        );
+
+        $urls = $provider->getUrls();
+
+        $this->assertSame('Galerie Medias', $urls[0]['title']);
+        $this->assertSame('Nature', $urls[1]['title']);
+    }
+
+    // One url is declared per media: titling them all would turn llms.txt into a Markdown sitemap, so they are skipped there
+    public function testGetUrlsLeavesTheMediasUntitled(): void
+    {
+        $provider = $this->createProvider(
+            'https://example.com',
+            [$this->createCategory('nature')],
+            ['nature' => [$this->createMedia('col-du-galibier', '2026-05-04')]],
+        );
+
+        $this->assertArrayNotHasKey('title', $provider->getUrls()[2]);
     }
 }

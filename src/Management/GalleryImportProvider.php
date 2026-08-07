@@ -11,23 +11,28 @@
 namespace c975L\GalleryBundle\Management;
 
 use c975L\ConfigBundle\Management\ImportProviderInterface;
-use c975L\GalleryBundle\Entity\Gallery;
 use c975L\GalleryBundle\Entity\GalleryCategory;
-use c975L\GalleryBundle\Entity\GalleryPhoto;
+use c975L\GalleryBundle\Entity\GalleryMedia;
 use c975L\GalleryBundle\Repository\GalleryCategoryRepository;
-use c975L\GalleryBundle\Repository\GalleryRepository;
+use c975L\GalleryBundle\Service\GalleryMediaSlugger;
+use c975L\UiBundle\Management\BlockDataImporter;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
+use Symfony\Component\Filesystem\Filesystem;
 use Vich\UploaderBundle\FileAbstraction\ReplacingFile;
 
-// Imports a "gallery_category" content export (see GalleryCategoryCrudController::exportSelection/ContentExporter) - the export unit is a GalleryCategory (with its Photos), not the whole Gallery: that's the granularity the admin actually checks boxes for. The parent Gallery is found-or-created by slug (a site with the single default gallery just gets it recreated under the same slug, see GalleryRepository::findOrCreateDefault()). Matches the category by (gallery, slug); Photos have no natural key of their own, so the category's whole photo collection is replaced, same principle as PageImportProvider replacing a Page's Blocks
+// Imports a "gallery_category" content export (see GalleryCategoryCrudController::exportSelection/ContentExporter) - the export unit is the GalleryCategory with its Medias, which is the granularity the admin actually checks boxes for. Matches the category by slug; Medias have no natural key of their own, so the category's whole media collection is replaced, same principle as PageImportProvider replacing a Page's Blocks
 class GalleryImportProvider implements ImportProviderInterface
 {
     public const KIND = 'gallery_category';
 
     public function __construct(
         private readonly EntityManagerInterface $em,
-        private readonly GalleryRepository $galleryRepository,
         private readonly GalleryCategoryRepository $categoryRepository,
+        private readonly GalleryMediaSlugger $mediaSlugger,
+        private readonly BlockDataImporter $blockDataImporter,
+        #[Autowire('%kernel.project_dir%')]
+        private readonly string $projectDir,
     ) {
     }
 
@@ -40,54 +45,49 @@ class GalleryImportProvider implements ImportProviderInterface
     {
         $created = 0;
         $updated = 0;
-        $galleriesBySlug = [];
-        $defaultTaken = false;
+        $originals = [];
 
         foreach ($items as $item) {
-            // Cached in-memory per gallerySlug so two items sharing a not-yet-existing gallery reuse the same new Gallery instead of each creating one (findOneBySlug can't see an unflushed persist)
-            $gallery = $galleriesBySlug[$item['gallerySlug']] ??= $this->galleryRepository->findOneBySlug($item['gallerySlug']);
-            if (null === $gallery) {
-                // Only one Gallery can be the default one (findDefault() would return an arbitrary one otherwise), so an import never steals that flag from an existing local gallery, nor sets it twice within the same batch (findDefault can't see an unflushed persist)
-                $isDefault = ($item['galleryDefault'] ?? false) && !$defaultTaken && null === $this->galleryRepository->findDefault();
-                $defaultTaken = $defaultTaken || $isDefault;
-
-                $gallery = (new Gallery())
-                    ->setSlug($item['gallerySlug'])
-                    ->setTitle($item['galleryTitle'] ?? $item['gallerySlug'])
-                    ->setPosition($item['galleryPosition'] ?? 0)
-                    ->setDefault($isDefault);
-                $this->em->persist($gallery);
-                $galleriesBySlug[$item['gallerySlug']] = $gallery;
-            }
-
-            $category = $this->categoryRepository->findOneBySlug($gallery, $item['slug']);
+            $category = $this->categoryRepository->findOneBySlug($item['slug']);
             $isNew = null === $category;
             $category ??= new GalleryCategory();
-            $gallery->addCategory($category);
 
             $category
                 ->setSlug($item['slug'])
                 ->setTitle($item['title'])
                 ->setPosition($item['position'] ?? 0)
                 ->setUncategorized($item['uncategorized'] ?? false)
-                ->setCoverPhoto(null);
+                ->setCoverMedia(null);
 
-            // Existing Photos have no natural key to match the imported ones against, so the whole collection is replaced - orphanRemoval on GalleryCategory::$photos deletes the orphaned rows on flush
-            foreach ($category->getPhotos()->toArray() as $existingPhoto) {
-                $category->removePhoto($existingPhoto);
+            // The key is optional, an archive exported before the category gained a lead-in staying importable - what it describes then is a category without one, same reading as PageImportProvider
+            $this->replaceBlocks($category, $item['blocks'] ?? [], $filesDir);
+
+            // Existing Medias have no natural key to match the imported ones against, so the whole collection is replaced - orphanRemoval on GalleryCategory::$medias deletes the orphaned rows on flush
+            foreach ($category->getMedias()->toArray() as $existingMedia) {
+                $category->removeMedia($existingMedia);
             }
 
-            $newPhotos = [];
-            foreach ($item['photos'] ?? [] as $photoData) {
-                $photo = $this->buildPhoto($photoData, $filesDir);
-                $this->em->persist($photo);
-                $category->addPhoto($photo);
-                $newPhotos[] = $photo;
+            // "photos"/"coverPhotoIndex" are what an archive exported before the rename carries: read as a fallback rather than importing a category emptied of everything it held
+            $newMedias = [];
+            foreach ($item['medias'] ?? $item['photos'] ?? [] as $mediaData) {
+                $media = $this->buildMedia($mediaData, $filesDir);
+                $this->em->persist($media);
+                $category->addMedia($media);
+
+                // Once the media has joined its category, the slug being unique within it - the exported one is honoured when it is still free, and the media's imported file is named after whatever it ends up being (see GalleryMedia::getVichMediaPath)
+                $this->mediaSlugger->assign($media, $mediaData['slug'] ?? null);
+
+                // Held back rather than restored right away: the file it is named after is only named by the flush below (see restoreOriginals)
+                if (null !== $filesDir && isset($mediaData['originalFile'])) {
+                    $originals[] = [$media, $filesDir . '/' . $mediaData['originalFile']];
+                }
+
+                $newMedias[] = $media;
             }
 
-            $coverIndex = $item['coverPhotoIndex'] ?? null;
-            if (null !== $coverIndex && isset($newPhotos[$coverIndex])) {
-                $category->setCoverPhoto($newPhotos[$coverIndex]);
+            $coverIndex = $item['coverMediaIndex'] ?? $item['coverPhotoIndex'] ?? null;
+            if (null !== $coverIndex && isset($newMedias[$coverIndex])) {
+                $category->setCoverMedia($newMedias[$coverIndex]);
             }
 
             $this->em->persist($category);
@@ -96,24 +96,66 @@ class GalleryImportProvider implements ImportProviderInterface
 
         $this->em->flush();
 
+        $this->restoreOriginals($originals);
+
         return ['created' => $created, 'updated' => $updated];
     }
 
-    // Same ReplacingFile technique as PageImportProvider/FontImportProvider - see PageCrudController::cloneMedia() for why a plain File won't do
-    private function buildPhoto(array $photoData, ?string $filesDir): GalleryPhoto
+    // Existing Blocks have no natural key to match the imported ones against, so the whole collection is replaced - BlockRemovalListener removes the orphaned rows (and their Medias) on flush, same as PageImportProvider
+    private function replaceBlocks(GalleryCategory $category, array $blocksData, ?string $filesDir): void
     {
-        $photo = (new GalleryPhoto())
-            ->setAlt($photoData['alt'] ?? null)
-            ->setCredits($photoData['credits'] ?? null)
-            ->setRightsReserved($photoData['rightsReserved'] ?? false)
-            ->setMediaType($photoData['mediaType'] ?? null)
-            ->setExternalId($photoData['externalId'] ?? null)
-            ->setPosition($photoData['position'] ?? 0);
-
-        if (null !== $filesDir && isset($photoData['file'])) {
-            $photo->setFile(new ReplacingFile($filesDir . '/' . $photoData['file'], true, true, true));
+        foreach ($category->getBlocks()->toArray() as $existingBlock) {
+            $category->removeBlock($existingBlock);
         }
 
-        return $photo;
+        foreach ($this->blockDataImporter->buildBlocks($blocksData, $filesDir) as $block) {
+            $category->addBlock($block);
+        }
+    }
+
+    // Puts the archived originals back under private/, after the flush that had Vich store and name the files they are named after. Deliberately not left to UiBundle's VichImageResizeListener::keepOriginal(): what an import re-uploads is the already-processed file, so the listener would keep a webp copy of that instead of the untouched upload the archive actually carries
+    // @param list<array{0: GalleryMedia, 1: string}> $originals
+    private function restoreOriginals(array $originals): void
+    {
+        if ([] === $originals) {
+            return;
+        }
+
+        $filesystem = new Filesystem();
+        foreach ($originals as [$media, $archivedPath]) {
+            $filename = $media->getFilename();
+            if (null === $filename || !is_file($archivedPath)) {
+                continue;
+            }
+
+            // Same naming as the listener's own: the stored file's name, suffixed and carrying the original's extension rather than the forced webp one
+            $originalFilename = preg_replace('/\.[^.\/]+$/', '-original.' . pathinfo($archivedPath, \PATHINFO_EXTENSION), $filename);
+            $filesystem->copy($archivedPath, $this->projectDir . '/' . GalleryMedia::ORIGINAL_DIRECTORY . '/' . $originalFilename, true);
+            $media->setOriginalFilename($originalFilename);
+
+            // Vich has stored the file by now and left a plain File on the property (see its FileInjector), which is exactly what GalleryMediaDerivativeCleanupListener::preUpdate() reads as "a new file is being uploaded" - left in place, it would take the flush below for a file replacement and erase the very derivatives, and the original, that were just written
+            $media->setFile(null);
+        }
+
+        $this->em->flush();
+    }
+
+    // Same ReplacingFile technique as PageImportProvider/FontImportProvider - see PageCrudController::cloneMedia() for why a plain File won't do
+    private function buildMedia(array $mediaData, ?string $filesDir): GalleryMedia
+    {
+        // "alt" is what an archive exported before the title/slug rework carries, read as a fallback rather than importing medias with no name at all
+        $media = (new GalleryMedia())
+            ->setTitle($mediaData['title'] ?? $mediaData['alt'] ?? null)
+            ->setCredits($mediaData['credits'] ?? null)
+            ->setRightsReserved($mediaData['rightsReserved'] ?? false)
+            ->setMediaType($mediaData['mediaType'] ?? null)
+            ->setExternalId($mediaData['externalId'] ?? null)
+            ->setPosition($mediaData['position'] ?? 0);
+
+        if (null !== $filesDir && isset($mediaData['file'])) {
+            $media->setFile(new ReplacingFile($filesDir . '/' . $mediaData['file'], true, true, true));
+        }
+
+        return $media;
     }
 }

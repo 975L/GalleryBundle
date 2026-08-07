@@ -1,0 +1,9 @@
+{# Adapter for the dynamic Block system - renders nothing at all when the category it points at no longer exists, rather than an empty grid #}
+{% set gallery = gallery_block_medias(categorySlug ?? null, max ?? null, random ?? false) %}
+{% if gallery.category %}
+    <twig:c975LGallery:Gallery:Medias category="{{ gallery.category }}" medias="{{ gallery.medias }}" displayTitle="{{ true }}"/>
+    {% if displayMore ?? false %}
+        {# The category title alone, not "all the <title>": no wording of that shape reads right in every language the bundle ships #}
+        <twig:c975LUi:Button:Button label="{{ gallery.category.title }}" url="{{ path('gallery_category', { category: gallery.category.slug }) }}"/>
+    {% endif %}
+{% endif %}

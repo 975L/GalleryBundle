@@ -10,7 +10,6 @@
 
 namespace c975L\GalleryBundle\Tests\Repository;
 
-use c975L\GalleryBundle\Entity\Gallery;
 use c975L\GalleryBundle\Entity\GalleryCategory;
 use c975L\GalleryBundle\Repository\GalleryCategoryRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -29,8 +28,7 @@ class GalleryCategoryRepositoryTest extends TestCase
 
     public function testFindOrCreateUncategorizedReturnsTheExistingOneWithoutPersistingAnything(): void
     {
-        $gallery = new Gallery();
-        $existing = (new GalleryCategory())->setGallery($gallery)->setUncategorized(true);
+        $existing = (new GalleryCategory())->setUncategorized(true);
 
         $entityManager = $this->createMock(EntityManagerInterface::class);
         $entityManager->expects($this->never())->method('persist');
@@ -38,14 +36,12 @@ class GalleryCategoryRepositoryTest extends TestCase
 
         $repository = new GalleryCategoryRepositoryFindOneByFixture($existing, $entityManager, $this->createTranslator());
 
-        $this->assertSame($existing, $repository->findOrCreateUncategorized($gallery));
+        $this->assertSame($existing, $repository->findOrCreateUncategorized());
     }
 
-    // Catch-all category a GalleryPhoto falls back to when uploaded without picking a real one - created lazily, translated at creation time only
+    // Catch-all category a GalleryMedia falls back to when imported without a real one - created lazily, translated at creation time only
     public function testFindOrCreateUncategorizedCreatesAndPersistsATranslatedCategoryWhenNoneExists(): void
     {
-        $gallery = new Gallery();
-
         $entityManager = $this->createMock(EntityManagerInterface::class);
         $persisted = null;
         $entityManager->expects($this->once())->method('persist')->with($this->callback(function (GalleryCategory $category) use (&$persisted) {
@@ -56,53 +52,12 @@ class GalleryCategoryRepositoryTest extends TestCase
         $entityManager->expects($this->once())->method('flush');
 
         $repository = new GalleryCategoryRepositoryFindOneByFixture(null, $entityManager, $this->createTranslator());
-        $category = $repository->findOrCreateUncategorized($gallery);
+        $category = $repository->findOrCreateUncategorized();
 
         $this->assertSame($persisted, $category);
-        $this->assertSame($gallery, $category->getGallery());
         $this->assertSame('non-classe', $category->getSlug());
         $this->assertSame('label.gallery_uncategorized', $category->getTitle());
         $this->assertTrue($category->isUncategorized());
-    }
-
-    // --- makeSlugUnique ------------------------------------------------------------------------------------
-
-    public function testMakeSlugUniqueKeepsTheSlugWhenNoOtherCategoryUsesIt(): void
-    {
-        $category = (new GalleryCategory())->setGallery(new Gallery());
-        $repository = new GalleryCategoryRepositoryBySlugFixture([]);
-
-        $this->assertSame('ete-2024', $repository->makeSlugUnique($category, 'ete-2024'));
-    }
-
-    // Two different titles can slugify identically ("Été 2024" and "Ete 2024")
-    public function testMakeSlugUniqueSuffixesTheSlugUntilItIsFree(): void
-    {
-        $gallery = new Gallery();
-        $category = (new GalleryCategory())->setGallery($gallery);
-        $repository = new GalleryCategoryRepositoryBySlugFixture([
-            'ete-2024' => (new GalleryCategory())->setGallery($gallery),
-            'ete-2024-2' => (new GalleryCategory())->setGallery($gallery),
-        ]);
-
-        $this->assertSame('ete-2024-3', $repository->makeSlugUnique($category, 'ete-2024'));
-    }
-
-    // Editing a category without renaming it must not keep suffixing its own slug
-    public function testMakeSlugUniqueIgnoresTheCategoryItself(): void
-    {
-        $gallery = new Gallery();
-        $category = (new GalleryCategory())->setGallery($gallery);
-        $repository = new GalleryCategoryRepositoryBySlugFixture(['ete-2024' => $category]);
-
-        $this->assertSame('ete-2024', $repository->makeSlugUnique($category, 'ete-2024'));
-    }
-
-    public function testMakeSlugUniqueLeavesTheSlugAloneWhenTheCategoryHasNoGalleryYet(): void
-    {
-        $repository = new GalleryCategoryRepositoryBySlugFixture([]);
-
-        $this->assertSame('ete-2024', $repository->makeSlugUnique(new GalleryCategory(), 'ete-2024'));
     }
 }
 
@@ -125,19 +80,5 @@ class GalleryCategoryRepositoryFindOneByFixture extends GalleryCategoryRepositor
     protected function getEntityManager(): EntityManagerInterface
     {
         return $this->entityManager;
-    }
-}
-
-// Same skipped-constructor technique, but answering findOneBy() per requested slug so makeSlugUnique() can walk the collisions
-class GalleryCategoryRepositoryBySlugFixture extends GalleryCategoryRepository
-{
-    /** @param array<string, GalleryCategory> $categoriesBySlug */
-    public function __construct(private readonly array $categoriesBySlug)
-    {
-    }
-
-    public function findOneBy(array $criteria, ?array $orderBy = null): ?object
-    {
-        return $this->categoriesBySlug[$criteria['slug']] ?? null;
     }
 }

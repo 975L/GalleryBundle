@@ -1,0 +1,111 @@
+<?xml version="1.0"?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+    <file source-language="en" target-language="en" datatype="plaintext" original="site_config.en.xlf">
+        <body>
+            <trans-unit id="a033O9O">
+                <source>description.gallery_route_prefix</source>
+                <target>First segment of the gallery's public urls, e.g. "gallery" for /gallery/my-category. A change applies straight away, but the previous urls then return a not found page: set up a redirect if they were indexed. Left empty, the "gallery" prefix applies.</target>
+            </trans-unit>
+            <trans-unit id="GJDJnRp">
+                <source>description.gallery_thumbnail_whole</source>
+                <target>Off (default): the thumbnail fills its square, cropped from the centre, which hides the edges of a photo that is not square. On: the whole photo fits inside the square, the bands left around it taking the --gallery-thumb-background token's colour. The thumbnail file holds the whole photo either way, only the display changes: switching is immediate and regenerates nothing.</target>
+            </trans-unit>
+            <trans-unit id="fZWM8EJ">
+                <source>description.theme_color_gallery_backdrop</source>
+                <target>Color veiling the page behind the opened high resolution. Left empty, color-mix(in srgb, var(--black) 90%, transparent) applies. A CSS color: a hex with its # (#ff0000), rgb() or a name.</target>
+            </trans-unit>
+            <trans-unit id="yqacMzE">
+                <source>description.theme_color_gallery_badge</source>
+                <target>Background of the badge marking a thumbnail that opens a video player. Left empty, color-mix(in srgb, var(--black) 55%, transparent) applies. A CSS color: a hex with its # (#ff0000), rgb() or a name.</target>
+            </trans-unit>
+            <trans-unit id="My2F0YV">
+                <source>description.theme_color_gallery_badge_text</source>
+                <target>Color of the triangle of the video badge. Left empty, var(--white), the theme's white applies. A CSS color: a hex with its # (#ff0000), rgb() or a name.</target>
+            </trans-unit>
+            <trans-unit id="_hsufUp">
+                <source>description.theme_color_gallery_breadcrumb</source>
+                <target>Color of the breadcrumb opening every page of the gallery. Left empty, color-mix(in srgb, var(--text) 60%, var(--background)) applies. A CSS color: a hex with its # (#ff0000), rgb() or a name.</target>
+            </trans-unit>
+            <trans-unit id="MFMCksC">
+                <source>description.theme_color_gallery_credits</source>
+                <target>Color of the credits and reserved rights shown under a media. Empty: color-mix(in srgb, var(--text) 60%, var(--background)) applies. A CSS color: hexadecimal with its # (#ff0000), rgb() or name.</target>
+            </trans-unit>
+            <trans-unit id="t7g1Sy9">
+                <source>description.theme_color_gallery_frame</source>
+                <target>Color of the passe-partout framing a displayed media. Left empty, var(--white), the theme's white applies. A CSS color: a hex with its # (#ff0000), rgb() or a name.</target>
+            </trans-unit>
+            <trans-unit id="Cu8Z9pe">
+                <source>description.theme_color_gallery_lightbox_close</source>
+                <target>Color of the cross closing the lightbox. Left empty, var(--white), the theme's white applies. A CSS color: a hex with its # (#ff0000), rgb() or a name.</target>
+            </trans-unit>
+            <trans-unit id="5CS18Ba">
+                <source>description.theme_color_gallery_lightbox_close_background</source>
+                <target>Background of the cross closing the lightbox. Left empty, color-mix(in srgb, var(--black) 55%, transparent) applies. A CSS color: a hex with its # (#ff0000), rgb() or a name.</target>
+            </trans-unit>
+            <trans-unit id="Yy_JQfE">
+                <source>description.theme_color_gallery_nav</source>
+                <target>Color of the chevron of the previous/next arrows sitting on the media. Left empty, var(--white), the theme's white applies. A CSS color: a hex with its # (#ff0000), rgb() or a name.</target>
+            </trans-unit>
+            <trans-unit id="Nd0mt8u">
+                <source>description.theme_color_gallery_nav_background</source>
+                <target>Background of the previous/next arrow buttons. Left empty, color-mix(in srgb, var(--white) 80%, var(--black)) applies. A CSS color: a hex with its # (#ff0000), rgb() or a name.</target>
+            </trans-unit>
+            <trans-unit id="4Nkzy4F">
+                <source>description.theme_color_gallery_nav_hover</source>
+                <target>Color of the chevron on hover and on keyboard focus. Left empty, var(--gallery-nav-color), the arrows color applies. A CSS color: a hex with its # (#ff0000), rgb() or a name.</target>
+            </trans-unit>
+            <trans-unit id="lbaVu72">
+                <source>label.gallery_route_prefix</source>
+                <target>Gallery url prefix</target>
+            </trans-unit>
+            <trans-unit id="vZGtgaH">
+                <source>label.gallery_thumbnail_whole</source>
+                <target>Thumbnails showing the whole photo</target>
+            </trans-unit>
+            <trans-unit id="sk2ukrk">
+                <source>label.theme_color_gallery_backdrop</source>
+                <target>Gallery: lightbox backdrop</target>
+            </trans-unit>
+            <trans-unit id="kv_lXZe">
+                <source>label.theme_color_gallery_badge</source>
+                <target>Gallery: video badge background</target>
+            </trans-unit>
+            <trans-unit id="o2chCN0">
+                <source>label.theme_color_gallery_badge_text</source>
+                <target>Gallery: video badge color</target>
+            </trans-unit>
+            <trans-unit id="26mNhZU">
+                <source>label.theme_color_gallery_breadcrumb</source>
+                <target>Gallery: breadcrumb color</target>
+            </trans-unit>
+            <trans-unit id="YHSyo78">
+                <source>label.theme_color_gallery_credits</source>
+                <target>Gallery: credits color</target>
+            </trans-unit>
+            <trans-unit id="0k_i3KC">
+                <source>label.theme_color_gallery_frame</source>
+                <target>Gallery: passe-partout color</target>
+            </trans-unit>
+            <trans-unit id="nXEoGpn">
+                <source>label.theme_color_gallery_lightbox_close</source>
+                <target>Gallery: close button color</target>
+            </trans-unit>
+            <trans-unit id="GYSHxB9">
+                <source>label.theme_color_gallery_lightbox_close_background</source>
+                <target>Gallery: close button background</target>
+            </trans-unit>
+            <trans-unit id="2jxfe7Q">
+                <source>label.theme_color_gallery_nav</source>
+                <target>Gallery: arrows color</target>
+            </trans-unit>
+            <trans-unit id="fdstJrr">
+                <source>label.theme_color_gallery_nav_background</source>
+                <target>Gallery: arrows background</target>
+            </trans-unit>
+            <trans-unit id="_BDgn4k">
+                <source>label.theme_color_gallery_nav_hover</source>
+                <target>Gallery: arrows color on hover</target>
+            </trans-unit>
+        </body>
+    </file>
+</xliff>

@@ -1,0 +1,145 @@
+[
+    {
+        "label": "label.gallery_route_prefix",
+        "slug": "gallery-route-prefix",
+        "sensitive": false,
+        "restricted": false,
+        "value": "gallery",
+        "kind": "text",
+        "group": "gallery",
+        "severity": "warning",
+        "description": "description.gallery_route_prefix"
+    },
+    {
+        "label": "label.gallery_thumbnail_whole",
+        "slug": "gallery-thumbnail-whole",
+        "sensitive": false,
+        "restricted": false,
+        "value": "false",
+        "kind": "bool",
+        "group": "gallery",
+        "severity": null,
+        "description": "description.gallery_thumbnail_whole"
+    },
+    {
+        "label": "label.theme_color_gallery_frame",
+        "slug": "theme-color-gallery-frame",
+        "sensitive": false,
+        "restricted": false,
+        "value": null,
+        "kind": "text",
+        "group": "gallery",
+        "severity": null,
+        "description": "description.theme_color_gallery_frame"
+    },
+    {
+        "label": "label.theme_color_gallery_nav",
+        "slug": "theme-color-gallery-nav",
+        "sensitive": false,
+        "restricted": false,
+        "value": null,
+        "kind": "text",
+        "group": "gallery",
+        "severity": null,
+        "description": "description.theme_color_gallery_nav"
+    },
+    {
+        "label": "label.theme_color_gallery_nav_hover",
+        "slug": "theme-color-gallery-nav-hover",
+        "sensitive": false,
+        "restricted": false,
+        "value": null,
+        "kind": "text",
+        "group": "gallery",
+        "severity": null,
+        "description": "description.theme_color_gallery_nav_hover"
+    },
+    {
+        "label": "label.theme_color_gallery_nav_background",
+        "slug": "theme-color-gallery-nav-background",
+        "sensitive": false,
+        "restricted": false,
+        "value": null,
+        "kind": "text",
+        "group": "gallery",
+        "severity": null,
+        "description": "description.theme_color_gallery_nav_background"
+    },
+    {
+        "label": "label.theme_color_gallery_backdrop",
+        "slug": "theme-color-gallery-backdrop",
+        "sensitive": false,
+        "restricted": false,
+        "value": null,
+        "kind": "text",
+        "group": "gallery",
+        "severity": null,
+        "description": "description.theme_color_gallery_backdrop"
+    },
+    {
+        "label": "label.theme_color_gallery_lightbox_close",
+        "slug": "theme-color-gallery-lightbox-close",
+        "sensitive": false,
+        "restricted": false,
+        "value": null,
+        "kind": "text",
+        "group": "gallery",
+        "severity": null,
+        "description": "description.theme_color_gallery_lightbox_close"
+    },
+    {
+        "label": "label.theme_color_gallery_lightbox_close_background",
+        "slug": "theme-color-gallery-lightbox-close-background",
+        "sensitive": false,
+        "restricted": false,
+        "value": null,
+        "kind": "text",
+        "group": "gallery",
+        "severity": null,
+        "description": "description.theme_color_gallery_lightbox_close_background"
+    },
+    {
+        "label": "label.theme_color_gallery_breadcrumb",
+        "slug": "theme-color-gallery-breadcrumb",
+        "sensitive": false,
+        "restricted": false,
+        "value": null,
+        "kind": "text",
+        "group": "gallery",
+        "severity": null,
+        "description": "description.theme_color_gallery_breadcrumb"
+    },
+    {
+        "label": "label.theme_color_gallery_credits",
+        "slug": "theme-color-gallery-credits",
+        "sensitive": false,
+        "restricted": false,
+        "value": null,
+        "kind": "text",
+        "group": "gallery",
+        "severity": null,
+        "description": "description.theme_color_gallery_credits"
+    },
+    {
+        "label": "label.theme_color_gallery_badge",
+        "slug": "theme-color-gallery-badge",
+        "sensitive": false,
+        "restricted": false,
+        "value": null,
+        "kind": "text",
+        "group": "gallery",
+        "severity": null,
+        "description": "description.theme_color_gallery_badge"
+    },
+    {
+        "label": "label.theme_color_gallery_badge_text",
+        "slug": "theme-color-gallery-badge-text",
+        "sensitive": false,
+        "restricted": false,
+        "value": null,
+        "kind": "text",
+        "group": "gallery",
+        "severity": null,
+        "description": "description.theme_color_gallery_badge_text"
+    }
+]

@@ -1,0 +1,5 @@
+{# Adapter for the dynamic Block system - the categories are resolved live (see GalleryBlockExtension), the block itself only storing how many to show #}
+{% set categories = gallery_block_categories(max ?? null) %}
+{% if categories is not empty %}
+    <twig:c975LGallery:Gallery:Categories categories="{{ categories }}"/>
+{% endif %}

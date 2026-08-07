@@ -10,26 +10,20 @@
 
 namespace c975L\GalleryBundle\Tests\Management;
 
-use c975L\GalleryBundle\Entity\Gallery;
 use c975L\GalleryBundle\Entity\GalleryCategory;
-use c975L\GalleryBundle\Entity\GalleryPhoto;
+use c975L\GalleryBundle\Entity\GalleryMedia;
 use c975L\GalleryBundle\Management\GalleryImportProvider;
 use c975L\GalleryBundle\Repository\GalleryCategoryRepository;
-use c975L\GalleryBundle\Repository\GalleryRepository;
+use c975L\GalleryBundle\Service\GalleryMediaSlugger;
+use c975L\UiBundle\Entity\Block;
+use c975L\UiBundle\Management\BlockDataImporter;
+use c975L\UiBundle\Registry\FormBlockDependencyRegistry;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\String\Slugger\AsciiSlugger;
 
 class GalleryImportProviderTest extends TestCase
 {
-    private function createGalleryRepository(?Gallery $existingGallery = null, ?Gallery $existingDefault = null): GalleryRepository
-    {
-        $repository = $this->createStub(GalleryRepository::class);
-        $repository->method('findOneBySlug')->willReturn($existingGallery);
-        $repository->method('findDefault')->willReturn($existingDefault);
-
-        return $repository;
-    }
-
     private function createCategoryRepository(?GalleryCategory $existingCategory = null): GalleryCategoryRepository
     {
         $repository = $this->createStub(GalleryCategoryRepository::class);
@@ -50,19 +44,26 @@ class GalleryImportProviderTest extends TestCase
         return $filesDir;
     }
 
+    private function createProvider(EntityManagerInterface $em, ?GalleryCategory $existingCategory = null, ?string $projectDir = null): GalleryImportProvider
+    {
+        return new GalleryImportProvider(
+            $em,
+            $this->createCategoryRepository($existingCategory),
+            new GalleryMediaSlugger(new AsciiSlugger()),
+            new BlockDataImporter($em, $this->createStub(FormBlockDependencyRegistry::class)),
+            $projectDir ?? sys_get_temp_dir(),
+        );
+    }
+
     public function testSupportsImportOnlyMatchesGalleryCategoryKind(): void
     {
-        $provider = new GalleryImportProvider(
-            $this->createStub(EntityManagerInterface::class),
-            $this->createGalleryRepository(),
-            $this->createCategoryRepository(),
-        );
+        $provider = $this->createProvider($this->createStub(EntityManagerInterface::class));
 
         $this->assertTrue($provider->supportsImport('gallery_category'));
         $this->assertFalse($provider->supportsImport('site_page'));
     }
 
-    public function testImportCreatesTheGalleryAndCategoryWhenBothAreMissing(): void
+    public function testImportCreatesTheCategoryWithItsMediasWhenItIsMissing(): void
     {
         $filesDir = $this->createFilesDir(['p1.jpg' => 'bytes-1', 'p2.jpg' => 'bytes-2']);
 
@@ -72,47 +73,39 @@ class GalleryImportProviderTest extends TestCase
             $persisted[] = $entity;
         });
 
-        $provider = new GalleryImportProvider($em, $this->createGalleryRepository(), $this->createCategoryRepository());
+        $provider = $this->createProvider($em);
 
         $result = $provider->import([[
-            'gallerySlug' => 'main',
-            'galleryTitle' => 'Galerie',
-            'galleryPosition' => 0,
-            'galleryDefault' => true,
             'slug' => 'voyages',
             'title' => 'Voyages',
             'position' => 0,
             'uncategorized' => false,
-            'coverPhotoIndex' => 1,
-            'photos' => [
-                ['alt' => 'Photo 1', 'position' => 0, 'originalFilename' => 'p1.jpg', 'file' => 'files/p1.jpg'],
-                ['alt' => 'Photo 2', 'position' => 1, 'originalFilename' => 'p2.jpg', 'file' => 'files/p2.jpg'],
+            'coverMediaIndex' => 1,
+            'medias' => [
+                ['title' => 'Media 1', 'slug' => 'media-1', 'position' => 0, 'file' => 'files/p1.jpg'],
+                ['title' => 'Media 2', 'slug' => 'media-2', 'position' => 1, 'file' => 'files/p2.jpg'],
             ],
         ]], $filesDir);
 
         $this->assertSame(['created' => 1, 'updated' => 0], $result);
 
-        $gallery = null;
         $category = null;
-        $photos = [];
+        $medias = [];
         foreach ($persisted as $entity) {
-            if ($entity instanceof Gallery) {
-                $gallery = $entity;
-            } elseif ($entity instanceof GalleryCategory) {
+            if ($entity instanceof GalleryCategory) {
                 $category = $entity;
-            } elseif ($entity instanceof GalleryPhoto) {
-                $photos[] = $entity;
+            } elseif ($entity instanceof GalleryMedia) {
+                $medias[] = $entity;
             }
         }
 
-        $this->assertInstanceOf(Gallery::class, $gallery);
-        $this->assertSame('main', $gallery->getSlug());
         $this->assertInstanceOf(GalleryCategory::class, $category);
         $this->assertSame('voyages', $category->getSlug());
-        $this->assertSame($gallery, $category->getGallery());
-        $this->assertCount(2, $photos);
-        $this->assertSame($photos[1], $category->getCoverPhoto());
-        $this->assertSame($filesDir . '/files/p2.jpg', $photos[1]->getFile()->getPathname());
+        $this->assertCount(2, $medias);
+        $this->assertSame($medias[1], $category->getCoverMedia());
+        $this->assertSame($filesDir . '/files/p2.jpg', $medias[1]->getFile()->getPathname());
+        // The exported slug is put back as it was, so the imported medias answer at the very urls the archive came from
+        $this->assertSame(['media-1', 'media-2'], array_map(static fn (GalleryMedia $media): ?string => $media->getSlug(), $medias));
 
         unlink($filesDir . '/files/p1.jpg');
         unlink($filesDir . '/files/p2.jpg');
@@ -120,129 +113,142 @@ class GalleryImportProviderTest extends TestCase
         rmdir($filesDir);
     }
 
-    public function testImportReplacesAnExistingCategorysPhotos(): void
+    // An archive exported before the "photos" -> "medias" rename still imports its entries, rather than landing an empty category
+    public function testImportReadsTheLegacyPhotoKeys(): void
+    {
+        $filesDir = $this->createFilesDir(['p1.jpg' => 'bytes-1']);
+
+        $persisted = [];
+        $em = $this->createStub(EntityManagerInterface::class);
+        $em->method('persist')->willReturnCallback(static function (object $entity) use (&$persisted): void {
+            $persisted[] = $entity;
+        });
+
+        $provider = $this->createProvider($em);
+
+        $provider->import([[
+            'slug' => 'voyages',
+            'title' => 'Voyages',
+            'coverPhotoIndex' => 0,
+            'photos' => [
+                ['alt' => 'Photo 1', 'position' => 0, 'file' => 'files/p1.jpg'],
+            ],
+        ]], $filesDir);
+
+        $medias = array_values(array_filter($persisted, static fn (object $entity): bool => $entity instanceof GalleryMedia));
+        $category = array_values(array_filter($persisted, static fn (object $entity): bool => $entity instanceof GalleryCategory))[0];
+
+        $this->assertCount(1, $medias);
+        $this->assertSame('Photo 1', $medias[0]->getTitle());
+        $this->assertSame('photo-1', $medias[0]->getSlug());
+        $this->assertSame($medias[0], $category->getCoverMedia());
+
+        unlink($filesDir . '/files/p1.jpg');
+        rmdir($filesDir . '/files');
+        rmdir($filesDir);
+    }
+
+    public function testImportReplacesAnExistingCategorysMedias(): void
     {
         $filesDir = $this->createFilesDir(['new.jpg' => 'new-bytes']);
 
-        $gallery = (new Gallery())->setSlug('main')->setTitle('Galerie');
-        $oldPhoto = (new GalleryPhoto())->setAlt('Old');
-        $existingCategory = (new GalleryCategory())->setGallery($gallery)->setSlug('voyages')->setTitle('Voyages');
-        $existingCategory->addPhoto($oldPhoto);
+        $oldMedia = (new GalleryMedia())->setTitle('Old')->setSlug('old');
+        $existingCategory = (new GalleryCategory())->setSlug('voyages')->setTitle('Voyages');
+        $existingCategory->addMedia($oldMedia);
 
         $em = $this->createStub(EntityManagerInterface::class);
 
-        $provider = new GalleryImportProvider(
-            $em,
-            $this->createGalleryRepository($gallery),
-            $this->createCategoryRepository($existingCategory),
-        );
+        $provider = $this->createProvider($em, $existingCategory);
 
         $result = $provider->import([[
-            'gallerySlug' => 'main',
             'slug' => 'voyages',
             'title' => 'Voyages',
-            'photos' => [
-                ['alt' => 'New', 'position' => 0, 'originalFilename' => 'new.jpg', 'file' => 'files/new.jpg'],
+            'medias' => [
+                ['title' => 'New', 'position' => 0, 'file' => 'files/new.jpg'],
             ],
         ]], $filesDir);
 
         $this->assertSame(['created' => 0, 'updated' => 1], $result);
-        $this->assertCount(1, $existingCategory->getPhotos());
-        $this->assertSame('New', $existingCategory->getPhotos()->first()->getAlt());
-        $this->assertNull($oldPhoto->getCategory());
+        $this->assertCount(1, $existingCategory->getMedias());
+        $this->assertSame('New', $existingCategory->getMedias()->first()->getTitle());
+        $this->assertNull($oldMedia->getCategory());
 
         unlink($filesDir . '/files/new.jpg');
         rmdir($filesDir . '/files');
         rmdir($filesDir);
     }
 
-    // Two items sharing a gallerySlug that doesn't exist yet must reuse the same new Gallery instead of each creating one - findOneBySlug() can't see an unflushed persist, so the provider itself must not rely on it a second time within the same import
-    public function testImportReusesTheSameNewGalleryAcrossItemsSharingItsSlug(): void
+    // The exported lead-in is rebuilt, and the one already there replaced - Blocks have no natural key to match the imported ones against
+    public function testImportReplacesTheCategorysBlocks(): void
     {
-        $filesDir = $this->createFilesDir(['a.jpg' => 'bytes-a', 'b.jpg' => 'bytes-b']);
+        $oldBlock = (new Block())->setKind('text')->setPosition(0)->setData(['text' => 'Ancien chapô']);
+        $existingCategory = (new GalleryCategory())->setSlug('voyages')->setTitle('Voyages');
+        $existingCategory->addBlock($oldBlock);
+
+        $provider = $this->createProvider($this->createStub(EntityManagerInterface::class), $existingCategory);
+
+        $provider->import([[
+            'slug' => 'voyages',
+            'title' => 'Voyages',
+            'blocks' => [
+                ['kind' => 'text', 'position' => 0, 'data' => ['text' => 'Nouveau chapô']],
+            ],
+        ]], null);
+
+        $this->assertCount(1, $existingCategory->getBlocks());
+        $this->assertSame(['text' => 'Nouveau chapô'], $existingCategory->getBlocks()->first()->getData());
+    }
+
+    // The archived original is copied back under private/, named after the file Vich stored on the flush - which is why it can only happen once that flush has run
+    public function testImportRestoresTheArchivedOriginalUnderPrivate(): void
+    {
+        $filesDir = $this->createFilesDir(['ab12_p1-original.jpg' => 'original-bytes', 'p1.webp' => 'stored-bytes']);
+        $projectDir = sys_get_temp_dir() . '/gallery_import_project_' . bin2hex(random_bytes(4));
 
         $persisted = [];
         $em = $this->createStub(EntityManagerInterface::class);
         $em->method('persist')->willReturnCallback(static function (object $entity) use (&$persisted): void {
             $persisted[] = $entity;
         });
+        // Stands in for Vich, which names the stored file on flush
+        $em->method('flush')->willReturnCallback(static function () use (&$persisted): void {
+            foreach ($persisted as $entity) {
+                if ($entity instanceof GalleryMedia && null === $entity->getFilename()) {
+                    $entity->setFilename('uploads/p1.webp');
+                }
+            }
+        });
 
-        $provider = new GalleryImportProvider($em, $this->createGalleryRepository(), $this->createCategoryRepository());
+        $provider = $this->createProvider($em, null, $projectDir);
 
-        $result = $provider->import([
-            [
-                'gallerySlug' => 'main',
-                'galleryTitle' => 'Galerie',
-                'slug' => 'paysages',
-                'title' => 'Paysages',
-                'photos' => [['alt' => 'A', 'position' => 0, 'originalFilename' => 'a.jpg', 'file' => 'files/a.jpg']],
+        $provider->import([[
+            'slug' => 'voyages',
+            'title' => 'Voyages',
+            'medias' => [
+                ['title' => 'Media 1', 'slug' => 'media-1', 'file' => 'files/p1.webp', 'originalFile' => 'files/ab12_p1-original.jpg'],
             ],
-            [
-                'gallerySlug' => 'main',
-                'galleryTitle' => 'Galerie',
-                'slug' => 'portraits',
-                'title' => 'Portraits',
-                'photos' => [['alt' => 'B', 'position' => 0, 'originalFilename' => 'b.jpg', 'file' => 'files/b.jpg']],
-            ],
-        ], $filesDir);
+        ]], $filesDir);
 
-        $this->assertSame(['created' => 2, 'updated' => 0], $result);
+        $media = array_values(array_filter($persisted, static fn (object $e): bool => $e instanceof GalleryMedia))[0];
+        $this->assertSame('uploads/p1-original.jpg', $media->getOriginalFilename());
+        $this->assertSame('original-bytes', file_get_contents($projectDir . '/private/uploads/p1-original.jpg'));
+        // The media then answers "yes" to having an original, which is what lets it be re-processed later
+        $this->assertSame(GalleryMedia::ORIGINAL_DIRECTORY, $media->getOriginalDirectory());
+        // Dropped before the second flush, or GalleryMediaDerivativeCleanupListener would read it as a file replacement and erase what was just written
+        $this->assertNull($media->getFile());
 
-        $galleries = array_values(array_filter($persisted, static fn (object $e): bool => $e instanceof Gallery));
-        $this->assertCount(1, $galleries);
-
-        $categories = array_values(array_filter($persisted, static fn (object $e): bool => $e instanceof GalleryCategory));
-        $this->assertCount(2, $categories);
-        $this->assertSame($galleries[0], $categories[0]->getGallery());
-        $this->assertSame($galleries[0], $categories[1]->getGallery());
-
-        unlink($filesDir . '/files/a.jpg');
-        unlink($filesDir . '/files/b.jpg');
+        unlink($projectDir . '/private/uploads/p1-original.jpg');
+        rmdir($projectDir . '/private/uploads');
+        rmdir($projectDir . '/private');
+        rmdir($projectDir);
+        unlink($filesDir . '/files/ab12_p1-original.jpg');
+        unlink($filesDir . '/files/p1.webp');
         rmdir($filesDir . '/files');
         rmdir($filesDir);
     }
 
-    // --- default flag --------------------------------------------------------------------------------------
-
-    public function testImportGrantsTheDefaultFlagWhenNoLocalDefaultGalleryExists(): void
-    {
-        $galleries = $this->importAndCollectGalleries($this->createGalleryRepository(), [
-            ['gallerySlug' => 'main', 'galleryDefault' => true, 'slug' => 'voyages', 'title' => 'Voyages'],
-        ]);
-
-        $this->assertCount(1, $galleries);
-        $this->assertTrue($galleries[0]->isDefault());
-    }
-
-    // Two default galleries would make findDefault() return an arbitrary one, hiding half the categories from the front-office
-    public function testImportDoesNotCreateASecondDefaultGallery(): void
-    {
-        $localDefault = (new Gallery())->setSlug('galerie')->setDefault(true);
-
-        $galleries = $this->importAndCollectGalleries($this->createGalleryRepository(null, $localDefault), [
-            ['gallerySlug' => 'main', 'galleryDefault' => true, 'slug' => 'voyages', 'title' => 'Voyages'],
-        ]);
-
-        $this->assertCount(1, $galleries);
-        $this->assertFalse($galleries[0]->isDefault());
-        $this->assertTrue($localDefault->isDefault());
-    }
-
-    // findDefault() can't see an unflushed persist, so the second item must not grant the flag a second time either
-    public function testImportGrantsTheDefaultFlagOnlyOnceWithinTheSameBatch(): void
-    {
-        $galleries = $this->importAndCollectGalleries($this->createGalleryRepository(), [
-            ['gallerySlug' => 'main', 'galleryDefault' => true, 'slug' => 'voyages', 'title' => 'Voyages'],
-            ['gallerySlug' => 'archives', 'galleryDefault' => true, 'slug' => 'anciennes', 'title' => 'Anciennes'],
-        ]);
-
-        $this->assertCount(2, $galleries);
-        $this->assertTrue($galleries[0]->isDefault());
-        $this->assertFalse($galleries[1]->isDefault());
-    }
-
-    /** @return Gallery[] */
-    private function importAndCollectGalleries(GalleryRepository $galleryRepository, array $items): array
+    // Every item of the same archive is imported, each matched on its own slug
+    public function testImportCreatesEveryCategoryOfTheBatch(): void
     {
         $persisted = [];
         $em = $this->createStub(EntityManagerInterface::class);
@@ -250,8 +256,17 @@ class GalleryImportProviderTest extends TestCase
             $persisted[] = $entity;
         });
 
-        (new GalleryImportProvider($em, $galleryRepository, $this->createCategoryRepository()))->import($items);
+        $provider = $this->createProvider($em);
 
-        return array_values(array_filter($persisted, static fn (object $e): bool => $e instanceof Gallery));
+        $result = $provider->import([
+            ['slug' => 'paysages', 'title' => 'Paysages'],
+            ['slug' => 'portraits', 'title' => 'Portraits'],
+        ]);
+
+        $this->assertSame(['created' => 2, 'updated' => 0], $result);
+
+        $categories = array_values(array_filter($persisted, static fn (object $e): bool => $e instanceof GalleryCategory));
+        $this->assertCount(2, $categories);
+        $this->assertSame(['paysages', 'portraits'], array_map(static fn (GalleryCategory $c): string => (string) $c->getSlug(), $categories));
     }
 }

@@ -1,4 +1,7 @@
-<div class="flex-center gallery-grid">
+{# Right click and drag are blocked on the grid rather than on each thumbnail, one controller instead of one per category #}
+<div class="flex-center gallery-grid"
+    data-controller="gallery-media-protect"
+    data-action="contextmenu->gallery-media-protect#block dragstart->gallery-media-protect#block">
     {% for category in categories %}
         <twig:c975LGallery:Gallery:Category category="{{ category }}"/>
     {% endfor %}

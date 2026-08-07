@@ -8,26 +8,47 @@
  */
 /* TOKEN DEFAULTS */
 :root {
-  /* Square side of a thumbnail, in the category grid as in the photo grid */
+  /* Square side of a thumbnail, in the category grid as in the media grid */
   --gallery-thumb-size: 150px;
   --gallery-grid-gap: 1em;
-  /* Measure of the two photo pages - the stored (medium) view, then the high-resolution one */
-  --gallery-photo-max-width: 800px;
-  --gallery-photo-highres-max-width: 1200px;
-  /* The passe-partout framing a displayed photo, a print's own mount */
-  --gallery-photo-frame-width: 10px;
-  --gallery-photo-frame-color: var(--white);
-  /* The discreet overlay arrows, sitting on the photo itself rather than under it */
-  --gallery-nav-size: 2.5rem;
-  --gallery-nav-color: var(--white);
-  --gallery-nav-opacity: 0.35;
-  --gallery-nav-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
-  /* The breadcrumb above a photo - toward the background rather than a flat grey, so it stays legible on a dark page too */
-  --gallery-breadcrumb-font-size: 0.9rem;
-  --gallery-breadcrumb-color: color-mix(in srgb, var(--text) 60%, var(--background));
+  /* How a thumbnail answers a pointer - UiBundle's own "bounce-horizontal", so a grid entry moves like
+     the rest of the site does. Set to "none" from a site's gallery.css to leave the grid still */
+  --gallery-thumb-hover-animation: bounceHorizontal 0.5s infinite ease-in-out;
+  /* What fills the square around a whole-photo thumbnail (config "gallery-thumbnail-whole"), a photo
+     that is not square never filling it entirely - transparent, the page's own background shows */
+  --gallery-thumb-background: transparent;
+  /* Measure of the media page - the stored (medium) file, the only one a page ever shows */
+  --gallery-media-max-width: 800px;
+  /* The lightbox the high resolution opens in, over the page */
+  --gallery-lightbox-max-width: 95vw;
+  --gallery-lightbox-max-height: 95vh;
+  --gallery-lightbox-backdrop: var(--c975l-color-gallery-backdrop, color-mix(in srgb, var(--black) 90%, transparent));
+  --gallery-lightbox-close-size: 2.5rem;
+  --gallery-lightbox-close-color: var(--c975l-color-gallery-lightbox-close, var(--white));
+  --gallery-lightbox-close-background: var(--c975l-color-gallery-lightbox-close-background, color-mix(in srgb, var(--black) 55%, transparent));
+  /* The passe-partout framing a displayed media, a print's own mount */
+  --gallery-media-frame-width: 10px;
+  --gallery-media-frame-color: var(--c975l-color-gallery-frame, var(--white));
+  /* The overlay arrows, sitting on the media itself rather than under it - a button's shape, so they
+     stay findable on a media of any tone */
+  --gallery-nav-size: 3rem;
+  --gallery-nav-offset: 10px;
+  --gallery-nav-radius: 5px;
+  --gallery-nav-color: var(--c975l-color-gallery-nav, var(--white));
+  --gallery-nav-hover-color: var(--c975l-color-gallery-nav-hover, var(--gallery-nav-color));
+  --gallery-nav-background: var(--c975l-color-gallery-nav-background, color-mix(in srgb, var(--white) 80%, var(--black)));
+  --gallery-nav-opacity: 0.7;
+  --gallery-nav-shadow: 0 5px 10px 0 rgba(0, 0, 0, 0.5);
+  /* The breadcrumb opening every page of the viewer - toward the background rather than a flat grey, so it stays legible on a dark page too */
+  --gallery-breadcrumb-font-size: 1.1rem;
+  --gallery-breadcrumb-color: var(--c975l-color-gallery-breadcrumb, color-mix(in srgb, var(--text) 60%, var(--background)));
+  /* The credits and reserved rights said under a media - toward the background like the breadcrumb, a mention rather than a caption */
+  --gallery-credits-font-size: 0.9rem;
+  --gallery-credits-gap: 1em;
+  --gallery-credits-color: var(--c975l-color-gallery-credits, color-mix(in srgb, var(--text) 60%, var(--background)));
   /* The badge marking a grid entry that opens on a player instead of a still */
-  --gallery-video-badge-background: color-mix(in srgb, var(--black) 55%, transparent);
-  --gallery-video-badge-color: var(--white);
+  --gallery-video-badge-background: var(--c975l-color-gallery-badge, color-mix(in srgb, var(--black) 55%, transparent));
+  --gallery-video-badge-color: var(--c975l-color-gallery-badge-text, var(--white));
   /* Aspect ratios the two platforms serve their players in - landscape and portrait */
   --gallery-video-ratio-youtube: 16 / 9;
   --gallery-video-ratio-tiktok: 9 / 16;
@@ -54,6 +75,20 @@
   object-fit: cover;
 }
 
+.gallery-thumb img:hover {
+  animation: var(--gallery-thumb-hover-animation);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gallery-thumb img:hover {
+    animation: none;
+  }
+}
+.gallery-thumb--whole .img-thumbnail {
+  object-fit: contain;
+  background: var(--gallery-thumb-background);
+}
+
 .gallery-thumb--video::after {
   content: "▶";
   position: absolute;
@@ -76,7 +111,7 @@
   font-family: var(--font-family-body);
   font-size: var(--gallery-breadcrumb-font-size);
   color: var(--gallery-breadcrumb-color);
-  margin-bottom: 0.5rem;
+  margin-bottom: 1rem;
   text-align: center;
 }
 
@@ -85,68 +120,132 @@
   text-decoration: underline;
 }
 
-.gallery-breadcrumb__resolution {
-  margin-left: 0.5rem;
-  opacity: 0.7;
+.gallery-breadcrumb__separator {
+  margin: 0 0.4em;
 }
 
-.photo-container {
+.gallery-breadcrumb__current {
+  font-weight: 600;
+}
+
+.gallery-media-container {
   position: relative;
   display: block;
   margin: 0 auto;
-  max-width: var(--gallery-photo-max-width);
+  max-width: var(--gallery-media-max-width);
 }
 
-.photo-container.high-res {
-  max-width: var(--gallery-photo-highres-max-width);
-}
-
-.photo-display {
+.gallery-media-display {
   display: block;
   width: 100%;
   margin: 0 auto;
   padding: 0;
-  border: var(--gallery-photo-frame-width) solid var(--gallery-photo-frame-color);
+  border: var(--gallery-media-frame-width) solid var(--gallery-media-frame-color);
 }
 
-.gallery-photo-nav {
+.gallery-media-zoom {
+  display: block;
+  cursor: zoom-in;
+}
+
+.gallery-media-nav {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
   z-index: 2;
-  padding: 0.25rem 0.75rem;
+  padding: 0.3em 0.2em;
+  border-radius: var(--gallery-nav-radius);
+  background: var(--gallery-nav-background);
+  box-shadow: var(--gallery-nav-shadow);
+  font-family: var(--font-family-title);
   font-size: var(--gallery-nav-size);
-  line-height: 1;
+  line-height: 1.4;
   color: var(--gallery-nav-color);
   text-decoration: none;
   opacity: var(--gallery-nav-opacity);
-  text-shadow: var(--gallery-nav-shadow);
   transition: opacity 0.2s ease;
 }
 
-.gallery-photo-nav:hover,
-.gallery-photo-nav:focus-visible {
+.gallery-media-nav:hover,
+.gallery-media-nav:focus-visible {
+  color: var(--gallery-nav-hover-color);
+  text-decoration: none;
   opacity: 1;
 }
 
-.gallery-photo-nav--previous {
-  left: 0;
+.gallery-media-nav--previous {
+  left: var(--gallery-nav-offset);
 }
 
-.gallery-photo-nav--next {
+.gallery-media-nav--next {
+  right: var(--gallery-nav-offset);
+}
+
+.gallery-media-credits {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0 var(--gallery-credits-gap);
+  margin: 0.5em auto 0;
+  max-width: var(--gallery-media-max-width);
+  font-size: var(--gallery-credits-font-size);
+  color: var(--gallery-credits-color);
+}
+
+.gallery-lightbox {
+  max-width: var(--gallery-lightbox-max-width);
+  max-height: var(--gallery-lightbox-max-height);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  overflow: hidden;
+}
+
+.gallery-lightbox::backdrop {
+  background: var(--gallery-lightbox-backdrop);
+}
+
+.gallery-lightbox__image {
+  display: block;
+  max-width: 100%;
+  max-height: var(--gallery-lightbox-max-height);
+  cursor: zoom-out;
+}
+
+.gallery-lightbox__close {
+  position: absolute;
+  top: 0;
   right: 0;
+  padding: 0 0.3em;
+  border: 0;
+  background: var(--gallery-lightbox-close-background);
+  color: var(--gallery-lightbox-close-color);
+  font-size: var(--gallery-lightbox-close-size);
+  line-height: 1.2;
+  cursor: pointer;
+}
+
+.gallery-thumb img,
+.gallery-media-display,
+.gallery-lightbox__image {
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-user-drag: none;
 }
 
 .gallery-video {
   width: 100%;
-  border: var(--gallery-photo-frame-width) solid var(--gallery-photo-frame-color);
+  border: var(--gallery-media-frame-width) solid var(--gallery-media-frame-color);
 }
 
 .gallery-video iframe {
   display: block;
   width: 100%;
+  max-width: 100%;
   height: 100%;
+  margin: 0;
   border: 0;
+  border-radius: 0;
 }
 
 .gallery-video--youtube {
@@ -158,5 +257,3 @@
   max-width: min(100%, 60vh);
   margin: 0 auto;
 }
-
-/*# sourceMappingURL=styles.css.map */

@@ -1,0 +1,30 @@
+{% extends '@EasyAdmin/layout.html.twig' %}
+
+{# Not a CRUD form, so EasyAdmin's form theme has to be requested explicitly #}
+{% form_theme form with ['@EasyAdmin/crud/form_theme.html.twig'] %}
+
+{% block content_title %}{{ 'label.gallery_upload_medias_to'|trans({'%category%': category.title}, 'gallery') }}{% endblock %}
+
+{% block main %}
+    {# The form tag carries the gallery-upload-limits controller and the server's own ceilings, declared in GalleryMediaBatchUploadType so they survive an override of this template #}
+    {{ form_start(form) }}
+        {{ form_row(form.category) }}
+        {{ form_row(form.files) }}
+        {{ form_row(form.titleRoot) }}
+        {{ form_row(form.credits) }}
+        {{ form_row(form.rightsReserved) }}
+        {{ form_row(form.keepOriginals) }}
+        {{ form_row(form.watermark) }}
+        {{ form_row(form.watermarkPosition) }}
+
+        {# Filled the moment files are picked, so a batch php would truncate is refused before it is sent rather than reported as a success over part of it #}
+        <div class="alert alert-danger"
+            data-gallery-upload-limits-target="message"
+            role="alert"
+            hidden></div>
+
+        <button type="submit"
+            class="btn btn-primary"
+            data-gallery-upload-limits-target="submit">{{ 'label.gallery_upload_medias'|trans({}, 'gallery') }}</button>
+    {{ form_end(form) }}
+{% endblock main %}

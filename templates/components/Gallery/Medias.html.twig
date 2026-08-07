@@ -1,0 +1,13 @@
+{# The category is only named on demand: a category page already names it in its breadcrumb, whereas a media block dropped on any page has nothing else saying which category its grid comes from #}
+{% if displayTitle|default(false) %}
+    {# No class: the heading takes the site's own h2 (size, primary color), where UiBundle's .section-title would force a size of its own, above that of the page's h1 #}
+    <h2>{{ category.title }}</h2>
+{% endif %}
+{# Right click and drag are blocked on the grid rather than on each thumbnail, one controller instead of one per media #}
+<div class="flex-center gallery-grid"
+    data-controller="gallery-media-protect"
+    data-action="contextmenu->gallery-media-protect#block dragstart->gallery-media-protect#block">
+    {% for media in medias %}
+        <twig:c975LGallery:Gallery:Media category="{{ category }}" media="{{ media }}"/>
+    {% endfor %}
+</div>

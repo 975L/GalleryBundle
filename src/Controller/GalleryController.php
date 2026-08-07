@@ -11,82 +11,65 @@
 namespace c975L\GalleryBundle\Controller;
 
 use c975L\GalleryBundle\Entity\GalleryCategory;
-use c975L\GalleryBundle\Entity\GalleryPhoto;
+use c975L\GalleryBundle\Entity\GalleryMedia;
 use c975L\GalleryBundle\Repository\GalleryCategoryRepository;
-use c975L\GalleryBundle\Repository\GalleryPhotoRepository;
-use c975L\GalleryBundle\Repository\GalleryRepository;
+use c975L\GalleryBundle\Repository\GalleryMediaRepository;
+use c975L\GalleryBundle\Routing\GalleryRoutePrefix;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Attribute\Route;
 
-// Public front-office viewer, default gallery only - a second, non-default Gallery would need its own slug-prefixed route set (see GalleryRepository::findDefault()), deliberately left out until a site actually needs more than one
+// Public front-office viewer - the categories are the gallery, so the index lists them all
+// The first segment is ConfigBundle's "gallery-route-prefix" entry: it is carried as a route parameter and checked at each request by GalleryRoutePrefix (the routes' condition), so a site can rename it from the dashboard - "galerie", "fotos" - and the change applies straight away, no cache to clear. GalleryRoutePrefixListener feeds the same value to the generator, so nothing has to pass {gallery_prefix} to path()
 class GalleryController extends AbstractController
 {
+    private const PREFIX_CONDITION = "service('" . GalleryRoutePrefix::ALIAS . "').matches(params['" . GalleryRoutePrefix::PARAMETER . "'])";
+
     public function __construct(
-        private readonly GalleryRepository $galleryRepository,
         private readonly GalleryCategoryRepository $categoryRepository,
-        private readonly GalleryPhotoRepository $photoRepository,
+        private readonly GalleryMediaRepository $mediaRepository,
     ) {
     }
 
     // INDEX
-    #[Route('/photos', name: 'gallery_index', methods: ['GET'])]
+    #[Route('/{gallery_prefix}', name: 'gallery_index', methods: ['GET'], condition: self::PREFIX_CONDITION)]
     public function index(): Response
     {
-        $gallery = $this->galleryRepository->findDefault();
-
         return $this->render('@c975LGallery/gallery/index.html.twig', [
-            'categories' => null !== $gallery ? $gallery->getCategories() : [],
+            'categories' => $this->categoryRepository->findAllOrdered(),
         ]);
     }
 
     // CATEGORY
-    #[Route('/photos/{category}', name: 'gallery_category', methods: ['GET'])]
+    #[Route('/{gallery_prefix}/{category}', name: 'gallery_category', methods: ['GET'], condition: self::PREFIX_CONDITION)]
     public function category(string $category): Response
     {
         $category = $this->resolveCategory($category);
 
         return $this->render('@c975LGallery/gallery/category.html.twig', [
             'category' => $category,
-            'photos' => $this->photoRepository->findByCategory($category),
+            'medias' => $this->mediaRepository->findByCategory($category),
         ]);
     }
 
-    // PHOTO - medium resolution (the stored file itself)
-    #[Route('/photos/{category}/{id<\d+>}', name: 'gallery_photo', methods: ['GET'])]
-    public function photo(string $category, int $id): Response
+    // MEDIA - the stored (medium) file, the only media page there is: the high resolution opens over it, in a lightbox, rather than on a page of its own
+    // Reached by slug rather than by id: the url is what an image search shows under the result, and a title says there what a number said nothing of (see GalleryMediaSlugger)
+    #[Route('/{gallery_prefix}/{category}/{slug}', name: 'gallery_media', methods: ['GET'], condition: self::PREFIX_CONDITION)]
+    public function media(string $category, string $slug): Response
     {
-        [$category, $photo] = $this->resolveCategoryAndPhoto($category, $id);
+        [$category, $media] = $this->resolveCategoryAndMedia($category, $slug);
 
-        return $this->render('@c975LGallery/gallery/photo.html.twig', [
+        return $this->render('@c975LGallery/gallery/media.html.twig', [
             'category' => $category,
-            'photo' => $photo,
-            'previousNext' => $this->photoRepository->findPreviousAndNext($photo),
-        ]);
-    }
-
-    // PHOTO - high resolution. A video entry has no high resolution of its own (its still is only ever the grid thumbnail), so the url doesn't exist for one rather than serving a blown-up poster
-    #[Route('/photos/{category}/{id<\d+>}/hr', name: 'gallery_photo_hr', methods: ['GET'])]
-    public function photoHr(string $category, int $id): Response
-    {
-        [$category, $photo] = $this->resolveCategoryAndPhoto($category, $id);
-
-        if ($photo->isVideo()) {
-            throw new NotFoundHttpException('Gallery photo not found');
-        }
-
-        return $this->render('@c975LGallery/gallery/photo_hr.html.twig', [
-            'category' => $category,
-            'photo' => $photo,
-            'previousNext' => $this->photoRepository->findPreviousAndNext($photo),
+            'media' => $media,
+            'previousNext' => $this->mediaRepository->findPreviousAndNext($media),
         ]);
     }
 
     private function resolveCategory(string $slug): GalleryCategory
     {
-        $gallery = $this->galleryRepository->findDefault();
-        $category = null !== $gallery ? $this->categoryRepository->findOneBySlug($gallery, $slug) : null;
+        $category = $this->categoryRepository->findOneBySlug($slug);
 
         if (null === $category) {
             throw new NotFoundHttpException('Gallery category not found');
@@ -95,16 +78,16 @@ class GalleryController extends AbstractController
         return $category;
     }
 
-    // Resolves both from the URL and checks the photo actually belongs to that category, so an id can't be browsed under an arbitrary category slug
-    private function resolveCategoryAndPhoto(string $categorySlug, int $id): array
+    // Both segments are matched at once, the media's slug only being unique within its category (see GalleryMediaSlugger) - which is also what keeps a media from being browsed under an arbitrary category slug
+    private function resolveCategoryAndMedia(string $categorySlug, string $slug): array
     {
         $category = $this->resolveCategory($categorySlug);
-        $photo = $this->photoRepository->find($id);
+        $media = $this->mediaRepository->findOneBySlugInCategory($category, $slug);
 
-        if (!$photo instanceof GalleryPhoto || $photo->getCategory() !== $category) {
-            throw new NotFoundHttpException('Gallery photo not found');
+        if (!$media instanceof GalleryMedia) {
+            throw new NotFoundHttpException('Gallery media not found');
         }
 
-        return [$category, $photo];
+        return [$category, $media];
     }
 }

@@ -17,3 +17,6 @@ parameters:
 
         # EasyAdmin declares its fluent setters on the concrete fields, not on FieldInterface
         - '#Call to an undefined method EasyCorp\\Bundle\\EasyAdminBundle\\Contracts\\Field\\FieldInterface::#'
+
+        # The only reader of a HasBlocksInterface entity's $blocks is UiBundle's HasBlocksTrait, analysed with its own package and not with this one - Book and Site carry the same false positive in their baseline
+        - '#Property .*::\$blocks is never read, only written#'
