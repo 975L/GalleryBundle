@@ -45,6 +45,12 @@ class UploadLimits
         );
     }
 
+    // A video is not a photograph: MAX_FILE_SIZE is what keeps a batch of stills from taking a shared host down, and it would refuse any video worth uploading. What is left is php's own per-file ceiling, the one limit nothing here can raise - on a managed host it is what the hosting sets, and a video over it has to be uploaded some other way
+    public function getMaxVideoFileSize(): int
+    {
+        return $this->toBytes((string) ($this->uploadMaxFilesize ?? \ini_get('upload_max_filesize')));
+    }
+
     // What the whole batch may weigh together. php's post_max_size caps the request, but a full batch of files at the per-file ceiling caps it just as surely - the effective limit is whichever comes first, which also leaves a finite number to state when post_max_size carries none
     public function getMaxBatchSize(): int
     {

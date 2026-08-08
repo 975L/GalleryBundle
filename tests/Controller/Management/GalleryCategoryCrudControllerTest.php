@@ -24,6 +24,7 @@ use c975L\GalleryBundle\Service\GalleryMediaSlugger;
 use c975L\GalleryBundle\Service\GalleryUrlRedirector;
 use c975L\GalleryBundle\Service\UploadLimits;
 use c975L\UiBundle\Contract\VichWatermarkableInterface;
+use c975L\UiBundle\Form\TrixEditorType;
 use c975L\UiBundle\Management\BlockDataExporter;
 use c975L\UiBundle\Service\BlockMoveRowAttrBuilder;
 use Doctrine\ORM\EntityManagerInterface;
@@ -864,6 +865,16 @@ class GalleryCategoryCrudControllerTest extends TestCase
         $this->assertInstanceOf(TranslatableMessage::class, $placeholder);
         $this->assertSame('label.gallery_watermark_position_default', $placeholder->getMessage());
         $this->assertSame('gallery', $placeholder->getDomain());
+    }
+
+    // The editor every other rich-text field of the ecosystem uses, not EasyAdmin's own: its widget is where the rephrase button is wired, and a different form block would leave this field the only one without it
+    public function testConfigureFieldsEditsTheDescriptionWithTheEcosystemRichTextEditor(): void
+    {
+        $description = $this->findFieldDto($this->createController()->configureFields(Crud::PAGE_EDIT), 'description');
+
+        $this->assertNotNull($description);
+        $this->assertSame(TrixEditorType::class, $description->getFormType());
+        $this->assertFalse($description->isDisplayedOn(Crud::PAGE_INDEX));
     }
 
     // A category is created to hold medias, so the creation form takes the same batch as the upload screen - only there, an existing category having its own screen for it

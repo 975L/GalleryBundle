@@ -1,5 +1,49 @@
 # ChangeLog
 
+## v1.2
+
+A video is an url now, self-hosted or from any declared platform
+
+- A media carries `externalUrl` instead of a `mediaType`/`externalId` pair (08/08/2026) [BC-Break] [Needs db update]
+- Removed `GalleryMedia::setMediaType()`, the type being derived from the url (08/08/2026) [BC-Break]
+- Replaced `GalleryMedia::MEDIA_TYPES` with `mediaTypes()`, built from UiBundle's registry (08/08/2026) [BC-Break]
+- Added Vimeo and Dailymotion support (08/08/2026)
+- An undeclared platform is stored as pasted, under the `embed` type (08/08/2026)
+- A pasted url is stored as its platform's privacy-first embed url (08/08/2026)
+- Players render through UiBundle's `Video:Iframe`, behind the site's consent gate (08/08/2026) [BC-Break]
+- The media edit screen asks for an url instead of a type and an id (08/08/2026)
+- Export carries `externalUrl`, the import rebuilding it from an older archive's id (08/08/2026)
+- Added the `--gallery-video-ratio-default`, `…-vimeo` and `…-dailymotion` theme tokens (08/08/2026)
+- Added the `label.gallery_external_url(_help)` and `label.gallery_media_type_*` translations (08/08/2026)
+- Removed the `label.gallery_external_id(_help)` translations (08/08/2026)
+- A media can carry an uploaded video (mp4/webm/ogg), played by the browser (08/08/2026) [Needs db update]
+- A self-hosted video wins over a pasted url, which stays as its fallback (08/08/2026)
+- The video field is capped by php's `upload_max_filesize`, not the bundle's photo ceiling (08/08/2026)
+- Added `UploadLimits::getMaxVideoFileSize()` (08/08/2026)
+- Export and import carry the self-hosted video file (08/08/2026)
+- Added the `label.gallery_video_file(_help)` and `label.gallery_media_type_video` translations (08/08/2026)
+- Capped a portrait player on the viewport's height (08/08/2026)
+- The previous/next arrows follow a player narrower than the container (08/08/2026)
+- Added the `--gallery-video-portrait-max-width` theme token (08/08/2026)
+- README and UPGRADE document the url, the consent gate and the CSP parameter (08/08/2026)
+- Added a rich-text `description` on a category, edited with Trix (08/08/2026) [Needs db update]
+- The description prints above the grid (08/08/2026)
+- The description feeds the page's `description`/`og:description` metas (08/08/2026)
+- Export and import carry the category's description (08/08/2026)
+- The description is centered under a short rule, its measure and alignment being tokens (08/08/2026)
+- Added the `--gallery-category-description-*` and `…-rule-*` theme tokens (08/08/2026)
+- Added the `label.gallery_description(_help)` translations (08/08/2026)
+- Added `Management\LinkableRouteProvider`, offering the gallery index and each category as SiteBundle menu targets (08/08/2026)
+- A category target is keyed on its id, so renaming it leaves no menu item behind (08/08/2026)
+- A category is listed as "Galerie - Paysages" in the target select, the navbar item reading "Paysages" (08/08/2026)
+- README documents linking a gallery from a menu (08/08/2026)
+- A media's slug is edited behind EasyAdmin's padlock (08/08/2026)
+- An `externalUrl` is only kept if it is http(s) (08/08/2026)
+- An `externalUrl` longer than its column comes back as a form error (08/08/2026)
+- The derived media type is shown read-only on the media's edit screen (08/08/2026)
+- Requires `c975l/core-bundle` ^1.4 (08/08/2026)
+- Requires `symfony/validator` ^8.0 (08/08/2026)
+
 ## v1.1
 
 Stop storing the watermark on a media, asking it at upload instead

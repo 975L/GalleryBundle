@@ -16,6 +16,7 @@ use c975L\GalleryBundle\Entity\GalleryMedia;
 use c975L\GalleryBundle\Repository\GalleryCategoryRepository;
 use c975L\GalleryBundle\Service\GalleryMediaSlugger;
 use c975L\UiBundle\Management\BlockDataImporter;
+use c975L\UiBundle\Video\VideoPlatform;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Filesystem\Filesystem;
@@ -55,6 +56,8 @@ class GalleryImportProvider implements ImportProviderInterface
             $category
                 ->setSlug($item['slug'])
                 ->setTitle($item['title'])
+                // Optional, an archive exported before the category gained a description staying importable - and read as "no description", which is what such an archive describes
+                ->setDescription($item['description'] ?? null)
                 ->setPosition($item['position'] ?? 0)
                 ->setUncategorized($item['uncategorized'] ?? false)
                 ->setCoverMedia(null);
@@ -148,14 +151,31 @@ class GalleryImportProvider implements ImportProviderInterface
             ->setTitle($mediaData['title'] ?? $mediaData['alt'] ?? null)
             ->setCredits($mediaData['credits'] ?? null)
             ->setRightsReserved($mediaData['rightsReserved'] ?? false)
-            ->setMediaType($mediaData['mediaType'] ?? null)
-            ->setExternalId($mediaData['externalId'] ?? null)
+            // The type is derived from the url rather than imported alongside it (see GalleryMedia::setExternalUrl), so an archive can never carry the two out of step
+            // "externalId" is what an archive exported before the url rework carries: an id next to a platform name, rebuilt into the url that platform gives it - an archive from a platform nobody declares anymore has nothing to rebuild, and imports as the image it already was
+            ->setExternalUrl($mediaData['externalUrl'] ?? $this->legacyEmbedUrl($mediaData))
             ->setPosition($mediaData['position'] ?? 0);
 
         if (null !== $filesDir && isset($mediaData['file'])) {
             $media->setFile(new ReplacingFile($filesDir . '/' . $mediaData['file'], true, true, true));
         }
 
+        // Nothing to hold back for this one, unlike the kept original: it goes through Vich like the still above, so the flush stores and names it, and the type follows from the name it is given (see GalleryMedia::setVideoFilename)
+        if (null !== $filesDir && isset($mediaData['videoFile'])) {
+            $media->setVideoFile(new ReplacingFile($filesDir . '/' . $mediaData['videoFile'], true, true, true));
+        }
+
         return $media;
+    }
+
+    // Rebuilds the url of an archive that predates it, from the platform name and the id it stored side by side - null for anything else, which imports as the image every entry already carries
+    private function legacyEmbedUrl(array $mediaData): ?string
+    {
+        $externalId = $mediaData['externalId'] ?? null;
+        if (null === $externalId || '' === $externalId) {
+            return null;
+        }
+
+        return VideoPlatform::tryFrom($mediaData['mediaType'] ?? '')?->embedUrl($externalId);
     }
 }

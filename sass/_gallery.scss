@@ -91,6 +91,40 @@
     font-weight: 600;
 }
 
+// The category's lead-in, between the breadcrumb and the grid
+.gallery-category-description {
+    max-width: var(--gallery-category-description-max-width);
+    margin: var(--gallery-category-description-margin);
+    font-size: var(--gallery-category-description-font-size);
+    line-height: var(--gallery-category-description-line-height);
+    text-align: var(--gallery-category-description-text-align);
+    color: var(--gallery-category-description-color);
+    // Spreads the lines evenly rather than leaving a single word alone on the last one, which centered
+    // text makes glaring - ignored past a handful of lines, exactly the case the alignment token is for
+    text-wrap: balance;
+}
+
+// The rule above it, drawn rather than bordered: a border would run the whole measure, where what parts a
+// short lead-in from the breadcrumb is a mark under it. ":first-child" below never matches a pseudo-element,
+// so the Trix block keeps its own top margin reset
+.gallery-category-description::before {
+    content: '';
+    display: block;
+    width: var(--gallery-category-description-rule-width);
+    height: var(--gallery-category-description-rule-height);
+    margin: 0 auto var(--gallery-category-description-rule-gap);
+    background: var(--gallery-category-description-rule-color);
+}
+
+// Trix wraps what it stores in its own block tags, whose default margins would space the lead-in unevenly
+.gallery-category-description > :first-child {
+    margin-top: 0;
+}
+
+.gallery-category-description > :last-child {
+    margin-bottom: 0;
+}
+
 // The media (or the player) and the two arrows overlaying it
 .gallery-media-container {
     position: relative;
@@ -212,10 +246,25 @@
 }
 
 // The embed, framed exactly like a still so a video and a still read as one gallery. aspect-ratio
-// rather than the padding-top trick: the iframe is the only child and each platform serves one shape
+// rather than the padding-top trick: the player is the only child and each platform serves one shape.
+// The default shape is what a video framed from a platform nobody declared ("embed") is given, there
+// being nothing to know it by - every declared platform overrides it below, and the ratios are kept in
+// step with UiBundle's own registry by VideoPlatformRatioTest
 .gallery-video {
     width: 100%;
+    aspect-ratio: var(--gallery-video-ratio-default);
     border: var(--gallery-media-frame-width) solid var(--gallery-media-frame-color);
+}
+
+// The player is created client-side behind the consent gate (see UiBundle's Video:Iframe component),
+// so what this wrapper holds until then is that component's own figure and placeholder - both made to
+// fill the shape reserved above rather than carrying one of their own, or the gate would be landscape
+// inside a portrait frame
+.gallery-video .video-iframe-figure,
+.gallery-video .video-iframe-consent,
+.gallery-video .video-iframe-placeholder {
+    height: 100%;
+    aspect-ratio: auto;
 }
 
 // max-width, margin and border-radius are reset because UiBundle styles every bare iframe as a small
@@ -230,13 +279,51 @@
     border-radius: 0;
 }
 
+// A self-hosted video is the one player whose real shape the browser learns on its own, off the file's
+// own metadata - so it is left to dictate it, where a framed player has none to read and has to be
+// given the shape its platform serves. The still it carries as a poster fills the box in the meantime,
+// which is what keeps the page from jumping once the metadata lands
+.gallery-video--video {
+    aspect-ratio: auto;
+}
+
+.gallery-video--video .video-figure {
+    margin: 0;
+}
+
+.gallery-video--video video {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    margin: 0;
+    border: 0;
+    border-radius: 0;
+}
+
 .gallery-video--youtube {
     aspect-ratio: var(--gallery-video-ratio-youtube);
 }
 
-// Portrait, so it is capped by the viewport's height instead of running past the fold on a phone
+.gallery-video--vimeo {
+    aspect-ratio: var(--gallery-video-ratio-vimeo);
+}
+
+.gallery-video--dailymotion {
+    aspect-ratio: var(--gallery-video-ratio-dailymotion);
+}
+
+// Portrait, so it is capped by the viewport's height instead of running past the fold - see the cap's
+// own note in _variables.scss for why that is spelled as a width
 .gallery-video--tiktok {
     aspect-ratio: var(--gallery-video-ratio-tiktok);
-    max-width: min(100%, 60vh);
+    max-width: min(100%, var(--gallery-video-portrait-max-width));
     margin: 0 auto;
+}
+
+// The arrows are positioned against the container, not against the player - so a player narrower than
+// the container leaves them stranded out in the margin, pointing at nothing. The container takes the
+// same cap and the pair goes back to framing the video itself
+.gallery-media-container:has(.gallery-video--tiktok) {
+    max-width: min(var(--gallery-media-max-width), var(--gallery-video-portrait-max-width));
 }

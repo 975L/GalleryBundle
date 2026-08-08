@@ -42,6 +42,22 @@
   /* The breadcrumb opening every page of the viewer - toward the background rather than a flat grey, so it stays legible on a dark page too */
   --gallery-breadcrumb-font-size: 1.1rem;
   --gallery-breadcrumb-color: var(--c975l-color-gallery-breadcrumb, color-mix(in srgb, var(--text) 60%, var(--background)));
+  /* The lead-in a category opens with, above its grid - centered like the breadcrumb above it and the
+     grid below, measured so it stays readable, and toward the background: it introduces the gallery,
+     the h1 is what carries the emphasis. Set the alignment to "left" for a site whose categories are
+     described in several paragraphs, where centered running text stops reading well */
+  --gallery-category-description-max-width: 62ch;
+  --gallery-category-description-margin: 0 auto 2rem;
+  --gallery-category-description-font-size: 1.05rem;
+  --gallery-category-description-line-height: 1.7;
+  --gallery-category-description-text-align: center;
+  --gallery-category-description-color: var(--c975l-color-gallery-category-description, color-mix(in srgb, var(--text) 75%, var(--background)));
+  /* The rule parting the lead-in from the breadcrumb - short and centered, a mark rather than a divider
+     across the whole measure. Set its height to 0 to take it away */
+  --gallery-category-description-rule-width: 60px;
+  --gallery-category-description-rule-height: 1px;
+  --gallery-category-description-rule-gap: 1.5rem;
+  --gallery-category-description-rule-color: var(--c975l-color-gallery-category-description-rule, color-mix(in srgb, var(--text) 25%, var(--background)));
   /* The credits and reserved rights said under a media - toward the background like the breadcrumb, a mention rather than a caption */
   --gallery-credits-font-size: 0.9rem;
   --gallery-credits-gap: 1em;
@@ -49,9 +65,19 @@
   /* The badge marking a grid entry that opens on a player instead of a still */
   --gallery-video-badge-background: var(--c975l-color-gallery-badge, color-mix(in srgb, var(--black) 55%, transparent));
   --gallery-video-badge-color: var(--c975l-color-gallery-badge-text, var(--white));
-  /* Aspect ratios the two platforms serve their players in - landscape and portrait */
+  /* Aspect ratios the platforms serve their players in - one per platform UiBundle's registry
+     declares, plus the default a player from anywhere else is framed in (see VideoPlatformRatioTest,
+     which fails if a platform is declared there without its ratio landing here) */
+  --gallery-video-ratio-default: 16 / 9;
   --gallery-video-ratio-youtube: 16 / 9;
   --gallery-video-ratio-tiktok: 9 / 16;
+  --gallery-video-ratio-vimeo: 16 / 9;
+  --gallery-video-ratio-dailymotion: 16 / 9;
+  /* What a portrait player is capped at. Written as a width although the viewport's height is what
+     it really answers to, because a width is the only side an aspect-ratio box takes: fix its height
+     too and both sides become definite, at which point the ratio is simply dropped and the player
+     stretches. So the cap is the width producing the height wanted - 9/16 of it for a 9/16 player */
+  --gallery-video-portrait-max-width: calc(70vh * 9 / 16);
 }
 
 /* GALLERY */
@@ -126,6 +152,33 @@
 
 .gallery-breadcrumb__current {
   font-weight: 600;
+}
+
+.gallery-category-description {
+  max-width: var(--gallery-category-description-max-width);
+  margin: var(--gallery-category-description-margin);
+  font-size: var(--gallery-category-description-font-size);
+  line-height: var(--gallery-category-description-line-height);
+  text-align: var(--gallery-category-description-text-align);
+  color: var(--gallery-category-description-color);
+  text-wrap: balance;
+}
+
+.gallery-category-description::before {
+  content: "";
+  display: block;
+  width: var(--gallery-category-description-rule-width);
+  height: var(--gallery-category-description-rule-height);
+  margin: 0 auto var(--gallery-category-description-rule-gap);
+  background: var(--gallery-category-description-rule-color);
+}
+
+.gallery-category-description > :first-child {
+  margin-top: 0;
+}
+
+.gallery-category-description > :last-child {
+  margin-bottom: 0;
 }
 
 .gallery-media-container {
@@ -235,7 +288,15 @@
 
 .gallery-video {
   width: 100%;
+  aspect-ratio: var(--gallery-video-ratio-default);
   border: var(--gallery-media-frame-width) solid var(--gallery-media-frame-color);
+}
+
+.gallery-video .video-iframe-figure,
+.gallery-video .video-iframe-consent,
+.gallery-video .video-iframe-placeholder {
+  height: 100%;
+  aspect-ratio: auto;
 }
 
 .gallery-video iframe {
@@ -248,12 +309,44 @@
   border-radius: 0;
 }
 
+.gallery-video--video {
+  aspect-ratio: auto;
+}
+
+.gallery-video--video .video-figure {
+  margin: 0;
+}
+
+.gallery-video--video video {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+}
+
 .gallery-video--youtube {
   aspect-ratio: var(--gallery-video-ratio-youtube);
 }
 
+.gallery-video--vimeo {
+  aspect-ratio: var(--gallery-video-ratio-vimeo);
+}
+
+.gallery-video--dailymotion {
+  aspect-ratio: var(--gallery-video-ratio-dailymotion);
+}
+
 .gallery-video--tiktok {
   aspect-ratio: var(--gallery-video-ratio-tiktok);
-  max-width: min(100%, 60vh);
+  max-width: min(100%, var(--gallery-video-portrait-max-width));
   margin: 0 auto;
 }
+
+.gallery-media-container:has(.gallery-video--tiktok) {
+  max-width: min(var(--gallery-media-max-width), var(--gallery-video-portrait-max-width));
+}
+
+/*# sourceMappingURL=styles.css.map */

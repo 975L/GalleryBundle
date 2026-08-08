@@ -19,6 +19,7 @@ use c975L\GalleryBundle\Entity\GalleryCategory;
 use c975L\GalleryBundle\Entity\GalleryMedia;
 use c975L\GalleryBundle\Service\GalleryMediaSlugger;
 use c975L\GalleryBundle\Service\GalleryUrlRedirector;
+use c975L\GalleryBundle\Service\UploadLimits;
 use c975L\UiBundle\Contract\VichWatermarkableInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\UnitOfWork;
@@ -28,6 +29,9 @@ use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext;
 use EasyCorp\Bundle\EasyAdminBundle\Context\RequestContext;
 use EasyCorp\Bundle\EasyAdminBundle\Dto\FieldDto;
+use EasyCorp\Bundle\EasyAdminBundle\Field\SlugField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\UrlField;
+use EasyCorp\Bundle\EasyAdminBundle\Form\Type\SlugType;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGeneratorInterface;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\DependencyInjection\Container;
@@ -40,7 +44,9 @@ use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\String\Slugger\AsciiSlugger;
+use Symfony\Component\Translation\TranslatableMessage;
 use Symfony\Contracts\Translation\TranslatorInterface;
+use Vich\UploaderBundle\Form\Type\VichFileType;
 use Vich\UploaderBundle\Form\Type\VichImageType;
 
 class GalleryMediaCrudControllerTest extends TestCase
@@ -58,6 +64,8 @@ class GalleryMediaCrudControllerTest extends TestCase
             new GalleryMediaSlugger(new AsciiSlugger()),
             new GalleryUrlRedirector($redirectRepository ?? $this->createRedirectRepository()),
             $this->createConfigService(),
+            // Fixed ceilings rather than the machine's own php.ini, so the video field's limit is the same on every runner
+            new UploadLimits('20', '64M', '128M'),
         );
     }
 
@@ -207,6 +215,40 @@ class GalleryMediaCrudControllerTest extends TestCase
         $this->assertFalse($fileField->getFormTypeOptions()['allow_delete']);
     }
 
+    // A video is not a photograph: this bundle's own 20 MiB ceiling exists to keep a batch of stills from taking a shared host down, and would refuse any video worth uploading - what caps this field is php's own limit alone
+    public function testConfigureFieldsCapsTheVideoFieldAtPhpOwnLimitRatherThanTheBundleOne(): void
+    {
+        $videoField = $this->findField($this->createController()->configureFields(Crud::PAGE_EDIT), 'videoFile');
+
+        $this->assertNotNull($videoField);
+        $this->assertSame(VichFileType::class, $videoField->getFormType());
+
+        $constraints = $videoField->getFormTypeOptions()['constraints'];
+        $this->assertCount(1, $constraints);
+        // 64M from the fixture above, well over MAX_FILE_SIZE's 20 MiB
+        $this->assertSame(64 * 1024 ** 2, $constraints[0]->maxSize);
+        $this->assertSame(GalleryMedia::VIDEO_MIME_TYPES, $constraints[0]->mimeTypes);
+    }
+
+    // The url is handed to an iframe's src on the front end, so the form refuses anything but http(s) rather than letting the entity drop it silently
+    public function testConfigureFieldsAcceptsHttpUrlsOnly(): void
+    {
+        $urlField = $this->findField($this->createController()->configureFields(Crud::PAGE_EDIT), 'externalUrl');
+
+        $this->assertNotNull($urlField);
+        $this->assertSame(['http', 'https'], $urlField->getCustomOption(UrlField::OPTION_ALLOWED_PROTOCOLS));
+    }
+
+    // An admin who pasted an url no longer picks a type next to it: what the media turned out to be is shown on the very screen the url is pasted on, and shown disabled - never asked (see GalleryMedia::setExternalUrl)
+    public function testConfigureFieldsShowsTheMediaTypeWithoutAskingForIt(): void
+    {
+        $typeField = $this->findField($this->createController()->configureFields(Crud::PAGE_EDIT), 'mediaType');
+
+        $this->assertNotNull($typeField);
+        $this->assertTrue($typeField->isDisplayedOn(Crud::PAGE_EDIT));
+        $this->assertTrue($typeField->getFormTypeOptions()['disabled']);
+    }
+
     // The title is the media's name and its alt text, nothing more - it no longer sources the slug, so retouching it moves no url and warrants no warning
     public function testConfigureFieldsLeavesTheTitleFreeOfAnyWarning(): void
     {
@@ -216,15 +258,20 @@ class GalleryMediaCrudControllerTest extends TestCase
         $this->assertArrayNotHasKey('attr', $titleField->getFormTypeOptions());
     }
 
-    // Editable, and the only field of the form that moves a public url - hence the confirmation the title used to carry
-    public function testConfigureFieldsWarnsBeforeTheSlugIsEdited(): void
+    // Editable, and the only field of the form that moves a public url - hence the padlock, and the confirmation unlocking it asks for
+    public function testConfigureFieldsLocksTheSlugBehindAPadlock(): void
     {
         $slugField = $this->findField($this->createController()->configureFields(Crud::PAGE_EDIT), 'slug');
 
         $this->assertNotNull($slugField);
+        $this->assertSame(SlugType::class, $slugField->getFormType());
         $this->assertArrayNotHasKey('disabled', $slugField->getFormTypeOptions());
-        $this->assertStringContainsString('title-confirm', $slugField->getFormTypeOptions()['attr']['data-controller']);
-        $this->assertSame('confirm.media_slug_change', $slugField->getFormTypeOptions()['attr']['data-title-confirm-message-value']);
+        $this->assertSame(['title'], $slugField->getCustomOption(SlugField::OPTION_TARGET_FIELD_NAME));
+
+        $confirmation = $slugField->getCustomOption(SlugField::OPTION_UNLOCK_CONFIRMATION_MESSAGE);
+        $this->assertInstanceOf(TranslatableMessage::class, $confirmation);
+        $this->assertSame('confirm.media_slug_change', $confirmation->getMessage());
+        $this->assertSame('gallery', $confirmation->getDomain());
     }
 
     // Nothing about the watermark is stored on the media, so the edit screen asks the pair again - a replaced file being an upload of its own, and the only file this answer can reach

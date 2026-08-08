@@ -1,6 +1,6 @@
 # GalleryBundle
 
-Symfony bundle providing photo galleries on the c975L core — categories and medias (photos, YouTube and TikTok entries), with batch upload, automatic thumb/medium/highres derivatives and a public viewer.
+Symfony bundle providing photo galleries on the c975L core — categories and medias (photos and videos from any platform UiBundle declares), with batch upload, automatic thumb/medium/highres derivatives and a public viewer.
 
 [![License](https://img.shields.io/github/license/975L/GalleryBundle)](https://github.com/975L/GalleryBundle/blob/master/LICENSE)
 [![Packagist Version](https://img.shields.io/packagist/v/c975l/gallery-bundle)](https://packagist.org/packages/c975l/gallery-bundle)
@@ -20,7 +20,7 @@ Add GalleryBundle on top of [c975L/CoreBundle](https://github.com/975L/CoreBundl
 ## Contents
 
 - **Setup** — [requirements](#requirements) · [installation](#installation) · [configuration](#load-the-configuration) · [routes](#enable-routes) · [assets](#install-assets) · [theme](#install-the-theme)
-- **Using it** — [public routes](#public-routes) · [renaming a category](#renaming-a-category) · [deleting a gallery](#deleting-a-gallery) · [uploading a batch](#uploading-a-batch) · [renaming a media](#renaming-a-media) · [browsing and the lightbox](#browsing-and-the-lightbox) · [editing from the public pages](#editing-from-the-public-pages) · [blocks](#blocks-defined-by-this-bundle) · [category headings](#composing-a-categorys-heading) · [theme tokens](#theme) · [videos](#videos) · [deleting a selection](#deleting-a-selection-of-medias) · [credits / rights on a selection](#applying-credits-or-rights-to-a-selection) · [export / import categories](#export--import-categories) · [sitemap and health check](#sitemap-and-health-check)
+- **Using it** — [public routes](#public-routes) · [linking from a menu](#linking-a-gallery-from-a-menu) · [renaming a category](#renaming-a-category) · [deleting a gallery](#deleting-a-gallery) · [uploading a batch](#uploading-a-batch) · [renaming a media](#renaming-a-media) · [browsing and the lightbox](#browsing-and-the-lightbox) · [editing from the public pages](#editing-from-the-public-pages) · [blocks](#blocks-defined-by-this-bundle) · [category description](#a-categorys-description) · [category headings](#composing-a-categorys-heading) · [theme tokens](#theme) · [videos](#videos) · [deleting a selection](#deleting-a-selection-of-medias) · [credits / rights on a selection](#applying-credits-or-rights-to-a-selection) · [export / import categories](#export--import-categories) · [sitemap and health check](#sitemap-and-health-check)
 - **Operating** — [bringing an existing gallery in](#bringing-an-existing-gallery-in) · [upload ceilings](#upload-ceilings)
 
 ## Features
@@ -34,9 +34,11 @@ Add GalleryBundle on top of [c975L/CoreBundle](https://github.com/975L/CoreBundl
 - A public front-office viewer (index → category → media), browsed entirely in the stored (medium) resolution, with circular previous/next navigation whose neighbouring images are preloaded in the background so switching medias never shows a blank image while it loads. The high resolution opens in a lightbox over the image, fetched only when the visitor asks for it (see [browsing and the lightbox](#browsing-and-the-lightbox)).
 - Two block kinds contributed to UiBundle, so a gallery can be shown on any page composed in the back office instead of only under its own routes (see [blocks](#blocks-defined-by-this-bundle)).
 - A category owns UiBundle blocks of its own, giving it an editorial heading above its grid (see [category headings](#composing-a-categorys-heading)).
-- YouTube and TikTok entries sit in the same categories as the photos: each carries its own uploaded still, so one grid holds both kinds, and opens on a cookie-free embed instead of a lightbox (see [videos](#videos)).
+- A category carries a rich-text description, printed above its grid and reused as the page's social/search metas (see [description](#a-categorys-description)).
+- Videos sit in the same categories as the photos: an entry becomes one by carrying the url of the page it is watched on, or a video file of the site's own, and each carries its own uploaded still, so one grid holds both kinds. YouTube, TikTok, Vimeo and Dailymotion are recognized, any other player being framed as pasted (see [videos](#videos)).
 - The bundle's own stylesheet and theme file, reading UiBundle's admin-editable colors and fonts, so a gallery looks like the site it is installed on without a line of CSS (see [theme](#theme)).
 - Sitemap generation (gallery index, categories and media pages), via ConfigBundle's `SitemapProviderInterface`
+- The gallery index and each category offered as a SiteBundle menu target, so a navbar links straight to one of the site's galleries (see [linking a gallery from a menu](#linking-a-gallery-from-a-menu))
 - Categories can be exported/imported as a zip (heading blocks, medias and files bundled in), plugging into ConfigBundle's **Export sync (everything)** dashboard shortcut and **Import content** screen.
 
 ---
@@ -152,6 +154,25 @@ whatever the prefix.
 
 **Renaming the prefix breaks the previous urls**, which then 404. If they were indexed, declare a redirect
 — ConfigBundle's **Redirections** screen takes one.
+
+### Linking a gallery from a menu
+
+`Management\LinkableRouteProvider` offers these routes to SiteBundle's menus (**Menus** in the dashboard,
+navbar / footer / email header / email footer): the **target** select of a menu item lists the gallery
+index alongside the site's pages, and **one entry per category** — the categories being the site's
+galleries, an item usually points straight at one of them.
+
+A category is listed there as **Galerie - Paysages**, so the galleries are found at a glance among every
+page of the site and sit together once the list is sorted; the rendered navbar item reads **Paysages**,
+the category's own title, the prefix being of no use in a bar.
+
+A category entry is keyed on the category's **id**, so renaming the category, changing its slug or
+renaming the route prefix leaves no menu item behind: only the target is stored, the url being generated
+at each render and the label read from the category's own title. Deleting a category simply drops its
+items from the rendered menu, as it does for any target that no longer resolves.
+
+The item's own **label** field overrides that title, for a category whose name is too long to sit in a
+navbar.
 
 ### Renaming a category
 
@@ -284,8 +305,8 @@ first time a problem it never had to be. Now retitling moves nothing: the medias
 described afterwards, one by one, for free.
 
 **The slug is posed once and never recomputed.** What moves it is an admin editing the slug field itself —
-which is editable, carries the confirmation the title used to, and writes a permanent redirect through
-`GalleryMediaCrudController::updateEntity()`. Moving a media to another category moves its url just as
+which sits behind EasyAdmin's own padlock, like a category's and a page's, asks for confirmation before it
+unlocks, and writes a permanent redirect through `GalleryMediaCrudController::updateEntity()`. Moving a media to another category moves its url just as
 much, the category's slug being the segment above it, and is redirected the same way. What is typed there
 is still normalized (`Col du Galibier !` is stored `col-du-galibier`) and still has to be free within the
 category — a collision is suffixed (`-2`, `-3`) rather than refused, unlike a category's slug, which is the
@@ -388,6 +409,30 @@ Both are `cacheable: false`: they resolve their content live through `gallery_bl
 
 Being uncached is also what makes the random draw worth having: with "draw them at random" ticked, the maximum keeps that many medias out of the whole category, drawn again at every render - so a "our latest photos" section placed on a home page shows a different selection at each visit.
 
+### A category's description
+
+`GalleryCategory::$description` is the category's own lead-in: rich text typed in its EasyAdmin form
+(UiBundle's Trix editor, so **Donovan**'s rephrase button sits under it like under any other rich-text
+field of the ecosystem), printed above the grid by `gallery/category.html.twig` and, stripped of its
+markup, reused as the page's `description` / `og:description` metas — exactly what SiteBundle's
+`Page::$summarySocialNetwork` does for a page.
+
+One field for both on purpose: what introduces a gallery to a reader is what introduces it to a search
+engine, and an admin made to type the same sentence twice would leave one of the two stale. The metas
+themselves are written by SiteBundle's layout, which the template feeds through the `summarySocialNetwork`
+Twig variable it reads (`og:description` truncated to 150 characters there) — an app running on UiBundle's
+minimal layout instead simply ignores it, and the description still prints on the page.
+
+It travels with its category through the export/import, an archive predating it importing as a category
+without one.
+
+It is centered by default, under a short rule parting it from the breadcrumb — aligned with the breadcrumb
+above it and the grid below, which is how a category page reads, and sized for the one to three lines a
+gallery is actually introduced in. A site describing its categories in several paragraphs sets
+`--gallery-category-description-text-align: left` (centered running text stops reading well past a few
+lines), and one wanting no rule sets `--gallery-category-description-rule-height: 0` — see
+[theme](#theme) for the whole `--gallery-category-description-*` set.
+
 ### Composing a category's heading
 
 `GalleryCategory` implements UiBundle's `HasBlocksInterface`, so a category carries its own blocks, rendered above its grid by `gallery/category.html.twig`:
@@ -410,8 +455,9 @@ Fonts are deliberately absent from that file, and the site's own colors too: the
 the **theme** config group, and the gallery reads them through UiBundle's own `--text` / `--white` /
 `--black` / `--background` / `--font-family-body`, so a gallery looks like the site it is installed on
 with no CSS to write. What the file offers is the gallery's own shapes — thumbnail size and grid gap, the
-measure of the media page, the width of the passe-partout, the arrows, the lightbox, the video badge and
-the two embed aspect ratios.
+measure of the media page, the width of the passe-partout, the arrows, the lightbox, the video badge, the
+category description and one aspect ratio per declared platform (plus the default an undeclared one is
+framed in, and the width a portrait player is capped at).
 
 Hovering a thumbnail bounces it, with UiBundle's own `bounceHorizontal` — reused rather than redefined,
 its `animations.min.css` being served on every page. `--gallery-thumb-hover-animation` holds the whole
@@ -429,26 +475,65 @@ app's `themes/gallery.css`, so uncommenting a color there takes it back from the
 
 ### Videos
 
-A `GalleryMedia` carries a **type** (`image`, `youtube` or `tiktok`) and, for the two video types, the
-**id the platform gives the video** — nothing else, the urls being built from it. Whatever its type, an
-entry always carries its own uploaded still: it is what the grids show, so one category holds photos and
-videos alike, and nothing is fetched from a third party while a page renders. The type only decides what
-opening the entry shows — the still and its lightbox, or the player:
+A `GalleryMedia` becomes a video by carrying **the url of the page the video is watched on** — the one an
+admin copies out of their browser's address bar, nothing to extract by hand. Whatever it carries, an
+entry always has its own uploaded still: it is what the grids show, so one category holds photos and
+videos alike, and nothing is fetched from a third party while a page renders. The url only decides what
+opening the entry shows — the still and its lightbox, or the player.
 
-- YouTube plays on `youtube-nocookie.com`, TikTok on its own `embed/v2` endpoint. Both are cookie-free
-  until the visitor actually presses play, which is what lets them be served without a consent gate.
+**Which platforms** is UiBundle's question, not this bundle's: `c975L\UiBundle\Video\VideoPlatform` is
+where one is declared, and declaring it there is all it takes for a gallery to hold it. YouTube, TikTok,
+Vimeo and Dailymotion ship declared. What gets stored is always that platform's own **privacy-first embed
+url**, resolved once when the media is saved: `youtube-nocookie.com` for YouTube, `dnt=1` for Vimeo — so
+nothing downstream has to remember to ask for it, and a stored url is never the tracking one.
+
+A url belonging to **no declared platform** is not refused: it is stored exactly as pasted, typed `embed`,
+and framed in the default 16/9 shape. A PeerTube instance of one's own, a player from a platform this
+ecosystem never heard of — the admin vouched for the url, and a gallery is not the place to argue. What
+is deliberately absent is a "paste your embed code" field: third-party HTML in the database is an XSS and
+a CSP hole, where an url is a value nothing executes.
+
+- The **type is derived** from the url (`image`, a platform's name, or `embed`), never set beside it, so
+  the two can't be left contradicting each other. Emptying the url turns the media back into a still.
 - A video carries no lightbox at all: there is no high resolution to open, and blowing up the still would
   be worse than not offering it. Its page shows the player, the breadcrumb naming it as a video.
-- The bulk upload screen only ever creates images: a video's id is its own, so an entry becomes a video by
-  editing it afterwards and giving it a type and an id.
-- A half-declared video (a type with no id, or an id left behind by a type switched back to `image`)
-  stays an image, so the player never resurrects.
+- The bulk upload screen only ever creates images: an entry becomes a video by editing it afterwards and
+  giving it an url.
 
-Both players are third-party frames, which is the site's own **Content-Security-Policy** to allow, not
-something a bundle can set on its behalf: `frame-src` needs `www.youtube-nocookie.com` and
-`www.tiktok.com` (`child-src` too, where a level 1 fallback is emitted). A `Permissions-Policy` header
-restricting `fullscreen` has to name those two origins as well, or the player's fullscreen button does
-nothing. A directive missing is what an empty frame in production and none in development means.
+**A video of the site's own.** Next to the url, a media takes an **uploaded video file** (mp4, webm or
+ogg), played by the browser itself with the still the entry already carries as its poster — no third
+party, nothing to consent to, no CSP origin to allow, and a video that outlives whatever a platform
+decides. What it costs is the storage and the bandwidth, which is why it stands next to the embeds
+rather than replacing them.
+
+A media carrying both plays **its own copy**: the file that outlives the platform is the one to play, and
+the url stays there to fall back on if the file is ever removed. The ceiling is php's own
+`upload_max_filesize`, not this bundle's 20 MiB one — that ceiling exists to keep a batch of photographs
+from taking a shared host down, and would refuse any video worth uploading.
+
+**Consent.** A player is a third-party frame whatever the platform, so it renders through UiBundle's own
+`<twig:c975LUi:Video:Iframe>` — the iframe is created client-side, and only once the visitor has accepted
+the site's cookie banner. On a site carrying no banner the player renders straight away, that component
+never blocking content on a site that doesn't ask. There is no per-gallery opt-out: one policy for every
+embed the ecosystem serves.
+
+**Content-Security-Policy** is still the site's own to set, but no longer its own to keep in step —
+UiBundle exposes every declared platform's origin as a parameter:
+
+```yaml
+# config/packages/nelmio_security.yaml
+nelmio_security:
+    csp:
+        enforce:
+            frame-src: ['self', '%c975l_ui.video.embed_origins%']
+            # The level 1 fallback, for browsers that don't know frame-src
+            child-src: ['self', '%c975l_ui.video.embed_origins%']
+```
+
+A `Permissions-Policy` header restricting `fullscreen` has to name those origins as well, or the player's
+fullscreen button does nothing. A directive missing is what an empty frame in production and none in
+development means. A platform declared under `embed` is the one case the parameter can't cover — its
+origin is whatever the admin pasted, and has to be added by hand.
 
 ### Deleting a selection of medias
 

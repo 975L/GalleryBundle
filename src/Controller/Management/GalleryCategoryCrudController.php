@@ -26,6 +26,7 @@ use c975L\GalleryBundle\Service\UploadLimits;
 use c975L\UiBundle\Contract\VichWatermarkableInterface;
 use c975L\UiBundle\Entity\Block;
 use c975L\UiBundle\Form\BlockType;
+use c975L\UiBundle\Form\TrixEditorType;
 use c975L\UiBundle\Form\Util\CollectionReconciler;
 use c975L\UiBundle\Service\BlockMoveRowAttrBuilder;
 use Doctrine\Common\Collections\Collection;
@@ -45,6 +46,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\Field;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IntegerField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\SlugField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\TextareaField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
@@ -339,6 +341,13 @@ class GalleryCategoryCrudController extends AbstractCrudController
                 ->setTargetFieldName('title')
                 ->setRequired(true)
                 ->setHelp(t('label.slug_help', [], 'gallery')),
+
+            // TrixEditorType rather than EasyAdmin's own TextEditorField: it is the editor every other rich-text field of the ecosystem uses (see UiBundle's block form types), and its widget is where the rephrase button is wired - EasyAdmin's own renders through a different form block, which would leave this field the only one without it
+            TextareaField::new('description')
+                ->setLabel(t('label.gallery_description', [], 'gallery'))
+                ->setHelp(t('label.gallery_description_help', [], 'gallery'))
+                ->setFormType(TrixEditorType::class)
+                ->hideOnIndex(),
 
             IntegerField::new('position')
                 ->setLabel(t('label.position', [], 'gallery'))

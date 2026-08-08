@@ -15,6 +15,7 @@ use c975L\UiBundle\Entity\Block;
 use c975L\UiBundle\Entity\Trait\HasBlocksTrait;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
@@ -38,6 +39,10 @@ class GalleryCategory implements HasBlocksInterface
 
     #[ORM\Column(length: 255)]
     private ?string $title = null;
+
+    // The category's own lead-in, rich text typed in the back-office (see GalleryCategoryCrudController) - printed above the grid and, stripped of its markup, used as the page's description/og:description meta, exactly as SiteBundle's Page::$summarySocialNetwork is for a page (see gallery/category.html.twig). One field for both: what introduces a gallery to a reader is what introduces it to a search engine, and an admin having to type the same sentence twice would leave one of them stale
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $description = null;
 
     #[ORM\Column]
     private int $position = 0;
@@ -96,6 +101,18 @@ class GalleryCategory implements HasBlocksInterface
     public function setTitle(?string $title): self
     {
         $this->title = $title;
+
+        return $this;
+    }
+
+    public function getDescription(): ?string
+    {
+        return $this->description;
+    }
+
+    public function setDescription(?string $description): self
+    {
+        $this->description = $description;
 
         return $this;
     }

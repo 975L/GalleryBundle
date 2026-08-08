@@ -71,6 +71,7 @@ class GalleryExportProvider implements ExportProviderInterface
         return [
             'slug' => $category->getSlug(),
             'title' => $category->getTitle(),
+            'description' => $category->getDescription(),
             'position' => $category->getPosition(),
             'uncategorized' => $category->isUncategorized(),
             'coverMediaIndex' => $coverMediaIndex,
@@ -103,11 +104,31 @@ class GalleryExportProvider implements ExportProviderInterface
             'credits' => $media->getCredits(),
             'rightsReserved' => $media->isRightsReserved(),
             // Nothing here about the watermark, and nothing to say: it is not stored on the media (see GalleryMedia::wantsWatermark), only answered when a file is. What is archived is the stored file, which already carries the signature in its pixels, and an import that asked for one again would lay a second logo on top of the first
+            // Exported for what reads an archive rather than for what imports one: the type is derived from the url on the way back in (see GalleryImportProvider), never read from here
             'mediaType' => $media->getMediaType(),
-            'externalId' => $media->getExternalId(),
+            'externalUrl' => $media->getExternalUrl(),
             'position' => $media->getPosition(),
             'file' => $archivePath,
-        ] + $this->exportOriginal($media, $files);
+        ] + $this->exportOriginal($media, $files) + $this->exportVideo($media, $files);
+    }
+
+    // The site's own copy of the video, archived beside the still it is played under - it is the one file of the set nothing could get back from elsewhere, a media framed from a platform still carrying the url that finds it again
+    private function exportVideo(GalleryMedia $media, array &$files): array
+    {
+        $videoFilename = $media->getVideoFilename();
+        if (null === $videoFilename) {
+            return [];
+        }
+
+        $path = $this->projectDir . '/public/' . $videoFilename;
+        if (!is_file($path)) {
+            return [];
+        }
+
+        $archivePath = 'files/' . bin2hex(random_bytes(8)) . '_' . basename($videoFilename);
+        $files[$archivePath] = $path;
+
+        return ['videoFile' => $archivePath];
     }
 
     // The untouched upload kept under private/, archived beside the stored file rather than in its place: it is what lets a media be re-processed later without a re-upload, and it would be lost on a round-trip otherwise. Nothing is added for a media that never kept one, or whose original has since disappeared from disk - what the import reads back is the 'originalFile' key's presence (see GalleryImportProvider::restoreOriginals)

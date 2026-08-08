@@ -1,10 +1,18 @@
-{# The embed itself, framed exactly like a still so a video and a media sit in the same grid - the wrapper carries the platform's own aspect ratio (see sass/_gallery.scss), landscape for YouTube, portrait for TikTok #}
+{# The player, framed exactly like a still so a video and a media sit in the same grid - the wrapper carries the platform's own aspect ratio, landscape by default, portrait for the platforms built for phones (see sass/_gallery.scss, kept in step with the registry by VideoPlatformRatioTest) #}
+{# A class rather than an inline style: a CSP nonce never covers a style attribute, and this bundle's players have to render on a site with a strict policy #}
 <div class="gallery-video gallery-video--{{ media.mediaType }}">
-    <iframe
-        src="{{ media.embedUrl }}"
-        title="{{ media.title }}"
-        loading="lazy"
-        referrerpolicy="strict-origin-when-cross-origin"
-        allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-        allowfullscreen></iframe>
+    {% if media.selfHostedVideo %}
+        {# The site's own file, played by the browser: no third party, so nothing to consent to and no frame at all. The still the entry already carries is its poster, so the box is filled before a byte of video arrives #}
+        <twig:c975LUi:Video:Video
+            src="{{ asset(media.videoFilename) }}"
+            type="{{ media.videoMimeType }}"
+            poster="{{ media.filename ? asset(media.filename) : '' }}"
+            title="{{ media.title }}"
+            caption="false"/>
+    {% else %}
+        {# UiBundle's own Video:Iframe, not an <iframe> of this bundle's: the frame is third-party whatever the platform, and that component is where the ecosystem's consent gate lives - the iframe is only created client-side once the visitor has accepted (see UiBundle's video-iframe controller) #}
+        {# No width/height passed on purpose: the controller only writes its own sizing style when it gets a pair, and the wrapper's aspect-ratio is what should shape this player #}
+        {# caption="false": the media page lays out its own heading (the breadcrumb above, the credits below), where the component's own <h3> would read as a second title. The title still reaches the player, which is where a screen reader looks for it #}
+        <twig:c975LUi:Video:Iframe src="{{ media.embedUrl }}" title="{{ media.title }}" caption="false"/>
+    {% endif %}
 </div>

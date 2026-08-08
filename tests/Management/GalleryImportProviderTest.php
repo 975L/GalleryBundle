@@ -269,4 +269,24 @@ class GalleryImportProviderTest extends TestCase
         $this->assertCount(2, $categories);
         $this->assertSame(['paysages', 'portraits'], array_map(static fn (GalleryCategory $c): string => (string) $c->getSlug(), $categories));
     }
+
+    // The lead-in travels with its category, and an archive predating it imports as a category without one rather than failing on the missing key
+    public function testImportCarriesTheDescriptionAndToleratesItsAbsence(): void
+    {
+        $persisted = [];
+        $em = $this->createStub(EntityManagerInterface::class);
+        $em->method('persist')->willReturnCallback(static function (object $entity) use (&$persisted): void {
+            $persisted[] = $entity;
+        });
+
+        $provider = $this->createProvider($em);
+
+        $provider->import([
+            ['slug' => 'paysages', 'title' => 'Paysages', 'description' => '<div>Nos paysages</div>'],
+            ['slug' => 'portraits', 'title' => 'Portraits'],
+        ]);
+
+        $categories = array_values(array_filter($persisted, static fn (object $e): bool => $e instanceof GalleryCategory));
+        $this->assertSame(['<div>Nos paysages</div>', null], array_map(static fn (GalleryCategory $c): ?string => $c->getDescription(), $categories));
+    }
 }

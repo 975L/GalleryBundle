@@ -2,12 +2,19 @@
 
 {# Defines specific variables #}
 {% set title = 'label.gallery_page_title'|trans({}, 'gallery') ~ ' - ' ~ category.title %}
+{# The name SiteBundle's layout reads to write the "description"/"og:description" metas, stripping the markup itself (see its layout.html.twig) - a category then describes itself to a search engine and to a social network with the very text it opens with on screen, and an app on the minimal layout simply ignores it #}
+{% set summarySocialNetwork = category.description %}
 
 {# Editor-only: the category is the gallery, so its own edit screen is what the grid points at - the heading blocks above carry their own button already, UiBundle drawing it for each of them #}
 {% set editUrl = is_granted(config('site-role-editor')) ? gallery_category_edit_url(category) : null %}
 
 {% block content %}
     <twig:c975LGallery:Gallery:Navigation category="{{ category }}"/>
+    {# The category's own lead-in, before any block: it is the one text every category is meant to have, where the blocks below are whatever an editor chose to compose on top of it #}
+    {# Trix markup, printed as typed - no nl2br, Trix having encoded its own line breaks #}
+    {% if category.description is not empty %}
+        <div class="gallery-category-description">{{ category.description|raw }}</div>
+    {% endif %}
     {# Editorial heading composed in the back-office, with any of UiBundle's block kinds - renders nothing when the category has none #}
     <twig:c975LUi:Blocks:Blocks blocks="{{ category.blocks }}"/>
     {# UiBundle's own wrapper class: display:contents, so it hosts the hover button's attributes without taking any part in the grid's layout #}

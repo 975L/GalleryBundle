@@ -30,7 +30,7 @@ class GalleryExportProviderTest extends TestCase
 
     public function testExportAllSerializesEveryCategoryFromTheRepository(): void
     {
-        $category = (new GalleryCategory())->setSlug('voyages')->setTitle('Voyages')->setPosition(0);
+        $category = (new GalleryCategory())->setSlug('voyages')->setTitle('Voyages')->setDescription('<div>Nos voyages</div>')->setPosition(0);
 
         $categoryRepository = $this->createMock(GalleryCategoryRepository::class);
         $categoryRepository->expects($this->once())->method('findAll')->willReturn([$category]);
@@ -40,6 +40,7 @@ class GalleryExportProviderTest extends TestCase
         $this->assertSame([[
             'slug' => 'voyages',
             'title' => 'Voyages',
+            'description' => '<div>Nos voyages</div>',
             'position' => 0,
             'uncategorized' => false,
             'coverMediaIndex' => null,
@@ -117,6 +118,35 @@ class GalleryExportProviderTest extends TestCase
         rmdir($projectDir . '/public');
         rmdir($projectDir . '/private/uploads');
         rmdir($projectDir . '/private');
+        rmdir($projectDir);
+    }
+
+    // The one file of the set nothing could get back from elsewhere: a media framed from a platform still carries the url that finds it again, a self-hosted video exists only here
+    public function testSerializeArchivesTheSelfHostedVideoBesideItsStill(): void
+    {
+        $projectDir = sys_get_temp_dir() . '/gallery_export_provider_test_' . bin2hex(random_bytes(4));
+        mkdir($projectDir . '/public/uploads', 0777, true);
+        file_put_contents($projectDir . '/public/uploads/p1.webp', 'stored-bytes');
+        file_put_contents($projectDir . '/public/uploads/p1-a1b2c3.mp4', 'video-bytes');
+
+        $category = (new GalleryCategory())->setSlug('voyages')->setTitle('Voyages');
+        $media = (new GalleryMedia())->setFilename('uploads/p1.webp')->setTitle('Media 1')->setSlug('media-1');
+        $media->setVideoFilename('uploads/p1-a1b2c3.mp4');
+        $category->addMedia($media);
+
+        $data = (new GalleryExportProvider($this->createStub(GalleryCategoryRepository::class), new BlockDataExporter($projectDir), $projectDir))
+            ->serialize([$category]);
+
+        $mediaData = $data['items'][0]['medias'][0];
+        $this->assertArrayHasKey('videoFile', $mediaData);
+        $this->assertSame($projectDir . '/public/uploads/p1-a1b2c3.mp4', $data['files'][$mediaData['videoFile']]);
+        $this->assertSame(GalleryMedia::MEDIA_TYPE_VIDEO, $mediaData['mediaType']);
+        $this->assertCount(2, $data['files']);
+
+        unlink($projectDir . '/public/uploads/p1.webp');
+        unlink($projectDir . '/public/uploads/p1-a1b2c3.mp4');
+        rmdir($projectDir . '/public/uploads');
+        rmdir($projectDir . '/public');
         rmdir($projectDir);
     }
 

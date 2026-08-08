@@ -2,6 +2,134 @@
 
 ## Unreleased
 
+### A video is an url now, and no longer YouTube or TikTok only
+
+`GalleryMedia` carried a `mediaType` picked from a list of three and an `externalId` typed next to it,
+with the embed urls of the two platforms hardcoded in the entity. It carries **one url**, and the
+platform reads itself off it — through `c975L\UiBundle\Video\VideoPlatform`, UiBundle's own registry,
+which is where a platform is declared once for the whole ecosystem.
+
+| Before | After |
+| --- | --- |
+| `GalleryMedia::MEDIA_TYPES` | `GalleryMedia::mediaTypes()` |
+| `GalleryMedia::MEDIA_TYPE_YOUTUBE`, `…_TIKTOK` | `VideoPlatform::Youtube`, `…::Tiktok` (and `Vimeo`, `Dailymotion`) |
+| `getExternalId()/setExternalId()` | `getExternalUrl()/setExternalUrl()` |
+| `setMediaType()` | *(gone — the type is derived from the url)* |
+| export key `externalId` | `externalUrl` |
+| `label.gallery_external_id(_help)` | `label.gallery_external_url(_help)` |
+
+What this buys: **Vimeo and Dailymotion out of the box**, and any player nobody declared — a PeerTube
+instance of one's own among them — stored as pasted under the `embed` type rather than refused.
+
+An admin pastes the address of the page the video is watched on; what gets stored is that platform's
+own privacy-first embed url (`youtube-nocookie.com`, Vimeo's `dnt=1`), normalized once on the way in.
+`setMediaType()` is gone on purpose: a type and an url that could be set apart were a pair free to
+contradict each other, and half-declared videos were a case to carry everywhere.
+
+**The urls are rebuilt from the ids, then the column goes.** `doctrine:migrations:diff` writes the
+`ADD`/`DROP` pair on its own, but not the `UPDATE`s between them — add those to the generated migration
+before running it, or every video becomes a still:
+
+```sql
+ALTER TABLE gallery_media ADD external_url VARCHAR(500) DEFAULT NULL;
+
+UPDATE gallery_media SET external_url = CONCAT('https://www.youtube-nocookie.com/embed/', external_id)
+    WHERE media_type = 'youtube' AND external_id IS NOT NULL AND external_id <> '';
+UPDATE gallery_media SET external_url = CONCAT('https://www.tiktok.com/embed/v2/', external_id)
+    WHERE media_type = 'tiktok' AND external_id IS NOT NULL AND external_id <> '';
+
+-- A half-declared video (a type with no id) goes back to being what it already displayed: a still
+UPDATE gallery_media SET media_type = 'image' WHERE external_url IS NULL;
+
+ALTER TABLE gallery_media DROP COLUMN external_id;
+```
+
+An archive exported before this rework still imports: `GalleryImportProvider` rebuilds the url from the
+`mediaType`/`externalId` pair it carries.
+
+### A media can carry a video of the site's own
+
+Next to the url, a `GalleryMedia` now takes an **uploaded video file** (mp4/webm/ogg) — played by the
+browser itself through UiBundle's `<twig:c975LUi:Video:Video>`, with the still the entry already carries
+as its poster. No third party, so nothing to consent to and no CSP origin to allow, and a video that
+outlives whatever a platform decides. What it costs is the storage and the bandwidth.
+
+The file **wins over a pasted url** when a media carries both (`GalleryMedia::refreshMediaType()`): the
+copy that outlives the platform is the one to play, and the url stays there to fall back on if the file
+is removed. `isSelfHostedVideo()` tells the two apart; `getEmbedUrl()` returns `null` for a self-hosted
+one, there being nothing to frame.
+
+The ceiling is **php's own `upload_max_filesize`**, not this bundle's 20 MiB one — that ceiling exists to
+keep a batch of photographs from taking a shared host down, and would refuse any video worth uploading
+(`UploadLimits::getMaxVideoFileSize()`). On a managed host it is what the hosting sets, and a video over
+it has to reach the server some other way.
+
+Three columns, which `doctrine:migrations:diff` writes on its own:
+
+```sql
+ALTER TABLE gallery_media
+    ADD video_filename VARCHAR(255) DEFAULT NULL,
+    ADD video_size INT DEFAULT NULL,
+    ADD video_mime_type VARCHAR(100) DEFAULT NULL;
+```
+
+Nothing to migrate: no media carried a file of its own until now. Export and import carry it
+(`videoFile`), so a round-trip no longer loses the one file nothing could get back from elsewhere.
+
+**One fix in UiBundle comes with it.** `VichImageResizeListener` fires once per Vich field but its
+branches answer for the entity as a whole, so a second file next to an image used to be copied aside as
+an "original", measured, and handed to a resizer that cannot read it. It now leaves a file that is not
+an image alone — read off the file's own bytes, so an SVG bound for an icon role is unaffected.
+
+### Third-party players are now behind the site's consent gate
+
+The bundle framed its `<iframe>` itself, on the strength of YouTube's and TikTok's embeds being
+cookie-free until playback. UiBundle has meanwhile put **every** third-party frame behind a consent
+placeholder (`<twig:c975LUi:Video:Iframe>`, see its `video-iframe` controller), and the gallery had the
+ecosystem's only exception to it. It no longer does — `Gallery:Video` renders that component, so a
+gallery's players follow the site's own cookie banner, and are only ever created client-side once the
+visitor accepted. **A site carrying no consent banner is unaffected**: the controller renders the player
+straight away there, which is the behaviour a gallery had until now.
+
+A site that wants its gallery to keep framing players unconditionally has to say so at the banner level,
+there being no per-bundle opt-out — the point of the change being that there is one policy, not two.
+
+### The CSP origins come from the registry
+
+`frame-src` had to name `www.youtube-nocookie.com` and `www.tiktok.com` by hand, copied out of this
+README. UiBundle exposes every declared platform's origin as a container parameter, so the policy
+follows the registry:
+
+```yaml
+# config/packages/nelmio_security.yaml
+nelmio_security:
+    csp:
+        enforce:
+            frame-src: ['self', '%c975l_ui.video.embed_origins%']
+            # The level 1 fallback, for browsers that don't know frame-src
+            child-src: ['self', '%c975l_ui.video.embed_origins%']
+```
+
+A `Permissions-Policy` header restricting `fullscreen` still has to name those origins, or the player's
+fullscreen button does nothing.
+
+### The player's shape is a token per platform
+
+`--gallery-video-ratio-youtube` and `--gallery-video-ratio-tiktok` are joined by
+`--gallery-video-ratio-vimeo`, `--gallery-video-ratio-dailymotion` and `--gallery-video-ratio-default`
+(what a player from an undeclared platform is framed in). A site that took the two over in its own
+`themes/gallery.css` keeps them; the new ones follow the bundle until it takes them over too.
+
+### Each gallery can be linked from a menu
+
+`Management\LinkableRouteProvider` offers the gallery index **and one entry per category** to SiteBundle's
+menus, where nothing of this bundle showed up before. **Nothing to run**: the entries appear in the target
+select of **Menus** on their own, and no existing menu item changes.
+
+A category entry names the route and the parameter its url is built from, which needs `c975l/core-bundle`
+^1.4 carrying that contract and the SiteBundle release reading it — an older SiteBundle would list the
+entry in its picker and then fail to generate its url on the front end.
+
 ### The watermark is no longer stored on a media
 
 `GalleryMedia::$watermarked` and `$watermarkPosition` were columns, and answered a question that only
@@ -380,7 +508,7 @@ until an admin fills one in.
 php bin/console c975l:config:load-all
 ```
 
-That is also why this bundle now requires **`c975l/core-bundle` ^1.3**: UiBundle compiles a config into a
+That is also why this bundle now requires **`c975l/core-bundle` ^1.4**: UiBundle compiles a config into a
 `--c975l-*` custom property on its `theme-` slug prefix from that version on, whatever the group it is
 displayed in. On an older CoreBundle the ten entries would be editable and have no effect at all.
 

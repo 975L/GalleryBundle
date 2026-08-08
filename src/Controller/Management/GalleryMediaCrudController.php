@@ -15,6 +15,7 @@ use c975L\GalleryBundle\Entity\GalleryCategory;
 use c975L\GalleryBundle\Entity\GalleryMedia;
 use c975L\GalleryBundle\Service\GalleryMediaSlugger;
 use c975L\GalleryBundle\Service\GalleryUrlRedirector;
+use c975L\GalleryBundle\Service\UploadLimits;
 use c975L\UiBundle\Contract\VichWatermarkableInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
@@ -29,7 +30,9 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\BooleanField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ChoiceField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\Field;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IntegerField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\SlugField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\UrlField;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGeneratorInterface;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
@@ -39,6 +42,7 @@ use Symfony\Component\Form\FormEvents;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Validator\Constraints\File as FileConstraint;
 use Symfony\Contracts\Translation\TranslatorInterface;
+use Vich\UploaderBundle\Form\Type\VichFileType;
 use Vich\UploaderBundle\Form\Type\VichImageType;
 
 use function Symfony\Component\Translation\t;
@@ -52,6 +56,7 @@ class GalleryMediaCrudController extends AbstractCrudController
         private readonly GalleryMediaSlugger $mediaSlugger,
         private readonly GalleryUrlRedirector $urlRedirector,
         private readonly ConfigServiceInterface $configService,
+        private readonly UploadLimits $uploadLimits,
     ) {
     }
 
@@ -233,32 +238,57 @@ class GalleryMediaCrudController extends AbstractCrudController
                 ->setRequired(true)
                 ->setHelp(t('label.gallery_media_title_help', [], 'gallery')),
 
-            // Editable, and the only field here that moves a public url - hence the confirmation the title used to carry, through UiBundle's "title-confirm" controller: an automatic rename never moves a url, a deliberate one does and is recorded as a redirect (see updateEntity)
-            // Emptied rather than retyped, it is rebuilt from the title, which is the one way to ask for a fresh slug
-            TextField::new('slug')
+            // Editable, and the only field here that moves a public url - hence the padlock EasyAdmin's own SlugField draws, the same one a category and a page are edited behind (see GalleryCategoryCrudController and SiteBundle's PageCrudController): it is read-only until deliberately unlocked, and unlocking asks for the confirmation the change deserves
+            // Never resynced from the title either, the field-slug script only following its target while the slug is still empty - which is exactly how an emptied field asks for one rebuilt from the title (see GalleryMediaSlugger)
+            SlugField::new('slug')
                 ->setLabel(t('label.slug', [], 'gallery'))
+                ->setTargetFieldName('title')
                 ->setHelp(t('label.gallery_media_slug_help', [], 'gallery'))
-                ->setFormTypeOption('attr', [
-                    'data-controller' => 'title-confirm',
-                    'data-action' => 'focus->title-confirm#confirm click->title-confirm#confirm',
-                    'data-title-confirm-message-value' => $this->translator->trans('confirm.media_slug_change', [], 'gallery'),
-                ]),
+                ->setUnlockConfirmationMessage(t('confirm.media_slug_change', [], 'gallery')),
 
             TextField::new('credits')
                 ->setLabel(t('label.credits', [], 'gallery')),
 
-            // A video entry keeps its uploaded image above - it is what the grid shows, the type only decides what the detail page opens on (see GalleryMedia::isVideo())
-            // setTranslatableChoices(), not setChoices(): a plain choice array's keys only translate under EasyAdmin's own CRUD-level domain, which isn't "gallery"
+            // A video entry keeps its uploaded image above - it is what the grid shows, and what a self-hosted player uses as its poster; the two fields below only decide what the detail page opens on (see GalleryMedia::isVideo())
+            // One field where there used to be a type and an id: an admin pastes the address bar of the page they were watching the video on, and the platform reads itself off it (see GalleryMedia::setExternalUrl). Nothing to extract by hand, and no pair of fields left to contradict each other
+            // Http(s) only: an url is handed to an iframe's src on the front end, where a javascript: one would run in the site's own origin (see GalleryMedia::setExternalUrl, which drops the same schemes on the import's way in)
+            UrlField::new('externalUrl')
+                ->setLabel(t('label.gallery_external_url', [], 'gallery'))
+                ->setHelp(t('label.gallery_external_url_help', [], 'gallery'))
+                ->allowedProtocols(['http', 'https'])
+                ->setRequired(false),
+
+            // The site's own copy, which wins over the url above when both are there (see GalleryMedia::refreshMediaType) - no third party, nothing to consent to, and a video that outlives whatever a platform decides
+            // The ceiling is php's own, not this bundle's 20 MiB one: that ceiling exists to keep a batch of photographs from taking a shared host down, and would refuse any video worth uploading (see UploadLimits::getMaxVideoFileSize)
+            Field::new('videoFile')
+                ->setLabel(t('label.gallery_video_file', [], 'gallery'))
+                ->setHelp(t('label.gallery_video_file_help', ['%size%' => $this->uploadLimits->toMegabytes($this->uploadLimits->getMaxVideoFileSize())], 'gallery'))
+                ->setFormType(VichFileType::class)
+                ->setFormTypeOptions([
+                    'required' => false,
+                    'allow_delete' => true,
+                    'download_uri' => true,
+                    'asset_helper' => true,
+                    'delete_label_translation_domain' => 'messages',
+                    'constraints' => [
+                        new FileConstraint(
+                            maxSize: $this->uploadLimits->getMaxVideoFileSize(),
+                            mimeTypes: GalleryMedia::VIDEO_MIME_TYPES,
+                        ),
+                    ],
+                    'attr' => ['accept' => implode(',', GalleryMedia::VIDEO_MIME_TYPES)],
+                ])
+                ->onlyOnForms(),
+
+            // What the url turned out to be, shown rather than asked - an admin who pasted the wrong thing sees "embed" where they expected a platform's name, which is the whole feedback this field owes them
+            // Disabled rather than hidden on the form: this screen is the only one an admin ever sees of a media (index redirects and detail is disabled), so hiding it here would hide it everywhere; the property has no setter, and a disabled field is never written back
             ChoiceField::new('mediaType')
                 ->setLabel(t('label.gallery_media_type', [], 'gallery'))
                 ->setTranslatableChoices(array_combine(
-                    GalleryMedia::MEDIA_TYPES,
-                    array_map(static fn (string $type) => t('label.gallery_media_type_' . $type, [], 'gallery'), GalleryMedia::MEDIA_TYPES),
-                )),
-
-            TextField::new('externalId')
-                ->setLabel(t('label.gallery_external_id', [], 'gallery'))
-                ->setHelp(t('label.gallery_external_id_help', [], 'gallery')),
+                    GalleryMedia::mediaTypes(),
+                    array_map(static fn (string $type) => t('label.gallery_media_type_' . $type, [], 'gallery'), GalleryMedia::mediaTypes()),
+                ))
+                ->setFormTypeOption('disabled', true),
 
             BooleanField::new('rightsReserved')
                 ->setLabel(t('label.rights_reserved', [], 'gallery')),

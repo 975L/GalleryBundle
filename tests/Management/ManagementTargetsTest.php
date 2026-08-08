@@ -11,14 +11,27 @@
 namespace c975L\GalleryBundle\Tests\Management;
 
 use c975L\ConfigBundle\Test\ManagementTargetsTestCase;
+use c975L\GalleryBundle\Entity\GalleryCategory;
+use c975L\GalleryBundle\Management\LinkableRouteProvider;
 use c975L\GalleryBundle\Management\MenuProvider;
+use c975L\GalleryBundle\Repository\GalleryCategoryRepository;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 // Every CRUD controller and route this bundle's management providers name, checked against what its controllers actually declare - see ConfigBundle's ManagementTargetsTestCase
 class ManagementTargetsTest extends ManagementTargetsTestCase
 {
     protected function managementProviders(): iterable
     {
-        return [new MenuProvider()];
+        return [new MenuProvider(), new LinkableRouteProvider($this->categoryRepository(), $this->createStub(TranslatorInterface::class))];
+    }
+
+    // One category is enough to have the route its entries name checked too - an empty repository would leave the index route as the only linkable target
+    private function categoryRepository(): GalleryCategoryRepository
+    {
+        $repository = $this->createStub(GalleryCategoryRepository::class);
+        $repository->method('findAllOrdered')->willReturn([(new GalleryCategory())->setSlug('landscapes')->setTitle('Landscapes')]);
+
+        return $repository;
     }
 
     // This bundle's own controllers on top of ConfigBundle's, whose screens its links point to as well

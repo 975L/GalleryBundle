@@ -16,8 +16,10 @@ use c975L\UiBundle\Contract\VichMediaNamableInterface;
 use c975L\UiBundle\Contract\VichMultiSizeImageInterface;
 use c975L\UiBundle\Contract\VichOriginalKeepableInterface;
 use c975L\UiBundle\Contract\VichWatermarkableInterface;
+use c975L\UiBundle\Video\VideoPlatform;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\HttpFoundation\File\File;
+use Symfony\Component\Validator\Constraints as Assert;
 use Vich\UploaderBundle\Mapping\Attribute as Vich;
 
 // getImageWidth()/getThumbnailSize()/getHighresWidth() (VichMultiSizeImageInterface, from UiBundle) drive UiBundle's own VichImageResizeListener - naming/resizing itself stays centralized there, this bundle only declares the target sizes and reads back the derivative filenames it produces
@@ -39,15 +41,15 @@ class GalleryMedia implements VichMultiSizeImageInterface, VichMediaNamableInter
 
     // What the detail page shows. Every entry carries an uploaded image whatever its type - it is what the grid displays, and what a video entry has instead of a poster fetched from a third party at render time; the type only decides whether that image or an embed is shown once the entry is opened
     public const MEDIA_TYPE_IMAGE = 'image';
-    public const MEDIA_TYPE_YOUTUBE = 'youtube';
-    public const MEDIA_TYPE_TIKTOK = 'tiktok';
-    public const MEDIA_TYPES = [self::MEDIA_TYPE_IMAGE, self::MEDIA_TYPE_YOUTUBE, self::MEDIA_TYPE_TIKTOK];
 
-    // Cookie-free hosts on both sides: nothing is set until the visitor actually plays, which is what lets the embeds be served without a consent gate
-    private const EMBED_URLS = [
-        self::MEDIA_TYPE_YOUTUBE => 'https://www.youtube-nocookie.com/embed/%s',
-        self::MEDIA_TYPE_TIKTOK => 'https://www.tiktok.com/embed/v2/%s',
-    ];
+    // A video hosted somewhere nobody declared - an instance of one's own, a platform this ecosystem doesn't know. It is framed exactly as pasted, landscape by default, which is the whole difference with the declared platforms: nothing is known about it beyond the url an admin vouched for
+    public const MEDIA_TYPE_EMBED = 'embed';
+
+    // A video file of the site's own, played by the browser itself: no third party, nothing to consent to, and a video that outlives whatever a platform decides. What it costs is the storage and the bandwidth, which is why it stands next to the embeds rather than replacing them
+    public const MEDIA_TYPE_VIDEO = 'video';
+
+    // The three formats every browser's <video> can play, which is also what the upload field accepts - the same list UiBundle's own "video" block declares
+    public const VIDEO_MIME_TYPES = ['video/mp4', 'video/webm', 'video/ogg'];
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -76,6 +78,25 @@ class GalleryMedia implements VichMultiSizeImageInterface, VichMediaNamableInter
     #[ORM\Column(length: 100, nullable: true)]
     private ?string $mimeType = null;
 
+    // The site's own copy of the video, played by the browser instead of framed from a third party. Same mapping as the image above, which is what puts it in the same folder under the same name root - UiMediaNamer only forces the webp extension on the image formats, so a video keeps its own (see determineExtension)
+    // It sits on this entity rather than on a Media of the library: the still, the title, the slug and the credits are already here, and a video of one's own is that entry's file, not a second entry pointing at it
+    #[Vich\UploadableField(
+        mapping: 'block_media',
+        fileNameProperty: 'videoFilename',
+        size: 'videoSize',
+        mimeType: 'videoMimeType'
+    )]
+    private ?File $videoFile = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $videoFilename = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?int $videoSize = null;
+
+    #[ORM\Column(length: 100, nullable: true)]
+    private ?string $videoMimeType = null;
+
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $updatedAt = null;
 
@@ -100,12 +121,16 @@ class GalleryMedia implements VichMultiSizeImageInterface, VichMediaNamableInter
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $credits = null;
 
+    // Not an admin's choice but a reading of the url below, posed by setExternalUrl() alone - one of UiBundle's declared platforms, "embed" for a player nobody declared, "image" for an entry carrying no url at all
     #[ORM\Column(length: 20, options: ['default' => self::MEDIA_TYPE_IMAGE])]
     private string $mediaType = self::MEDIA_TYPE_IMAGE;
 
-    // The video's id on its platform, nothing more - the watch/embed urls are built from it here, so a platform changing its url scheme is one constant to edit rather than a column to migrate
-    #[ORM\Column(length: 64, nullable: true)]
-    private ?string $externalId = null;
+    // The url the player is framed from, stored whole rather than as an id: it is what lets a gallery hold a video from a platform this ecosystem never declared - an instance of one's own among them - where an id alone is only meaningful next to a scheme somebody wrote down
+    // What is stored is always the canonical embed url of whatever was pasted, normalized once on the way in (see setExternalUrl): the privacy-first host is picked there, so nothing downstream has to remember to ask for it
+    // The length is doubled by a constraint so an url longer than the column - tracking parameters make that ordinary - comes back as a form error instead of a "Data too long" the visitor reads as a 500
+    #[ORM\Column(length: 500, nullable: true)]
+    #[Assert\Length(max: 500)]
+    private ?string $externalUrl = null;
 
     #[ORM\Column(options: ['default' => false])]
     private bool $rightsReserved = false;
@@ -264,40 +289,127 @@ class GalleryMedia implements VichMultiSizeImageInterface, VichMediaNamableInter
         return $this;
     }
 
+    // Never set by hand: the type is what the media turned out to carry, so this list is only ever read - by the badge naming a video in the grid, and by whoever styles a player after its platform
+    public static function mediaTypes(): array
+    {
+        return [self::MEDIA_TYPE_IMAGE, self::MEDIA_TYPE_VIDEO, ...VideoPlatform::values(), self::MEDIA_TYPE_EMBED];
+    }
+
     public function getMediaType(): string
     {
         return $this->mediaType;
     }
 
-    // Falls back to "image" rather than rejecting an unknown value: this is fed by an import as much as by the admin form, and an entry showing its still instead of an embed beats an import dying halfway
-    public function setMediaType(?string $mediaType): self
+    public function getExternalUrl(): ?string
     {
-        $this->mediaType = \in_array($mediaType, self::MEDIA_TYPES, true) ? $mediaType : self::MEDIA_TYPE_IMAGE;
+        return $this->externalUrl;
+    }
+
+    // A url one of UiBundle's platforms recognizes is stored as that platform's canonical embed url, which is the privacy-first one: youtube-nocookie rather than youtube.com, Vimeo's "dnt=1". Anything else is kept exactly as pasted - the admin vouched for it, and refusing it is what would put the gallery back behind a list of platforms somebody has to maintain
+    // Http(s) only though: the url is handed to an iframe's src on the front end, so a javascript: one would run in the site's own origin. Dropped here rather than by the form alone, an import writing straight to this setter (see GalleryImportProvider)
+    public function setExternalUrl(?string $externalUrl): self
+    {
+        $externalUrl = null !== $externalUrl ? trim($externalUrl) : null;
+        $this->externalUrl = null !== $externalUrl && 1 === preg_match('#^https?://#i', $externalUrl)
+            ? (VideoPlatform::resolve($externalUrl)?->embedUrl() ?? $externalUrl)
+            : null;
+
+        return $this->refreshMediaType();
+    }
+
+    public function getVideoFile(): ?File
+    {
+        return $this->videoFile;
+    }
+
+    public function setVideoFile(?File $videoFile): void
+    {
+        $this->videoFile = $videoFile;
+        if (null !== $videoFile) {
+            $this->updatedAt = new \DateTimeImmutable();
+        }
+    }
+
+    public function getVideoFilename(): ?string
+    {
+        return $this->videoFilename;
+    }
+
+    // Written by Vich once the upload is stored, and by an admin removing it - either way it is what decides the media carries a video of its own, hence the type being refreshed from here
+    public function setVideoFilename(?string $videoFilename): self
+    {
+        $this->videoFilename = '' !== $videoFilename ? $videoFilename : null;
+
+        return $this->refreshMediaType();
+    }
+
+    public function getVideoSize(): ?int
+    {
+        return $this->videoSize;
+    }
+
+    public function setVideoSize(?int $videoSize): self
+    {
+        $this->videoSize = $videoSize;
 
         return $this;
     }
 
-    public function getExternalId(): ?string
+    public function getVideoMimeType(): ?string
     {
-        return $this->externalId;
+        return $this->videoMimeType;
     }
 
-    public function setExternalId(?string $externalId): self
+    public function setVideoMimeType(?string $videoMimeType): self
     {
-        $this->externalId = '' !== $externalId ? $externalId : null;
+        $this->videoMimeType = $videoMimeType;
 
         return $this;
     }
 
-    // A video only once it has both: a type alone has nothing to embed, and an id left behind by a type switched back to "image" must not resurrect the player
+    // Carries a player of some kind - the still stays what the grid shows either way (see Gallery:Media)
     public function isVideo(): bool
     {
-        return null !== $this->externalId && isset(self::EMBED_URLS[$this->mediaType]);
+        return self::MEDIA_TYPE_IMAGE !== $this->mediaType;
     }
 
+    // Played by the browser itself, from the site's own file: no third party, so no consent to ask and nothing to frame
+    public function isSelfHostedVideo(): bool
+    {
+        return null !== $this->videoFilename;
+    }
+
+    // Only when there is no file of the site's own: a media carrying both plays its own copy, an url left over from before it was uploaded not being a reason to send the visitor to a third party
     public function getEmbedUrl(): ?string
     {
-        return $this->isVideo() ? sprintf(self::EMBED_URLS[$this->mediaType], $this->externalId) : null;
+        return $this->isSelfHostedVideo() ? null : $this->externalUrl;
+    }
+
+    // The shape to reserve for the player before it loads, portrait for the platforms built for phones - a video framed from somewhere nobody declared gets the landscape default, there being nothing to know it by
+    public function getAspectRatio(): string
+    {
+        return VideoPlatform::tryFrom($this->mediaType)?->aspectRatio() ?? '16 / 9';
+    }
+
+    // The type is derived rather than asked for, so it can never contradict what the media actually carries - a type with nothing to play, an url left behind by a file that replaced it
+    // The site's own file wins over a pasted url: it is the copy that outlives the platform, and a media carrying both has no reason to send its visitor away
+    private function refreshMediaType(): self
+    {
+        if (null !== $this->videoFilename) {
+            $this->mediaType = self::MEDIA_TYPE_VIDEO;
+
+            return $this;
+        }
+
+        if (null === $this->externalUrl) {
+            $this->mediaType = self::MEDIA_TYPE_IMAGE;
+
+            return $this;
+        }
+
+        $this->mediaType = VideoPlatform::resolve($this->externalUrl)?->platform->value ?? self::MEDIA_TYPE_EMBED;
+
+        return $this;
     }
 
     public function getUser(): ?UserInterface

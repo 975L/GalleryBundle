@@ -150,13 +150,21 @@
                 <source>label.gallery_credits</source>
                 <target>Credits: %credits%</target>
             </trans-unit>
-            <trans-unit id="jqYQiJ1">
-                <source>label.gallery_external_id</source>
-                <target>Video id</target>
+            <trans-unit id="_vvAUvU">
+                <source>label.gallery_description</source>
+                <target>Description</target>
             </trans-unit>
-            <trans-unit id="bTz5hKn">
-                <source>label.gallery_external_id_help</source>
-                <target>The id the platform gives the video, nothing else - the url is built from it</target>
+            <trans-unit id="2l0..ut">
+                <source>label.gallery_description_help</source>
+                <target>Displayed above the grid, and reused as the page's description for search engines and social networks (truncated to 150 characters for the latter).</target>
+            </trans-unit>
+            <trans-unit id="TdPUsM5">
+                <source>label.gallery_external_url</source>
+                <target>Video URL</target>
+            </trans-unit>
+            <trans-unit id="ls7sBoS">
+                <source>label.gallery_external_url_help</source>
+                <target>The address of the page the video is watched on, as it appears in the browser's bar - it is turned into a privacy-first embed url when saved. YouTube, TikTok, Vimeo and Dailymotion are recognized; any other embed url is kept as it was pasted.</target>
             </trans-unit>
             <trans-unit id="jOBEUyc">
                 <source>label.gallery_files</source>
@@ -186,6 +194,14 @@
                 <source>label.gallery_media_type</source>
                 <target>Type</target>
             </trans-unit>
+            <trans-unit id="9_Pk3K.">
+                <source>label.gallery_media_type_dailymotion</source>
+                <target>Dailymotion</target>
+            </trans-unit>
+            <trans-unit id="Z9MgXx.">
+                <source>label.gallery_media_type_embed</source>
+                <target>Other platform</target>
+            </trans-unit>
             <trans-unit id="rJve7_N">
                 <source>label.gallery_media_type_image</source>
                 <target>Photo</target>
@@ -193,6 +209,14 @@
             <trans-unit id="XvFRzuS">
                 <source>label.gallery_media_type_tiktok</source>
                 <target>TikTok</target>
+            </trans-unit>
+            <trans-unit id="iHps1Uh">
+                <source>label.gallery_media_type_video</source>
+                <target>Self-hosted video</target>
+            </trans-unit>
+            <trans-unit id="dZgvqOw">
+                <source>label.gallery_media_type_vimeo</source>
+                <target>Vimeo</target>
             </trans-unit>
             <trans-unit id="4AIUuLC">
                 <source>label.gallery_media_type_youtube</source>
@@ -309,6 +333,14 @@
             <trans-unit id="u7e3TST">
                 <source>label.gallery_video</source>
                 <target>Video</target>
+            </trans-unit>
+            <trans-unit id="uBlQUqr">
+                <source>label.gallery_video_file</source>
+                <target>Video file</target>
+            </trans-unit>
+            <trans-unit id="sMyJ0fj">
+                <source>label.gallery_video_file_help</source>
+                <target>A video hosted by the site and played by the browser: no third party, so no consent to ask for. mp4, webm or ogg, %size% MB at most. It wins over the url above when both are filled in.</target>
             </trans-unit>
             <trans-unit id="w8G1sA.">
                 <source>label.gallery_watermark</source>
