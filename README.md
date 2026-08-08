@@ -20,7 +20,7 @@ Add GalleryBundle on top of [c975L/CoreBundle](https://github.com/975L/CoreBundl
 ## Contents
 
 - **Setup** — [requirements](#requirements) · [installation](#installation) · [configuration](#load-the-configuration) · [routes](#enable-routes) · [assets](#install-assets) · [theme](#install-the-theme)
-- **Using it** — [public routes](#public-routes) · [linking from a menu](#linking-a-gallery-from-a-menu) · [renaming a category](#renaming-a-category) · [deleting a gallery](#deleting-a-gallery) · [uploading a batch](#uploading-a-batch) · [renaming a media](#renaming-a-media) · [browsing and the lightbox](#browsing-and-the-lightbox) · [editing from the public pages](#editing-from-the-public-pages) · [blocks](#blocks-defined-by-this-bundle) · [category description](#a-categorys-description) · [category headings](#composing-a-categorys-heading) · [theme tokens](#theme) · [videos](#videos) · [deleting a selection](#deleting-a-selection-of-medias) · [credits / rights on a selection](#applying-credits-or-rights-to-a-selection) · [export / import categories](#export--import-categories) · [sitemap and health check](#sitemap-and-health-check)
+- **Using it** — [public routes](#public-routes) · [linking from a menu](#linking-a-gallery-from-a-menu) · [renaming a category](#renaming-a-category) · [deleting a gallery](#deleting-a-gallery) · [uploading a batch](#uploading-a-batch) · [renaming a media](#renaming-a-media) · [browsing and the lightbox](#browsing-and-the-lightbox) · [editing from the public pages](#editing-from-the-public-pages) · [blocks](#blocks-defined-by-this-bundle) · [category description](#a-categorys-description) · [category headings](#composing-a-categorys-heading) · [theme tokens](#theme) · [videos](#videos) · [deleting a selection](#deleting-a-selection-of-medias) · [credits / rights on a selection](#applying-credits-or-rights-to-a-selection) · [export / import categories](#export--import-categories) · [sitemap and health check](#sitemap-and-health-check) · [backup](#backup) · [what's new](#whats-new)
 - **Operating** — [bringing an existing gallery in](#bringing-an-existing-gallery-in) · [upload ceilings](#upload-ceilings)
 
 ## Features
@@ -40,6 +40,7 @@ Add GalleryBundle on top of [c975L/CoreBundle](https://github.com/975L/CoreBundl
 - Sitemap generation (gallery index, categories and media pages), via ConfigBundle's `SitemapProviderInterface`
 - The gallery index and each category offered as a SiteBundle menu target, so a navbar links straight to one of the site's galleries (see [linking a gallery from a menu](#linking-a-gallery-from-a-menu))
 - Categories can be exported/imported as a zip (heading blocks, medias and files bundled in), plugging into ConfigBundle's **Export sync (everything)** dashboard shortcut and **Import content** screen.
+- The two upload roots declared to the backup, via ConfigBundle's `BackupPathProviderInterface`, mirrored offsite rather than tarred (see [backup](#backup))
 
 ---
 
@@ -259,10 +260,9 @@ records the path and doubles as the answer to "does this media have an original"
 replaced later goes on keeping one, the box only ever being answered at upload time. Deleting a media
 removes it along with the derivatives (`GalleryMediaDerivativeCleanupListener`).
 
-**They weigh what a camera writes.** A few thousand photos is tens of gigabytes, and `private/` is a
-backed-up root for ConfigBundle's `c975l:config:backup`, which archives it in `tar.bz2` — a format that
-gains nothing on already-compressed JPEG. On a media-heavy site, add `private/medias/gallery` to
-`config/backup_exclude.cnf`, or leave the box unchecked and keep the originals off the server entirely.
+**They weigh what a camera writes.** A few thousand photos is tens of gigabytes, mirrored offsite rather
+than archived (see [backup](#backup)) — on a media-heavy site, leaving the box unchecked keeps the
+originals off the server entirely.
 
 #### Watermarking the batch
 
@@ -636,6 +636,55 @@ its own, less frequent schedule — a gallery declares one url per media:
 ```bash
 php bin/console c975l:health-check:run --kind=urls-gallery
 ```
+
+### Backup
+
+ConfigBundle backs up nothing it wasn't declared, so `GalleryBackupPathProvider` names this bundle's two
+upload roots — the only content of a gallery that neither a git clone nor a database dump brings back.
+Nothing to register, the provider is picked up automatically:
+
+| Path | Mode |
+| --- | --- |
+| `public/medias/gallery` | `mirror` |
+| `private/medias/gallery` | `mirror` |
+
+`mirror` rather than `archive`: they are copied as-is by `c975l:config:backup:offsite`, never tarred and
+never dated — a photo needs a copy, not a version history, and bzip2 gains about nothing on a webp. The
+derivatives, the self-hosted videos and the kept originals all live under those two roots, so nothing else
+is declared. A site with no gallery yet declares two folders that aren't on disk, which are skipped
+without an error.
+
+```bash
+php bin/console c975l:config:backup:offsite    # mirrors the declared folders, this bundle's two included
+```
+
+### What's new
+
+`config/whatsnew.json` holds this bundle's own news, `WhatsNewProvider` (ConfigBundle's
+`WhatsNewProviderInterface`) handing it over. ConfigBundle merges every installed bundle's entries by date
+and shows the latest of them on the dashboard, the whole history being a click away. Nothing to register —
+the provider is picked up automatically.
+
+One row per date, in reverse chronological order, each description translated in the three locales the
+bundle covers; the visitor's own locale applies, English being the fallback:
+
+```json
+[
+    {
+        "date": "2026-08-08",
+        "description": [
+            {
+                "en": "A category can carry a description…",
+                "fr": "Une catégorie peut porter une description…",
+                "es": "Una categoría puede llevar una descripción…"
+            }
+        ]
+    }
+]
+```
+
+Written for the site's owner rather than for a developer: what changed on the screens and on the public
+pages, not which class carries it — the ChangeLog is where the code's history lives.
 
 ---
 

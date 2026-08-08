@@ -1,5 +1,18 @@
 # ChangeLog
 
+## v1.2.1
+
+A gallery's uploads are declared to the backup, and its news to the dashboard
+
+- Added `Management\WhatsNewProvider` and `config/whatsnew.json`, feeding the dashboard's What's new (08/08/2026)
+- README documents the What's new file (08/08/2026)
+- Added the `WhatsNewProviderTest` cases (08/08/2026)
+- Added `GalleryBackupPathProvider`, mirroring the two upload roots (08/08/2026)
+- README documents the declared backup paths (08/08/2026)
+- README no longer names the removed `backup_exclude.cnf` (08/08/2026)
+- Added the `GalleryBackupPathProviderTest` cases (08/08/2026)
+- Added the `GalleryImportProviderTest` cases covering the video import (08/08/2026)
+
 ## v1.2
 
 A video is an url now, self-hosted or from any declared platform

@@ -1,0 +1,187 @@
+[
+    {
+        "date": "2026-08-08",
+        "description": [
+            {
+                "en": "A video entry is now simply an address pasted from YouTube, Vimeo, Dailymotion or anywhere else, instead of a platform to choose and an identifier to copy. The player only loads once the visitor has accepted the site's cookies",
+                "fr": "Une vidéo n'est plus qu'une adresse collée depuis YouTube, Vimeo, Dailymotion ou n'importe où ailleurs, au lieu d'une plateforme à choisir et d'un identifiant à recopier. Le lecteur ne se charge qu'une fois les cookies du site acceptés par le visiteur",
+                "es": "Un vídeo es ahora simplemente una dirección pegada desde YouTube, Vimeo, Dailymotion o cualquier otro sitio, en lugar de una plataforma que elegir y un identificador que copiar. El reproductor solo se carga una vez que el visitante ha aceptado las cookies del sitio"
+            },
+            {
+                "en": "A video can also be uploaded to the site itself — mp4, webm or ogg — and plays in the browser without any outside platform. An uploaded file takes precedence over a pasted address, which stays as its fallback",
+                "fr": "Une vidéo peut aussi être déposée sur le site lui-même — mp4, webm ou ogg — et se lit dans le navigateur sans passer par une plateforme extérieure. Un fichier déposé l'emporte sur une adresse collée, qui lui reste de secours",
+                "es": "Un vídeo también puede subirse al propio sitio — mp4, webm u ogg — y se reproduce en el navegador sin ninguna plataforma externa. Un archivo subido prevalece sobre una dirección pegada, que queda como alternativa"
+            },
+            {
+                "en": "A category can carry a description, written with the rich-text editor. It is printed above the grid and serves as the page's summary for search engines and for the previews shown when its address is shared",
+                "fr": "Une catégorie peut porter une description, rédigée avec l'éditeur enrichi. Elle s'affiche au-dessus de la grille et sert de résumé de la page pour les moteurs de recherche et pour les aperçus affichés lorsque son adresse est partagée",
+                "es": "Una categoría puede llevar una descripción, redactada con el editor enriquecido. Se muestra encima de la cuadrícula y sirve de resumen de la página para los motores de búsqueda y para las vistas previas que aparecen al compartir su dirección"
+            },
+            {
+                "en": "A menu item can point straight at the gallery or at one of its categories. The target is kept by its identity rather than by its address, so renaming a category never leaves a broken menu item behind",
+                "fr": "Un élément de menu peut pointer directement vers la galerie ou vers l'une de ses catégories. La cible est retenue par son identité plutôt que par son adresse, si bien que renommer une catégorie ne laisse jamais d'élément de menu cassé",
+                "es": "Un elemento de menú puede apuntar directamente a la galería o a una de sus categorías. El destino se guarda por su identidad y no por su dirección, de modo que renombrar una categoría nunca deja un elemento de menú roto"
+            },
+            {
+                "en": "The photos and the videos of the gallery are declared to the site's backup and copied as they are to the offsite storage — they are the only part of a gallery that neither the code nor a database dump brings back",
+                "fr": "Les photos et les vidéos de la galerie sont déclarées à la sauvegarde du site et recopiées telles quelles vers le stockage distant — elles sont la seule partie d'une galerie que ni le code ni une copie de la base de données ne restituent",
+                "es": "Las fotos y los vídeos de la galería se declaran a la copia de seguridad del sitio y se copian tal cual al almacenamiento remoto — son la única parte de una galería que ni el código ni un volcado de la base de datos devuelven"
+            }
+        ]
+    },
+    {
+        "date": "2026-08-07",
+        "description": [
+            {
+                "en": "The watermark is no longer a setting kept on each photo: it is asked when files are uploaded, and again whenever a photo's file is replaced",
+                "fr": "Le filigrane n'est plus un réglage conservé sur chaque photo : il est demandé au moment du dépôt des fichiers, et de nouveau chaque fois que le fichier d'une photo est remplacé",
+                "es": "La marca de agua ya no es un ajuste guardado en cada foto: se pregunta al subir los archivos, y de nuevo cada vez que se sustituye el archivo de una foto"
+            },
+            {
+                "en": "An edit button appears over a media and over a category's grid when you are logged in, opening that entry's edit screen straight from the public page",
+                "fr": "Un bouton de modification apparaît sur un média et sur la grille d'une catégorie lorsque vous êtes connecté, et ouvre l'écran de modification de cette entrée directement depuis la page publique",
+                "es": "Un botón de edición aparece sobre un medio y sobre la cuadrícula de una categoría cuando ha iniciado sesión, y abre la pantalla de edición de esa entrada directamente desde la página pública"
+            },
+            {
+                "en": "A media's address no longer follows its title: retitling one moves nothing, and changing the address itself leaves a redirection behind, so the links already given out keep working",
+                "fr": "L'adresse d'un média ne suit plus son titre : le retitrer ne déplace rien, et modifier l'adresse elle-même laisse une redirection derrière elle, si bien que les liens déjà diffusés continuent de fonctionner",
+                "es": "La dirección de un medio ya no sigue a su título: cambiarle el título no la mueve, y modificar la propia dirección deja tras de sí una redirección, de modo que los enlaces ya difundidos siguen funcionando"
+            },
+            {
+                "en": "The medias of a category are reordered by dragging their thumbnails, by finger as by mouse, and the cover is chosen among them or left to chance. The order and the cover save themselves as they are changed",
+                "fr": "Les médias d'une catégorie se réordonnent en faisant glisser leurs vignettes, au doigt comme à la souris, et la couverture se choisit parmi eux ou se laisse au hasard. L'ordre et la couverture s'enregistrent au fur et à mesure",
+                "es": "Los medios de una categoría se reordenan arrastrando sus miniaturas, con el dedo o con el ratón, y la portada se elige entre ellos o se deja al azar. El orden y la portada se guardan sobre la marcha"
+            },
+            {
+                "en": "A setting decides whether a thumbnail shows the whole photo or a square cut inside it, and a command rebuilds the thumbnails already generated. Thumbnails also bounce lightly as the mouse passes over them",
+                "fr": "Un réglage décide si une vignette montre la photo entière ou un carré découpé dedans, et une commande reconstruit les vignettes déjà générées. Les vignettes rebondissent aussi légèrement au passage de la souris",
+                "es": "Un ajuste decide si una miniatura muestra la foto entera o un cuadrado recortado dentro de ella, y un comando reconstruye las miniaturas ya generadas. Las miniaturas también rebotan ligeramente al pasar el ratón por encima"
+            },
+            {
+                "en": "A batch of photos can be uploaded under a single title root, each one numbered from where the category left off, and the untouched originals can be kept aside, so the images may be processed afresh later without a new upload",
+                "fr": "Un lot de photos peut être déposé sous un même titre de base, chacune numérotée à la suite de ce que contient déjà la catégorie, et les originaux intacts peuvent être conservés de côté, afin de retraiter les images plus tard sans nouveau dépôt",
+                "es": "Un lote de fotos puede subirse bajo un mismo título de base, numerada cada una a continuación de lo que ya contiene la categoría, y los originales intactos pueden conservarse aparte, para reprocesar las imágenes más adelante sin volver a subirlas"
+            },
+            {
+                "en": "The gallery's back office is open to the site's editors, and no longer to its administrators alone",
+                "fr": "L'administration de la galerie est ouverte aux éditeurs du site, et non plus aux seuls administrateurs",
+                "es": "La administración de la galería está abierta a los editores del sitio, y ya no solo a los administradores"
+            }
+        ]
+    },
+    {
+        "date": "2026-08-05",
+        "description": [
+            {
+                "en": "The public gallery is served at /gallery, and that address is a setting of its own: a site can offer it under whatever prefix it likes",
+                "fr": "La galerie publique est servie sur /gallery, et cette adresse est un réglage à part entière : un site peut la proposer sous le préfixe de son choix",
+                "es": "La galería pública se sirve en /gallery, y esa dirección es un ajuste propio: un sitio puede ofrecerla bajo el prefijo que prefiera"
+            },
+            {
+                "en": "A category is now the top level of the gallery: there is no gallery to create above it any more, and the back office opens straight on the list of categories, each one saying how many medias it holds",
+                "fr": "Une catégorie est désormais le niveau supérieur de la galerie : il n'y a plus de galerie à créer au-dessus, et l'administration s'ouvre directement sur la liste des catégories, chacune indiquant le nombre de médias qu'elle contient",
+                "es": "Una categoría es ahora el nivel superior de la galería: ya no hay una galería que crear por encima, y la administración se abre directamente en la lista de categorías, indicando cada una cuántos medios contiene"
+            },
+            {
+                "en": "A category's medias are listed under its edit form, each thumbnail opening that media, with a button to add more and a word saying so when there is none yet",
+                "fr": "Les médias d'une catégorie sont listés sous son formulaire de modification, chaque vignette ouvrant ce média, avec un bouton pour en ajouter et un mot le disant lorsqu'il n'y en a encore aucun",
+                "es": "Los medios de una categoría se listan bajo su formulario de edición, cada miniatura abriendo ese medio, con un botón para añadir más y un aviso cuando aún no hay ninguno"
+            },
+            {
+                "en": "Medias are ticked one by one, or all at once, and the selection is deleted in a single go after a confirmation",
+                "fr": "Les médias se cochent un par un, ou tous à la fois, et la sélection se supprime en une seule fois après confirmation",
+                "es": "Los medios se marcan uno a uno, o todos a la vez, y la selección se elimina de una sola vez tras una confirmación"
+            },
+            {
+                "en": "The form that creates a category takes a batch of medias along with it, so a whole folder of photos lands in one step",
+                "fr": "Le formulaire de création d'une catégorie accepte un lot de médias en même temps, si bien qu'un dossier entier de photos arrive en une seule étape",
+                "es": "El formulario de creación de una categoría acepta un lote de medios al mismo tiempo, de modo que una carpeta entera de fotos llega en un solo paso"
+            },
+            {
+                "en": "Renaming a category asks for a confirmation first, rebuilds its address from the new title and redirects the old one, the addresses of its medias included",
+                "fr": "Renommer une catégorie demande d'abord confirmation, reconstruit son adresse à partir du nouveau titre et redirige l'ancienne, celles de ses médias comprises",
+                "es": "Renombrar una categoría pide primero una confirmación, reconstruye su dirección a partir del nuevo título y redirige la antigua, incluidas las de sus medios"
+            },
+            {
+                "en": "The high resolution opens in a viewer over the page instead of a page of its own, and right click and dragging are blocked on the grids and on a media's page",
+                "fr": "La haute résolution s'ouvre dans une visionneuse par-dessus la page au lieu d'une page à part, et le clic droit comme le glisser sont bloqués sur les grilles et sur la page d'un média",
+                "es": "La alta resolución se abre en un visor sobre la página en lugar de una página aparte, y el clic derecho y el arrastre están bloqueados en las cuadrículas y en la página de un medio"
+            },
+            {
+                "en": "Two blocks are offered to the pages — a grid of categories and a grid of medias, the latter able to draw them at random — and a category can carry blocks of its own above its grid",
+                "fr": "Deux blocks sont proposés aux pages — une grille de catégories et une grille de médias, cette dernière pouvant les tirer au hasard — et une catégorie peut porter ses propres blocks au-dessus de sa grille",
+                "es": "Se ofrecen dos blocks a las páginas — una cuadrícula de categorías y una cuadrícula de medios, esta última capaz de sacarlos al azar — y una categoría puede llevar sus propios blocks encima de su cuadrícula"
+            },
+            {
+                "en": "The gallery's ten colors are edited from the back office, each keeping the colour it came with as long as it is left empty",
+                "fr": "Les dix couleurs de la galerie se modifient depuis l'administration, chacune conservant la couleur d'origine tant qu'elle est laissée vide",
+                "es": "Los diez colores de la galería se modifican desde la administración, conservando cada uno su color de origen mientras se deje vacío"
+            },
+            {
+                "en": "A batch too heavy or too numerous for the server is refused before it is sent, and names the limits it met — beyond them the server silently drops the files in excess",
+                "fr": "Un lot trop lourd ou trop nombreux pour le serveur est refusé avant d'être envoyé, en nommant les limites rencontrées — au-delà, le serveur abandonne sans rien dire les fichiers en trop",
+                "es": "Un lote demasiado pesado o numeroso para el servidor se rechaza antes de enviarse, nombrando los límites alcanzados — más allá, el servidor descarta sin avisar los archivos sobrantes"
+            }
+        ]
+    },
+    {
+        "date": "2026-08-02",
+        "description": [
+            {
+                "en": "A category can hold a video beside its photos, marked by a badge in the grid and opening on a cookie-free player rather than on a high-resolution photo",
+                "fr": "Une catégorie peut contenir une vidéo à côté de ses photos, marquée par un badge dans la grille et s'ouvrant sur un lecteur sans cookie plutôt que sur une photo en haute résolution",
+                "es": "Una categoría puede contener un vídeo junto a sus fotos, marcado con una insignia en la cuadrícula y que se abre en un reproductor sin cookies en lugar de en una foto en alta resolución"
+            },
+            {
+                "en": "The gallery's appearance follows the site's own colors and fonts, only its shapes being described in a theme file of its own",
+                "fr": "L'apparence de la galerie suit les couleurs et les polices du site, seules ses formes étant décrites dans un fichier de thème qui lui est propre",
+                "es": "La apariencia de la galería sigue los colores y las tipografías del sitio, y solo sus formas se describen en un archivo de tema propio"
+            }
+        ]
+    },
+    {
+        "date": "2026-07-24",
+        "description": [
+            {
+                "en": "The gallery has public pages: an index of the categories, a page per category and a page per photo, with previous and next arrows over the photo and the next image loaded ahead of the click",
+                "fr": "La galerie dispose de pages publiques : un index des catégories, une page par catégorie et une page par photo, avec des flèches précédent et suivant sur la photo et l'image suivante chargée avant le clic",
+                "es": "La galería dispone de páginas públicas: un índice de las categorías, una página por categoría y una página por foto, con flechas anterior y siguiente sobre la foto y la imagen siguiente cargada antes del clic"
+            },
+            {
+                "en": "The public pages speak the language of the site instead of French alone",
+                "fr": "Les pages publiques parlent la langue du site au lieu du seul français",
+                "es": "Las páginas públicas hablan el idioma del sitio en lugar de solo francés"
+            },
+            {
+                "en": "A category is exported and imported again from the dashboard, carrying its medias along with it",
+                "fr": "Une catégorie s'exporte et se réimporte depuis le tableau de bord, en emportant ses médias avec elle",
+                "es": "Una categoría se exporta y se vuelve a importar desde el panel, llevándose sus medios con ella"
+            },
+            {
+                "en": "A category with no cover chosen no longer stays invisible on the public index, and the back office shows the cover picked instead of a photo drawn at random",
+                "fr": "Une catégorie sans couverture choisie ne reste plus invisible sur l'index public, et l'administration affiche la couverture retenue au lieu d'une photo tirée au hasard",
+                "es": "Una categoría sin portada elegida ya no queda invisible en el índice público, y la administración muestra la portada elegida en lugar de una foto sacada al azar"
+            }
+        ]
+    },
+    {
+        "date": "2026-07-22",
+        "description": [
+            {
+                "en": "The create and edit screens carry a Cancel button, and the text explaining the gallery screens has been expanded",
+                "fr": "Les écrans de création et de modification portent un bouton Annuler, et le texte expliquant les écrans de la galerie a été étoffé",
+                "es": "Las pantallas de creación y de edición llevan un botón Cancelar, y el texto que explica las pantallas de la galería se ha ampliado"
+            }
+        ]
+    },
+    {
+        "date": "2026-07-13",
+        "description": [
+            {
+                "en": "The gallery joins the site: categories and photos, managed from the back office",
+                "fr": "La galerie rejoint le site : des catégories et des photos, gérées depuis l'administration",
+                "es": "La galería se une al sitio: categorías y fotos, gestionadas desde la administración"
+            }
+        ]
+    }
+]

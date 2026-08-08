@@ -12,12 +12,15 @@ namespace c975L\GalleryBundle\Tests\Management;
 
 use c975L\GalleryBundle\Entity\GalleryCategory;
 use c975L\GalleryBundle\Entity\GalleryMedia;
+use c975L\GalleryBundle\Management\GalleryExportProvider;
 use c975L\GalleryBundle\Management\GalleryImportProvider;
 use c975L\GalleryBundle\Repository\GalleryCategoryRepository;
 use c975L\GalleryBundle\Service\GalleryMediaSlugger;
 use c975L\UiBundle\Entity\Block;
+use c975L\UiBundle\Management\BlockDataExporter;
 use c975L\UiBundle\Management\BlockDataImporter;
 use c975L\UiBundle\Registry\FormBlockDependencyRegistry;
+use c975L\UiBundle\Video\VideoPlatform;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\String\Slugger\AsciiSlugger;
@@ -42,6 +45,35 @@ class GalleryImportProviderTest extends TestCase
         }
 
         return $filesDir;
+    }
+
+    // Plays what ContentImportController does with a zip: the archive's entries laid out under one dir, keyed by the very path the exported items point at
+    private function extractArchive(array $files): string
+    {
+        $filesDir = sys_get_temp_dir() . '/gallery_import_test_' . bin2hex(random_bytes(4));
+        foreach ($files as $archivePath => $diskPath) {
+            $target = $filesDir . '/' . $archivePath;
+            if (!is_dir(\dirname($target))) {
+                mkdir(\dirname($target), 0777, true);
+            }
+            copy($diskPath, $target);
+        }
+
+        return $filesDir;
+    }
+
+    private function removeDir(string $dir): void
+    {
+        $paths = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator($dir, \FilesystemIterator::SKIP_DOTS),
+            \RecursiveIteratorIterator::CHILD_FIRST,
+        );
+
+        foreach ($paths as $path) {
+            $path->isDir() ? rmdir($path->getPathname()) : unlink($path->getPathname());
+        }
+
+        rmdir($dir);
     }
 
     private function createProvider(EntityManagerInterface $em, ?GalleryCategory $existingCategory = null, ?string $projectDir = null): GalleryImportProvider
@@ -245,6 +277,93 @@ class GalleryImportProviderTest extends TestCase
         unlink($filesDir . '/files/p1.webp');
         rmdir($filesDir . '/files');
         rmdir($filesDir);
+    }
+
+    // The url is all a media framed from a platform carries, so a round-trip losing it loses the video itself - and the type is derived from that url on the way back in, the exported one never being read
+    public function testAPlatformVideoSurvivesTheExportImportRoundTrip(): void
+    {
+        $projectDir = sys_get_temp_dir() . '/gallery_roundtrip_' . bin2hex(random_bytes(4));
+        mkdir($projectDir . '/public/medias/gallery/films', 0777, true);
+        file_put_contents($projectDir . '/public/medias/gallery/films/nordkapp.webp', 'still-bytes');
+
+        $exportedMedia = (new GalleryMedia())
+            ->setTitle('Nordkapp')
+            ->setSlug('nordkapp')
+            ->setFilename('medias/gallery/films/nordkapp.webp')
+            ->setExternalUrl('https://www.youtube.com/watch?v=abc123');
+        $category = (new GalleryCategory())->setSlug('films')->setTitle('Films');
+        $category->addMedia($exportedMedia);
+
+        $exported = (new GalleryExportProvider($this->createStub(GalleryCategoryRepository::class), new BlockDataExporter($projectDir), $projectDir))->serialize([$category]);
+        $filesDir = $this->extractArchive($exported['files']);
+
+        $persisted = [];
+        $em = $this->createStub(EntityManagerInterface::class);
+        $em->method('persist')->willReturnCallback(static function (object $entity) use (&$persisted): void {
+            $persisted[] = $entity;
+        });
+
+        $this->createProvider($em)->import($exported['items'], $filesDir);
+
+        $imported = array_values(array_filter($persisted, static fn (object $e): bool => $e instanceof GalleryMedia))[0];
+        $this->assertSame($exportedMedia->getExternalUrl(), $imported->getExternalUrl());
+        $this->assertSame(VideoPlatform::Youtube->value, $imported->getMediaType());
+
+        $this->removeDir($filesDir);
+        $this->removeDir($projectDir);
+    }
+
+    // An archive exported before the url rework stored a platform name beside a bare id - rebuilt into the url that platform gives it, rather than importing a video that plays nothing
+    public function testImportRebuildsTheUrlOfAnArchiveStoringAPlatformAndAnId(): void
+    {
+        $persisted = [];
+        $em = $this->createStub(EntityManagerInterface::class);
+        $em->method('persist')->willReturnCallback(static function (object $entity) use (&$persisted): void {
+            $persisted[] = $entity;
+        });
+
+        $this->createProvider($em)->import([[
+            'slug' => 'films',
+            'title' => 'Films',
+            'medias' => [
+                ['title' => 'Nordkapp', 'mediaType' => 'youtube', 'externalId' => 'abc123'],
+                // A platform nobody declares anymore has no url to rebuild, and imports as the image the entry already carried
+                ['title' => 'Vine', 'mediaType' => 'vine', 'externalId' => 'xyz789'],
+            ],
+        ]]);
+
+        $medias = array_values(array_filter($persisted, static fn (object $e): bool => $e instanceof GalleryMedia));
+        $this->assertSame('https://www.youtube-nocookie.com/embed/abc123', $medias[0]->getExternalUrl());
+        $this->assertSame(VideoPlatform::Youtube->value, $medias[0]->getMediaType());
+        $this->assertNull($medias[1]->getExternalUrl());
+        $this->assertSame(GalleryMedia::MEDIA_TYPE_IMAGE, $medias[1]->getMediaType());
+    }
+
+    // The exported "mediaType" is written for whoever reads an archive, never read back: what the media turns out to carry decides, so the two can't be imported out of step
+    public function testImportDerivesTheTypeRatherThanReadingTheExportedOne(): void
+    {
+        $persisted = [];
+        $em = $this->createStub(EntityManagerInterface::class);
+        $em->method('persist')->willReturnCallback(static function (object $entity) use (&$persisted): void {
+            $persisted[] = $entity;
+        });
+
+        $this->createProvider($em)->import([[
+            'slug' => 'films',
+            'title' => 'Films',
+            'medias' => [
+                // Claims a video, carries no url: imports as the image it is
+                ['title' => 'Sans url', 'mediaType' => 'youtube'],
+                // Claims a type nobody declares, carries a url no platform recognizes: kept as pasted and framed as a plain embed
+                ['title' => 'Ailleurs', 'mediaType' => 'wobbleflix', 'externalUrl' => 'https://videos.example.org/embed/42'],
+            ],
+        ]]);
+
+        $medias = array_values(array_filter($persisted, static fn (object $e): bool => $e instanceof GalleryMedia));
+        $this->assertNull($medias[0]->getExternalUrl());
+        $this->assertSame(GalleryMedia::MEDIA_TYPE_IMAGE, $medias[0]->getMediaType());
+        $this->assertSame('https://videos.example.org/embed/42', $medias[1]->getExternalUrl());
+        $this->assertSame(GalleryMedia::MEDIA_TYPE_EMBED, $medias[1]->getMediaType());
     }
 
     // Every item of the same archive is imported, each matched on its own slug
