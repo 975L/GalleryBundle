@@ -13,6 +13,8 @@ Symfony bundle providing photo galleries on the c975L core — categories and me
 
 Add GalleryBundle on top of [c975L/CoreBundle](https://github.com/975L/CoreBundle) (ConfigBundle + UiBundle, one package) and get a photo gallery — no dependency on [SiteBundle](https://github.com/975L/SiteBundle), [ShopBundle](https://github.com/975L/ShopBundle) or any other satellite bundle, so it drops into any c975L site that needs one. Multi-size derivatives reuse UiBundle's own `VichMultiSizeImageInterface` pattern rather than duplicating it.
 
+See it in action at [bundles.975l.com/pages/gallery-bundle](https://bundles.975l.com/pages/gallery-bundle), and browse every block kind live in the [block gallery](https://bundles.975l.com/pages/block-gallery).
+
 ---
 
 > **TL;DR** — Photo galleries as `GalleryCategory` → `GalleryMedia`, managed from EasyAdmin, with bulk upload and automatic thumb/medium/highres derivatives. The category is the top-level unit: a site's galleries are its categories. Depends only on CoreBundle.

@@ -1,5 +1,12 @@
 # ChangeLog
 
+## v1.2.2
+
+Categories are listed without a query per cover
+
+- `findAllOrdered()` joins and selects `coverMedia`, dropping the query per category (10/08/2026)
+- README links the live demo and the block gallery (10/08/2026)
+
 ## v1.2.1
 
 A gallery's uploads are declared to the backup, and its news to the dashboard

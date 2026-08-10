@@ -34,11 +34,17 @@ class GalleryCategoryRepository extends ServiceEntityRepository
         return $this->findOneBy(['slug' => $slug]);
     }
 
-    // What the front-office index and the blocks list, in the order the admin arranged them
+    // What the front-office index and the blocks list, in the order the admin arranged them. coverMedia is joined rather than left lazy: every caller renders the category's thumbnail from it (see components/Gallery/Category.html.twig), so each category would otherwise initialize its proxy with a query of its own - one per category on a page listing them all
     /** @return list<GalleryCategory> */
     public function findAllOrdered(): array
     {
-        return $this->findBy([], ['position' => 'ASC']);
+        return $this->createQueryBuilder('c')
+            ->leftJoin('c.coverMedia', 'm')
+            ->addSelect('m')
+            ->orderBy('c.position', 'ASC')
+            ->getQuery()
+            ->getResult()
+        ;
     }
 
     // Catch-all category a GalleryMedia falls back to when imported without a real one to attach it to. Created lazily so it only ever exists once it's actually needed, and flushed immediately so it's safe to reference the same row from within the same request right after.
