@@ -1,5 +1,13 @@
 # ChangeLog
 
+## v1.2.3
+
+Blocks share one read of the category list per request
+
+- `GalleryBlockExtension` reads the ordered categories once per request, resolving each block's slug in PHP (10/08/2026)
+- `GalleryBlockExtension` implements `ResetInterface`, dropping the list between two requests (10/08/2026)
+- Added the `GalleryBlockExtensionTest` cases covering the shared read and the reset (10/08/2026)
+
 ## v1.2.2
 
 Categories are listed without a query per cover

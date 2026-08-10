@@ -120,11 +120,38 @@ class GalleryBlockExtensionTest extends TestCase
         $this->assertNull($result['category']);
     }
 
+    // What several gallery blocks on the same page cost: one read of the category list for the whole page, not one per block
+    public function testTheCategoryListIsReadOnceForTheWholeRequest(): void
+    {
+        $categoryRepository = $this->createMock(GalleryCategoryRepository::class);
+        $categoryRepository->expects($this->once())->method('findAllOrdered')->willReturn([
+            (new GalleryCategory())->setSlug('photos'),
+            (new GalleryCategory())->setSlug('videos'),
+        ]);
+        $extension = new GalleryBlockExtension($categoryRepository, $this->createStub(GalleryMediaRepository::class));
+
+        $this->assertSame('photos', $extension->getMedias('photos')['category']?->getSlug());
+        $this->assertSame('videos', $extension->getMedias('videos')['category']?->getSlug());
+        $extension->getCategories();
+    }
+
+    // Under a worker runtime the extension outlives the request, so the next one has to see the categories as they are then
+    public function testResetMakesTheListBeReadAgain(): void
+    {
+        $categoryRepository = $this->createMock(GalleryCategoryRepository::class);
+        $categoryRepository->expects($this->exactly(2))->method('findAllOrdered')->willReturn([]);
+        $extension = new GalleryBlockExtension($categoryRepository, $this->createStub(GalleryMediaRepository::class));
+
+        $extension->getCategories();
+        $extension->reset();
+        $extension->getCategories();
+    }
+
+    // The ordered list is what every block resolves its slug against, so a test giving a single category is giving the list that category alone
     private function extension(?GalleryCategory $category = null, array $medias = [], array $categories = []): GalleryBlockExtension
     {
         $categoryRepository = $this->createStub(GalleryCategoryRepository::class);
-        $categoryRepository->method('findOneBySlug')->willReturn($category);
-        $categoryRepository->method('findAllOrdered')->willReturn($categories);
+        $categoryRepository->method('findAllOrdered')->willReturn([] !== $categories ? $categories : array_values(array_filter([$category])));
 
         $mediaRepository = $this->createStub(GalleryMediaRepository::class);
         $mediaRepository->method('findByCategory')->willReturn($medias);
