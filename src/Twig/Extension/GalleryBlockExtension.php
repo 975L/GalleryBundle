@@ -30,11 +30,12 @@ class GalleryBlockExtension extends AbstractExtension implements ResetInterface
     ) {
     }
 
+    #[\Override]
     public function getFunctions(): array
     {
         return [
-            new TwigFunction('gallery_block_categories', [$this, 'getCategories']),
-            new TwigFunction('gallery_block_medias', [$this, 'getMedias']),
+            new TwigFunction('gallery_block_categories', $this->getCategories(...)),
+            new TwigFunction('gallery_block_medias', $this->getMedias(...)),
         ];
     }
 

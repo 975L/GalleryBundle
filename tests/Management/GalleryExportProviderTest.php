@@ -30,12 +30,12 @@ class GalleryExportProviderTest extends TestCase
 
     public function testExportAllSerializesEveryCategoryFromTheRepository(): void
     {
-        $category = (new GalleryCategory())->setSlug('voyages')->setTitle('Voyages')->setDescription('<div>Nos voyages</div>')->setPosition(0);
+        $category = new GalleryCategory()->setSlug('voyages')->setTitle('Voyages')->setDescription('<div>Nos voyages</div>')->setPosition(0);
 
         $categoryRepository = $this->createMock(GalleryCategoryRepository::class);
         $categoryRepository->expects($this->once())->method('findAll')->willReturn([$category]);
 
-        $data = (new GalleryExportProvider($categoryRepository, new BlockDataExporter(sys_get_temp_dir()), sys_get_temp_dir()))->exportAll();
+        $data = new GalleryExportProvider($categoryRepository, new BlockDataExporter(sys_get_temp_dir()), sys_get_temp_dir())->exportAll();
 
         $this->assertSame([[
             'slug' => 'voyages',
@@ -57,14 +57,14 @@ class GalleryExportProviderTest extends TestCase
         file_put_contents($projectDir . '/public/uploads/p1.jpg', 'bytes-1');
         file_put_contents($projectDir . '/public/uploads/p2.jpg', 'bytes-2');
 
-        $category = (new GalleryCategory())->setSlug('voyages')->setTitle('Voyages')->setPosition(0);
-        $media1 = (new GalleryMedia())->setFilename('uploads/p1.jpg')->setTitle('Media 1')->setSlug('media-1')->setPosition(0);
-        $media2 = (new GalleryMedia())->setFilename('uploads/p2.jpg')->setTitle('Media 2')->setSlug('media-2')->setPosition(1);
+        $category = new GalleryCategory()->setSlug('voyages')->setTitle('Voyages')->setPosition(0);
+        $media1 = new GalleryMedia()->setFilename('uploads/p1.jpg')->setTitle('Media 1')->setSlug('media-1')->setPosition(0);
+        $media2 = new GalleryMedia()->setFilename('uploads/p2.jpg')->setTitle('Media 2')->setSlug('media-2')->setPosition(1);
         $category->addMedia($media1);
         $category->addMedia($media2);
         $category->setCoverMedia($media2);
 
-        $data = (new GalleryExportProvider($this->createStub(GalleryCategoryRepository::class), new BlockDataExporter($projectDir), $projectDir))
+        $data = new GalleryExportProvider($this->createStub(GalleryCategoryRepository::class), new BlockDataExporter($projectDir), $projectDir)
             ->serialize([$category]);
 
         $item = $data['items'][0];
@@ -99,12 +99,12 @@ class GalleryExportProviderTest extends TestCase
         file_put_contents($projectDir . '/public/uploads/p1.webp', 'stored-bytes');
         file_put_contents($projectDir . '/private/uploads/p1-original.jpg', 'original-bytes');
 
-        $category = (new GalleryCategory())->setSlug('voyages')->setTitle('Voyages');
-        $media = (new GalleryMedia())->setFilename('uploads/p1.webp')->setTitle('Media 1')->setSlug('media-1');
+        $category = new GalleryCategory()->setSlug('voyages')->setTitle('Voyages');
+        $media = new GalleryMedia()->setFilename('uploads/p1.webp')->setTitle('Media 1')->setSlug('media-1');
         $media->setOriginalFilename('uploads/p1-original.jpg');
         $category->addMedia($media);
 
-        $data = (new GalleryExportProvider($this->createStub(GalleryCategoryRepository::class), new BlockDataExporter($projectDir), $projectDir))
+        $data = new GalleryExportProvider($this->createStub(GalleryCategoryRepository::class), new BlockDataExporter($projectDir), $projectDir)
             ->serialize([$category]);
 
         $mediaData = $data['items'][0]['medias'][0];
@@ -129,12 +129,12 @@ class GalleryExportProviderTest extends TestCase
         file_put_contents($projectDir . '/public/uploads/p1.webp', 'stored-bytes');
         file_put_contents($projectDir . '/public/uploads/p1-a1b2c3.mp4', 'video-bytes');
 
-        $category = (new GalleryCategory())->setSlug('voyages')->setTitle('Voyages');
-        $media = (new GalleryMedia())->setFilename('uploads/p1.webp')->setTitle('Media 1')->setSlug('media-1');
+        $category = new GalleryCategory()->setSlug('voyages')->setTitle('Voyages');
+        $media = new GalleryMedia()->setFilename('uploads/p1.webp')->setTitle('Media 1')->setSlug('media-1');
         $media->setVideoFilename('uploads/p1-a1b2c3.mp4');
         $category->addMedia($media);
 
-        $data = (new GalleryExportProvider($this->createStub(GalleryCategoryRepository::class), new BlockDataExporter($projectDir), $projectDir))
+        $data = new GalleryExportProvider($this->createStub(GalleryCategoryRepository::class), new BlockDataExporter($projectDir), $projectDir)
             ->serialize([$category]);
 
         $mediaData = $data['items'][0]['medias'][0];
@@ -157,12 +157,12 @@ class GalleryExportProviderTest extends TestCase
         mkdir($projectDir . '/public/uploads', 0777, true);
         file_put_contents($projectDir . '/public/uploads/p1.webp', 'stored-bytes');
 
-        $category = (new GalleryCategory())->setSlug('voyages')->setTitle('Voyages');
-        $media = (new GalleryMedia())->setFilename('uploads/p1.webp')->setTitle('Media 1')->setSlug('media-1');
+        $category = new GalleryCategory()->setSlug('voyages')->setTitle('Voyages');
+        $media = new GalleryMedia()->setFilename('uploads/p1.webp')->setTitle('Media 1')->setSlug('media-1');
         $media->setOriginalFilename('uploads/gone-original.jpg');
         $category->addMedia($media);
 
-        $data = (new GalleryExportProvider($this->createStub(GalleryCategoryRepository::class), new BlockDataExporter($projectDir), $projectDir))
+        $data = new GalleryExportProvider($this->createStub(GalleryCategoryRepository::class), new BlockDataExporter($projectDir), $projectDir)
             ->serialize([$category]);
 
         $this->assertArrayNotHasKey('originalFile', $data['items'][0]['medias'][0]);
@@ -177,10 +177,10 @@ class GalleryExportProviderTest extends TestCase
     // The category's editorial lead-in travels with it, a round-trip otherwise wiping it on the target
     public function testSerializeCarriesTheCategorysBlocks(): void
     {
-        $category = (new GalleryCategory())->setSlug('voyages')->setTitle('Voyages');
-        $category->addBlock((new Block())->setKind('text')->setPosition(0)->setData(['text' => 'Nos voyages']));
+        $category = new GalleryCategory()->setSlug('voyages')->setTitle('Voyages');
+        $category->addBlock(new Block()->setKind('text')->setPosition(0)->setData(['text' => 'Nos voyages']));
 
-        $data = (new GalleryExportProvider($this->createStub(GalleryCategoryRepository::class), new BlockDataExporter(sys_get_temp_dir()), sys_get_temp_dir()))
+        $data = new GalleryExportProvider($this->createStub(GalleryCategoryRepository::class), new BlockDataExporter(sys_get_temp_dir()), sys_get_temp_dir())
             ->serialize([$category]);
 
         $blocks = $data['items'][0]['blocks'];

@@ -20,7 +20,7 @@ use Symfony\Contracts\Translation\TranslatorInterface;
  */
 class GalleryCategoryRepository extends ServiceEntityRepository
 {
-    private const UNCATEGORIZED_SLUG = 'non-classe';
+    private const string UNCATEGORIZED_SLUG = 'non-classe';
 
     public function __construct(
         ManagerRegistry $registry,
@@ -56,7 +56,7 @@ class GalleryCategoryRepository extends ServiceEntityRepository
         }
 
         // Translated at creation time only - like any other category it's a normal DB row afterwards, editable/renamable later from the Management CRUD
-        $category = (new GalleryCategory())
+        $category = new GalleryCategory()
             ->setSlug(self::UNCATEGORIZED_SLUG)
             ->setTitle($this->translator->trans('label.gallery_uncategorized', [], 'gallery'))
             ->setUncategorized(true)

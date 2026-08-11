@@ -52,7 +52,7 @@ class GalleryMediaUserListenerTest extends TestCase
         $security = $this->createMock(Security::class);
         $security->expects($this->never())->method('getUser');
 
-        (new GalleryMediaUserListener($security))->prePersist($this->createPersistArgs(new \stdClass()));
+        new GalleryMediaUserListener($security)->prePersist($this->createPersistArgs(new \stdClass()));
 
         $this->addToAssertionCount(1);
     }
@@ -64,7 +64,7 @@ class GalleryMediaUserListenerTest extends TestCase
 
         $media = new GalleryMedia();
 
-        (new GalleryMediaUserListener($security))->prePersist($this->createPersistArgs($media));
+        new GalleryMediaUserListener($security)->prePersist($this->createPersistArgs($media));
 
         $this->assertNull($media->getUser());
     }
@@ -77,7 +77,7 @@ class GalleryMediaUserListenerTest extends TestCase
         $entityManager = $this->createMock(EntityManagerInterface::class);
         $entityManager->expects($this->never())->method('getUnitOfWork');
 
-        (new GalleryMediaUserListener($security))->preUpdate($this->createUpdateArgs(new \stdClass(), $entityManager));
+        new GalleryMediaUserListener($security)->preUpdate($this->createUpdateArgs(new \stdClass(), $entityManager));
 
         $this->addToAssertionCount(1);
     }
@@ -93,7 +93,7 @@ class GalleryMediaUserListenerTest extends TestCase
 
         $media = new GalleryMedia();
 
-        (new GalleryMediaUserListener($security))->preUpdate($this->createUpdateArgs($media, $entityManager));
+        new GalleryMediaUserListener($security)->preUpdate($this->createUpdateArgs($media, $entityManager));
 
         $this->assertNull($media->getUser());
     }
@@ -107,7 +107,7 @@ class GalleryMediaUserListenerTest extends TestCase
 
         $media = new GalleryMedia();
 
-        (new GalleryMediaUserListener($security))->prePersist($this->createPersistArgs($media));
+        new GalleryMediaUserListener($security)->prePersist($this->createPersistArgs($media));
 
         $this->assertSame($user, $media->getUser());
     }
@@ -130,9 +130,9 @@ class GalleryMediaUserListenerTest extends TestCase
         $entityManager->expects($this->once())->method('getClassMetadata')->with(GalleryMedia::class)->willReturn($classMetadata);
         $entityManager->method('getUnitOfWork')->willReturn($unitOfWork);
 
-        $media = (new GalleryMedia())->setUser($this->createStub(UserInterface::class));
+        $media = new GalleryMedia()->setUser($this->createStub(UserInterface::class));
 
-        (new GalleryMediaUserListener($security))->preUpdate($this->createUpdateArgs($media, $entityManager));
+        new GalleryMediaUserListener($security)->preUpdate($this->createUpdateArgs($media, $entityManager));
 
         $this->assertSame($newUser, $media->getUser());
     }

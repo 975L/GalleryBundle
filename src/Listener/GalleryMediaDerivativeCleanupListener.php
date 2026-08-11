@@ -93,11 +93,11 @@ class GalleryMediaDerivativeCleanupListener
     /** @return string[] */
     private function emptyDirectories(): array
     {
-        $directories = array_unique(array_map('dirname', $this->pendingRemovals));
+        $directories = array_unique(array_map(dirname(...), $this->pendingRemovals));
 
         return array_filter(
             $directories,
-            static fn (string $directory): bool => is_dir($directory) && !(new \FilesystemIterator($directory))->valid()
+            static fn (string $directory): bool => is_dir($directory) && !new \FilesystemIterator($directory)->valid()
         );
     }
 }

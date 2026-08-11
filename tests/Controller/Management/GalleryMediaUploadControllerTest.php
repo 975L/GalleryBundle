@@ -207,7 +207,7 @@ class GalleryMediaUploadControllerTest extends TestCase
     // Past post_max_size php drops $_POST and $_FILES together, csrf token included: the form is never "submitted", so without this the screen would silently redisplay itself and the batch would look like it was never sent
     public function testUploadReportsABatchPhpEmptiedInsteadOfRedisplayingSilently(): void
     {
-        $category = (new GalleryCategory())->setSlug('voyages')->setTitle('Voyages');
+        $category = new GalleryCategory()->setSlug('voyages')->setTitle('Voyages');
         [$requestStack, $session] = $this->createSessionRequestStack();
 
         $controller = $this->createController($this->createCategoryRepository($category));
@@ -228,7 +228,7 @@ class GalleryMediaUploadControllerTest extends TestCase
     // A GET on the same screen carries no content, and must not be read as a batch php threw away
     public function testUploadRendersNormallyWhenNothingWasPosted(): void
     {
-        $category = (new GalleryCategory())->setSlug('voyages')->setTitle('Voyages');
+        $category = new GalleryCategory()->setSlug('voyages')->setTitle('Voyages');
 
         $captured = [];
         $twig = $this->createStub(Environment::class);
@@ -249,7 +249,7 @@ class GalleryMediaUploadControllerTest extends TestCase
     // The category comes from the url, and only its title reaches the form - the field is display-only (see GalleryMediaBatchUploadType)
     public function testUploadPassesTheCategoryTitleToTheForm(): void
     {
-        $category = (new GalleryCategory())->setSlug('voyages')->setTitle('Voyages');
+        $category = new GalleryCategory()->setSlug('voyages')->setTitle('Voyages');
 
         $categoryRepository = $this->createMock(GalleryCategoryRepository::class);
         $categoryRepository->expects($this->once())->method('find')->with(5)->willReturn($category);
@@ -273,9 +273,9 @@ class GalleryMediaUploadControllerTest extends TestCase
     // One media per uploaded file, all sharing the batch's credits and rights, appended after the medias the category already holds
     public function testUploadCreatesOneMediaPerFileAppendedAfterExistingPositions(): void
     {
-        $category = (new GalleryCategory())->setSlug('voyages')->setTitle('Voyages');
-        $category->addMedia((new GalleryMedia())->setPosition(0));
-        $category->addMedia((new GalleryMedia())->setPosition(1));
+        $category = new GalleryCategory()->setSlug('voyages')->setTitle('Voyages');
+        $category->addMedia(new GalleryMedia()->setPosition(0));
+        $category->addMedia(new GalleryMedia()->setPosition(1));
 
         $persisted = [];
         $entityManager = $this->createMock(EntityManagerInterface::class);
@@ -327,7 +327,7 @@ class GalleryMediaUploadControllerTest extends TestCase
         [$requestStack] = $this->createSessionRequestStack();
 
         $controller = $this->createController(
-            $this->createCategoryRepository((new GalleryCategory())->setSlug('voyages')),
+            $this->createCategoryRepository(new GalleryCategory()->setSlug('voyages')),
             entityManager: $entityManager,
         );
         $controller->setContainer($this->createContainer([
@@ -344,7 +344,7 @@ class GalleryMediaUploadControllerTest extends TestCase
     // A slug freed by an earlier deletion is still answering 410 (see GalleryMediaCrudController::deleteEntity), and RedirectSubscriber runs before the router: the page would exist while its url kept saying it doesn't
     public function testUploadLiftsTheGoneRowOfASlugUsedAgain(): void
     {
-        $gone = (new Redirect())->setFromPath('/gallery/voyages/mont-blanc')->setGone(true);
+        $gone = new Redirect()->setFromPath('/gallery/voyages/mont-blanc')->setGone(true);
         $removed = [];
         $entityManager = $this->createStub(EntityManagerInterface::class);
         $entityManager->method('remove')->willReturnCallback(static function (object $entity) use (&$removed): void {
@@ -356,7 +356,7 @@ class GalleryMediaUploadControllerTest extends TestCase
         [$requestStack] = $this->createSessionRequestStack();
 
         $controller = $this->createController(
-            $this->createCategoryRepository((new GalleryCategory())->setSlug('voyages')),
+            $this->createCategoryRepository(new GalleryCategory()->setSlug('voyages')),
             entityManager: $entityManager,
             redirectRepository: $this->createRedirectRepository(['/gallery/voyages/mont-blanc' => $gone]),
         );
@@ -374,7 +374,7 @@ class GalleryMediaUploadControllerTest extends TestCase
     // A row redirecting somewhere is deliberate: uploading a media under its old url must not drop the redirect its visitors follow
     public function testUploadKeepsARowThatStillRedirects(): void
     {
-        $redirect = (new Redirect())->setFromPath('/gallery/voyages/mont-blanc')->setToUrl('/gallery/voyages/col-du-galibier');
+        $redirect = new Redirect()->setFromPath('/gallery/voyages/mont-blanc')->setToUrl('/gallery/voyages/col-du-galibier');
         $removed = [];
         $entityManager = $this->createStub(EntityManagerInterface::class);
         $entityManager->method('remove')->willReturnCallback(static function (object $entity) use (&$removed): void {
@@ -386,7 +386,7 @@ class GalleryMediaUploadControllerTest extends TestCase
         [$requestStack] = $this->createSessionRequestStack();
 
         $controller = $this->createController(
-            $this->createCategoryRepository((new GalleryCategory())->setSlug('voyages')),
+            $this->createCategoryRepository(new GalleryCategory()->setSlug('voyages')),
             entityManager: $entityManager,
             redirectRepository: $this->createRedirectRepository(['/gallery/voyages/mont-blanc' => $redirect]),
         );
@@ -404,8 +404,8 @@ class GalleryMediaUploadControllerTest extends TestCase
     // Back to the category just filled, whose edit screen is where its medias are listed
     public function testUploadFlashesSuccessAndRedirectsToTheCategoryEditScreen(): void
     {
-        $category = (new GalleryCategory())->setSlug('voyages');
-        (new \ReflectionProperty(GalleryCategory::class, 'id'))->setValue($category, 42);
+        $category = new GalleryCategory()->setSlug('voyages');
+        new \ReflectionProperty(GalleryCategory::class, 'id')->setValue($category, 42);
 
         $adminUrlGenerator = $this->createMock(AdminUrlGeneratorInterface::class);
         $adminUrlGenerator->expects($this->once())->method('setController')->with(GalleryCategoryCrudController::class)->willReturnSelf();

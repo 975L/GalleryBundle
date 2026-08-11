@@ -21,7 +21,7 @@ class GalleryBackupPathProviderTest extends TestCase
     private function paths(): array
     {
         $modes = [];
-        foreach ((new GalleryBackupPathProvider())->getBackupPaths() as $path) {
+        foreach (new GalleryBackupPathProvider()->getBackupPaths() as $path) {
             $modes[$path->path] = $path->mode;
         }
 
@@ -40,8 +40,8 @@ class GalleryBackupPathProviderTest extends TestCase
     // The declared roots are what the medias are actually written under - a file stored elsewhere would be backed up nowhere, and nothing would say so
     public function testTheDeclaredRootsCoverWhereAMediaIsStored(): void
     {
-        $media = (new GalleryMedia())->setSlug('cailloux');
-        $media->setCategory((new GalleryCategory())->setSlug('mineraux'));
+        $media = new GalleryMedia()->setSlug('cailloux');
+        $media->setCategory(new GalleryCategory()->setSlug('mineraux'));
 
         $storedPath = 'public/' . $media->getVichMediaPath();
         $originalPath = GalleryMedia::ORIGINAL_DIRECTORY . '/' . $media->getVichMediaPath();

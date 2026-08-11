@@ -36,7 +36,7 @@ class GalleryMediaFactoryTest extends TestCase
     // One media per uploaded file, all of them sharing the batch's credits and rights
     public function testOneMediaIsCreatedPerFileWithTheBatchCreditsAndRights(): void
     {
-        $category = (new GalleryCategory())->setSlug('voyages');
+        $category = new GalleryCategory()->setSlug('voyages');
 
         $medias = $this->createFactory()->createFromUploads(
             $category,
@@ -53,7 +53,7 @@ class GalleryMediaFactoryTest extends TestCase
     // Both ends of the association, which is what carries the medias into the cascade that saves them with a category created to hold them
     public function testTheMediasAreAttachedToTheCategoryOnBothSides(): void
     {
-        $category = (new GalleryCategory())->setSlug('voyages');
+        $category = new GalleryCategory()->setSlug('voyages');
 
         $medias = $this->createFactory()->createFromUploads($category, [$this->createUploadedFile()]);
 
@@ -64,9 +64,9 @@ class GalleryMediaFactoryTest extends TestCase
     // A batch never reorders what the category already holds
     public function testTheBatchIsAppendedAfterTheExistingPositions(): void
     {
-        $category = (new GalleryCategory())->setSlug('voyages');
-        $category->addMedia((new GalleryMedia())->setPosition(0));
-        $category->addMedia((new GalleryMedia())->setPosition(5));
+        $category = new GalleryCategory()->setSlug('voyages');
+        $category->addMedia(new GalleryMedia()->setPosition(0));
+        $category->addMedia(new GalleryMedia()->setPosition(5));
 
         $medias = $this->createFactory()->createFromUploads(
             $category,
@@ -78,7 +78,7 @@ class GalleryMediaFactoryTest extends TestCase
 
     public function testTheFirstMediaOfAnEmptyCategoryStartsAtZero(): void
     {
-        $medias = $this->createFactory()->createFromUploads((new GalleryCategory())->setSlug('voyages'), [$this->createUploadedFile()]);
+        $medias = $this->createFactory()->createFromUploads(new GalleryCategory()->setSlug('voyages'), [$this->createUploadedFile()]);
 
         $this->assertSame(0, $medias[0]->getPosition());
     }
@@ -87,7 +87,7 @@ class GalleryMediaFactoryTest extends TestCase
     public function testTheTitleIsSeededFromTheOriginalFilename(): void
     {
         $medias = $this->createFactory()->createFromUploads(
-            (new GalleryCategory())->setSlug('voyages'),
+            new GalleryCategory()->setSlug('voyages'),
             [$this->createUploadedFile('col_du-galibier.webp')],
         );
 
@@ -98,7 +98,7 @@ class GalleryMediaFactoryTest extends TestCase
     public function testEachMediaLeavesTheFactoryWithItsSlug(): void
     {
         $medias = $this->createFactory()->createFromUploads(
-            (new GalleryCategory())->setSlug('voyages'),
+            new GalleryCategory()->setSlug('voyages'),
             [$this->createUploadedFile('col_du-galibier.webp')],
         );
 
@@ -110,7 +110,7 @@ class GalleryMediaFactoryTest extends TestCase
     public function testTwoFilesOfTheSameNameGetDistinctSlugs(): void
     {
         $medias = $this->createFactory()->createFromUploads(
-            (new GalleryCategory())->setSlug('voyages'),
+            new GalleryCategory()->setSlug('voyages'),
             [$this->createUploadedFile('img_2024.webp'), $this->createUploadedFile('img_2024.webp')],
         );
 
@@ -120,7 +120,7 @@ class GalleryMediaFactoryTest extends TestCase
     // An empty credits field is no credits at all, not a media credited to ""
     public function testEmptyCreditsAreStoredAsNone(): void
     {
-        $medias = $this->createFactory()->createFromUploads((new GalleryCategory())->setSlug('voyages'), [$this->createUploadedFile()], new GalleryMediaBatch(credits: ''));
+        $medias = $this->createFactory()->createFromUploads(new GalleryCategory()->setSlug('voyages'), [$this->createUploadedFile()], new GalleryMediaBatch(credits: ''));
 
         $this->assertNull($medias[0]->getCredits());
     }
@@ -129,7 +129,7 @@ class GalleryMediaFactoryTest extends TestCase
     public function testATitleRootNumbersEveryTitleOfTheBatch(): void
     {
         $medias = $this->createFactory()->createFromUploads(
-            (new GalleryCategory())->setSlug('mineraux'),
+            new GalleryCategory()->setSlug('mineraux'),
             [$this->createUploadedFile('img_2024.webp'), $this->createUploadedFile('img_2025.webp')],
             new GalleryMediaBatch(titleRoot: 'Cailloux couleur'),
         );
@@ -143,8 +143,8 @@ class GalleryMediaFactoryTest extends TestCase
     // A second batch continues the series rather than restarting it against the titles the first one left
     public function testATitleRootContinuesFromWhatTheCategoryAlreadyHolds(): void
     {
-        $category = (new GalleryCategory())->setSlug('mineraux');
-        $category->addMedia((new GalleryMedia())->setPosition(3));
+        $category = new GalleryCategory()->setSlug('mineraux');
+        $category->addMedia(new GalleryMedia()->setPosition(3));
 
         $medias = $this->createFactory()->createFromUploads(
             $category,
@@ -159,7 +159,7 @@ class GalleryMediaFactoryTest extends TestCase
     public function testTheSlugOfARootedBatchIsHashedRatherThanNumbered(): void
     {
         $medias = $this->createFactory()->createFromUploads(
-            (new GalleryCategory())->setSlug('mineraux'),
+            new GalleryCategory()->setSlug('mineraux'),
             [$this->createUploadedFile('img_2024.webp'), $this->createUploadedFile('img_2025.webp')],
             new GalleryMediaBatch(titleRoot: 'Cailloux couleur'),
         );
@@ -175,7 +175,7 @@ class GalleryMediaFactoryTest extends TestCase
     public function testAHostileFilenameCannotReachTheSlug(): void
     {
         $medias = $this->createFactory()->createFromUploads(
-            (new GalleryCategory())->setSlug('mineraux'),
+            new GalleryCategory()->setSlug('mineraux'),
             [$this->createUploadedFile('../../evil.php')],
             new GalleryMediaBatch(titleRoot: 'Cailloux couleur'),
         );
@@ -187,7 +187,7 @@ class GalleryMediaFactoryTest extends TestCase
     public function testOriginalsAreOnlyKeptWhenTheBatchAsksForThem(): void
     {
         $factory = $this->createFactory();
-        $category = (new GalleryCategory())->setSlug('mineraux');
+        $category = new GalleryCategory()->setSlug('mineraux');
 
         $kept = $factory->createFromUploads($category, [$this->createUploadedFile()], new GalleryMediaBatch(keepOriginals: true));
         $dropped = $factory->createFromUploads($category, [$this->createUploadedFile()]);
@@ -200,7 +200,7 @@ class GalleryMediaFactoryTest extends TestCase
     public function testTheWatermarkAskedForByTheBatchReachesEveryMedia(): void
     {
         $factory = $this->createFactory();
-        $category = (new GalleryCategory())->setSlug('mineraux');
+        $category = new GalleryCategory()->setSlug('mineraux');
 
         $signed = $factory->createFromUploads(
             $category,
@@ -221,7 +221,7 @@ class GalleryMediaFactoryTest extends TestCase
     public function testABatchNamingNoCornerLeavesTheSiteWideOneToDecide(): void
     {
         $medias = $this->createFactory()->createFromUploads(
-            (new GalleryCategory())->setSlug('mineraux'),
+            new GalleryCategory()->setSlug('mineraux'),
             [$this->createUploadedFile()],
             new GalleryMediaBatch(watermark: true)
         );
@@ -233,7 +233,7 @@ class GalleryMediaFactoryTest extends TestCase
     // A form field left untouched submits null rather than a file, and a batch of none creates nothing
     public function testAnythingThatIsNotAnUploadedFileIsSkipped(): void
     {
-        $category = (new GalleryCategory())->setSlug('voyages');
+        $category = new GalleryCategory()->setSlug('voyages');
 
         $medias = $this->createFactory()->createFromUploads($category, [null, 'media.webp']);
 

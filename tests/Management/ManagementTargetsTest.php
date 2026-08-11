@@ -29,12 +29,13 @@ class ManagementTargetsTest extends ManagementTargetsTestCase
     private function categoryRepository(): GalleryCategoryRepository
     {
         $repository = $this->createStub(GalleryCategoryRepository::class);
-        $repository->method('findAllOrdered')->willReturn([(new GalleryCategory())->setSlug('landscapes')->setTitle('Landscapes')]);
+        $repository->method('findAllOrdered')->willReturn([new GalleryCategory()->setSlug('landscapes')->setTitle('Landscapes')]);
 
         return $repository;
     }
 
     // This bundle's own controllers on top of ConfigBundle's, whose screens its links point to as well
+    #[\Override]
     protected function controllerDirectories(): array
     {
         return [...parent::controllerDirectories(), __DIR__ . '/../../src/Controller', __DIR__ . '/../../src/Controller/Management'];

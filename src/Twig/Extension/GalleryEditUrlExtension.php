@@ -28,11 +28,12 @@ class GalleryEditUrlExtension extends AbstractExtension
     ) {
     }
 
+    #[\Override]
     public function getFunctions(): array
     {
         return [
-            new TwigFunction('gallery_category_edit_url', [$this, 'getCategoryEditUrl']),
-            new TwigFunction('gallery_media_edit_url', [$this, 'getMediaEditUrl']),
+            new TwigFunction('gallery_category_edit_url', $this->getCategoryEditUrl(...)),
+            new TwigFunction('gallery_media_edit_url', $this->getMediaEditUrl(...)),
         ];
     }
 

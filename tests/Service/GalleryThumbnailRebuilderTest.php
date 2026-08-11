@@ -27,7 +27,7 @@ class GalleryThumbnailRebuilderTest extends TestCase
 
     protected function tearDown(): void
     {
-        array_map('unlink', glob($this->projectDir . '/public/medias/*') ?: []);
+        array_map(unlink(...), glob($this->projectDir . '/public/medias/*') ?: []);
         rmdir($this->projectDir . '/public/medias');
         rmdir($this->projectDir . '/public');
         rmdir($this->projectDir);
@@ -43,7 +43,7 @@ class GalleryThumbnailRebuilderTest extends TestCase
 
     private function createMedia(string $filename): GalleryMedia
     {
-        return (new GalleryMedia())->setFilename($filename);
+        return new GalleryMedia()->setFilename($filename);
     }
 
     private function writeImage(string $filename, int $width, int $height): void

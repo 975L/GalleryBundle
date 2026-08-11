@@ -21,8 +21,8 @@ class LinkableRouteProviderTest extends TestCase
     // The id is what a category entry is keyed on and has no setter, so it is written straight through reflection
     private function createCategory(int $id, string $slug, string $title): GalleryCategory
     {
-        $category = (new GalleryCategory())->setSlug($slug)->setTitle($title);
-        (new \ReflectionProperty(GalleryCategory::class, 'id'))->setValue($category, $id);
+        $category = new GalleryCategory()->setSlug($slug)->setTitle($title);
+        new \ReflectionProperty(GalleryCategory::class, 'id')->setValue($category, $id);
 
         return $category;
     }

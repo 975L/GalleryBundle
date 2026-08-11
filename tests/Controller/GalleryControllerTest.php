@@ -117,7 +117,7 @@ class GalleryControllerTest extends TestCase
 
     public function testCategoryRendersItsMediasGrid(): void
     {
-        $category = (new GalleryCategory())->setSlug('voyages');
+        $category = new GalleryCategory()->setSlug('voyages');
         $medias = [new GalleryMedia(), new GalleryMedia()];
 
         $categoryRepository = $this->createMock(GalleryCategoryRepository::class);
@@ -162,8 +162,8 @@ class GalleryControllerTest extends TestCase
 
     public function testMediaRendersMediumViewWithPreviousAndNext(): void
     {
-        $category = (new GalleryCategory())->setSlug('voyages');
-        $media = (new GalleryMedia())->setSlug('col-du-galibier');
+        $category = new GalleryCategory()->setSlug('voyages');
+        $media = new GalleryMedia()->setSlug('col-du-galibier');
         $media->setCategory($category);
         $previousNext = ['previous' => new GalleryMedia(), 'next' => new GalleryMedia()];
 
@@ -199,7 +199,7 @@ class GalleryControllerTest extends TestCase
 
     public function testMediaThrowsNotFoundWhenSlugIsUnknown(): void
     {
-        $category = (new GalleryCategory())->setSlug('voyages');
+        $category = new GalleryCategory()->setSlug('voyages');
 
         $categoryRepository = $this->createStub(GalleryCategoryRepository::class);
         $categoryRepository->method('findOneBySlug')->willReturn($category);
@@ -218,7 +218,7 @@ class GalleryControllerTest extends TestCase
     // A media slug browsed under a category it doesn't belong to must not resolve - the category is part of the lookup, a slug only being unique within one
     public function testMediaIsLookedUpWithinTheCategoryOfTheUrl(): void
     {
-        $category = (new GalleryCategory())->setSlug('voyages');
+        $category = new GalleryCategory()->setSlug('voyages');
 
         $categoryRepository = $this->createStub(GalleryCategoryRepository::class);
         $categoryRepository->method('findOneBySlug')->willReturn($category);
@@ -241,7 +241,7 @@ class GalleryControllerTest extends TestCase
     public function testNoRouteServesAHighResolutionPage(): void
     {
         $routes = [];
-        foreach ((new \ReflectionClass(GalleryController::class))->getMethods(\ReflectionMethod::IS_PUBLIC) as $method) {
+        foreach (new \ReflectionClass(GalleryController::class)->getMethods(\ReflectionMethod::IS_PUBLIC) as $method) {
             foreach ($method->getAttributes(Route::class) as $attribute) {
                 $arguments = $attribute->getArguments();
                 $routes[] = (string) ($arguments['path'] ?? $arguments[0] ?? '');

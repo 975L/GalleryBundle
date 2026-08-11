@@ -21,7 +21,7 @@ use Symfony\Component\Filesystem\Filesystem;
 // Same target and same options as that listener, deliberately: two ways of writing the same file would drift apart at the first change to either
 class GalleryThumbnailRebuilder
 {
-    private Filesystem $filesystem;
+    private readonly Filesystem $filesystem;
 
     public function __construct(
         private readonly ParameterBagInterface $parameterBag,
@@ -42,7 +42,7 @@ class GalleryThumbnailRebuilder
 
         // Nothing is stamped here, and nothing needs to be: this cuts a thumbnail out of the highres derivative, which is exactly what an upload does (see UiBundle's VichImageResizeListener::processMultiSizeDerivatives). The signature was laid on that highres at a share of its width, so it comes down with the pixels and a rebuilt thumbnail carries it at the same size as a freshly uploaded one - only marginally softer, for having been resampled once more
         $size = $media->getThumbnailSize();
-        (new Imagine())
+        new Imagine()
             ->open($source)
             ->thumbnail(new Box($size, $size), ImageInterface::THUMBNAIL_INSET)
             ->save($thumbnail, ['format' => 'webp', 'webp_quality' => 90])

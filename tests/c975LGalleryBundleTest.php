@@ -22,7 +22,7 @@ class c975LGalleryBundleTest extends TestCase
     {
         $container = new ContainerBuilder();
 
-        (new c975LGalleryBundle())->getContainerExtension()->load([], $container);
+        new c975LGalleryBundle()->getContainerExtension()->load([], $container);
 
         $this->assertTrue($container->hasDefinition(MenuProvider::class));
     }
@@ -32,7 +32,7 @@ class c975LGalleryBundleTest extends TestCase
     {
         $container = new ContainerBuilder();
 
-        (new c975LGalleryBundle())->getContainerExtension()->prepend($container);
+        new c975LGalleryBundle()->getContainerExtension()->prepend($container);
 
         $frameworkConfig = $container->getExtensionConfig('framework');
         $this->assertSame(

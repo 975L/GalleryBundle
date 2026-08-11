@@ -1,5 +1,15 @@
 # ChangeLog
 
+## v1.4.0
+
+Rector runs over the bundle, with a site's own sets
+
+- Added `rector.php`, carrying the sets of a site's Symfony migration (11/08/2026)
+- Added the `rector` composer script, joined to `qa` (11/08/2026)
+- The CI runs Rector over `src/`, `tests/` and `scaffold/` (11/08/2026)
+- Modernised `src/` and `tests/`: typed constants, `#[\Override]`, first-class callables, `readonly` properties (11/08/2026)
+- `GalleryCategory` implements `\Stringable` (11/08/2026)
+
 ## v1.3.1
 
 The lightbox frames the high resolution too

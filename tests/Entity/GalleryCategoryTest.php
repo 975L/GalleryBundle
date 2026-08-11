@@ -21,12 +21,12 @@ class GalleryCategoryTest extends TestCase
     public function testToStringReturnsTitleOrEmptyString(): void
     {
         $this->assertSame('', (string) new GalleryCategory());
-        $this->assertSame('Voyages', (string) (new GalleryCategory())->setTitle('Voyages'));
+        $this->assertSame('Voyages', (string) new GalleryCategory()->setTitle('Voyages'));
     }
 
     public function testSetPositionFallsBackToZeroWhenNull(): void
     {
-        $category = (new GalleryCategory())->setPosition(3);
+        $category = new GalleryCategory()->setPosition(3);
 
         $category->setPosition(null);
 
@@ -35,7 +35,7 @@ class GalleryCategoryTest extends TestCase
 
     public function testSetUncategorizedFallsBackToFalseWhenNull(): void
     {
-        $category = (new GalleryCategory())->setUncategorized(true);
+        $category = new GalleryCategory()->setUncategorized(true);
 
         $category->setUncategorized(null);
 
@@ -116,8 +116,8 @@ class GalleryCategoryTest extends TestCase
     public function testReorderBlocksRenumbersFromZero(): void
     {
         $category = new GalleryCategory();
-        $first = (new Block())->setPosition(3);
-        $second = (new Block())->setPosition(7);
+        $first = new Block()->setPosition(3);
+        $second = new Block()->setPosition(7);
         $category->addBlock($first)->addBlock($second);
 
         $category->reorderBlocks();

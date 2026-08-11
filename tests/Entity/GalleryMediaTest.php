@@ -33,15 +33,15 @@ class GalleryMediaTest extends TestCase
     // The stored file is named after the slug the media is reached by, so the file on disk and the page pointing at it read the same
     public function testGetVichMediaPathUsesTheCategoryAndMediaSlugs(): void
     {
-        $category = (new GalleryCategory())->setSlug('voyages');
-        $media = (new GalleryMedia())->setCategory($category)->setSlug('col-du-galibier');
+        $category = new GalleryCategory()->setSlug('voyages');
+        $media = new GalleryMedia()->setCategory($category)->setSlug('col-du-galibier');
 
         $this->assertSame('medias/gallery/voyages/col-du-galibier', $media->getVichMediaPath());
     }
 
     public function testGetVichMediaPathFallsBackWhenMediaHasNoCategory(): void
     {
-        $media = (new GalleryMedia())->setSlug('col-du-galibier');
+        $media = new GalleryMedia()->setSlug('col-du-galibier');
 
         $this->assertSame('medias/gallery/uncategorized/col-du-galibier', $media->getVichMediaPath());
     }
@@ -49,14 +49,14 @@ class GalleryMediaTest extends TestCase
     // A media stored before slugs existed still resolves to a path, rather than naming its file after nothing
     public function testGetVichMediaPathFallsBackWhenMediaHasNoSlug(): void
     {
-        $media = (new GalleryMedia())->setCategory((new GalleryCategory())->setSlug('voyages'));
+        $media = new GalleryMedia()->setCategory(new GalleryCategory()->setSlug('voyages'));
 
         $this->assertSame('medias/gallery/voyages/media', $media->getVichMediaPath());
     }
 
     public function testDerivativeFilenamesInsertSuffixBeforeTheExtension(): void
     {
-        $media = (new GalleryMedia())->setFilename('medias/gallery/main/voyages/media.webp');
+        $media = new GalleryMedia()->setFilename('medias/gallery/main/voyages/media.webp');
 
         $this->assertSame('medias/gallery/main/voyages/media-thumb.webp', $media->getThumbnailFilename());
         $this->assertSame('medias/gallery/main/voyages/media-highres.webp', $media->getHighresFilename());
@@ -100,8 +100,8 @@ class GalleryMediaTest extends TestCase
     // What an admin pastes is the page they were watching the video on - the platform reads itself off it, and what gets stored is that platform's own privacy-first embed url
     public function testAPastedUrlIsStoredAsThePlatformCanonicalEmbedUrl(): void
     {
-        $youtube = (new GalleryMedia())->setExternalUrl('https://www.youtube.com/watch?v=dQw4w9WgXcQ');
-        $tiktok = (new GalleryMedia())->setExternalUrl('https://www.tiktok.com/@kalaan/video/6860377138386734341');
+        $youtube = new GalleryMedia()->setExternalUrl('https://www.youtube.com/watch?v=dQw4w9WgXcQ');
+        $tiktok = new GalleryMedia()->setExternalUrl('https://www.tiktok.com/@kalaan/video/6860377138386734341');
 
         $this->assertTrue($youtube->isVideo());
         $this->assertSame('youtube', $youtube->getMediaType());
@@ -115,7 +115,7 @@ class GalleryMediaTest extends TestCase
     // The whole point of storing a url rather than an id: a gallery can hold a video from somewhere nobody declared - an instance of one's own among them
     public function testAnUnknownPlatformIsFramedExactlyAsPasted(): void
     {
-        $media = (new GalleryMedia())->setExternalUrl('https://peertube.example.org/videos/embed/abcd-1234');
+        $media = new GalleryMedia()->setExternalUrl('https://peertube.example.org/videos/embed/abcd-1234');
 
         $this->assertTrue($media->isVideo());
         $this->assertSame(GalleryMedia::MEDIA_TYPE_EMBED, $media->getMediaType());
@@ -125,7 +125,7 @@ class GalleryMediaTest extends TestCase
     // The type is derived, never stored alongside the url, so the two can't be left contradicting each other - clearing the url is what turns a video back into the still it always carried
     public function testClearingTheUrlTurnsTheMediaBackIntoAnImage(): void
     {
-        $media = (new GalleryMedia())->setExternalUrl('https://youtu.be/dQw4w9WgXcQ');
+        $media = new GalleryMedia()->setExternalUrl('https://youtu.be/dQw4w9WgXcQ');
 
         $media->setExternalUrl('');
 
@@ -137,23 +137,23 @@ class GalleryMediaTest extends TestCase
 
     public function testAnEmptyUrlIsStoredAsNull(): void
     {
-        $this->assertNull((new GalleryMedia())->setExternalUrl('   ')->getExternalUrl());
-        $this->assertNull((new GalleryMedia())->setExternalUrl(null)->getExternalUrl());
+        $this->assertNull(new GalleryMedia()->setExternalUrl('   ')->getExternalUrl());
+        $this->assertNull(new GalleryMedia()->setExternalUrl(null)->getExternalUrl());
     }
 
     // An url ends up as an iframe's src, so anything but http(s) is dropped rather than stored - a javascript: one would otherwise run in the site's own origin
     public function testAnUrlThatIsNotHttpIsDropped(): void
     {
-        $this->assertNull((new GalleryMedia())->setExternalUrl('javascript:alert(document.domain)')->getExternalUrl());
-        $this->assertNull((new GalleryMedia())->setExternalUrl('data:text/html;base64,PHNjcmlwdD4=')->getExternalUrl());
-        $this->assertNull((new GalleryMedia())->setExternalUrl('//www.youtube.com/embed/dQw4w9WgXcQ')->getExternalUrl());
-        $this->assertSame('http://peertube.example.org/videos/embed/abcd', (new GalleryMedia())->setExternalUrl('http://peertube.example.org/videos/embed/abcd')->getExternalUrl());
+        $this->assertNull(new GalleryMedia()->setExternalUrl('javascript:alert(document.domain)')->getExternalUrl());
+        $this->assertNull(new GalleryMedia()->setExternalUrl('data:text/html;base64,PHNjcmlwdD4=')->getExternalUrl());
+        $this->assertNull(new GalleryMedia()->setExternalUrl('//www.youtube.com/embed/dQw4w9WgXcQ')->getExternalUrl());
+        $this->assertSame('http://peertube.example.org/videos/embed/abcd', new GalleryMedia()->setExternalUrl('http://peertube.example.org/videos/embed/abcd')->getExternalUrl());
     }
 
     // A copy-paste brings its own whitespace, which is not a reason to file a valid url under "embed"
     public function testAPaddedUrlStillResolvesToItsPlatform(): void
     {
-        $media = (new GalleryMedia())->setExternalUrl('  https://youtu.be/dQw4w9WgXcQ  ');
+        $media = new GalleryMedia()->setExternalUrl('  https://youtu.be/dQw4w9WgXcQ  ');
 
         $this->assertSame('youtube', $media->getMediaType());
         $this->assertSame('https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ', $media->getEmbedUrl());
@@ -162,16 +162,16 @@ class GalleryMediaTest extends TestCase
     // What reserves the player's box before it loads - portrait only where the platform is, and the landscape default for a player nobody can know the shape of
     public function testTheAspectRatioFollowsThePlatform(): void
     {
-        $this->assertSame('9 / 16', (new GalleryMedia())->setExternalUrl('https://www.tiktok.com/embed/v2/6860377138386734341')->getAspectRatio());
-        $this->assertSame('16 / 9', (new GalleryMedia())->setExternalUrl('https://youtu.be/dQw4w9WgXcQ')->getAspectRatio());
-        $this->assertSame('16 / 9', (new GalleryMedia())->setExternalUrl('https://peertube.example.org/videos/embed/abcd')->getAspectRatio());
-        $this->assertSame('16 / 9', (new GalleryMedia())->getAspectRatio());
+        $this->assertSame('9 / 16', new GalleryMedia()->setExternalUrl('https://www.tiktok.com/embed/v2/6860377138386734341')->getAspectRatio());
+        $this->assertSame('16 / 9', new GalleryMedia()->setExternalUrl('https://youtu.be/dQw4w9WgXcQ')->getAspectRatio());
+        $this->assertSame('16 / 9', new GalleryMedia()->setExternalUrl('https://peertube.example.org/videos/embed/abcd')->getAspectRatio());
+        $this->assertSame('16 / 9', new GalleryMedia()->getAspectRatio());
     }
 
     // The site's own copy: nothing framed, nothing to consent to, and a video that outlives whatever a platform decides
     public function testAnUploadedVideoMakesTheMediaASelfHostedOne(): void
     {
-        $media = (new GalleryMedia())->setVideoFilename('medias/gallery/kalaan/skate-a1b2c3.mp4');
+        $media = new GalleryMedia()->setVideoFilename('medias/gallery/kalaan/skate-a1b2c3.mp4');
 
         $this->assertSame(GalleryMedia::MEDIA_TYPE_VIDEO, $media->getMediaType());
         $this->assertTrue($media->isVideo());
@@ -183,7 +183,7 @@ class GalleryMediaTest extends TestCase
     // A media that carries both plays its own copy - an url left over from before the file was uploaded is not a reason to send a visitor to a third party
     public function testTheSiteOwnFileWinsOverAPastedUrl(): void
     {
-        $media = (new GalleryMedia())
+        $media = new GalleryMedia()
             ->setExternalUrl('https://youtu.be/dQw4w9WgXcQ')
             ->setVideoFilename('medias/gallery/kalaan/skate-a1b2c3.mp4');
 
@@ -197,7 +197,7 @@ class GalleryMediaTest extends TestCase
     // Removing the file falls back to whatever the media carried before it, rather than to a still it never was
     public function testRemovingTheFileFallsBackToTheUrlItStillCarries(): void
     {
-        $media = (new GalleryMedia())
+        $media = new GalleryMedia()
             ->setExternalUrl('https://youtu.be/dQw4w9WgXcQ')
             ->setVideoFilename('skate.mp4');
 
@@ -210,7 +210,7 @@ class GalleryMediaTest extends TestCase
 
     public function testRemovingTheFileOfAMediaWithNoUrlLeavesAnImage(): void
     {
-        $media = (new GalleryMedia())->setVideoFilename('skate.mp4');
+        $media = new GalleryMedia()->setVideoFilename('skate.mp4');
 
         $media->setVideoFilename('');
 
@@ -222,7 +222,7 @@ class GalleryMediaTest extends TestCase
     // A self-hosted video is the one player whose real shape the browser reads off the file itself, so the stylesheet lets it dictate it (see .gallery-video--video) - the entity has nothing to reserve on its behalf
     public function testASelfHostedVideoTakesTheDefaultRatio(): void
     {
-        $this->assertSame('16 / 9', (new GalleryMedia())->setVideoFilename('skate.mp4')->getAspectRatio());
+        $this->assertSame('16 / 9', new GalleryMedia()->setVideoFilename('skate.mp4')->getAspectRatio());
     }
 
     // Read by the badge naming a video in the grid and by the admin screens - every platform UiBundle declares has to be in it, or a media renders a translation key
@@ -241,12 +241,12 @@ class GalleryMediaTest extends TestCase
     // Nothing is copied aside unless the batch that created the media asked for it
     public function testNoOriginalIsKeptByDefault(): void
     {
-        $this->assertNull((new GalleryMedia())->getOriginalDirectory());
+        $this->assertNull(new GalleryMedia()->getOriginalDirectory());
     }
 
     public function testAMediaAskedToKeepItsOriginalNamesTheDirectoryToCopyItTo(): void
     {
-        $media = (new GalleryMedia())->setKeepOriginal(true);
+        $media = new GalleryMedia()->setKeepOriginal(true);
 
         $this->assertSame(GalleryMedia::ORIGINAL_DIRECTORY, $media->getOriginalDirectory());
     }
@@ -287,14 +287,14 @@ class GalleryMediaTest extends TestCase
     // Off unless whoever is uploading the file asked for it
     public function testAMediaWantsNoWatermarkUnlessItWasAskedFor(): void
     {
-        $this->assertFalse((new GalleryMedia())->wantsWatermark());
-        $this->assertTrue((new GalleryMedia())->setWatermark(true)->wantsWatermark());
+        $this->assertFalse(new GalleryMedia()->wantsWatermark());
+        $this->assertTrue(new GalleryMedia()->setWatermark(true)->wantsWatermark());
     }
 
     // The watermark answers for the file being stored, not for the media: a stamped file carries the signature in its pixels, so nothing is kept once the upload is over and a media read back from the database asks the question again
     public function testTheWatermarkIsNotStoredOnTheMedia(): void
     {
-        $properties = (new \ReflectionClass(GalleryMedia::class))->getProperties();
+        $properties = new \ReflectionClass(GalleryMedia::class)->getProperties();
 
         foreach ($properties as $property) {
             if (in_array($property->getName(), ['watermark', 'watermarkPosition'], true)) {

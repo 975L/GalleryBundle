@@ -17,7 +17,7 @@ use Symfony\Component\String\Slugger\SluggerInterface;
 class GalleryMediaSlugger
 {
     // What an untitled media falls back to, so it still gets a url and a filename of its own - the suffixing below then tells such medias apart within their category
-    private const FALLBACK = 'media';
+    private const string FALLBACK = 'media';
 
     public function __construct(
         private readonly SluggerInterface $slugger,

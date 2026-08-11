@@ -107,6 +107,7 @@ class GalleryCategoryCrudController extends AbstractCrudController
         return (string) $this->configService->get('site-role-editor');
     }
 
+    #[\Override]
     public function configureCrud(Crud $crud): Crud
     {
         return $crud
@@ -122,6 +123,7 @@ class GalleryCategoryCrudController extends AbstractCrudController
         ;
     }
 
+    #[\Override]
     public function configureActions(Actions $actions): Actions
     {
         // Same "export selection" as SiteBundle's PageCrudController::exportSelection() - see that method's own comment for why
@@ -181,6 +183,7 @@ class GalleryCategoryCrudController extends AbstractCrudController
     }
 
     // The creation form carries files (see configureFields), so it meets post_max_size just as the upload screen does - php having dropped the request, the category wouldn't be created and the screen would redisplay itself blank and silent (see UploadLimits::isTruncatedRequest)
+    #[\Override]
     public function new(AdminContext $context): KeyValueStore | Response
     {
         $request = $context->getRequest();
@@ -194,6 +197,7 @@ class GalleryCategoryCrudController extends AbstractCrudController
         return parent::new($context);
     }
 
+    #[\Override]
     public function createNewFormBuilder(EntityDto $entityDto, KeyValueStore $formOptions, AdminContext $context): FormBuilderInterface
     {
         return $this->addMediaBatch($this->addSlugNormalizer(parent::createNewFormBuilder($entityDto, $formOptions, $context)));
@@ -255,6 +259,7 @@ class GalleryCategoryCrudController extends AbstractCrudController
     }
 
     // Removing the very last block leaves nothing submitted at all for "blocks" (an HTML form can't represent an empty array, only an absent key), which has to be normalized to [] here or Symfony skips add/remove handling entirely for the whole field - same listener as SiteBundle's PageCrudController, minus its max_input_vars guard: a category holds a heading, not a whole page's worth of blocks
+    #[\Override]
     public function createEditFormBuilder(EntityDto $entityDto, KeyValueStore $formOptions, AdminContext $context): FormBuilderInterface
     {
         $formBuilder = $this->addSlugNormalizer(parent::createEditFormBuilder($entityDto, $formOptions, $context));
@@ -285,6 +290,7 @@ class GalleryCategoryCrudController extends AbstractCrudController
 
     // Created category - a slug freed by an earlier deletion is still answering 410 Gone (see deleteEntity), and RedirectSubscriber runs before the router: the page would exist while its url kept saying it doesn't
     // Its wildcard goes too, that row covering every media url below the slug, and so does the url of each media the creation form brought along (see addMediaBatch)
+    #[\Override]
     public function persistEntity(EntityManagerInterface $entityManager, object $entityInstance): void
     {
         if ($entityInstance instanceof GalleryCategory && \is_string($entityInstance->getSlug())) {
@@ -307,6 +313,7 @@ class GalleryCategoryCrudController extends AbstractCrudController
     }
 
     // Updated category - a rename moves its public url (see addSlugNormalizer), so the old one is redirected to the new one rather than left to 404 on every link and search result already pointing at it, exactly as SiteBundle's PageCrudController does for a page
+    #[\Override]
     public function updateEntity(EntityManagerInterface $entityManager, object $entityInstance): void
     {
         $originalSlug = $entityManager->getUnitOfWork()->getOriginalEntityData($entityInstance)['slug'] ?? null;
@@ -332,6 +339,7 @@ class GalleryCategoryCrudController extends AbstractCrudController
 
     // Deleted category - its page and every media page under it are declared in the sitemap (see GallerySitemapProvider), so the urls are left answering 410 Gone rather than the 404 a crawler retries for months
     // The medias go with it (GalleryCategory::$medias cascades the removal), and a single wildcard row covers all of them - the alternative being one row per media, which is what would make the redirect table grow with every deleted gallery
+    #[\Override]
     public function deleteEntity(EntityManagerInterface $entityManager, object $entityInstance): void
     {
         if ($entityInstance instanceof GalleryCategory && \is_string($entityInstance->getSlug())) {
@@ -341,6 +349,7 @@ class GalleryCategoryCrudController extends AbstractCrudController
         parent::deleteEntity($entityManager, $entityInstance);
     }
 
+    #[\Override]
     public function configureFields(string $pageName): iterable
     {
         $entity = $this->adminContextProvider->getContext()?->getEntity()?->getInstance();
@@ -494,6 +503,7 @@ class GalleryCategoryCrudController extends AbstractCrudController
 
     // The category's medias are listed under its edit form (see gallery_category_edit.html.twig), each thumbnail opening the media edit screen - the urls are built here rather than in the template, which would otherwise have to name the media CRUD controller by its fqcn
     // Each carries its category, which is what sends the admin back to this very screen once the media is saved or deleted (see GalleryMediaCrudController::index())
+    #[\Override]
     public function configureResponseParameters(KeyValueStore $responseParameters): KeyValueStore
     {
         // The ceilings the creation form's files are weighed against before they are sent, the template having no other way to reach them (see gallery_category_new.html.twig)

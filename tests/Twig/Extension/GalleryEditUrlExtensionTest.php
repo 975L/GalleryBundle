@@ -26,7 +26,7 @@ class GalleryEditUrlExtensionTest extends TestCase
     {
         $names = array_map(
             static fn ($function): string => $function->getName(),
-            (new GalleryEditUrlExtension($this->createStub(AdminUrlGeneratorInterface::class)))->getFunctions()
+            new GalleryEditUrlExtension($this->createStub(AdminUrlGeneratorInterface::class))->getFunctions()
         );
 
         $this->assertSame(['gallery_category_edit_url', 'gallery_media_edit_url'], $names);
@@ -41,9 +41,9 @@ class GalleryEditUrlExtensionTest extends TestCase
         $generator->expects($this->never())->method('set');
 
         $category = new GalleryCategory();
-        (new \ReflectionProperty(GalleryCategory::class, 'id'))->setValue($category, 8);
+        new \ReflectionProperty(GalleryCategory::class, 'id')->setValue($category, 8);
 
-        $this->assertSame('/management/gallery/8/edit', (new GalleryEditUrlExtension($generator))->getCategoryEditUrl($category));
+        $this->assertSame('/management/gallery/8/edit', new GalleryEditUrlExtension($generator)->getCategoryEditUrl($category));
     }
 
     public function testGetCategoryEditUrlReturnsNothingForACategoryWithoutAnId(): void
@@ -51,7 +51,7 @@ class GalleryEditUrlExtensionTest extends TestCase
         $generator = $this->createAdminUrlGenerator();
         $generator->expects($this->never())->method('generateUrl');
 
-        $this->assertNull((new GalleryEditUrlExtension($generator))->getCategoryEditUrl(new GalleryCategory()));
+        $this->assertNull(new GalleryEditUrlExtension($generator)->getCategoryEditUrl(new GalleryCategory()));
     }
 
     public function testGetMediaEditUrlOpensTheMediaEditScreenUnderItsCategory(): void
@@ -62,7 +62,7 @@ class GalleryEditUrlExtensionTest extends TestCase
         $generator->expects($this->once())->method('setEntityId')->with(68)->willReturnSelf();
         $generator->expects($this->once())->method('set')->with('category', 8)->willReturnSelf();
 
-        $url = (new GalleryEditUrlExtension($generator))->getMediaEditUrl($this->createMedia(68, 8));
+        $url = new GalleryEditUrlExtension($generator)->getMediaEditUrl($this->createMedia(68, 8));
 
         $this->assertSame('/management/gallery-media/68/edit?category=8', $url);
     }
@@ -73,7 +73,7 @@ class GalleryEditUrlExtensionTest extends TestCase
         $generator = $this->createAdminUrlGenerator('/management/gallery-media/68/edit');
         $generator->expects($this->never())->method('set');
 
-        $url = (new GalleryEditUrlExtension($generator))->getMediaEditUrl($this->createMedia(68, null));
+        $url = new GalleryEditUrlExtension($generator)->getMediaEditUrl($this->createMedia(68, null));
 
         $this->assertSame('/management/gallery-media/68/edit', $url);
     }
@@ -84,7 +84,7 @@ class GalleryEditUrlExtensionTest extends TestCase
         $generator = $this->createAdminUrlGenerator();
         $generator->expects($this->never())->method('generateUrl');
 
-        $this->assertNull((new GalleryEditUrlExtension($generator))->getMediaEditUrl(new GalleryMedia()));
+        $this->assertNull(new GalleryEditUrlExtension($generator)->getMediaEditUrl(new GalleryMedia()));
     }
 
     // EasyAdmin reads the dashboard these URLs are mounted under from a cache map only written when the route collection is regenerated, so it can be missing on a perfectly working site (a wiped cache pool, fresh compiled routes) - the button is then simply not offered, where a thrown error would take the public gallery page down for the editor
@@ -122,11 +122,11 @@ class GalleryEditUrlExtensionTest extends TestCase
     private function createMedia(int $id, ?int $categoryId): GalleryMedia
     {
         $media = new GalleryMedia();
-        (new \ReflectionProperty(GalleryMedia::class, 'id'))->setValue($media, $id);
+        new \ReflectionProperty(GalleryMedia::class, 'id')->setValue($media, $id);
 
         if (null !== $categoryId) {
             $category = new GalleryCategory();
-            (new \ReflectionProperty(GalleryCategory::class, 'id'))->setValue($category, $categoryId);
+            new \ReflectionProperty(GalleryCategory::class, 'id')->setValue($category, $categoryId);
             $media->setCategory($category);
         }
 

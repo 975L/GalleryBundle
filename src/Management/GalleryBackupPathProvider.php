@@ -18,7 +18,7 @@ use c975L\GalleryBundle\Entity\GalleryMedia;
 class GalleryBackupPathProvider implements BackupPathProviderInterface
 {
     // The category folder and the file name follow (see GalleryMedia::getVichMediaPath), so the two roots below cover the medium served, its thumb and highres siblings, the self-hosted videos and the kept originals alike
-    private const MEDIA_DIRECTORY = 'medias/gallery';
+    private const string MEDIA_DIRECTORY = 'medias/gallery';
 
     public function getBackupPaths(): array
     {

@@ -28,7 +28,7 @@ class GalleryCategoriesBlockTypeTest extends TestCase
             return $builder;
         });
 
-        (new GalleryCategoriesBlockType())->buildForm($builder, []);
+        new GalleryCategoriesBlockType()->buildForm($builder, []);
 
         $this->assertSame(IntegerType::class, $added['max']['type']);
         $this->assertFalse($added['max']['options']['required']);
@@ -38,7 +38,7 @@ class GalleryCategoriesBlockTypeTest extends TestCase
     public function testConfigureOptionsSetsTheGalleryTranslationDomain(): void
     {
         $resolver = new OptionsResolver();
-        (new GalleryCategoriesBlockType())->configureOptions($resolver);
+        new GalleryCategoriesBlockType()->configureOptions($resolver);
 
         $this->assertSame('gallery', $resolver->resolve()['translation_domain']);
     }

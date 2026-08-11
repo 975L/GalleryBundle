@@ -25,7 +25,7 @@ class GalleryMediaSluggerTest extends TestCase
 
     private function createMedia(GalleryCategory $category, ?string $title, ?string $slug = null): GalleryMedia
     {
-        $media = (new GalleryMedia())->setTitle($title)->setSlug($slug);
+        $media = new GalleryMedia()->setTitle($title)->setSlug($slug);
         $category->addMedia($media);
 
         return $media;
@@ -118,7 +118,7 @@ class GalleryMediaSluggerTest extends TestCase
     // A media not yet attached to a category has no sibling to collide with
     public function testAMediaWithoutACategoryIsStillSlugged(): void
     {
-        $media = (new GalleryMedia())->setTitle('Mont Blanc');
+        $media = new GalleryMedia()->setTitle('Mont Blanc');
 
         $this->assertSame('mont-blanc', $this->createSlugger()->generate($media));
     }

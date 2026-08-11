@@ -57,11 +57,13 @@
         "cs": "phpcs -q",
         "fixer": "php-cs-fixer check --diff",
         "stan": "phpstan analyse --no-progress",
+        "rector": "rector process --dry-run",
         "test": "phpunit",
         "qa": [
             "@cs",
             "@fixer",
             "@stan",
+            "@rector",
             "@test"
         ]
     },

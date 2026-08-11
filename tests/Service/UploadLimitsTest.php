@@ -28,37 +28,37 @@ class UploadLimitsTest extends TestCase
     // A php.ini size is written K/M/G or as a plain byte count, and the shorthand is binary - 2M is 2097152, not 2000000
     public function testConvertsEveryPhpIniSizeShorthand(): void
     {
-        $this->assertSame(1024, (new UploadLimits(uploadMaxFilesize: '1K'))->getMaxFileSize());
-        $this->assertSame(2 * 1024 ** 2, (new UploadLimits(uploadMaxFilesize: '2M'))->getMaxFileSize());
-        $this->assertSame(500_000, (new UploadLimits(uploadMaxFilesize: '500000'))->getMaxFileSize());
+        $this->assertSame(1024, new UploadLimits(uploadMaxFilesize: '1K')->getMaxFileSize());
+        $this->assertSame(2 * 1024 ** 2, new UploadLimits(uploadMaxFilesize: '2M')->getMaxFileSize());
+        $this->assertSame(500_000, new UploadLimits(uploadMaxFilesize: '500000')->getMaxFileSize());
 
         // 1G against this bundle's own 20M ceiling: the smaller wins
-        $this->assertSame(20 * 1024 ** 2, (new UploadLimits(uploadMaxFilesize: '1G'))->getMaxFileSize());
+        $this->assertSame(20 * 1024 ** 2, new UploadLimits(uploadMaxFilesize: '1G')->getMaxFileSize());
     }
 
     // Raising php's ceiling past this bundle's changes nothing, and vice versa - the screen has to state the one that really applies
     public function testTheSmallerOfThePhpAndBundleCeilingsApplies(): void
     {
-        $this->assertSame(2 * 1024 ** 2, (new UploadLimits(uploadMaxFilesize: '2M'))->getMaxFileSize());
-        $this->assertSame(20 * 1024 ** 2, (new UploadLimits(uploadMaxFilesize: '100M'))->getMaxFileSize());
+        $this->assertSame(2 * 1024 ** 2, new UploadLimits(uploadMaxFilesize: '2M')->getMaxFileSize());
+        $this->assertSame(20 * 1024 ** 2, new UploadLimits(uploadMaxFilesize: '100M')->getMaxFileSize());
     }
 
     // Same rule on the count: a host allowing 500 files in one request says nothing about what resizing 500 medias costs within it
     public function testTheFileCountIsCappedByThisBundleToo(): void
     {
-        $this->assertSame(20, (new UploadLimits('20'))->getMaxFiles());
-        $this->assertSame(100, (new UploadLimits('100'))->getMaxFiles());
-        $this->assertSame(100, (new UploadLimits('500'))->getMaxFiles());
+        $this->assertSame(20, new UploadLimits('20')->getMaxFiles());
+        $this->assertSame(100, new UploadLimits('100')->getMaxFiles());
+        $this->assertSame(100, new UploadLimits('500')->getMaxFiles());
     }
 
     // A full batch of files at the per-file ceiling caps the request as surely as post_max_size does
     public function testTheBatchCeilingIsWhicheverComesFirst(): void
     {
         // 10 files x 2M is below a post_max_size of 500M
-        $this->assertSame(10 * 2 * 1024 ** 2, (new UploadLimits('10', '2M', '500M'))->getMaxBatchSize());
+        $this->assertSame(10 * 2 * 1024 ** 2, new UploadLimits('10', '2M', '500M')->getMaxBatchSize());
 
         // 100 files x 20M is well above a post_max_size of 8M
-        $this->assertSame(8 * 1024 ** 2, (new UploadLimits('100', '20M', '8M'))->getMaxBatchSize());
+        $this->assertSame(8 * 1024 ** 2, new UploadLimits('100', '20M', '8M')->getMaxBatchSize());
     }
 
     // "0" means no limit at all in php.ini, which must never read as "nothing may be uploaded"
@@ -72,17 +72,17 @@ class UploadLimitsTest extends TestCase
     // A video is not a photograph: this bundle's 20 MiB ceiling would refuse any video worth uploading, so what is left is php's own per-file limit alone
     public function testTheVideoCeilingIsPhpOwnAndIgnoresTheBundleOne(): void
     {
-        $this->assertSame(64 * 1024 ** 2, (new UploadLimits(uploadMaxFilesize: '64M'))->getMaxVideoFileSize());
+        $this->assertSame(64 * 1024 ** 2, new UploadLimits(uploadMaxFilesize: '64M')->getMaxVideoFileSize());
 
         // Where a photograph would be capped at 20 MiB
-        $this->assertSame(1024 ** 3, (new UploadLimits(uploadMaxFilesize: '1G'))->getMaxVideoFileSize());
-        $this->assertSame(20 * 1024 ** 2, (new UploadLimits(uploadMaxFilesize: '1G'))->getMaxFileSize());
+        $this->assertSame(1024 ** 3, new UploadLimits(uploadMaxFilesize: '1G')->getMaxVideoFileSize());
+        $this->assertSame(20 * 1024 ** 2, new UploadLimits(uploadMaxFilesize: '1G')->getMaxFileSize());
     }
 
     // Below the bundle's ceiling php's limit is still the one that applies, there being nothing else to cap a video with
     public function testAVideoIsCappedByAPhpLimitSmallerThanTheBundleOneToo(): void
     {
-        $this->assertSame(2 * 1024 ** 2, (new UploadLimits(uploadMaxFilesize: '2M'))->getMaxVideoFileSize());
+        $this->assertSame(2 * 1024 ** 2, new UploadLimits(uploadMaxFilesize: '2M')->getMaxVideoFileSize());
     }
 
     public function testStatesAFigureInWholeMegabytes(): void

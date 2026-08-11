@@ -22,19 +22,20 @@ class GalleryStyleExtension extends AbstractExtension
     public const STYLES = ['light', 'dark'];
     public const FRAMES = ['none', 'thin', 'wide'];
 
-    private const PAGE_CLASS = 'gallery-page';
-    private const STYLE_SLUG = 'gallery-style';
-    private const FRAME_SLUG = 'gallery-frame';
+    private const string PAGE_CLASS = 'gallery-page';
+    private const string STYLE_SLUG = 'gallery-style';
+    private const string FRAME_SLUG = 'gallery-frame';
 
     public function __construct(
         private readonly ConfigServiceInterface $configService,
     ) {
     }
 
+    #[\Override]
     public function getFunctions(): array
     {
         return [
-            new TwigFunction('gallery_body_class', [$this, 'getBodyClass']),
+            new TwigFunction('gallery_body_class', $this->getBodyClass(...)),
         ];
     }
 

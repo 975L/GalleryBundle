@@ -25,7 +25,7 @@ class GalleryMediaRepositoryTest extends TestCase
     public function testFindPreviousAndNextReturnsTheNeighboursInPosition(): void
     {
         $category = new GalleryCategory();
-        $medias = [(new GalleryMedia())->setPosition(0), (new GalleryMedia())->setPosition(1), (new GalleryMedia())->setPosition(2)];
+        $medias = [new GalleryMedia()->setPosition(0), new GalleryMedia()->setPosition(1), new GalleryMedia()->setPosition(2)];
         foreach ($medias as $media) {
             $media->setCategory($category);
         }
@@ -40,7 +40,7 @@ class GalleryMediaRepositoryTest extends TestCase
     public function testFindPreviousAndNextWrapsAroundAtTheStartOfTheCategory(): void
     {
         $category = new GalleryCategory();
-        $medias = [(new GalleryMedia())->setPosition(0), (new GalleryMedia())->setPosition(1)];
+        $medias = [new GalleryMedia()->setPosition(0), new GalleryMedia()->setPosition(1)];
         foreach ($medias as $media) {
             $media->setCategory($category);
         }
@@ -55,7 +55,7 @@ class GalleryMediaRepositoryTest extends TestCase
     public function testFindPreviousAndNextWrapsAroundAtTheEndOfTheCategory(): void
     {
         $category = new GalleryCategory();
-        $medias = [(new GalleryMedia())->setPosition(0), (new GalleryMedia())->setPosition(1)];
+        $medias = [new GalleryMedia()->setPosition(0), new GalleryMedia()->setPosition(1)];
         foreach ($medias as $media) {
             $media->setCategory($category);
         }
@@ -70,7 +70,7 @@ class GalleryMediaRepositoryTest extends TestCase
     public function testFindPreviousAndNextWrapsToItselfWhenTheCategoryHasOnlyOneMedia(): void
     {
         $category = new GalleryCategory();
-        $media = (new GalleryMedia())->setPosition(0)->setCategory($category);
+        $media = new GalleryMedia()->setPosition(0)->setCategory($category);
 
         $result = $this->createRepository([$media])->findPreviousAndNext($media);
 
@@ -82,10 +82,10 @@ class GalleryMediaRepositoryTest extends TestCase
     public function testFindPreviousAndNextBreaksPositionTiesById(): void
     {
         $category = new GalleryCategory();
-        $medias = [(new GalleryMedia())->setPosition(0), (new GalleryMedia())->setPosition(0), (new GalleryMedia())->setPosition(0)];
+        $medias = [new GalleryMedia()->setPosition(0), new GalleryMedia()->setPosition(0), new GalleryMedia()->setPosition(0)];
         foreach ($medias as $index => $media) {
             $media->setCategory($category);
-            (new \ReflectionProperty(GalleryMedia::class, 'id'))->setValue($media, $index + 1);
+            new \ReflectionProperty(GalleryMedia::class, 'id')->setValue($media, $index + 1);
         }
 
         $result = $this->createRepository($medias)->findPreviousAndNext($medias[1]);
@@ -102,6 +102,7 @@ class GalleryMediaRepositoryFindAdjacentFixture extends GalleryMediaRepository
     {
     }
 
+    #[\Override]
     protected function findAdjacent(GalleryCategory $category, GalleryMedia $media, string $direction): ?GalleryMedia
     {
         $ordered = $this->medias;
@@ -115,6 +116,7 @@ class GalleryMediaRepositoryFindAdjacentFixture extends GalleryMediaRepository
         return 'next' === $direction ? ($ordered[$index + 1] ?? null) : ($index > 0 ? $ordered[$index - 1] : null);
     }
 
+    #[\Override]
     protected function findEdge(GalleryCategory $category, string $edge): ?GalleryMedia
     {
         if ([] === $this->medias) {

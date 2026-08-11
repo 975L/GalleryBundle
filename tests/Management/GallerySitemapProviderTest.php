@@ -32,14 +32,14 @@ class GallerySitemapProviderTest extends TestCase
 
     private function createCategory(string $slug): GalleryCategory
     {
-        return (new GalleryCategory())->setSlug($slug)->setTitle(ucfirst($slug));
+        return new GalleryCategory()->setSlug($slug)->setTitle(ucfirst($slug));
     }
 
     // The slug is the route parameter; createdAt is set by the constructor and has no setter, so it is written straight through reflection rather than around it
     private function createMedia(string $slug, ?string $updatedAt = null, ?string $createdAt = null): GalleryMedia
     {
-        $media = (new GalleryMedia())->setSlug($slug);
-        (new \ReflectionProperty(GalleryMedia::class, 'createdAt'))->setValue($media, null === $createdAt ? null : new \DateTimeImmutable($createdAt));
+        $media = new GalleryMedia()->setSlug($slug);
+        new \ReflectionProperty(GalleryMedia::class, 'createdAt')->setValue($media, null === $createdAt ? null : new \DateTimeImmutable($createdAt));
 
         if (null !== $updatedAt) {
             $media->setUpdatedAt(new \DateTimeImmutable($updatedAt));

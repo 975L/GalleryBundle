@@ -25,7 +25,7 @@ class StylesheetProviderTest extends TestCase
     // The path is served by the symlink "assets:install" writes, so a sheet advertised but never compiled is a 404 on every page
     public function testTheAdvertisedSheetIsActuallyShipped(): void
     {
-        foreach ((new StylesheetProvider())->getStylesheets() as $stylesheet) {
+        foreach (new StylesheetProvider()->getStylesheets() as $stylesheet) {
             $path = \dirname(__DIR__, 2) . '/public/' . preg_replace('#^bundles/c975lgallery/#', '', $stylesheet);
 
             $this->assertFileExists($path, sprintf('"%s" is advertised but the sass has not been compiled.', $stylesheet));

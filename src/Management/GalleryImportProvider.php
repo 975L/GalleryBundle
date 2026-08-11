@@ -147,7 +147,7 @@ class GalleryImportProvider implements ImportProviderInterface
     private function buildMedia(array $mediaData, ?string $filesDir): GalleryMedia
     {
         // "alt" is what an archive exported before the title/slug rework carries, read as a fallback rather than importing medias with no name at all
-        $media = (new GalleryMedia())
+        $media = new GalleryMedia()
             ->setTitle($mediaData['title'] ?? $mediaData['alt'] ?? null)
             ->setCredits($mediaData['credits'] ?? null)
             ->setRightsReserved($mediaData['rightsReserved'] ?? false)

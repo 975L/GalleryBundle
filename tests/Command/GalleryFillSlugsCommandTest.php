@@ -36,7 +36,7 @@ class GalleryFillSlugsCommandTest extends TestCase
 
     private function createCategory(string $slug, GalleryMedia ...$medias): GalleryCategory
     {
-        $category = (new GalleryCategory())->setSlug($slug);
+        $category = new GalleryCategory()->setSlug($slug);
         foreach ($medias as $media) {
             $category->addMedia($media);
         }
@@ -47,7 +47,7 @@ class GalleryFillSlugsCommandTest extends TestCase
     // A gallery filled before medias had a slug: their public url is built on it, so one left without is unreachable
     public function testEveryMediaWithoutASlugGetsOneFromItsTitle(): void
     {
-        $media = (new GalleryMedia())->setTitle('Col du Galibier');
+        $media = new GalleryMedia()->setTitle('Col du Galibier');
         $tester = $this->createTester([$this->createCategory('voyages', $media)]);
 
         $tester->execute([]);
@@ -59,7 +59,7 @@ class GalleryFillSlugsCommandTest extends TestCase
     // A second run must not renumber what the first one wrote
     public function testAMediaThatAlreadyHasASlugIsLeftAlone(): void
     {
-        $media = (new GalleryMedia())->setTitle('Mont Blanc')->setSlug('sommet');
+        $media = new GalleryMedia()->setTitle('Mont Blanc')->setSlug('sommet');
         $tester = $this->createTester([$this->createCategory('voyages', $media)]);
 
         $tester->execute([]);
@@ -71,9 +71,9 @@ class GalleryFillSlugsCommandTest extends TestCase
     // The slug is only unique within its category, and a media already carrying one still counts as taken
     public function testACollisionWithinTheCategoryIsSuffixed(): void
     {
-        $stored = (new GalleryMedia())->setTitle('Mont Blanc')->setSlug('mont-blanc');
-        $first = (new GalleryMedia())->setTitle('Mont Blanc');
-        $second = (new GalleryMedia())->setTitle('Mont Blanc');
+        $stored = new GalleryMedia()->setTitle('Mont Blanc')->setSlug('mont-blanc');
+        $first = new GalleryMedia()->setTitle('Mont Blanc');
+        $second = new GalleryMedia()->setTitle('Mont Blanc');
         $tester = $this->createTester([$this->createCategory('voyages', $stored, $first, $second)]);
 
         $tester->execute([]);
@@ -83,8 +83,8 @@ class GalleryFillSlugsCommandTest extends TestCase
 
     public function testTheSameTitleInAnotherCategoryIsNotACollision(): void
     {
-        $first = (new GalleryMedia())->setTitle('Mont Blanc');
-        $second = (new GalleryMedia())->setTitle('Mont Blanc');
+        $first = new GalleryMedia()->setTitle('Mont Blanc');
+        $second = new GalleryMedia()->setTitle('Mont Blanc');
         $tester = $this->createTester([
             $this->createCategory('voyages', $first),
             $this->createCategory('portraits', $second),
@@ -102,7 +102,7 @@ class GalleryFillSlugsCommandTest extends TestCase
         $entityManager->expects($this->never())->method('flush');
 
         $tester = $this->createTester(
-            [$this->createCategory('voyages', (new GalleryMedia())->setTitle('Mont Blanc'), (new GalleryMedia())->setTitle('Mont Blanc'))],
+            [$this->createCategory('voyages', new GalleryMedia()->setTitle('Mont Blanc'), new GalleryMedia()->setTitle('Mont Blanc'))],
             $entityManager,
         );
 

@@ -25,7 +25,7 @@ class GalleryMediasBlockTypeTest extends TestCase
     // The stored value is the slug, this bundle's natural key everywhere else, so a block survives an export/import to another site
     public function testBuildFormOffersEveryCategoryBySlug(): void
     {
-        $added = $this->buildForm([(new GalleryCategory())->setTitle('Été 2026')->setSlug('ete-2026')]);
+        $added = $this->buildForm([new GalleryCategory()->setTitle('Été 2026')->setSlug('ete-2026')]);
 
         $this->assertSame(ChoiceType::class, $added['categorySlug']['type']);
         $this->assertSame(['Été 2026' => 'ete-2026'], $added['categorySlug']['options']['choices']);
@@ -38,9 +38,9 @@ class GalleryMediasBlockTypeTest extends TestCase
     public function testBuildFormDisambiguatesCategoriesSharingATitleWithTheirSlug(): void
     {
         $added = $this->buildForm([
-            (new GalleryCategory())->setTitle('Photos')->setSlug('photos'),
-            (new GalleryCategory())->setTitle('Vidéos')->setSlug('videos'),
-            (new GalleryCategory())->setTitle('Photos')->setSlug('photos-2026'),
+            new GalleryCategory()->setTitle('Photos')->setSlug('photos'),
+            new GalleryCategory()->setTitle('Vidéos')->setSlug('videos'),
+            new GalleryCategory()->setTitle('Photos')->setSlug('photos-2026'),
         ]);
 
         $this->assertSame([

@@ -312,7 +312,7 @@ class GalleryMediaCrudControllerTest extends TestCase
     // An unanswered corner is none at all, which takes the one set site-wide (see GalleryMedia::setWatermarkPosition)
     public function testAMediaLeftUnsignedOnTheEditFormWantsNoWatermark(): void
     {
-        $media = (new GalleryMedia())->setWatermark(true);
+        $media = new GalleryMedia()->setWatermark(true);
 
         ($this->captureWatermarkListener())(new FormEvent($this->createEditForm(false, null), $media));
 
@@ -347,7 +347,7 @@ class GalleryMediaCrudControllerTest extends TestCase
             return $builder;
         });
 
-        (new \ReflectionMethod(GalleryMediaCrudController::class, 'addWatermark'))->invoke($this->createController(), $builder);
+        new \ReflectionMethod(GalleryMediaCrudController::class, 'addWatermark')->invoke($this->createController(), $builder);
 
         $this->assertIsCallable($listener);
 
@@ -370,8 +370,8 @@ class GalleryMediaCrudControllerTest extends TestCase
     // The whole point of the decoupling: a title is retouched precisely because the first one was a placeholder, and that correction must not cost a redirect
     public function testUpdateEntityLeavesTheSlugOfARetitledMediaWhereItIs(): void
     {
-        $category = (new GalleryCategory())->setSlug('voyages');
-        $media = (new GalleryMedia())->setTitle('Col du Galibier')->setSlug('mont-blanc');
+        $category = new GalleryCategory()->setSlug('voyages');
+        $media = new GalleryMedia()->setTitle('Col du Galibier')->setSlug('mont-blanc');
         $category->addMedia($media);
 
         $persisted = [];
@@ -386,8 +386,8 @@ class GalleryMediaCrudControllerTest extends TestCase
     // A deliberate rename, unlike an automatic one, does move the url - and is recorded so the old one keeps answering
     public function testUpdateEntityRedirectsAMediaWhoseSlugWasEdited(): void
     {
-        $category = (new GalleryCategory())->setSlug('voyages');
-        $media = (new GalleryMedia())->setTitle('Mont Blanc')->setSlug('col-du-galibier');
+        $category = new GalleryCategory()->setSlug('voyages');
+        $media = new GalleryMedia()->setTitle('Mont Blanc')->setSlug('col-du-galibier');
         $category->addMedia($media);
 
         $persisted = [];
@@ -407,8 +407,8 @@ class GalleryMediaCrudControllerTest extends TestCase
     // Typed rather than generated, so it still has to come out a slug - "Col du Galibier !" is what an admin types, not what a url holds
     public function testUpdateEntityNormalizesATypedSlug(): void
     {
-        $category = (new GalleryCategory())->setSlug('voyages');
-        $media = (new GalleryMedia())->setTitle('Mont Blanc')->setSlug('Col du Galibier !');
+        $category = new GalleryCategory()->setSlug('voyages');
+        $media = new GalleryMedia()->setTitle('Mont Blanc')->setSlug('Col du Galibier !');
         $category->addMedia($media);
 
         $persisted = [];
@@ -422,8 +422,8 @@ class GalleryMediaCrudControllerTest extends TestCase
     // The one way left to ask for a slug rebuilt from the title, now that retitling no longer does it on its own
     public function testUpdateEntityRebuildsAnEmptiedSlugFromTheTitle(): void
     {
-        $category = (new GalleryCategory())->setSlug('voyages');
-        $media = (new GalleryMedia())->setTitle('Col du Galibier')->setSlug('');
+        $category = new GalleryCategory()->setSlug('voyages');
+        $media = new GalleryMedia()->setTitle('Col du Galibier')->setSlug('');
         $category->addMedia($media);
 
         $persisted = [];
@@ -437,8 +437,8 @@ class GalleryMediaCrudControllerTest extends TestCase
     // Saving a media without touching its slug must not move it - a "-2" suffix dropped on an untouched save is a url moving with no edit behind it
     public function testUpdateEntityLeavesTheSlugAloneWhenTheTitleIsUnchanged(): void
     {
-        $category = (new GalleryCategory())->setSlug('voyages');
-        $media = (new GalleryMedia())->setTitle('Mont Blanc')->setSlug('mont-blanc-2');
+        $category = new GalleryCategory()->setSlug('voyages');
+        $media = new GalleryMedia()->setTitle('Mont Blanc')->setSlug('mont-blanc-2');
         $category->addMedia($media);
 
         $persisted = [];
@@ -453,9 +453,9 @@ class GalleryMediaCrudControllerTest extends TestCase
     // The media's url carries its category's slug too, so moving it to another category moves its url just as retitling it does
     public function testUpdateEntityRedirectsAMediaMovedToAnotherCategory(): void
     {
-        $oldCategory = (new GalleryCategory())->setSlug('voyages');
-        $newCategory = (new GalleryCategory())->setSlug('portraits');
-        $media = (new GalleryMedia())->setTitle('Mont Blanc')->setSlug('mont-blanc');
+        $oldCategory = new GalleryCategory()->setSlug('voyages');
+        $newCategory = new GalleryCategory()->setSlug('portraits');
+        $media = new GalleryMedia()->setTitle('Mont Blanc')->setSlug('mont-blanc');
         $newCategory->addMedia($media);
 
         $persisted = [];
@@ -472,9 +472,9 @@ class GalleryMediaCrudControllerTest extends TestCase
     // A slug typed onto one a sibling already answers at is suffixed rather than stealing it
     public function testUpdateEntitySuffixesASlugAlreadyTakenInTheCategory(): void
     {
-        $category = (new GalleryCategory())->setSlug('voyages');
-        $category->addMedia((new GalleryMedia())->setTitle('Mont Blanc')->setSlug('mont-blanc'));
-        $media = (new GalleryMedia())->setTitle('Cervin')->setSlug('mont-blanc');
+        $category = new GalleryCategory()->setSlug('voyages');
+        $category->addMedia(new GalleryMedia()->setTitle('Mont Blanc')->setSlug('mont-blanc'));
+        $media = new GalleryMedia()->setTitle('Cervin')->setSlug('mont-blanc');
         $category->addMedia($media);
 
         $persisted = [];
@@ -490,8 +490,8 @@ class GalleryMediaCrudControllerTest extends TestCase
     // A media page is declared in the sitemap (see GallerySitemapProvider), so its url is left answering 410 rather than the 404 a crawler retries for months
     public function testDeleteEntityLeavesTheUrlOfADeletedMediaAnsweringGone(): void
     {
-        $category = (new GalleryCategory())->setSlug('voyages');
-        $media = (new GalleryMedia())->setTitle('Mont Blanc')->setSlug('mont-blanc');
+        $category = new GalleryCategory()->setSlug('voyages');
+        $media = new GalleryMedia()->setTitle('Mont Blanc')->setSlug('mont-blanc');
         $category->addMedia($media);
 
         $persisted = [];
@@ -509,8 +509,8 @@ class GalleryMediaCrudControllerTest extends TestCase
     // A media stored before slugs existed has no public url to answer for - nothing was ever declared for it
     public function testDeleteEntityRecordsNothingForAMediaWithoutASlug(): void
     {
-        $category = (new GalleryCategory())->setSlug('voyages');
-        $media = (new GalleryMedia())->setTitle('Mont Blanc');
+        $category = new GalleryCategory()->setSlug('voyages');
+        $media = new GalleryMedia()->setTitle('Mont Blanc');
         $category->addMedia($media);
 
         $persisted = [];

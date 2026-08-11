@@ -25,7 +25,7 @@ use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 #[ORM\Entity(repositoryClass: \c975L\GalleryBundle\Repository\GalleryCategoryRepository::class)]
 #[ORM\Table(name: 'gallery_category')]
 #[UniqueEntity('slug')]
-class GalleryCategory implements HasBlocksInterface
+class GalleryCategory implements HasBlocksInterface, \Stringable
 {
     use HasBlocksTrait;
 

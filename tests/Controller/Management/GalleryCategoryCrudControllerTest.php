@@ -223,9 +223,9 @@ class GalleryCategoryCrudControllerTest extends TestCase
         file_put_contents($projectDir . '/public/uploads/p1.jpg', 'bytes-1');
         file_put_contents($projectDir . '/public/uploads/p2.jpg', 'bytes-2');
 
-        $category = (new GalleryCategory())->setSlug('voyages')->setTitle('Voyages')->setPosition(0);
-        $media1 = (new GalleryMedia())->setFilename('uploads/p1.jpg')->setTitle('Media 1')->setSlug('media-1')->setPosition(0);
-        $media2 = (new GalleryMedia())->setFilename('uploads/p2.jpg')->setTitle('Media 2')->setSlug('media-2')->setPosition(1);
+        $category = new GalleryCategory()->setSlug('voyages')->setTitle('Voyages')->setPosition(0);
+        $media1 = new GalleryMedia()->setFilename('uploads/p1.jpg')->setTitle('Media 1')->setSlug('media-1')->setPosition(0);
+        $media2 = new GalleryMedia()->setFilename('uploads/p2.jpg')->setTitle('Media 2')->setSlug('media-2')->setPosition(1);
         $category->addMedia($media1);
         $category->addMedia($media2);
         $category->setCoverMedia($media2);
@@ -281,12 +281,12 @@ class GalleryCategoryCrudControllerTest extends TestCase
     // A category and its medias, ids set the way Doctrine would - the posted ids are matched against them
     private function createCategoryWithMedias(int ...$mediaIds): GalleryCategory
     {
-        $category = (new GalleryCategory())->setSlug('voyages')->setTitle('Voyages');
-        (new \ReflectionProperty(GalleryCategory::class, 'id'))->setValue($category, 42);
+        $category = new GalleryCategory()->setSlug('voyages')->setTitle('Voyages');
+        new \ReflectionProperty(GalleryCategory::class, 'id')->setValue($category, 42);
 
         foreach ($mediaIds as $mediaId) {
-            $media = (new GalleryMedia())->setTitle('Media ' . $mediaId);
-            (new \ReflectionProperty(GalleryMedia::class, 'id'))->setValue($media, $mediaId);
+            $media = new GalleryMedia()->setTitle('Media ' . $mediaId);
+            new \ReflectionProperty(GalleryMedia::class, 'id')->setValue($media, $mediaId);
             $category->addMedia($media);
         }
 
@@ -295,7 +295,7 @@ class GalleryCategoryCrudControllerTest extends TestCase
 
     private function createDeleteMediasRequest(array $mediaIds, string $token = 'valid'): Request
     {
-        return new Request(request: ['_token' => $token, 'mediaIds' => array_map('strval', $mediaIds)]);
+        return new Request(request: ['_token' => $token, 'mediaIds' => array_map(strval(...), $mediaIds)]);
     }
 
     public function testDeleteMediasDeniesAccessBelowTheEditorRole(): void
@@ -448,7 +448,7 @@ class GalleryCategoryCrudControllerTest extends TestCase
         return new Request(request: array_merge([
             '_edit_token' => $token,
             'field' => $field,
-            'mediaIds' => array_map('strval', $mediaIds),
+            'mediaIds' => array_map(strval(...), $mediaIds),
         ], $values));
     }
 
@@ -647,7 +647,7 @@ class GalleryCategoryCrudControllerTest extends TestCase
     {
         return new Request(
             request: [
-                'mediaOrder' => array_map('strval', $mediaIds),
+                'mediaOrder' => array_map(strval(...), $mediaIds),
                 'coverMediaId' => $coverMediaId,
             ],
             server: ['HTTP_X_CSRF_TOKEN' => $token],
@@ -814,7 +814,7 @@ class GalleryCategoryCrudControllerTest extends TestCase
 
         $this->assertNotNull($delete);
         $this->assertTrue($delete->isDisplayed($this->createEntityDto(new GalleryCategory())));
-        $this->assertFalse($delete->isDisplayed($this->createEntityDto((new GalleryCategory())->setUncategorized(true))));
+        $this->assertFalse($delete->isDisplayed($this->createEntityDto(new GalleryCategory()->setUncategorized(true))));
     }
 
     private function createEntityDto(GalleryCategory $category): EntityDto
@@ -962,7 +962,7 @@ class GalleryCategoryCrudControllerTest extends TestCase
     // The files picked on the creation form become the category's medias right away, saved with it by the cascade on GalleryCategory::$medias
     public function testTheFilesPickedAtCreationBecomeTheMediasOfTheCategory(): void
     {
-        $category = (new GalleryCategory())->setSlug('voyages');
+        $category = new GalleryCategory()->setSlug('voyages');
         $event = new FormEvent(
             $this->createBatchForm([new UploadedFile(__FILE__, 'col_du-galibier.webp', test: true)], 'Studio 975L', true),
             $category
@@ -979,7 +979,7 @@ class GalleryCategoryCrudControllerTest extends TestCase
     // The watermark is answered on this screen too, a category being filled the same way whichever screen does it - and the corner picked here reaches the media, which is what the listener that stamps reads
     public function testTheWatermarkPickedAtCreationReachesTheMedias(): void
     {
-        $category = (new GalleryCategory())->setSlug('voyages');
+        $category = new GalleryCategory()->setSlug('voyages');
         $event = new FormEvent(
             $this->createBatchForm(
                 [new UploadedFile(__FILE__, 'col_du-galibier.webp', test: true)],
@@ -1000,7 +1000,7 @@ class GalleryCategoryCrudControllerTest extends TestCase
     // A creation form submitted without a single file is a category and nothing else
     public function testNoMediaIsCreatedWhenNoFileWasPicked(): void
     {
-        $category = (new GalleryCategory())->setSlug('voyages');
+        $category = new GalleryCategory()->setSlug('voyages');
 
         ($this->captureMediaBatchListener())(new FormEvent($this->createBatchForm(null, null, false), $category));
 
@@ -1044,7 +1044,7 @@ class GalleryCategoryCrudControllerTest extends TestCase
             return $builder;
         });
 
-        (new \ReflectionMethod(GalleryCategoryCrudController::class, 'addMediaBatch'))->invoke($this->createController(), $builder);
+        new \ReflectionMethod(GalleryCategoryCrudController::class, 'addMediaBatch')->invoke($this->createController(), $builder);
 
         $this->assertIsCallable($listener);
 
@@ -1056,10 +1056,10 @@ class GalleryCategoryCrudControllerTest extends TestCase
     // The edit screen lists the category's medias, each thumbnail opening the media edit form - and carrying the category, which is what sends the admin back here once the media is saved or deleted
     public function testConfigureResponseParametersBuildsAnEditUrlPerMediaOfTheCategory(): void
     {
-        $category = (new GalleryCategory())->setSlug('voyages');
-        (new \ReflectionProperty(GalleryCategory::class, 'id'))->setValue($category, 42);
+        $category = new GalleryCategory()->setSlug('voyages');
+        new \ReflectionProperty(GalleryCategory::class, 'id')->setValue($category, 42);
         $media = new GalleryMedia();
-        (new \ReflectionProperty(GalleryMedia::class, 'id'))->setValue($media, 7);
+        new \ReflectionProperty(GalleryMedia::class, 'id')->setValue($media, 7);
         $category->addMedia($media);
 
         $entityDto = new EntityDto(GalleryCategory::class, new ClassMetadata(GalleryCategory::class), null, $category);
@@ -1075,8 +1075,8 @@ class GalleryCategoryCrudControllerTest extends TestCase
     // The upload button is rendered with the medias rather than in the toolbar, where it sat above the blocks collection and its own "add" button
     public function testConfigureResponseParametersHandsTheUploadUrlToTheEditScreen(): void
     {
-        $category = (new GalleryCategory())->setSlug('voyages');
-        (new \ReflectionProperty(GalleryCategory::class, 'id'))->setValue($category, 42);
+        $category = new GalleryCategory()->setSlug('voyages');
+        new \ReflectionProperty(GalleryCategory::class, 'id')->setValue($category, 42);
 
         $entityDto = new EntityDto(GalleryCategory::class, new ClassMetadata(GalleryCategory::class), null, $category);
 
@@ -1144,7 +1144,7 @@ class GalleryCategoryCrudControllerTest extends TestCase
     // A category being created has no url to preserve, and its slug is the one the admin picked on the form
     public function testTheSlugOfACategoryBeingCreatedDoesNotFollowTheTitle(): void
     {
-        $event = new FormEvent($this->createFormHolding((new GalleryCategory())->setTitle('Voyages')), ['slug' => 'archives', 'title' => 'Voyages d\'été']);
+        $event = new FormEvent($this->createFormHolding(new GalleryCategory()->setTitle('Voyages')), ['slug' => 'archives', 'title' => 'Voyages d\'été']);
         ($this->captureSlugNormalizer())($event);
 
         $this->assertSame(['slug' => 'archives', 'title' => 'Voyages d\'été'], $event->getData());
@@ -1170,7 +1170,7 @@ class GalleryCategoryCrudControllerTest extends TestCase
             return $builder;
         });
 
-        (new \ReflectionMethod(GalleryCategoryCrudController::class, 'addSlugNormalizer'))->invoke($this->createController(), $builder);
+        new \ReflectionMethod(GalleryCategoryCrudController::class, 'addSlugNormalizer')->invoke($this->createController(), $builder);
 
         $this->assertIsCallable($listener);
 
@@ -1219,7 +1219,7 @@ class GalleryCategoryCrudControllerTest extends TestCase
 
     public function testUpdateEntityRedirectsTheOldUrlToTheNewOne(): void
     {
-        $category = (new GalleryCategory())->setTitle('Voyages d\'été')->setSlug('voyages-d-ete');
+        $category = new GalleryCategory()->setTitle('Voyages d\'été')->setSlug('voyages-d-ete');
         $persisted = [];
 
         $entityManager = $this->createStub(EntityManagerInterface::class);
@@ -1240,7 +1240,7 @@ class GalleryCategoryCrudControllerTest extends TestCase
     // The category's slug is the segment above each of its medias, so its rename moves their urls too - a wildcard row sends them to the renamed category rather than leaving each media to 404
     public function testUpdateEntityRedirectsTheMediaUrlsUnderTheOldSlugToo(): void
     {
-        $category = (new GalleryCategory())->setTitle('Voyages d\'été')->setSlug('voyages-d-ete');
+        $category = new GalleryCategory()->setTitle('Voyages d\'été')->setSlug('voyages-d-ete');
         $persisted = [];
 
         $entityManager = $this->createStub(EntityManagerInterface::class);
@@ -1258,7 +1258,7 @@ class GalleryCategoryCrudControllerTest extends TestCase
 
     public function testUpdateEntityAddsNoRedirectWhenTheSlugIsUnchanged(): void
     {
-        $category = (new GalleryCategory())->setTitle('Voyages')->setSlug('voyages');
+        $category = new GalleryCategory()->setTitle('Voyages')->setSlug('voyages');
 
         $entityManager = $this->createStub(EntityManagerInterface::class);
         $entityManager->method('getUnitOfWork')->willReturn($this->createUnitOfWorkHolding(['slug' => 'voyages']));
@@ -1272,8 +1272,8 @@ class GalleryCategoryCrudControllerTest extends TestCase
     // Renaming a category back to what it was would otherwise leave the two rows pointing at each other
     public function testUpdateEntityDropsTheRedirectComingBackTheOtherWay(): void
     {
-        $category = (new GalleryCategory())->setTitle('Voyages')->setSlug('voyages');
-        $reverse = (new Redirect())->setFromPath('/gallery/voyages')->setToUrl('/gallery/archives');
+        $category = new GalleryCategory()->setTitle('Voyages')->setSlug('voyages');
+        $reverse = new Redirect()->setFromPath('/gallery/voyages')->setToUrl('/gallery/archives');
         $removed = [];
 
         $entityManager = $this->createStub(EntityManagerInterface::class);
@@ -1291,8 +1291,8 @@ class GalleryCategoryCrudControllerTest extends TestCase
     // A second rename reuses the row the first one left behind rather than adding another one for the same old url
     public function testUpdateEntityReusesTheRedirectTheOldSlugAlreadyHad(): void
     {
-        $category = (new GalleryCategory())->setTitle('Voyages d\'été')->setSlug('voyages-d-ete');
-        $existing = (new Redirect())->setFromPath('/gallery/voyages')->setToUrl('/gallery/somewhere-else');
+        $category = new GalleryCategory()->setTitle('Voyages d\'été')->setSlug('voyages-d-ete');
+        $existing = new Redirect()->setFromPath('/gallery/voyages')->setToUrl('/gallery/somewhere-else');
         $persisted = [];
 
         $entityManager = $this->createStub(EntityManagerInterface::class);
@@ -1312,13 +1312,13 @@ class GalleryCategoryCrudControllerTest extends TestCase
     // A slug freed by an earlier deletion is still answering 410, and RedirectSubscriber runs before the router - the wildcard goes too, and so does the url of each media the creation form brought along
     public function testPersistEntityLiftsTheGoneRowsOfASlugCreatedAgain(): void
     {
-        $category = (new GalleryCategory())->setTitle('Voyages')->setSlug('voyages');
-        $category->addMedia((new GalleryMedia())->setSlug('mont-blanc'));
+        $category = new GalleryCategory()->setTitle('Voyages')->setSlug('voyages');
+        $category->addMedia(new GalleryMedia()->setSlug('mont-blanc'));
 
         $gone = [
-            '/gallery/voyages' => (new Redirect())->setFromPath('/gallery/voyages')->setGone(true),
-            '/gallery/voyages/*' => (new Redirect())->setFromPath('/gallery/voyages/*')->setGone(true),
-            '/gallery/voyages/mont-blanc' => (new Redirect())->setFromPath('/gallery/voyages/mont-blanc')->setGone(true),
+            '/gallery/voyages' => new Redirect()->setFromPath('/gallery/voyages')->setGone(true),
+            '/gallery/voyages/*' => new Redirect()->setFromPath('/gallery/voyages/*')->setGone(true),
+            '/gallery/voyages/mont-blanc' => new Redirect()->setFromPath('/gallery/voyages/mont-blanc')->setGone(true),
         ];
         $removed = [];
 
@@ -1335,8 +1335,8 @@ class GalleryCategoryCrudControllerTest extends TestCase
     // A row redirecting somewhere is deliberate: creating a category under its old url must not drop the redirect its visitors follow
     public function testPersistEntityKeepsARowThatStillRedirects(): void
     {
-        $category = (new GalleryCategory())->setTitle('Voyages')->setSlug('voyages');
-        $redirect = (new Redirect())->setFromPath('/gallery/voyages')->setToUrl('/gallery/vacances');
+        $category = new GalleryCategory()->setTitle('Voyages')->setSlug('voyages');
+        $redirect = new Redirect()->setFromPath('/gallery/voyages')->setToUrl('/gallery/vacances');
         $removed = [];
 
         $entityManager = $this->createStub(EntityManagerInterface::class);
@@ -1354,7 +1354,7 @@ class GalleryCategoryCrudControllerTest extends TestCase
     // The category page and every media page under it are declared in the sitemap (see GallerySitemapProvider), so the urls are left answering 410 - the medias through a single wildcard row rather than one row each
     public function testDeleteEntityLeavesTheCategoryAndEverythingUnderItAnsweringGone(): void
     {
-        $category = (new GalleryCategory())->setTitle('Voyages')->setSlug('voyages');
+        $category = new GalleryCategory()->setTitle('Voyages')->setSlug('voyages');
         $persisted = [];
 
         $entityManager = $this->createStub(EntityManagerInterface::class);

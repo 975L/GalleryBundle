@@ -28,7 +28,7 @@ class GalleryCategoryRepositoryTest extends TestCase
 
     public function testFindOrCreateUncategorizedReturnsTheExistingOneWithoutPersistingAnything(): void
     {
-        $existing = (new GalleryCategory())->setUncategorized(true);
+        $existing = new GalleryCategory()->setUncategorized(true);
 
         $entityManager = $this->createMock(EntityManagerInterface::class);
         $entityManager->expects($this->never())->method('persist');
@@ -69,14 +69,16 @@ class GalleryCategoryRepositoryFindOneByFixture extends GalleryCategoryRepositor
         private readonly EntityManagerInterface $entityManager,
         TranslatorInterface $translator,
     ) {
-        (new \ReflectionProperty(GalleryCategoryRepository::class, 'translator'))->setValue($this, $translator);
+        new \ReflectionProperty(GalleryCategoryRepository::class, 'translator')->setValue($this, $translator);
     }
 
+    #[\Override]
     public function findOneBy(array $criteria, ?array $orderBy = null): ?object
     {
         return $this->existingUncategorized;
     }
 
+    #[\Override]
     protected function getEntityManager(): EntityManagerInterface
     {
         return $this->entityManager;

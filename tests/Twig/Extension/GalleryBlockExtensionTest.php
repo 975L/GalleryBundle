@@ -32,8 +32,8 @@ class GalleryBlockExtensionTest extends TestCase
     public function testGetCategoriesReturnsEveryCategoryInOrder(): void
     {
         $categories = $this->extension(null, [], [
-            (new GalleryCategory())->setSlug('one'),
-            (new GalleryCategory())->setSlug('two'),
+            new GalleryCategory()->setSlug('one'),
+            new GalleryCategory()->setSlug('two'),
         ])->getCategories();
 
         $this->assertCount(2, $categories);
@@ -43,8 +43,8 @@ class GalleryBlockExtensionTest extends TestCase
     public function testGetCategoriesCapsTheListAtMax(): void
     {
         $extension = $this->extension(null, [], [
-            (new GalleryCategory())->setSlug('one'),
-            (new GalleryCategory())->setSlug('two'),
+            new GalleryCategory()->setSlug('one'),
+            new GalleryCategory()->setSlug('two'),
         ]);
 
         $this->assertCount(1, $extension->getCategories(1));
@@ -58,7 +58,7 @@ class GalleryBlockExtensionTest extends TestCase
 
     public function testGetMediasReturnsTheCategoryAndItsMedias(): void
     {
-        $category = (new GalleryCategory())->setSlug('summer');
+        $category = new GalleryCategory()->setSlug('summer');
         $medias = [new GalleryMedia(), new GalleryMedia()];
 
         $result = $this->extension($category, $medias)->getMedias('summer');
@@ -69,7 +69,7 @@ class GalleryBlockExtensionTest extends TestCase
 
     public function testGetMediasCapsTheMediasAtMax(): void
     {
-        $category = (new GalleryCategory())->setSlug('summer');
+        $category = new GalleryCategory()->setSlug('summer');
         $medias = [new GalleryMedia(), new GalleryMedia()];
 
         $result = $this->extension($category, $medias)->getMedias('summer', 1);
@@ -80,8 +80,8 @@ class GalleryBlockExtensionTest extends TestCase
     // The draw covers the whole category, not only the medias the maximum would have kept in the stored order
     public function testGetMediasDrawsAtRandomFromTheWholeCategory(): void
     {
-        $category = (new GalleryCategory())->setSlug('summer');
-        $medias = array_map(static fn (int $number): GalleryMedia => (new GalleryMedia())->setTitle((string) $number), range(1, 20));
+        $category = new GalleryCategory()->setSlug('summer');
+        $medias = array_map(static fn (int $number): GalleryMedia => new GalleryMedia()->setTitle((string) $number), range(1, 20));
         $extension = $this->extension($category, $medias);
 
         $drawn = [];
@@ -96,8 +96,8 @@ class GalleryBlockExtensionTest extends TestCase
 
     public function testGetMediasKeepsTheStoredOrderWithoutRandom(): void
     {
-        $category = (new GalleryCategory())->setSlug('summer');
-        $medias = [(new GalleryMedia())->setTitle('first'), (new GalleryMedia())->setTitle('second')];
+        $category = new GalleryCategory()->setSlug('summer');
+        $medias = [new GalleryMedia()->setTitle('first'), new GalleryMedia()->setTitle('second')];
 
         $result = $this->extension($category, $medias)->getMedias('summer');
 
@@ -125,8 +125,8 @@ class GalleryBlockExtensionTest extends TestCase
     {
         $categoryRepository = $this->createMock(GalleryCategoryRepository::class);
         $categoryRepository->expects($this->once())->method('findAllOrdered')->willReturn([
-            (new GalleryCategory())->setSlug('photos'),
-            (new GalleryCategory())->setSlug('videos'),
+            new GalleryCategory()->setSlug('photos'),
+            new GalleryCategory()->setSlug('videos'),
         ]);
         $extension = new GalleryBlockExtension($categoryRepository, $this->createStub(GalleryMediaRepository::class));
 

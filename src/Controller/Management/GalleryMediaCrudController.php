@@ -71,6 +71,7 @@ class GalleryMediaCrudController extends AbstractCrudController
         return (string) $this->configService->get('site-role-editor');
     }
 
+    #[\Override]
     public function configureCrud(Crud $crud): Crud
     {
         return $crud
@@ -83,6 +84,7 @@ class GalleryMediaCrudController extends AbstractCrudController
 
     // There is no all-medias listing: a category's medias are shown on that category's own edit screen (see GalleryCategoryCrudController), which is where every redirect EasyAdmin sends here lands instead - after a save, after a delete, and for anyone reaching the url by hand
     // The category is read from the query string, which the media screens carry along from the link that opened them (AdminUrlGenerator keeps the current parameters), so the admin returns to the category worked on rather than to the top of the list
+    #[\Override]
     public function index(AdminContext $context): KeyValueStore | Response
     {
         $categoryId = $context->getRequest()->query->getInt('category');
@@ -99,6 +101,7 @@ class GalleryMediaCrudController extends AbstractCrudController
         return $this->redirect($url->generateUrl());
     }
 
+    #[\Override]
     public function configureActions(Actions $actions): Actions
     {
         // Lets the admin back out of an edit without saving - mirrors EasyAdmin's own built-in actions (linkToCrudAction targeting INDEX, same as Action::INDEX itself), which redirects to the category above
@@ -119,6 +122,7 @@ class GalleryMediaCrudController extends AbstractCrudController
         ;
     }
 
+    #[\Override]
     public function createEditFormBuilder(EntityDto $entityDto, KeyValueStore $formOptions, AdminContext $context): FormBuilderInterface
     {
         return $this->addWatermark(parent::createEditFormBuilder($entityDto, $formOptions, $context));
@@ -145,6 +149,7 @@ class GalleryMediaCrudController extends AbstractCrudController
     }
 
     // Updated media - a media's public url moves when its slug is edited, and when it is moved to another category, the category's own slug being the segment above it
+    #[\Override]
     public function updateEntity(EntityManagerInterface $entityManager, object $entityInstance): void
     {
         if ($entityInstance instanceof GalleryMedia) {
@@ -178,6 +183,7 @@ class GalleryMediaCrudController extends AbstractCrudController
     }
 
     // Deleted media - its page is declared in the sitemap (see GallerySitemapProvider), so the url is left answering 410 Gone rather than the 404 a crawler retries for months
+    #[\Override]
     public function deleteEntity(EntityManagerInterface $entityManager, object $entityInstance): void
     {
         if ($entityInstance instanceof GalleryMedia) {
@@ -200,6 +206,7 @@ class GalleryMediaCrudController extends AbstractCrudController
         $this->urlRedirector->recordGone($entityManager, $this->generateUrl('gallery_media', ['category' => $categorySlug, 'slug' => $slug]));
     }
 
+    #[\Override]
     public function configureFields(string $pageName): iterable
     {
         return [

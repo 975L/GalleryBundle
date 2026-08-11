@@ -17,9 +17,9 @@ use PHPUnit\Framework\TestCase;
 // Nothing keeps the two in step at runtime, so this does: declaring a platform in the registry without giving it a ratio here fails the build rather than shipping a portrait video in a landscape frame
 class VideoPlatformRatioTest extends TestCase
 {
-    private const VARIABLES = 'sass/_variables.scss';
-    private const STYLESHEET = 'sass/_gallery.scss';
-    private const THEME = 'scaffold/assets/styles/themes/gallery.css';
+    private const string VARIABLES = 'sass/_variables.scss';
+    private const string STYLESHEET = 'sass/_gallery.scss';
+    private const string THEME = 'scaffold/assets/styles/themes/gallery.css';
 
     public function testEveryDeclaredPlatformCarriesItsRegistryRatio(): void
     {

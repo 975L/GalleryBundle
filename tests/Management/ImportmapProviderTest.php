@@ -23,12 +23,12 @@ class ImportmapProviderTest extends TestCase
                 'path' => 'assets/controllers-admin.js',
                 'entrypoint' => true,
             ],
-        ], (new ImportmapProvider())->getAdminImportmapEntries());
+        ], new ImportmapProvider()->getAdminImportmapEntries());
     }
 
     public function testGetImportmapEntriesReturnsControllersEntrypoint(): void
     {
-        $entries = (new ImportmapProvider())->getImportmapEntries();
+        $entries = new ImportmapProvider()->getImportmapEntries();
 
         $this->assertSame([
             '@c975l/gallery-bundle/controllers.js' => [

@@ -37,7 +37,7 @@ class GalleryUrlRedirector
             }
         }
 
-        $redirect = $this->redirectRepository->findOneByFromPath($fromPath) ?? (new Redirect())->setFromPath($fromPath);
+        $redirect = $this->redirectRepository->findOneByFromPath($fromPath) ?? new Redirect()->setFromPath($fromPath);
 
         // The 410 a previous deletion may have left on that very row is lifted: a row carrying both a destination and the gone flag is a state Redirect's own validation refuses, and one RedirectSubscriber would settle in favour of the 410
         $entityManager->persist($redirect->setToUrl($toUrl)->setPermanent(true)->setGone(false));
@@ -52,7 +52,7 @@ class GalleryUrlRedirector
             $entityManager->persist($redirect->setToUrl(null)->setGone(true));
         }
 
-        $redirect = $this->redirectRepository->findOneByFromPath($path) ?? (new Redirect())->setFromPath($path);
+        $redirect = $this->redirectRepository->findOneByFromPath($path) ?? new Redirect()->setFromPath($path);
 
         $entityManager->persist($redirect->setToUrl(null)->setGone(true));
     }

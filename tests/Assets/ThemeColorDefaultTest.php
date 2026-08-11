@@ -17,8 +17,8 @@ use PHPUnit\Framework\TestCase;
 // A fallback that is an expression instead ("var(--white)", a color-mix on the theme) has no fixed color to declare: such an entry stays empty on purpose, its value following the light or dark ground the page is laid on, and this checks it was left that way
 class ThemeColorDefaultTest extends TestCase
 {
-    private const CONFIG_PREFIX = 'theme-';
-    private const TOKEN_PREFIX = '--c975l-';
+    private const string CONFIG_PREFIX = 'theme-';
+    private const string TOKEN_PREFIX = '--c975l-';
 
     public function testEveryFixedFallbackIsDeclaredAsTheEntrysOwnValue(): void
     {

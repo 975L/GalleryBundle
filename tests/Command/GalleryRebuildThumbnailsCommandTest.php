@@ -37,8 +37,8 @@ class GalleryRebuildThumbnailsCommandTest extends TestCase
 
     private function createMedia(string $slug, string $filename): GalleryMedia
     {
-        $media = (new GalleryMedia())->setSlug($slug)->setFilename($filename);
-        (new GalleryCategory())->setSlug('col-du-galibier')->addMedia($media);
+        $media = new GalleryMedia()->setSlug($slug)->setFilename($filename);
+        new GalleryCategory()->setSlug('col-du-galibier')->addMedia($media);
 
         return $media;
     }

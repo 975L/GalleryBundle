@@ -184,8 +184,8 @@ class GalleryImportProviderTest extends TestCase
     {
         $filesDir = $this->createFilesDir(['new.jpg' => 'new-bytes']);
 
-        $oldMedia = (new GalleryMedia())->setTitle('Old')->setSlug('old');
-        $existingCategory = (new GalleryCategory())->setSlug('voyages')->setTitle('Voyages');
+        $oldMedia = new GalleryMedia()->setTitle('Old')->setSlug('old');
+        $existingCategory = new GalleryCategory()->setSlug('voyages')->setTitle('Voyages');
         $existingCategory->addMedia($oldMedia);
 
         $em = $this->createStub(EntityManagerInterface::class);
@@ -213,8 +213,8 @@ class GalleryImportProviderTest extends TestCase
     // The exported lead-in is rebuilt, and the one already there replaced - Blocks have no natural key to match the imported ones against
     public function testImportReplacesTheCategorysBlocks(): void
     {
-        $oldBlock = (new Block())->setKind('text')->setPosition(0)->setData(['text' => 'Ancien chapô']);
-        $existingCategory = (new GalleryCategory())->setSlug('voyages')->setTitle('Voyages');
+        $oldBlock = new Block()->setKind('text')->setPosition(0)->setData(['text' => 'Ancien chapô']);
+        $existingCategory = new GalleryCategory()->setSlug('voyages')->setTitle('Voyages');
         $existingCategory->addBlock($oldBlock);
 
         $provider = $this->createProvider($this->createStub(EntityManagerInterface::class), $existingCategory);
@@ -286,15 +286,15 @@ class GalleryImportProviderTest extends TestCase
         mkdir($projectDir . '/public/medias/gallery/films', 0777, true);
         file_put_contents($projectDir . '/public/medias/gallery/films/nordkapp.webp', 'still-bytes');
 
-        $exportedMedia = (new GalleryMedia())
+        $exportedMedia = new GalleryMedia()
             ->setTitle('Nordkapp')
             ->setSlug('nordkapp')
             ->setFilename('medias/gallery/films/nordkapp.webp')
             ->setExternalUrl('https://www.youtube.com/watch?v=abc123');
-        $category = (new GalleryCategory())->setSlug('films')->setTitle('Films');
+        $category = new GalleryCategory()->setSlug('films')->setTitle('Films');
         $category->addMedia($exportedMedia);
 
-        $exported = (new GalleryExportProvider($this->createStub(GalleryCategoryRepository::class), new BlockDataExporter($projectDir), $projectDir))->serialize([$category]);
+        $exported = new GalleryExportProvider($this->createStub(GalleryCategoryRepository::class), new BlockDataExporter($projectDir), $projectDir)->serialize([$category]);
         $filesDir = $this->extractArchive($exported['files']);
 
         $persisted = [];
