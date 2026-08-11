@@ -2,9 +2,17 @@
 <xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
     <file source-language="en" target-language="fr" datatype="plaintext" original="site_config.fr.xlf">
         <body>
+            <trans-unit id="z1wl9ZU">
+                <source>description.gallery_frame</source>
+                <target>Largeur du passe-partout encadrant un média affiché : "none" (aucun cadre, la photo à plat), "thin" (10 px, défaut) ou "wide" (25 px). Sa couleur est celle de l'encre du thème, blanche sur une galerie sombre et noire sur une galerie claire ; elle se règle à part dans ce groupe.</target>
+            </trans-unit>
             <trans-unit id="a033O9O">
                 <source>description.gallery_route_prefix</source>
                 <target>Premier segment des URL publiques de la galerie, ex. "gallery" pour /gallery/ma-categorie. La modification est immédiate, mais les anciennes URL renvoient une page introuvable : prévoyez une redirection si elles sont indexées. Vide, le préfixe "gallery" est appliqué.</target>
+            </trans-unit>
+            <trans-unit id="vqewYAX">
+                <source>description.gallery_style</source>
+                <target>Style prêt à l'emploi de la galerie, appliqué à l'index, aux catégories et à chaque média : "light" (page blanc cassé) ou "dark" (page presque noire). Le style redéfinit les couleurs du site pour ces pages seules — fond, texte, titres, liens, navbar et pied de page compris — et l'emporte sur le mode sombre du site. Vide, la galerie prend les couleurs du site, comme avant.</target>
             </trans-unit>
             <trans-unit id="GJDJnRp">
                 <source>description.gallery_thumbnail_whole</source>
@@ -12,15 +20,15 @@
             </trans-unit>
             <trans-unit id="fZWM8EJ">
                 <source>description.theme_color_gallery_backdrop</source>
-                <target>Couleur voilant la page derrière la haute résolution ouverte. Vide : color-mix(in srgb, var(--black) 90%, transparent) s'applique. Une couleur CSS : hexadécimal avec son # (#ff0000), rgb() ou nom.</target>
+                <target>Couleur voilant la page derrière la haute résolution ouverte. Vide : rgba(0, 0, 0, 0.9) s'applique. Une couleur CSS : hexadécimal avec son # (#ff0000), rgb() ou nom.</target>
             </trans-unit>
             <trans-unit id="yqacMzE">
                 <source>description.theme_color_gallery_badge</source>
-                <target>Fond de la pastille marquant une vignette qui ouvre un lecteur vidéo. Vide : color-mix(in srgb, var(--black) 55%, transparent) s'applique. Une couleur CSS : hexadécimal avec son # (#ff0000), rgb() ou nom.</target>
+                <target>Fond de la pastille marquant une vignette qui ouvre un lecteur vidéo. Vide : rgba(0, 0, 0, 0.55) s'applique. Une couleur CSS : hexadécimal avec son # (#ff0000), rgb() ou nom.</target>
             </trans-unit>
             <trans-unit id="My2F0YV">
                 <source>description.theme_color_gallery_badge_text</source>
-                <target>Couleur du triangle de la pastille vidéo. Vide : var(--white), le blanc du thème s'applique. Une couleur CSS : hexadécimal avec son # (#ff0000), rgb() ou nom.</target>
+                <target>Couleur du triangle de la pastille vidéo. Vide : le blanc #fff s'applique. Une couleur CSS : hexadécimal avec son # (#ff0000), rgb() ou nom.</target>
             </trans-unit>
             <trans-unit id="_hsufUp">
                 <source>description.theme_color_gallery_breadcrumb</source>
@@ -32,31 +40,39 @@
             </trans-unit>
             <trans-unit id="t7g1Sy9">
                 <source>description.theme_color_gallery_frame</source>
-                <target>Couleur du passe-partout encadrant un média affiché. Vide : var(--white), le blanc du thème s'applique. Une couleur CSS : hexadécimal avec son # (#ff0000), rgb() ou nom.</target>
+                <target>Couleur du passe-partout encadrant un média affiché, sa largeur étant réglée à part dans ce groupe. Vide : var(--text), l'encre du thème s'applique, blanche sur une galerie sombre et noire sur une galerie claire, un cadre de la couleur de son fond étant un cadre invisible. Une couleur CSS : hexadécimal avec son # (#ff0000), rgb() ou nom.</target>
             </trans-unit>
             <trans-unit id="Cu8Z9pe">
                 <source>description.theme_color_gallery_lightbox_close</source>
-                <target>Couleur de la croix fermant la lightbox. Vide : var(--white), le blanc du thème s'applique. Une couleur CSS : hexadécimal avec son # (#ff0000), rgb() ou nom.</target>
+                <target>Couleur de la croix fermant la lightbox. Vide : le blanc #fff s'applique. Une couleur CSS : hexadécimal avec son # (#ff0000), rgb() ou nom.</target>
             </trans-unit>
             <trans-unit id="5CS18Ba">
                 <source>description.theme_color_gallery_lightbox_close_background</source>
-                <target>Fond de la croix fermant la lightbox. Vide : color-mix(in srgb, var(--black) 55%, transparent) s'applique. Une couleur CSS : hexadécimal avec son # (#ff0000), rgb() ou nom.</target>
+                <target>Fond de la croix fermant la lightbox. Vide : rgba(0, 0, 0, 0.55) s'applique. Une couleur CSS : hexadécimal avec son # (#ff0000), rgb() ou nom.</target>
             </trans-unit>
             <trans-unit id="Yy_JQfE">
                 <source>description.theme_color_gallery_nav</source>
-                <target>Couleur du chevron des flèches précédent/suivant posées sur le média. Vide : var(--white), le blanc du thème s'applique. Une couleur CSS : hexadécimal avec son # (#ff0000), rgb() ou nom.</target>
+                <target>Couleur du chevron des flèches précédent/suivant posées sur le média. Vide : le blanc #fff s'applique, les flèches étant posées sur la photo et non sur la page. Une couleur CSS : hexadécimal avec son # (#ff0000), rgb() ou nom.</target>
             </trans-unit>
             <trans-unit id="Nd0mt8u">
                 <source>description.theme_color_gallery_nav_background</source>
-                <target>Fond du bouton des flèches précédent/suivant. Vide : color-mix(in srgb, var(--white) 80%, var(--black)) s'applique. Une couleur CSS : hexadécimal avec son # (#ff0000), rgb() ou nom.</target>
+                <target>Fond du bouton des flèches précédent/suivant. Vide : rgba(0, 0, 0, 0.55) s'applique. Une couleur CSS : hexadécimal avec son # (#ff0000), rgb() ou nom.</target>
             </trans-unit>
             <trans-unit id="4Nkzy4F">
                 <source>description.theme_color_gallery_nav_hover</source>
                 <target>Couleur du chevron au survol et au focus clavier. Vide : var(--gallery-nav-color), la couleur des flèches s'applique. Une couleur CSS : hexadécimal avec son # (#ff0000), rgb() ou nom.</target>
             </trans-unit>
+            <trans-unit id="xKXGBHT">
+                <source>label.gallery_frame</source>
+                <target>Cadre autour des médias</target>
+            </trans-unit>
             <trans-unit id="lbaVu72">
                 <source>label.gallery_route_prefix</source>
                 <target>Préfixe des URL de la galerie</target>
+            </trans-unit>
+            <trans-unit id="dSr2Xm2">
+                <source>label.gallery_style</source>
+                <target>Style de la galerie</target>
             </trans-unit>
             <trans-unit id="vZGtgaH">
                 <source>label.gallery_thumbnail_whole</source>

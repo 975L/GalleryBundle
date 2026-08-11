@@ -10,6 +10,8 @@
 
 namespace c975L\GalleryBundle\Tests\Controller\Management;
 
+use c975L\ConfigBundle\Entity\Redirect;
+use c975L\ConfigBundle\Repository\RedirectRepository;
 use c975L\ConfigBundle\Service\ConfigServiceInterface;
 use c975L\GalleryBundle\Controller\Management\GalleryCategoryCrudController;
 use c975L\GalleryBundle\Controller\Management\GalleryMediaUploadController;
@@ -18,6 +20,7 @@ use c975L\GalleryBundle\Entity\GalleryMedia;
 use c975L\GalleryBundle\Repository\GalleryCategoryRepository;
 use c975L\GalleryBundle\Service\GalleryMediaFactory;
 use c975L\GalleryBundle\Service\GalleryMediaSlugger;
+use c975L\GalleryBundle\Service\GalleryUrlRedirector;
 use c975L\GalleryBundle\Service\UploadLimits;
 use Doctrine\ORM\EntityManagerInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
@@ -32,6 +35,7 @@ use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\HttpFoundation\Session\Storage\MockArraySessionStorage;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\String\Slugger\AsciiSlugger;
@@ -41,14 +45,27 @@ use Twig\Environment;
 // AbstractController only ever calls $this->container->has()/get() with plain service ids, so a bare Symfony\Component\DependencyInjection\Container (implements Psr\Container\ContainerInterface) populated via set() is enough to unit-test createForm()/addFlash()/render() without booting a kernel - same technique as GalleryCategoryCrudControllerTest
 class GalleryMediaUploadControllerTest extends TestCase
 {
+    // The router comes as standard, the public url of each uploaded media being what its 410 is released on (see GalleryUrlRedirector::release)
     private function createContainer(array $services): Container
     {
         $container = new Container();
+        $container->set('router', $this->createRouter());
+
         foreach ($services as $id => $service) {
             $container->set($id, $service);
         }
 
         return $container;
+    }
+
+    private function createRouter(): RouterInterface
+    {
+        $router = $this->createStub(RouterInterface::class);
+        $router->method('generate')->willReturnCallback(
+            static fn (string $route, array $parameters = []): string => '/gallery/' . ($parameters['category'] ?? '') . '/' . ($parameters['slug'] ?? '')
+        );
+
+        return $router;
     }
 
     private function createAuthorizationChecker(bool $granted): AuthorizationCheckerInterface
@@ -126,6 +143,7 @@ class GalleryMediaUploadControllerTest extends TestCase
         ?GalleryCategoryRepository $categoryRepository = null,
         ?EntityManagerInterface $entityManager = null,
         ?AdminUrlGeneratorInterface $adminUrlGenerator = null,
+        ?RedirectRepository $redirectRepository = null,
     ): GalleryMediaUploadController {
         $translator = $this->createStub(TranslatorInterface::class);
         $translator->method('trans')->willReturnArgument(0);
@@ -138,7 +156,18 @@ class GalleryMediaUploadControllerTest extends TestCase
             $entityManager ?? $this->createStub(EntityManagerInterface::class),
             $adminUrlGenerator ?? $this->createAdminUrlGenerator(),
             $this->createConfigService(),
+            new GalleryUrlRedirector($redirectRepository ?? $this->createStub(RedirectRepository::class)),
         );
+    }
+
+    private function createRedirectRepository(array $byFromPath): RedirectRepository
+    {
+        $redirectRepository = $this->createStub(RedirectRepository::class);
+        $redirectRepository->method('findOneByFromPath')->willReturnCallback(
+            static fn (string $fromPath): ?Redirect => $byFromPath[$fromPath] ?? null
+        );
+
+        return $redirectRepository;
     }
 
     // The upload screen sits behind the same ConfigBundle "site-role-editor" entry as the CRUDs reaching it
@@ -310,6 +339,66 @@ class GalleryMediaUploadControllerTest extends TestCase
         $controller->upload(Request::create('/gallery-upload?category=5', 'POST'));
 
         $this->assertSame('Col Du Galibier', $persisted[0]->getTitle());
+    }
+
+    // A slug freed by an earlier deletion is still answering 410 (see GalleryMediaCrudController::deleteEntity), and RedirectSubscriber runs before the router: the page would exist while its url kept saying it doesn't
+    public function testUploadLiftsTheGoneRowOfASlugUsedAgain(): void
+    {
+        $gone = (new Redirect())->setFromPath('/gallery/voyages/mont-blanc')->setGone(true);
+        $removed = [];
+        $entityManager = $this->createStub(EntityManagerInterface::class);
+        $entityManager->method('remove')->willReturnCallback(static function (object $entity) use (&$removed): void {
+            $removed[] = $entity;
+        });
+
+        $data = ['files' => [$this->createUploadedFile('mont-blanc.webp')], 'credits' => null, 'rightsReserved' => false];
+        $captured = [];
+        [$requestStack] = $this->createSessionRequestStack();
+
+        $controller = $this->createController(
+            $this->createCategoryRepository((new GalleryCategory())->setSlug('voyages')),
+            entityManager: $entityManager,
+            redirectRepository: $this->createRedirectRepository(['/gallery/voyages/mont-blanc' => $gone]),
+        );
+        $controller->setContainer($this->createContainer([
+            'security.authorization_checker' => $this->createAuthorizationChecker(true),
+            'form.factory' => $this->createFormFactory($this->createSubmittedForm(true, true, $data), $captured),
+            'request_stack' => $requestStack,
+        ]));
+
+        $controller->upload(Request::create('/gallery-upload?category=5', 'POST'));
+
+        $this->assertSame([$gone], $removed);
+    }
+
+    // A row redirecting somewhere is deliberate: uploading a media under its old url must not drop the redirect its visitors follow
+    public function testUploadKeepsARowThatStillRedirects(): void
+    {
+        $redirect = (new Redirect())->setFromPath('/gallery/voyages/mont-blanc')->setToUrl('/gallery/voyages/col-du-galibier');
+        $removed = [];
+        $entityManager = $this->createStub(EntityManagerInterface::class);
+        $entityManager->method('remove')->willReturnCallback(static function (object $entity) use (&$removed): void {
+            $removed[] = $entity;
+        });
+
+        $data = ['files' => [$this->createUploadedFile('mont-blanc.webp')], 'credits' => null, 'rightsReserved' => false];
+        $captured = [];
+        [$requestStack] = $this->createSessionRequestStack();
+
+        $controller = $this->createController(
+            $this->createCategoryRepository((new GalleryCategory())->setSlug('voyages')),
+            entityManager: $entityManager,
+            redirectRepository: $this->createRedirectRepository(['/gallery/voyages/mont-blanc' => $redirect]),
+        );
+        $controller->setContainer($this->createContainer([
+            'security.authorization_checker' => $this->createAuthorizationChecker(true),
+            'form.factory' => $this->createFormFactory($this->createSubmittedForm(true, true, $data), $captured),
+            'request_stack' => $requestStack,
+        ]));
+
+        $controller->upload(Request::create('/gallery-upload?category=5', 'POST'));
+
+        $this->assertSame([], $removed);
     }
 
     // Back to the category just filled, whose edit screen is where its medias are listed

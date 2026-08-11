@@ -1,5 +1,39 @@
 # ChangeLog
 
+## v1.3.0
+
+A gallery is laid on a ground of its own
+
+- Added the `gallery-style` choice config, offering the `light` and `dark` styles (11/08/2026)
+- A style retunes UiBundle's `--background`, `--text`, `--black`, `--white`, `--primary` and `--link-color` for the gallery's pages (11/08/2026)
+- A style outranks SiteBundle's own dark mode (11/08/2026)
+- `dark` also retunes SiteBundle's `--footer-background` and `--footer-text`, `light` leaving the site's band alone (11/08/2026)
+- Added the `gallery-frame` choice config, picking the passe-partout between `none`, `thin` and `wide` (11/08/2026)
+- The passe-partout takes `--text` instead of `--white`, inverting against the ground it is laid on (11/08/2026)
+- The three pages of the viewer fill SiteBundle's `bodyClass` block with `gallery-page` (11/08/2026)
+- Added `Twig\Extension\GalleryStyleExtension` and its `gallery_body_class()`, dropping an unknown value (11/08/2026)
+- The arrows, the lightbox and the video badge default to literal black and white instead of `var(--black)` / `var(--white)` (11/08/2026)
+- `dark` sets SiteBundle's `--title-color`, the headings reading a brand color at barely 1:1 on its ground (11/08/2026)
+- `dark` drops the footer link's hover wash and takes the site name to the titles' ink (11/08/2026)
+- Requires a `c975l/site-bundle` whose layout offers the `bodyClass` block and whose headings read `--title-color` (11/08/2026)
+- Requires `c975l/core-bundle` v1.8 for `RedirectRepository::findByFromPathPrefix()` (11/08/2026)
+- Added the `GalleryStyleTest` and `GalleryStyleExtensionTest` cases (11/08/2026)
+- Seven `theme-color-gallery-*` configs ship with the color their fallback paints (11/08/2026)
+- The four whose fallback is an expression stay empty, having no fixed color to declare (11/08/2026)
+- Added the `ThemeColorDefaultTest` case, pinning each declared value on its sass fallback (11/08/2026)
+- A deleted media leaves its url answering 410 Gone (11/08/2026)
+- A deleted category covers its whole tree with a single wildcard row (11/08/2026)
+- The rows pointing at a deleted url answer the same 410 directly (11/08/2026)
+- A row leaving the deleted tree keeps its redirect (11/08/2026)
+- Added `GalleryUrlRedirector::release()`, lifting the 410 of a slug created again (11/08/2026)
+- `record()` clears the gone flag of the row it reuses (11/08/2026)
+- The breadcrumb's home level prints the number of categories, as a category prints its medias (11/08/2026)
+- The index counts the list it reads, a category and a media page count without listing (11/08/2026)
+- The `Gallery:Navigation` component prints no count when none is passed (11/08/2026)
+- The previous/next arrows are revealed on hover and on keyboard focus (11/08/2026)
+- A touch screen keeps them on, having no hover to reveal them with (11/08/2026)
+- Added `--gallery-thumb-label-gap`, parting a category's title from its cover (11/08/2026)
+
 ## v1.2.3
 
 Blocks share one read of the category list per request

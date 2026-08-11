@@ -18,11 +18,7 @@ services:
         tags:
             - { name: 'ui.stylesheet', priority: 100 }
 
-    # Block kinds registered in UiBundle
-    # cacheable: false on both - their templates resolve their content live via gallery_block_*()
-    # (GalleryBlockExtension), querying GalleryCategory/GalleryMedia; those entities aren't watched by
-    # BlockCacheInvalidationListener, so caching by the block's own id would go stale as soon as a media
-    # is added or a category renamed elsewhere, with nothing to invalidate it
+    # Block kinds registered in UiBundle - cacheable: false on both, their templates resolving their content live via gallery_block_*() on entities BlockCacheInvalidationListener does not watch
     gallery.block.categories:
         class: stdClass
         tags:

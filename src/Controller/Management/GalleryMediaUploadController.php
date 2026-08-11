@@ -16,6 +16,7 @@ use c975L\GalleryBundle\Form\GalleryMediaBatchUploadType;
 use c975L\GalleryBundle\Model\GalleryMediaBatch;
 use c975L\GalleryBundle\Repository\GalleryCategoryRepository;
 use c975L\GalleryBundle\Service\GalleryMediaFactory;
+use c975L\GalleryBundle\Service\GalleryUrlRedirector;
 use c975L\GalleryBundle\Service\UploadLimits;
 use Doctrine\ORM\EntityManagerInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Attribute\AdminRoute;
@@ -39,6 +40,7 @@ class GalleryMediaUploadController extends AbstractController
         private readonly EntityManagerInterface $entityManager,
         private readonly AdminUrlGeneratorInterface $adminUrlGenerator,
         private readonly ConfigServiceInterface $configService,
+        private readonly GalleryUrlRedirector $urlRedirector,
     ) {
     }
 
@@ -84,6 +86,14 @@ class GalleryMediaUploadController extends AbstractController
 
             foreach ($medias as $media) {
                 $this->entityManager->persist($media);
+
+                // A slug freed by an earlier deletion is still answering 410 Gone (see GalleryMediaCrudController::deleteEntity), and RedirectSubscriber runs before the router: the page would exist while its url kept saying it doesn't
+                if (\is_string($category->getSlug()) && \is_string($media->getSlug())) {
+                    $this->urlRedirector->release($this->entityManager, $this->generateUrl('gallery_media', [
+                        'category' => $category->getSlug(),
+                        'slug' => $media->getSlug(),
+                    ]));
+                }
             }
             $this->entityManager->flush();
 

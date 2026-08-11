@@ -5,7 +5,7 @@
 {# Prefers category.coverMedia, falls back to random - same logic as the public components/Gallery/Category.html.twig #}
 {% set media = category.coverMedia ?: (category.medias|length > 0 ? random(category.medias) : null) %}
 {% if media and media.thumbnailFilename %}
-    <img src="{{ asset(media.thumbnailFilename) }}" alt="{{ category.title }}" width="60" height="60" class="management-media-grid__thumb" style="object-fit: cover;">
+    <img src="{{ asset(media.thumbnailFilename) }}" alt="{{ category.title }}" width="60" height="60" class="management-media-grid__thumb management-media-grid__thumb--cover">
 {% else %}
-    <div class="management-media-grid__placeholder" style="width: 60px; height: 60px; font-size: .65rem;"></div>
+    <div class="management-media-grid__placeholder management-media-grid__placeholder--sm"></div>
 {% endif %}

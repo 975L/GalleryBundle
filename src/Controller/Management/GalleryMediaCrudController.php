@@ -177,6 +177,29 @@ class GalleryMediaCrudController extends AbstractCrudController
         );
     }
 
+    // Deleted media - its page is declared in the sitemap (see GallerySitemapProvider), so the url is left answering 410 Gone rather than the 404 a crawler retries for months
+    public function deleteEntity(EntityManagerInterface $entityManager, object $entityInstance): void
+    {
+        if ($entityInstance instanceof GalleryMedia) {
+            $this->redirectGone($entityManager, $entityInstance);
+        }
+
+        parent::deleteEntity($entityManager, $entityInstance);
+    }
+
+    // A media stored before slugs existed, or left without a category, has no public url to answer for - nothing was ever declared for it
+    private function redirectGone(EntityManagerInterface $entityManager, GalleryMedia $media): void
+    {
+        $categorySlug = $media->getCategory()?->getSlug();
+        $slug = $media->getSlug();
+
+        if (null === $categorySlug || null === $slug) {
+            return;
+        }
+
+        $this->urlRedirector->recordGone($entityManager, $this->generateUrl('gallery_media', ['category' => $categorySlug, 'slug' => $slug]));
+    }
+
     public function configureFields(string $pageName): iterable
     {
         return [

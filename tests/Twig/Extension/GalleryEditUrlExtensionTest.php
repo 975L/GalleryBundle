@@ -87,6 +87,22 @@ class GalleryEditUrlExtensionTest extends TestCase
         $this->assertNull((new GalleryEditUrlExtension($generator))->getMediaEditUrl(new GalleryMedia()));
     }
 
+    // EasyAdmin reads the dashboard these URLs are mounted under from a cache map only written when the route collection is regenerated, so it can be missing on a perfectly working site (a wiped cache pool, fresh compiled routes) - the button is then simply not offered, where a thrown error would take the public gallery page down for the editor
+    public function testEditUrlReturnsNothingWhenTheAdminUrlCannotBeGenerated(): void
+    {
+        $generator = $this->createStub(AdminUrlGeneratorInterface::class);
+        $generator->method('unsetAll')->willReturnSelf();
+        $generator->method('setController')->willReturnSelf();
+        $generator->method('setAction')->willReturnSelf();
+        $generator->method('setEntityId')->willReturnSelf();
+        $generator->method('set')->willReturnSelf();
+        $generator->method('generateUrl')->willThrowException(new \TypeError('setDashboard(): Argument #1 must be of type string, null given'));
+
+        $extension = new GalleryEditUrlExtension($generator);
+
+        $this->assertNull($extension->getMediaEditUrl($this->createMedia(68, 8)));
+    }
+
     /**
      * @return AdminUrlGeneratorInterface&MockObject
      */

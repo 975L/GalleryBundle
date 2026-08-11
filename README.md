@@ -207,6 +207,18 @@ The catch-all **"Non classé"** category shows no delete button anywhere: it is 
 without a real category falls back to, so it has to survive (`GalleryCategory::$uncategorized`, a flag
 rather than a slug, so translating or editing its title changes nothing).
 
+**The urls left behind answer 410 Gone**, not 404: every category page and every media page is declared
+in the sitemap (`Sitemap\GallerySitemapProvider`), and a 410 is what drops a url from an index, where a
+404 is retried for months. `Service\GalleryUrlRedirector` writes them in ConfigBundle's **Redirections**:
+one row for the deleted url, plus a single wildcarded one (`/{prefix}/{slug}/*`) covering every media of
+a deleted category rather than a row per media. The rows that redirected to that url answer the same 410
+directly, so nothing points at a page that is gone. Deleting a single media leaves one row, from its own
+screen as from the selection button under its category.
+
+Creating a category or uploading a media under a slug a deletion had freed lifts its 410 by itself
+(`GalleryUrlRedirector::release()`) — the redirect is resolved before the router, so the page would
+otherwise exist while its url kept saying it doesn't. A row that redirects somewhere is never touched.
+
 ### Uploading a batch
 
 Medias are only ever added in bulk, from the category they belong to — the upload screen
@@ -328,6 +340,15 @@ A visitor browses one resolution only, the stored (medium) file: the index, the 
 all serve it, and the previous/next arrows move from one to the next without ever loading a heavier file.
 The high resolution has no page of its own — it opens in a lightbox over the image, and is only fetched
 the first time the visitor asks for it, so a run through a category costs what its medium files cost.
+
+The **breadcrumb** opening every page says how much each level holds — the number of categories beside the
+gallery's own label, the number of medias beside a category's title — so a visitor reads the size of what
+they are stepping into before stepping in. The index counts the list it has already read, a category and a
+media page count without listing. A caller passing no count gets the bare label rather than a `(0)`.
+
+The previous/next arrows are **revealed by the pointer**, sitting on the photo, which is what the page is
+for: they fade in when the pointer enters the media, and a keyboard focus reveals them just as well. On a
+touch screen, where a first tap would be spent making them appear, they simply stay on.
 
 The lightbox is a native `<dialog>` (`assets/js/gallery-lightbox.js`): its backdrop, its escape key and
 its focus trap are the browser's own, no library involved. It closes on a click anywhere inside it as
@@ -461,19 +482,63 @@ measure of the media page, the width of the passe-partout, the arrows, the light
 category description and one aspect ratio per declared platform (plus the default an undeclared one is
 framed in, and the width a portrait player is capped at).
 
+A photo shows against a **ground of its own**, darker than the rest of a site usually wants to be. That is
+what the **gallery-style** config (kind `choice`) is for: `light` (near-white page) or `dark` (near-black
+page). Left empty — the shipped default — the gallery takes the site's own colors, exactly as before. The
+three pages of the viewer (index, category, media) fill the `bodyClass` block SiteBundle's layout offers,
+and the class they hand it is written by `gallery_body_class()` (`Twig\Extension\GalleryStyleExtension`),
+which drops a value no block paints rather than putting it in the markup. An app whose layout offers no
+`bodyClass` block simply renders the gallery on the site's background.
+
+What a style retunes is **UiBundle's own palette** — `--background`, `--text`, `--black`, `--white`,
+`--primary`, `--link-color` — and not a `--gallery-` namespace of its own, which is the one thing that
+makes it reach what this bundle does not itself style. SiteBundle writes `color: var(--text)` through a
+`*` rule, so a color declared on the body never reaches the `h1`, a composed block or anything else the
+page holds, a real declaration always beating an inherited value: that is what left a gallery's title in
+the site's color, unreadable, on the gallery's own ground. Retuning the tokens instead leaves every rule
+of every bundle where it is and has it resolve to the gallery's values — the page's background, the canvas
+beside it, the titles, the links, the cards, all of it, navbar and footer included, the rest of the site
+keeping its own. `dark` retunes two more of SiteBundle's on top of that, both being roles `--primary`
+alone does not settle: `--title-color`, the headings otherwise reading a deep brand color at barely more
+than 1:1 on a near-black page, and `--footer-background` / `--footer-text`, a band of brand color cutting
+across that same page — with `--footer-link-hover-background` dropped to `transparent`, a wash meant to
+lift a colored band reading as a lit rectangle on one this dark, and `--navbar-site-name-color` taken to
+the titles' own ink so the header reads as one. None of them is set in `light`, where against a near-white
+ground they read exactly as they do on the site. `--primary` itself is left alone throughout — it is a
+**surface** elsewhere (the primary button, a `primary` flat) whose white label needs it dark, so repainting
+it would take the buttons with it. The blocks are declared on `:root:has(body.gallery-page--…)` rather than on the body,
+the canvas beside the page being painted on `html`, above it; their specificity puts them above
+SiteBundle's own `:root[data-theme="dark"]`, so a gallery asked for `light` stays light on a site fixed to
+dark.
+
+The **gallery-frame** config (kind `choice`) picks the passe-partout a displayed media is framed with —
+`none`, `thin` (the shipped default) or `wide`. Its color is not part of the choice, being the theme's own
+**ink**: white on a dark gallery, black on a light one, so it inverts along with the style — a mount the
+color of the ground it is laid on being a mount nobody sees. It stays admin-editable on its own.
+
 Hovering a thumbnail bounces it, with UiBundle's own `bounceHorizontal` — reused rather than redefined,
 its `animations.min.css` being served on every page. `--gallery-thumb-hover-animation` holds the whole
 shorthand: set it to another of UiBundle's keyframes, or to `none` to leave the grid still. A visitor
 asking for reduced motion gets no bounce whatever the token says.
 
-The gallery's own **colors** are admin-editable too, ten entries in this bundle's own **gallery** config
+The gallery's own **colors** are admin-editable too, eleven entries in this bundle's own **gallery** config
 group, so a design is retuned from the back office rather than from a file: passe-partout, arrows (color,
-hover color, background), lightbox backdrop and close button (color, background), breadcrumb, and video
-badge (background, color). What makes them CSS values is their `theme-color-gallery-*` slug, not the
+hover color, background), lightbox backdrop and close button (color, background), breadcrumb, credits, and
+video badge (background, color). What makes them CSS values is their `theme-color-gallery-*` slug, not the
 group they show in: UiBundle's `ThemeVariablesCssListener` compiles every `theme-` slug it finds into
 `--c975l-color-gallery-*`, which each token reads with the bundle's own default as its fallback — left
-empty, nothing changes. The cascade is unchanged — bundle stylesheet, then the admin's values, then the
-app's `themes/gallery.css`, so uncommenting a color there takes it back from the back office.
+empty, nothing changes. Seven of them are **loaded with that fallback as their own value**, so the back
+office states the color rather than showing an empty field an admin has to guess at; emptying one paints
+the very same color, the fallback being what it was read from. The four others are left empty on purpose:
+their fallback is not a fixed color but an expression — the theme's own ink for the passe-partout, the
+arrows' color for the hover, a mix of the site's text and background for the breadcrumb and the credits —
+so they follow a light or a dark gallery, which a value written in would freeze. `ThemeColorDefaultTest`
+keeps the two lists in step. Those laid **over a media** rather than on the page — the arrows, the lightbox,
+the video badge — default to literal black and white and not to `var(--black)` / `var(--white)`: those two
+are the site's ink and paper, which a dark site swaps, where a chevron on a photo wants the same white on
+the same dark button whatever the page around it is. The cascade is unchanged — bundle stylesheet, then
+the admin's values, then the app's `themes/gallery.css`, so uncommenting a color there takes it back from
+the back office.
 
 ### Videos
 

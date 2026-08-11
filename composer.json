@@ -18,7 +18,7 @@
     ],
     "require": {
         "php": ">=8.4",
-        "c975l/core-bundle": "^1.4",
+        "c975l/core-bundle": "^1.8",
         "doctrine/orm": "^3.6",
         "easycorp/easyadmin-bundle": "^5.1",
         "imagine/imagine": "^1.5",

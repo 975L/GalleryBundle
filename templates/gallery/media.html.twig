@@ -3,11 +3,14 @@
 {# Defines specific variables #}
 {% set title = 'label.gallery_media'|trans({}, 'gallery') ~ ' - ' ~ (media.title is not empty ? media.title : category.title) %}
 
+{# The classes the whole page is painted from (see sass/_gallery.scss), the same ones the index and the categories carry - a media is where a ground of its own matters most, the photo being what the page is for #}
+{% block bodyClass %}{{ gallery_body_class() }}{% endblock %}
+
 {# Editor-only: the hover button UiBundle already draws over an editable block, reused here as is - its "blockEditOverlay" controller is registered on sight of the attribute (see UiBundle's controllers.js) and the button itself is appended to <body>, so the media protection below never sees it #}
 {% set editUrl = is_granted(config('site-role-editor')) ? gallery_media_edit_url(media) : null %}
 
 {% block content %}
-    <twig:c975LGallery:Gallery:Navigation category="{{ category }}" current="{{ (media.video ? 'label.gallery_video' : 'label.gallery_media')|trans({}, 'gallery') }}"/>
+    <twig:c975LGallery:Gallery:Navigation category="{{ category }}" categoriesCount="{{ categoriesCount }}" current="{{ (media.video ? 'label.gallery_video' : 'label.gallery_media')|trans({}, 'gallery') }}"/>
     {# Right click and drag are blocked here too, the lightbox being a child of this container #}
     <div class="gallery-media-container"
         data-controller="gallery-media-preload gallery-lightbox gallery-media-protect{{ editUrl ? ' blockEditOverlay' : '' }}"

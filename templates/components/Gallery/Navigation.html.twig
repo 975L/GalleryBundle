@@ -1,10 +1,14 @@
 {# The one navigation of the public viewer - the same strip, at the same place, on the index as on a category and on a media page, a breadcrumb rather than a row of buttons #}
 {# "category" is left out on the index and "current" on a category page: each of them stops the trail one level earlier, the level a page sits on being printed as text, a page never linking to itself #}
 <nav class="gallery-breadcrumb" aria-label="{{ 'label.gallery_breadcrumb'|trans({}, 'gallery') }}">
+    {# The home level is counted like the category one, on the index as on the link back to it: each level says how much it holds, categories here, medias there #}
+    {# A caller that passes no count gets the bare label rather than "(0)", which would read as an empty gallery on a full one #}
+    {% set count = categoriesCount|default(null) %}
+    {% set home = 'label.gallery_home'|trans({}, 'gallery') ~ (count is null ? '' : ' (' ~ count ~ ')') %}
     {% if category|default(null) is null %}
-        <span class="gallery-breadcrumb__current" aria-current="page">{{ 'label.gallery_home'|trans({}, 'gallery') }}</span>
+        <span class="gallery-breadcrumb__current" aria-current="page">{{ home }}</span>
     {% else %}
-        <a href="{{ path('gallery_index') }}">{{ 'label.gallery_home'|trans({}, 'gallery') }}</a>
+        <a href="{{ path('gallery_index') }}">{{ home }}</a>
         <span class="gallery-breadcrumb__separator" aria-hidden="true">&rsaquo;</span>
         {% if current|default('') is empty %}
             <span class="gallery-breadcrumb__current" aria-current="page">{{ category.title }} ({{ category.medias|length }})</span>

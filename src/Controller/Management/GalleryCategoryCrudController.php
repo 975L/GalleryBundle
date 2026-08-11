@@ -283,6 +283,29 @@ class GalleryCategoryCrudController extends AbstractCrudController
         return $formBuilder;
     }
 
+    // Created category - a slug freed by an earlier deletion is still answering 410 Gone (see deleteEntity), and RedirectSubscriber runs before the router: the page would exist while its url kept saying it doesn't
+    // Its wildcard goes too, that row covering every media url below the slug, and so does the url of each media the creation form brought along (see addMediaBatch)
+    public function persistEntity(EntityManagerInterface $entityManager, object $entityInstance): void
+    {
+        if ($entityInstance instanceof GalleryCategory && \is_string($entityInstance->getSlug())) {
+            $url = $this->generateUrl('gallery_category', ['category' => $entityInstance->getSlug()]);
+
+            $this->urlRedirector->release($entityManager, $url);
+            $this->urlRedirector->release($entityManager, $url . '/*');
+
+            foreach ($entityInstance->getMedias() as $media) {
+                if (\is_string($media->getSlug())) {
+                    $this->urlRedirector->release($entityManager, $this->generateUrl('gallery_media', [
+                        'category' => $entityInstance->getSlug(),
+                        'slug' => $media->getSlug(),
+                    ]));
+                }
+            }
+        }
+
+        parent::persistEntity($entityManager, $entityInstance);
+    }
+
     // Updated category - a rename moves its public url (see addSlugNormalizer), so the old one is redirected to the new one rather than left to 404 on every link and search result already pointing at it, exactly as SiteBundle's PageCrudController does for a page
     public function updateEntity(EntityManagerInterface $entityManager, object $entityInstance): void
     {
@@ -305,6 +328,17 @@ class GalleryCategoryCrudController extends AbstractCrudController
 
         // The category's slug is also the segment above each of its medias (see GalleryController::media), so renaming it moves every media url under it - a second row, wildcarded (ConfigBundle's own convention, see RedirectSubscriber::resolve), sends them to the category rather than leaving each to 404
         $this->urlRedirector->record($entityManager, $oldUrl . '/*', $newUrl);
+    }
+
+    // Deleted category - its page and every media page under it are declared in the sitemap (see GallerySitemapProvider), so the urls are left answering 410 Gone rather than the 404 a crawler retries for months
+    // The medias go with it (GalleryCategory::$medias cascades the removal), and a single wildcard row covers all of them - the alternative being one row per media, which is what would make the redirect table grow with every deleted gallery
+    public function deleteEntity(EntityManagerInterface $entityManager, object $entityInstance): void
+    {
+        if ($entityInstance instanceof GalleryCategory && \is_string($entityInstance->getSlug())) {
+            $this->urlRedirector->recordGoneTree($entityManager, $this->generateUrl('gallery_category', ['category' => $entityInstance->getSlug()]));
+        }
+
+        parent::deleteEntity($entityManager, $entityInstance);
     }
 
     public function configureFields(string $pageName): iterable
@@ -523,6 +557,14 @@ class GalleryCategoryCrudController extends AbstractCrudController
             // The category would keep pointing at a cover that is gone - the join column's "on delete set null" only reaches the row, not the instance Doctrine still holds
             if ($category->getCoverMedia() === $media) {
                 $category->setCoverMedia(null);
+            }
+
+            // Same 410 the media CRUD leaves behind when it deletes one at a time (see GalleryMediaCrudController::deleteEntity), a media page being declared in the sitemap whichever screen removes it - one stored before slugs existed has no public url to answer for
+            if (\is_string($category->getSlug()) && \is_string($media->getSlug())) {
+                $this->urlRedirector->recordGone($entityManager, $this->generateUrl('gallery_media', [
+                    'category' => $category->getSlug(),
+                    'slug' => $media->getSlug(),
+                ]));
             }
 
             $entityManager->remove($media);

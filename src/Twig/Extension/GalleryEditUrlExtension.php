@@ -49,6 +49,7 @@ class GalleryEditUrlExtension extends AbstractExtension
     }
 
     // An entity with no id has no screen to point at - an in-memory one, a fixture preview - and a null parameter is left out rather than generated as an empty one
+    // Null too when the URL can't be built at all: EasyAdmin resolves the dashboard it is mounted under through a cache map written only when the route collection is regenerated (see AdminRouteGenerator::saveAdminRoutesInCache()), so that pool being emptied while the compiled routes stay fresh makes every generateUrl() call from a public page throw, and it stays that way until the routes are regenerated. The button is an editor-only convenience - losing it beats taking the page down for the only people able to fix it
     private function editUrl(string $crudControllerFqcn, ?int $entityId, array $parameters = []): ?string
     {
         if (null === $entityId) {
@@ -68,6 +69,10 @@ class GalleryEditUrlExtension extends AbstractExtension
             }
         }
 
-        return $adminUrl->generateUrl();
+        try {
+            return $adminUrl->generateUrl();
+        } catch (\Throwable) {
+            return null;
+        }
     }
 }

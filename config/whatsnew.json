@@ -1,5 +1,35 @@
 [
     {
+        "date": "2026-08-11",
+        "description": [
+            {
+                "en": "The gallery can be laid on a ground of its own, picked from the Gallery configuration group: light (a near-white page) or dark (a near-black page). It repaints the whole page — background, titles, texts, links, navigation bar and footer included — on the index, the categories and each photo, while the rest of the site keeps its own colors: a photo shows against a darker page than a site usually wants to be. A title left unreadable by the site's own color on the gallery's ground follows it now, and the dark style quietens the footer band along with it. Left empty, nothing changes",
+                "fr": "La galerie peut être posée sur un fond qui lui est propre, à choisir dans le groupe de configuration Galerie : clair (page blanc cassé) ou sombre (page presque noire). Il repeint la page entière — fond, titres, textes, liens, barre de navigation et pied de page compris — sur l'index, les catégories et chaque photo, le reste du site gardant ses couleurs : une photo se regarde mieux sur une page sombre que celles qu'un site veut habituellement. Un titre que la couleur du site rendait illisible sur ce fond le suit désormais, et le style sombre calme la bande du pied de page avec lui. Laissé vide, rien ne change",
+                "es": "La galería puede colocarse sobre un fondo propio, a elegir en el grupo de configuración Galería: claro (página casi blanca) u oscuro (página casi negra). Repinta toda la página — fondo, títulos, textos, enlaces, barra de navegación y pie incluidos — en el índice, las categorías y cada foto, mientras el resto del sitio conserva sus colores: una foto luce mejor sobre una página más oscura de lo que un sitio suele querer. Un título que el color del sitio dejaba ilegible sobre ese fondo ahora lo sigue, y el estilo oscuro atenúa con él la banda del pie de página. Si se deja vacío, nada cambia"
+            },
+            {
+                "en": "The passe-partout framing a displayed photo is picked in the same group: none, thin or wide. Its color inverts against the ground chosen — white on a dark gallery, black on a light one, so it is always seen — and stays editable on its own",
+                "fr": "Le passe-partout encadrant une photo affichée se choisit dans le même groupe : aucun, fin ou large. Sa couleur s'inverse par rapport au fond choisi — blanche sur une galerie sombre, noire sur une galerie claire, pour qu'elle se voie toujours — et reste réglable à part",
+                "es": "El passe-partout que enmarca una foto mostrada se elige en el mismo grupo: ninguno, fino o ancho. Su color se invierte respecto al fondo elegido — blanco en una galería oscura, negro en una clara, para que siempre se vea — y se puede ajustar aparte"
+            },
+            {
+                "en": "A deleted category or photo now tells search engines its page is gone for good, instead of leaving an address they keep trying for months. A whole deleted gallery is covered in one go, and the addresses that redirected to the deleted page say the same thing rather than sending anyone through it. Creating a category or uploading a photo under an address freed that way makes it work again on its own",
+                "fr": "Une catégorie ou une photo supprimée indique désormais aux moteurs de recherche que sa page a définitivement disparu, au lieu de laisser une adresse qu'ils réessaient pendant des mois. Une galerie entière supprimée est couverte d'un coup, et les adresses qui redirigeaient vers la page supprimée disent la même chose plutôt que d'y faire passer. Créer une catégorie ou déposer une photo sous une adresse ainsi libérée la remet en service d'elle-même",
+                "es": "Una categoría o una foto eliminada indica ahora a los motores de búsqueda que su página ha desaparecido definitivamente, en lugar de dejar una dirección que siguen intentando durante meses. Una galería entera eliminada se cubre de una sola vez, y las direcciones que redirigían a la página eliminada dicen lo mismo en vez de hacer pasar por ella. Crear una categoría o subir una foto bajo una dirección así liberada la vuelve a poner en servicio por sí sola"
+            },
+            {
+                "en": "The trail at the top of a gallery page now says how many categories the gallery holds, beside the number of photos it already showed for a category: a visitor reads the size of what they are opening before opening it",
+                "fr": "Le fil d'ariane en haut d'une page de la galerie indique désormais combien de catégories elle contient, à côté du nombre de photos déjà affiché pour une catégorie : le visiteur voit la taille de ce qu'il ouvre avant de l'ouvrir",
+                "es": "La ruta en la parte superior de una página de la galería indica ahora cuántas categorías contiene, junto al número de fotos que ya mostraba para una categoría: el visitante ve el tamaño de lo que abre antes de abrirlo"
+            },
+            {
+                "en": "The arrows moving from one photo to the next now appear when the pointer is on the photo and stay out of the way otherwise, so nothing is laid over a photo being looked at. On a phone or a tablet they stay visible, as before",
+                "fr": "Les flèches passant d'une photo à la suivante apparaissent désormais lorsque le pointeur est sur la photo et s'effacent le reste du temps, si bien que rien ne recouvre une photo que l'on regarde. Sur un téléphone ou une tablette, elles restent visibles, comme avant",
+                "es": "Las flechas que pasan de una foto a la siguiente aparecen ahora cuando el puntero está sobre la foto y se retiran el resto del tiempo, de modo que nada se superpone a una foto que se está mirando. En un teléfono o una tableta siguen visibles, como antes"
+            }
+        ]
+    },
+    {
         "date": "2026-08-08",
         "description": [
             {

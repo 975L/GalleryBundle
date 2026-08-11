@@ -33,20 +33,18 @@
             <div class="mb-3 d-flex flex-wrap gap-3 align-items-center">
                 {{ upload_medias_button }}
 
-                <label class="d-flex align-items-center gap-2 p-1" style="cursor: pointer;">
+                <label class="d-flex align-items-center gap-2 p-1 ui-check-label">
                     <input type="checkbox"
-                        class="form-check-input m-0"
-                        style="width: 1.25rem; height: 1.25rem;"
+                        class="form-check-input m-0 ui-check-lg"
                         data-gallery-media-selection-target="toggle"
                         data-action="gallery-media-selection#toggleAll">
                     {{ ('action.select_all'|trans({}, 'gallery')) }}
                 </label>
 
                 {# The way back to a random cover once one has been picked - no media checked is exactly what the public components fall back on #}
-                <label class="d-flex align-items-center gap-2 p-1" style="cursor: pointer;">
+                <label class="d-flex align-items-center gap-2 p-1 ui-check-label">
                     <input type="radio"
-                        class="form-check-input m-0"
-                        style="width: 1.25rem; height: 1.25rem;"
+                        class="form-check-input m-0 ui-check-lg"
                         name="coverMediaId"
                         value=""
                         {{ category.coverMedia is null ? 'checked' : '' }}
@@ -77,10 +75,9 @@
                 </div>
 
                 <div class="d-flex flex-wrap gap-2 align-items-center">
-                    <label class="d-flex align-items-center gap-2 p-1" style="cursor: pointer;">
+                    <label class="d-flex align-items-center gap-2 p-1 ui-check-label">
                         <input type="checkbox"
-                            class="form-check-input m-0"
-                            style="width: 1.25rem; height: 1.25rem;"
+                            class="form-check-input m-0 ui-check-lg"
                             name="rightsReserved"
                             value="1">
                         {{ ('label.rights_reserved'|trans({}, 'gallery')) }}
@@ -117,13 +114,11 @@
                 {% for media in category.medias %}
                     {# The thumbnail keeps opening the media's edit screen, so the checkbox sits under it rather than inside the link it would otherwise swallow the click of #}
                     {# The id the new order is posted with, read off the tiles themselves: dragging one moves it with the tile, so nothing has to be renumbered client-side #}
-                    <div class="text-center"
-                        style="cursor: grab;"
+                    <div class="text-center ui-sort-grabbable"
                         data-media-id="{{ media.id }}"
                         data-gallery-media-sort-target="item">
                         {# The grab point a finger gets, the whole tile being reserved to the mouse (see gallery-media-sort.js). Inline svg rather than an icon class: it is the move icon UiBundle draws on a block's own handle, and this bundle knows nothing of the icon set the dashboard ships #}
-                        <div class="d-flex align-items-center justify-content-center p-1 border rounded"
-                            style="cursor: grab;"
+                        <div class="d-flex align-items-center justify-content-center p-1 border rounded ui-sort-grabbable"
                             role="button"
                             aria-label="{{ ('action.move'|trans({}, 'gallery')) }}"
                             title="{{ ('action.move'|trans({}, 'gallery')) }}"
@@ -138,8 +133,8 @@
                         {# draggable="false" on the link and its image, which the browser would otherwise drag as a url of their own, its native drag fighting the pointer gesture above #}
                         <a href="{{ media_edit_urls[media.id]|default('') }}" class="management-media-grid__item" draggable="false">
                             {% if media.thumbnailFilename %}
-                                {# object-fit: cover inline - overrides UiBundle's shared .management-media-grid__thumb (object-fit: contain), which stays "contain" for its own generic media_index.html.twig where arbitrary-aspect originals must not be cropped #}
-                                <img src="{{ asset(media.thumbnailFilename) }}" alt="{{ media.title }}" width="150" height="150" class="management-media-grid__thumb" style="object-fit: cover;" draggable="false">
+                                {# The "--cover" modifier of UiBundle's shared .management-media-grid__thumb, whose base rule stays "contain" for its own generic media_index.html.twig where arbitrary-aspect originals must not be cropped #}
+                                <img src="{{ asset(media.thumbnailFilename) }}" alt="{{ media.title }}" width="150" height="150" class="management-media-grid__thumb management-media-grid__thumb--cover" draggable="false">
                             {% else %}
                                 <div class="management-media-grid__placeholder">{{ media.filename }}</div>
                             {% endif %}
@@ -150,10 +145,9 @@
                         </a>
 
                         {# Same labelled bar as the selection one below, the radio group spanning the whole grid: a category is represented by one media, or by a random one #}
-                        <label class="d-flex align-items-center justify-content-center gap-2 p-1 border rounded" style="cursor: pointer;">
+                        <label class="d-flex align-items-center justify-content-center gap-2 p-1 border rounded ui-check-label">
                             <input type="radio"
-                                class="form-check-input m-0"
-                                style="width: 1.25rem; height: 1.25rem;"
+                                class="form-check-input m-0 ui-check-lg"
                                 name="coverMediaId"
                                 value="{{ media.id }}"
                                 aria-label="{{ ('label.gallery_cover_select'|trans({'%media%': media.title}, 'gallery')) }}"
@@ -163,10 +157,9 @@
                         </label>
 
                         {# A labelled bar rather than a bare box: under a 150px thumbnail a checkbox on its own reads as an artefact of the image, and the whole bar is the click target #}
-                        <label class="d-flex align-items-center justify-content-center gap-2 p-1 border rounded" style="cursor: pointer;">
+                        <label class="d-flex align-items-center justify-content-center gap-2 p-1 border rounded ui-check-label">
                             <input type="checkbox"
-                                class="form-check-input m-0"
-                                style="width: 1.25rem; height: 1.25rem;"
+                                class="form-check-input m-0 ui-check-lg"
                                 name="mediaIds[]"
                                 value="{{ media.id }}"
                                 aria-label="{{ ('label.gallery_select_media'|trans({'%media%': media.title}, 'gallery')) }}"

@@ -484,4 +484,40 @@ class GalleryMediaCrudControllerTest extends TestCase
 
         $this->assertSame('mont-blanc-2', $media->getSlug());
     }
+
+    // --- deleteEntity --------------------------------------------------------------------------------------
+
+    // A media page is declared in the sitemap (see GallerySitemapProvider), so its url is left answering 410 rather than the 404 a crawler retries for months
+    public function testDeleteEntityLeavesTheUrlOfADeletedMediaAnsweringGone(): void
+    {
+        $category = (new GalleryCategory())->setSlug('voyages');
+        $media = (new GalleryMedia())->setTitle('Mont Blanc')->setSlug('mont-blanc');
+        $category->addMedia($media);
+
+        $persisted = [];
+        $entityManager = $this->createEntityManager([], $persisted);
+
+        $this->createControllerWithRouter()->deleteEntity($entityManager, $media);
+
+        $redirects = array_values(array_filter($persisted, static fn (object $entity): bool => $entity instanceof Redirect));
+        $this->assertCount(1, $redirects);
+        $this->assertSame('/gallery/voyages/mont-blanc', $redirects[0]->getFromPath());
+        $this->assertNull($redirects[0]->getToUrl());
+        $this->assertTrue($redirects[0]->isGone());
+    }
+
+    // A media stored before slugs existed has no public url to answer for - nothing was ever declared for it
+    public function testDeleteEntityRecordsNothingForAMediaWithoutASlug(): void
+    {
+        $category = (new GalleryCategory())->setSlug('voyages');
+        $media = (new GalleryMedia())->setTitle('Mont Blanc');
+        $category->addMedia($media);
+
+        $persisted = [];
+        $entityManager = $this->createEntityManager([], $persisted);
+
+        $this->createControllerWithRouter()->deleteEntity($entityManager, $media);
+
+        $this->assertSame([], array_values(array_filter($persisted, static fn (object $entity): bool => $entity instanceof Redirect)));
+    }
 }

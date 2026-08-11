@@ -13,8 +13,7 @@ namespace c975L\GalleryBundle\Tests\Assets;
 use PHPUnit\Framework\TestCase;
 
 // The scaffolded gallery.css is a hand-maintained copy of the token defaults, so it drifts on its own
-// Only this bundle's own tokens are asserted: the colors, fonts and shapes it reads from UiBundle are
-// offered by that bundle's own themes/ui.css, or admin-editable and deliberately absent from both
+// Only this bundle's own tokens are asserted: the colors, fonts and shapes it reads from UiBundle are offered by that bundle's own themes/ui.css, or admin-editable and deliberately absent from both
 class ScaffoldThemeTest extends TestCase
 {
     // A. Every token the bundle declares is offered, so the file stays the single place to look
@@ -58,8 +57,7 @@ class ScaffoldThemeTest extends TestCase
         ));
     }
 
-    // D. A "--gallery-" token read by a rule but declared nowhere resolves to nothing at all, silently -
-    // the compiled sheet is valid CSS either way, so only a typo hunt catches it
+    // D. A "--gallery-" token read by a rule but declared nowhere resolves to nothing at all, silently - the compiled sheet is valid CSS either way, so only a typo hunt catches it
     public function testEveryGalleryTokenReadIsAlsoDeclared(): void
     {
         $undeclared = array_diff(array_keys($this->tokensReadFromSass()), array_keys($this->compiledRoot()));

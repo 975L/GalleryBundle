@@ -11,49 +11,45 @@
   /* Square side of a thumbnail, in the category grid as in the media grid */
   --gallery-thumb-size: 150px;
   --gallery-grid-gap: 1em;
-  /* How a thumbnail answers a pointer - UiBundle's own "bounce-horizontal", so a grid entry moves like
-     the rest of the site does. Set to "none" from a site's gallery.css to leave the grid still */
+  /* What parts a category's title from its cover - UiBundle's Image:Link leaves 20px plus the line its own <br> takes, which reads as a caption adrift rather than as the thumbnail's own label */
+  --gallery-thumb-label-gap: 0.4em;
+  /* How a thumbnail answers a pointer - UiBundle's own "bounce-horizontal", so a grid entry moves like the rest of the site does. Set to "none" from a site's gallery.css to leave the grid still */
   --gallery-thumb-hover-animation: bounceHorizontal 0.5s infinite ease-in-out;
-  /* What fills the square around a whole-photo thumbnail (config "gallery-thumbnail-whole"), a photo
-     that is not square never filling it entirely - transparent, the page's own background shows */
+  /* What fills the square around a whole-photo thumbnail (config "gallery-thumbnail-whole"), a photo that is not square never filling it entirely - transparent, the page's own background shows */
   --gallery-thumb-background: transparent;
   /* Measure of the media page - the stored (medium) file, the only one a page ever shows */
   --gallery-media-max-width: 800px;
   /* The lightbox the high resolution opens in, over the page */
   --gallery-lightbox-max-width: 95vw;
   --gallery-lightbox-max-height: 95vh;
-  --gallery-lightbox-backdrop: var(--c975l-color-gallery-backdrop, color-mix(in srgb, var(--black) 90%, transparent));
+  --gallery-lightbox-backdrop: var(--c975l-color-gallery-backdrop, rgba(0, 0, 0, 0.9));
   --gallery-lightbox-close-size: 2.5rem;
-  --gallery-lightbox-close-color: var(--c975l-color-gallery-lightbox-close, var(--white));
-  --gallery-lightbox-close-background: var(--c975l-color-gallery-lightbox-close-background, color-mix(in srgb, var(--black) 55%, transparent));
-  /* The passe-partout framing a displayed media, a print's own mount */
+  --gallery-lightbox-close-color: var(--c975l-color-gallery-lightbox-close, #fff);
+  --gallery-lightbox-close-background: var(--c975l-color-gallery-lightbox-close-background, rgba(0, 0, 0, 0.55));
+  /* The passe-partout framing a displayed media, a print's own mount. Its width is what the "gallery-frame" config picks (none, thin, wide - see the blocks in _gallery.scss), the value here being the one an app whose config is not loaded yet gets.
+     Its color is the page's ink and not its paper: a mount the color of the ground it is laid on is a mount nobody sees, so it is white on a dark gallery and black on a light one, inverting along with the style */
   --gallery-media-frame-width: 10px;
-  --gallery-media-frame-color: var(--c975l-color-gallery-frame, var(--white));
-  /* The overlay arrows, sitting on the media itself rather than under it - a button's shape, so they
-     stay findable on a media of any tone */
+  --gallery-media-frame-color: var(--c975l-color-gallery-frame, var(--text));
+  /* The overlay arrows, sitting on the media itself rather than under it - a button's shape, so they stay findable on a media of any tone. The opacity is the one they are revealed at where a pointer can hover, and the one they simply stay at on a touch screen (see _gallery.scss) */
   --gallery-nav-size: 3rem;
   --gallery-nav-offset: 10px;
   --gallery-nav-radius: 5px;
-  --gallery-nav-color: var(--c975l-color-gallery-nav, var(--white));
+  --gallery-nav-color: var(--c975l-color-gallery-nav, #fff);
   --gallery-nav-hover-color: var(--c975l-color-gallery-nav-hover, var(--gallery-nav-color));
-  --gallery-nav-background: var(--c975l-color-gallery-nav-background, color-mix(in srgb, var(--white) 80%, var(--black)));
+  --gallery-nav-background: var(--c975l-color-gallery-nav-background, rgba(0, 0, 0, 0.55));
   --gallery-nav-opacity: 0.7;
   --gallery-nav-shadow: 0 5px 10px 0 rgba(0, 0, 0, 0.5);
   /* The breadcrumb opening every page of the viewer - toward the background rather than a flat grey, so it stays legible on a dark page too */
   --gallery-breadcrumb-font-size: 1.1rem;
   --gallery-breadcrumb-color: var(--c975l-color-gallery-breadcrumb, color-mix(in srgb, var(--text) 60%, var(--background)));
-  /* The lead-in a category opens with, above its grid - centered like the breadcrumb above it and the
-     grid below, measured so it stays readable, and toward the background: it introduces the gallery,
-     the h1 is what carries the emphasis. Set the alignment to "left" for a site whose categories are
-     described in several paragraphs, where centered running text stops reading well */
+  /* The lead-in a category opens with, above its grid - centered like the breadcrumb above it and the grid below, measured so it stays readable, and toward the background: it introduces the gallery, the h1 is what carries the emphasis. Set the alignment to "left" for a site whose categories are described in several paragraphs, where centered running text stops reading well */
   --gallery-category-description-max-width: 62ch;
   --gallery-category-description-margin: 0 auto 2rem;
   --gallery-category-description-font-size: 1.05rem;
   --gallery-category-description-line-height: 1.7;
   --gallery-category-description-text-align: center;
   --gallery-category-description-color: var(--c975l-color-gallery-category-description, color-mix(in srgb, var(--text) 75%, var(--background)));
-  /* The rule parting the lead-in from the breadcrumb - short and centered, a mark rather than a divider
-     across the whole measure. Set its height to 0 to take it away */
+  /* The rule parting the lead-in from the breadcrumb - short and centered, a mark rather than a divider across the whole measure. Set its height to 0 to take it away */
   --gallery-category-description-rule-width: 60px;
   --gallery-category-description-rule-height: 1px;
   --gallery-category-description-rule-gap: 1.5rem;
@@ -63,24 +59,60 @@
   --gallery-credits-gap: 1em;
   --gallery-credits-color: var(--c975l-color-gallery-credits, color-mix(in srgb, var(--text) 60%, var(--background)));
   /* The badge marking a grid entry that opens on a player instead of a still */
-  --gallery-video-badge-background: var(--c975l-color-gallery-badge, color-mix(in srgb, var(--black) 55%, transparent));
-  --gallery-video-badge-color: var(--c975l-color-gallery-badge-text, var(--white));
-  /* Aspect ratios the platforms serve their players in - one per platform UiBundle's registry
-     declares, plus the default a player from anywhere else is framed in (see VideoPlatformRatioTest,
-     which fails if a platform is declared there without its ratio landing here) */
+  --gallery-video-badge-background: var(--c975l-color-gallery-badge, rgba(0, 0, 0, 0.55));
+  --gallery-video-badge-color: var(--c975l-color-gallery-badge-text, #fff);
+  /* Aspect ratios the platforms serve their players in - one per platform UiBundle's registry declares, plus the default a video framed from a platform nobody declared is framed in (see VideoPlatformRatioTest, which fails if a platform is declared there without its ratio landing here) */
   --gallery-video-ratio-default: 16 / 9;
   --gallery-video-ratio-youtube: 16 / 9;
   --gallery-video-ratio-tiktok: 9 / 16;
   --gallery-video-ratio-vimeo: 16 / 9;
   --gallery-video-ratio-dailymotion: 16 / 9;
-  /* What a portrait player is capped at. Written as a width although the viewport's height is what
-     it really answers to, because a width is the only side an aspect-ratio box takes: fix its height
-     too and both sides become definite, at which point the ratio is simply dropped and the player
-     stretches. So the cap is the width producing the height wanted - 9/16 of it for a 9/16 player */
+  /* What a portrait player is capped at. Written as a width although the viewport's height is what it really answers to, because a width is the only side an aspect-ratio box takes: fix its height too and both sides become definite, at which point the ratio is simply dropped and the player stretches. So the cap is the width producing the height wanted - 9/16 of it for a 9/16 player */
   --gallery-video-portrait-max-width: calc(70vh * 9 / 16);
 }
 
 /* GALLERY */
+/* READY-MADE STYLES */
+:root:has(body.gallery-page--light) {
+  color-scheme: light;
+  --background: #fbfbf9;
+  --text: #2b2b2b;
+  --black: #2b2b2b;
+  --white: #fff;
+  --card-background: #fff;
+  --gallery-thumb-background: #fff;
+}
+
+:root:has(body.gallery-page--dark) {
+  color-scheme: dark;
+  --background: #111;
+  --text: #f2f2f2;
+  --black: #f2f2f2;
+  --white: #1b1b1b;
+  --card-background: #1b1b1b;
+  --primary: var(--c975l-color-primary-dark-mode, var(--c975l-color-primary, var(--button-background-primary)));
+  --title-color: color-mix(in srgb, var(--primary) 15%, #fff);
+  --link-color: var(--title-color);
+  --gallery-thumb-background: #1b1b1b;
+  --footer-background: var(--card-background);
+  --footer-text: var(--text);
+  --footer-link-hover-background: transparent;
+  --navbar-site-name-color: var(--title-color);
+}
+
+/* PASSE-PARTOUT */
+:root:has(body.gallery-page--frame-none) {
+  --gallery-media-frame-width: 0;
+}
+
+:root:has(body.gallery-page--frame-thin) {
+  --gallery-media-frame-width: 10px;
+}
+
+:root:has(body.gallery-page--frame-wide) {
+  --gallery-media-frame-width: 25px;
+}
+
 .gallery-grid {
   flex-wrap: wrap;
   gap: var(--gallery-grid-gap);
@@ -93,6 +125,14 @@
 
 .gallery-thumb p {
   margin: 0;
+}
+
+.gallery-thumb br {
+  display: none;
+}
+
+.gallery-thumb .img-below {
+  margin-top: var(--gallery-thumb-label-gap);
 }
 
 .gallery-thumb .img-thumbnail {
@@ -226,6 +266,21 @@
   opacity: 1;
 }
 
+@media (hover: hover) {
+  .gallery-media-nav {
+    opacity: 0;
+    pointer-events: none;
+  }
+  .gallery-media-container:hover .gallery-media-nav,
+  .gallery-media-nav:focus-visible {
+    opacity: var(--gallery-nav-opacity);
+    pointer-events: auto;
+  }
+  .gallery-media-container .gallery-media-nav:hover,
+  .gallery-media-container .gallery-media-nav:focus-visible {
+    opacity: 1;
+  }
+}
 .gallery-media-nav--previous {
   left: var(--gallery-nav-offset);
 }

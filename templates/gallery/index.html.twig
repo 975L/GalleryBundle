@@ -3,7 +3,10 @@
 {# Defines specific variables #}
 {% set title = 'label.gallery_page_title'|trans({}, 'gallery') %}
 
+{# The classes the whole page is painted from (see sass/_gallery.scss), on every screen of the viewer: a gallery laid on a ground of its own keeps it from its index down to each of its medias #}
+{% block bodyClass %}{{ gallery_body_class() }}{% endblock %}
+
 {% block content %}
-    <twig:c975LGallery:Gallery:Navigation/>
+    <twig:c975LGallery:Gallery:Navigation categoriesCount="{{ categoriesCount }}"/>
     <twig:c975LGallery:Gallery:Categories categories="{{ categories }}"/>
 {% endblock %}

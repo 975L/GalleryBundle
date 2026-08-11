@@ -85,6 +85,36 @@ class GalleryControllerTest extends TestCase
         $this->assertSame([], $capturedParameters['categories']);
     }
 
+    // The breadcrumb's count is taken from the list the index already reads, not from a query of its own
+    public function testIndexCountsTheCategoriesItLists(): void
+    {
+        $categoryRepository = $this->createMock(GalleryCategoryRepository::class);
+        $categoryRepository->expects($this->once())->method('findAllOrdered')->willReturn([new GalleryCategory(), new GalleryCategory()]);
+        $categoryRepository->expects($this->never())->method('count');
+
+        $twig = $this->createStub(Environment::class);
+        $capturedParameters = null;
+        $twig->method('render')->willReturnCallback(
+            function (string $view, array $parameters = []) use (&$capturedParameters): string {
+                $capturedParameters = $parameters;
+
+                return $view;
+            }
+        );
+
+        $controller = new GalleryController(
+            $categoryRepository,
+            $this->createStub(GalleryMediaRepository::class),
+        );
+        $container = new Container();
+        $container->set('twig', $twig);
+        $controller->setContainer($container);
+
+        $controller->index();
+
+        $this->assertSame(2, $capturedParameters['categoriesCount']);
+    }
+
     public function testCategoryRendersItsMediasGrid(): void
     {
         $category = (new GalleryCategory())->setSlug('voyages');
@@ -92,6 +122,7 @@ class GalleryControllerTest extends TestCase
 
         $categoryRepository = $this->createMock(GalleryCategoryRepository::class);
         $categoryRepository->expects($this->once())->method('findOneBySlug')->with('voyages')->willReturn($category);
+        $categoryRepository->method('count')->willReturn(4);
         $mediaRepository = $this->createMock(GalleryMediaRepository::class);
         $mediaRepository->expects($this->once())->method('findByCategory')->with($category)->willReturn($medias);
 
@@ -114,6 +145,7 @@ class GalleryControllerTest extends TestCase
 
         $this->assertSame(200, $response->getStatusCode());
         $this->assertSame($category, $capturedParameters['category']);
+        $this->assertSame(4, $capturedParameters['categoriesCount']);
         $this->assertSame($medias, $capturedParameters['medias']);
     }
 
@@ -137,6 +169,7 @@ class GalleryControllerTest extends TestCase
 
         $categoryRepository = $this->createStub(GalleryCategoryRepository::class);
         $categoryRepository->method('findOneBySlug')->willReturn($category);
+        $categoryRepository->method('count')->willReturn(4);
         $mediaRepository = $this->createMock(GalleryMediaRepository::class);
         $mediaRepository->expects($this->once())->method('findOneBySlugInCategory')->with($category, 'col-du-galibier')->willReturn($media);
         $mediaRepository->expects($this->once())->method('findPreviousAndNext')->with($media)->willReturn($previousNext);
@@ -160,6 +193,7 @@ class GalleryControllerTest extends TestCase
 
         $this->assertSame(200, $response->getStatusCode());
         $this->assertSame($media, $capturedParameters['media']);
+        $this->assertSame(4, $capturedParameters['categoriesCount']);
         $this->assertSame($previousNext, $capturedParameters['previousNext']);
     }
 

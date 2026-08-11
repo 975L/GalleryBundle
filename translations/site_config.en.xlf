@@ -2,9 +2,17 @@
 <xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
     <file source-language="en" target-language="en" datatype="plaintext" original="site_config.en.xlf">
         <body>
+            <trans-unit id="z1wl9ZU">
+                <source>description.gallery_frame</source>
+                <target>Width of the passe-partout framing a displayed media: "none" (no frame, the photo laid flat), "thin" (10px, the default) or "wide" (25px). Its color is the theme's own ink, white on a dark gallery and black on a light one; it is set apart in this group.</target>
+            </trans-unit>
             <trans-unit id="a033O9O">
                 <source>description.gallery_route_prefix</source>
                 <target>First segment of the gallery's public urls, e.g. "gallery" for /gallery/my-category. A change applies straight away, but the previous urls then return a not found page: set up a redirect if they were indexed. Left empty, the "gallery" prefix applies.</target>
+            </trans-unit>
+            <trans-unit id="vqewYAX">
+                <source>description.gallery_style</source>
+                <target>Ready-made style of the gallery, applied to the index, the categories and each media: "light" (near-white page) or "dark" (near-black page). The style redefines the site's own colors for those pages alone - background, text, titles, links, navbar and footer included - and wins over the site's dark mode. Left empty, the gallery takes the site's own colors, as before.</target>
             </trans-unit>
             <trans-unit id="GJDJnRp">
                 <source>description.gallery_thumbnail_whole</source>
@@ -12,15 +20,15 @@
             </trans-unit>
             <trans-unit id="fZWM8EJ">
                 <source>description.theme_color_gallery_backdrop</source>
-                <target>Color veiling the page behind the opened high resolution. Left empty, color-mix(in srgb, var(--black) 90%, transparent) applies. A CSS color: a hex with its # (#ff0000), rgb() or a name.</target>
+                <target>Color veiling the page behind the opened high resolution. Left empty, rgba(0, 0, 0, 0.9) applies. A CSS color: a hex with its # (#ff0000), rgb() or a name.</target>
             </trans-unit>
             <trans-unit id="yqacMzE">
                 <source>description.theme_color_gallery_badge</source>
-                <target>Background of the badge marking a thumbnail that opens a video player. Left empty, color-mix(in srgb, var(--black) 55%, transparent) applies. A CSS color: a hex with its # (#ff0000), rgb() or a name.</target>
+                <target>Background of the badge marking a thumbnail that opens a video player. Left empty, rgba(0, 0, 0, 0.55) applies. A CSS color: a hex with its # (#ff0000), rgb() or a name.</target>
             </trans-unit>
             <trans-unit id="My2F0YV">
                 <source>description.theme_color_gallery_badge_text</source>
-                <target>Color of the triangle of the video badge. Left empty, var(--white), the theme's white applies. A CSS color: a hex with its # (#ff0000), rgb() or a name.</target>
+                <target>Color of the triangle of the video badge. Left empty, the #fff white applies. A CSS color: a hex with its # (#ff0000), rgb() or a name.</target>
             </trans-unit>
             <trans-unit id="_hsufUp">
                 <source>description.theme_color_gallery_breadcrumb</source>
@@ -32,31 +40,39 @@
             </trans-unit>
             <trans-unit id="t7g1Sy9">
                 <source>description.theme_color_gallery_frame</source>
-                <target>Color of the passe-partout framing a displayed media. Left empty, var(--white), the theme's white applies. A CSS color: a hex with its # (#ff0000), rgb() or a name.</target>
+                <target>Color of the passe-partout framing a displayed media, its width being set apart in this group. Left empty, var(--text), the theme's own ink applies - white on a dark gallery and black on a light one, a mount the color of its ground being a mount nobody sees. A CSS color: a hex with its # (#ff0000), rgb() or a name.</target>
             </trans-unit>
             <trans-unit id="Cu8Z9pe">
                 <source>description.theme_color_gallery_lightbox_close</source>
-                <target>Color of the cross closing the lightbox. Left empty, var(--white), the theme's white applies. A CSS color: a hex with its # (#ff0000), rgb() or a name.</target>
+                <target>Color of the cross closing the lightbox. Left empty, the #fff white applies. A CSS color: a hex with its # (#ff0000), rgb() or a name.</target>
             </trans-unit>
             <trans-unit id="5CS18Ba">
                 <source>description.theme_color_gallery_lightbox_close_background</source>
-                <target>Background of the cross closing the lightbox. Left empty, color-mix(in srgb, var(--black) 55%, transparent) applies. A CSS color: a hex with its # (#ff0000), rgb() or a name.</target>
+                <target>Background of the cross closing the lightbox. Left empty, rgba(0, 0, 0, 0.55) applies. A CSS color: a hex with its # (#ff0000), rgb() or a name.</target>
             </trans-unit>
             <trans-unit id="Yy_JQfE">
                 <source>description.theme_color_gallery_nav</source>
-                <target>Color of the chevron of the previous/next arrows sitting on the media. Left empty, var(--white), the theme's white applies. A CSS color: a hex with its # (#ff0000), rgb() or a name.</target>
+                <target>Color of the chevron of the previous/next arrows sitting on the media. Left empty, the #fff white applies, the arrows being laid on the photo rather than on the page. A CSS color: a hex with its # (#ff0000), rgb() or a name.</target>
             </trans-unit>
             <trans-unit id="Nd0mt8u">
                 <source>description.theme_color_gallery_nav_background</source>
-                <target>Background of the previous/next arrow buttons. Left empty, color-mix(in srgb, var(--white) 80%, var(--black)) applies. A CSS color: a hex with its # (#ff0000), rgb() or a name.</target>
+                <target>Background of the previous/next arrow buttons. Left empty, rgba(0, 0, 0, 0.55) applies. A CSS color: a hex with its # (#ff0000), rgb() or a name.</target>
             </trans-unit>
             <trans-unit id="4Nkzy4F">
                 <source>description.theme_color_gallery_nav_hover</source>
                 <target>Color of the chevron on hover and on keyboard focus. Left empty, var(--gallery-nav-color), the arrows color applies. A CSS color: a hex with its # (#ff0000), rgb() or a name.</target>
             </trans-unit>
+            <trans-unit id="xKXGBHT">
+                <source>label.gallery_frame</source>
+                <target>Frame around the medias</target>
+            </trans-unit>
             <trans-unit id="lbaVu72">
                 <source>label.gallery_route_prefix</source>
                 <target>Gallery url prefix</target>
+            </trans-unit>
+            <trans-unit id="dSr2Xm2">
+                <source>label.gallery_style</source>
+                <target>Gallery style</target>
             </trans-unit>
             <trans-unit id="vZGtgaH">
                 <source>label.gallery_thumbnail_whole</source>

@@ -410,6 +410,36 @@ class GalleryCategoryCrudControllerTest extends TestCase
         $this->assertSame([], $requestStack->getSession()->getFlashBag()->all());
     }
 
+    // Same 410 the media CRUD leaves behind when it deletes one at a time (see GalleryMediaCrudControllerTest), a media page being declared in the sitemap whichever screen removes it
+    public function testDeleteMediasLeavesEachDeletedMediaUrlAnsweringGone(): void
+    {
+        $category = $this->createCategoryWithMedias(7, 8);
+        foreach ($category->getMedias() as $media) {
+            $media->setSlug('media-' . $media->getId());
+        }
+
+        $persisted = [];
+        $entityManager = $this->createStub(EntityManagerInterface::class);
+        $entityManager->method('persist')->willReturnCallback(static function (object $entity) use (&$persisted): void {
+            $persisted[] = $entity;
+        });
+
+        $controller = $this->createController();
+        $controller->setContainer($this->createContainer([
+            'security.authorization_checker' => $this->createAuthorizationChecker(true),
+            'security.csrf.token_manager' => $this->createCsrfTokenManager(true),
+            'request_stack' => $this->createRequestStackWithSession(),
+            'router' => $this->createRouter(),
+        ]));
+
+        $controller->deleteMedias($this->createAdminContext($category), $this->createDeleteMediasRequest([7]), $entityManager);
+
+        $redirects = array_values(array_filter($persisted, static fn (object $entity): bool => $entity instanceof Redirect));
+        $this->assertCount(1, $redirects);
+        $this->assertSame('/gallery/voyages/media-7', $redirects[0]->getFromPath());
+        $this->assertTrue($redirects[0]->isGone());
+    }
+
     // --- editMedias --------------------------------------------------------------------------------------
 
     // The field is the one the button pressed names, the other button's control travelling with it and left unread
@@ -1277,14 +1307,84 @@ class GalleryCategoryCrudControllerTest extends TestCase
         $this->assertSame('/gallery/voyages-d-ete', $existing->getToUrl());
     }
 
+    // --- persistEntity -----------------------------------------------------------------------------------
+
+    // A slug freed by an earlier deletion is still answering 410, and RedirectSubscriber runs before the router - the wildcard goes too, and so does the url of each media the creation form brought along
+    public function testPersistEntityLiftsTheGoneRowsOfASlugCreatedAgain(): void
+    {
+        $category = (new GalleryCategory())->setTitle('Voyages')->setSlug('voyages');
+        $category->addMedia((new GalleryMedia())->setSlug('mont-blanc'));
+
+        $gone = [
+            '/gallery/voyages' => (new Redirect())->setFromPath('/gallery/voyages')->setGone(true),
+            '/gallery/voyages/*' => (new Redirect())->setFromPath('/gallery/voyages/*')->setGone(true),
+            '/gallery/voyages/mont-blanc' => (new Redirect())->setFromPath('/gallery/voyages/mont-blanc')->setGone(true),
+        ];
+        $removed = [];
+
+        $entityManager = $this->createStub(EntityManagerInterface::class);
+        $entityManager->method('remove')->willReturnCallback(static function (object $entity) use (&$removed): void {
+            $removed[] = $entity;
+        });
+
+        $this->createControllerWithRouter($this->createRedirectRepository($gone))->persistEntity($entityManager, $category);
+
+        $this->assertSame(array_values($gone), $removed);
+    }
+
+    // A row redirecting somewhere is deliberate: creating a category under its old url must not drop the redirect its visitors follow
+    public function testPersistEntityKeepsARowThatStillRedirects(): void
+    {
+        $category = (new GalleryCategory())->setTitle('Voyages')->setSlug('voyages');
+        $redirect = (new Redirect())->setFromPath('/gallery/voyages')->setToUrl('/gallery/vacances');
+        $removed = [];
+
+        $entityManager = $this->createStub(EntityManagerInterface::class);
+        $entityManager->method('remove')->willReturnCallback(static function (object $entity) use (&$removed): void {
+            $removed[] = $entity;
+        });
+
+        $this->createControllerWithRouter($this->createRedirectRepository(['/gallery/voyages' => $redirect]))->persistEntity($entityManager, $category);
+
+        $this->assertSame([], $removed);
+    }
+
+    // --- deleteEntity ------------------------------------------------------------------------------------
+
+    // The category page and every media page under it are declared in the sitemap (see GallerySitemapProvider), so the urls are left answering 410 - the medias through a single wildcard row rather than one row each
+    public function testDeleteEntityLeavesTheCategoryAndEverythingUnderItAnsweringGone(): void
+    {
+        $category = (new GalleryCategory())->setTitle('Voyages')->setSlug('voyages');
+        $persisted = [];
+
+        $entityManager = $this->createStub(EntityManagerInterface::class);
+        $entityManager->method('persist')->willReturnCallback(static function (object $entity) use (&$persisted): void {
+            $persisted[] = $entity;
+        });
+
+        $this->createControllerWithRouter($this->createRedirectRepository())->deleteEntity($entityManager, $category);
+
+        $redirects = array_values(array_filter($persisted, static fn (object $entity): bool => $entity instanceof Redirect));
+        $this->assertSame(['/gallery/voyages', '/gallery/voyages/*'], array_map(static fn (Redirect $redirect): ?string => $redirect->getFromPath(), $redirects));
+        $this->assertNull($redirects[0]->getToUrl());
+        $this->assertTrue($redirects[0]->isGone());
+        $this->assertTrue($redirects[1]->isGone());
+    }
+
     // The public urls the redirect is built from are generated, the first segment being the configured route prefix (see GalleryRoutePrefix) - here the default one
-    private function createControllerWithRouter(?RedirectRepository $redirectRepository = null): GalleryCategoryCrudController
+    // A media route carries a slug below the category, so the two are told apart by the parameters they are given rather than by the route name a stub does not resolve
+    private function createRouter(): RouterInterface
     {
         $router = $this->createStub(RouterInterface::class);
-        $router->method('generate')->willReturnCallback(static fn (string $route, array $parameters = []): string => '/gallery/' . ($parameters['category'] ?? ''));
+        $router->method('generate')->willReturnCallback(static fn (string $route, array $parameters = []): string => '/gallery/' . ($parameters['category'] ?? '') . (isset($parameters['slug']) ? '/' . $parameters['slug'] : ''));
 
+        return $router;
+    }
+
+    private function createControllerWithRouter(?RedirectRepository $redirectRepository = null): GalleryCategoryCrudController
+    {
         $controller = $this->createController(redirectRepository: $redirectRepository);
-        $controller->setContainer($this->createContainer(['router' => $router]));
+        $controller->setContainer($this->createContainer(['router' => $this->createRouter()]));
 
         return $controller;
     }

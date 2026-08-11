@@ -36,8 +36,12 @@ class GalleryController extends AbstractController
     #[Route('/{gallery_prefix}', name: 'gallery_index', methods: ['GET'], condition: self::PREFIX_CONDITION)]
     public function index(): Response
     {
+        $categories = $this->categoryRepository->findAllOrdered();
+
+        // The breadcrumb counts the categories next to its home label, as it counts the medias next to a category - taken from the list already read, so no query of its own
         return $this->render('@c975LGallery/gallery/index.html.twig', [
-            'categories' => $this->categoryRepository->findAllOrdered(),
+            'categories' => $categories,
+            'categoriesCount' => count($categories),
         ]);
     }
 
@@ -47,8 +51,10 @@ class GalleryController extends AbstractController
     {
         $category = $this->resolveCategory($category);
 
+        // The breadcrumb's home link carries the same count as on the index, counted here rather than listed, the page having no use for the categories themselves
         return $this->render('@c975LGallery/gallery/category.html.twig', [
             'category' => $category,
+            'categoriesCount' => $this->categoryRepository->count([]),
             'medias' => $this->mediaRepository->findByCategory($category),
         ]);
     }
@@ -62,6 +68,7 @@ class GalleryController extends AbstractController
 
         return $this->render('@c975LGallery/gallery/media.html.twig', [
             'category' => $category,
+            'categoriesCount' => $this->categoryRepository->count([]),
             'media' => $media,
             'previousNext' => $this->mediaRepository->findPreviousAndNext($media),
         ]);
