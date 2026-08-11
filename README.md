@@ -352,8 +352,10 @@ touch screen, where a first tap would be spent making them appear, they simply s
 
 The lightbox is a native `<dialog>` (`assets/js/gallery-lightbox.js`): its backdrop, its escape key and
 its focus trap are the browser's own, no library involved. It closes on a click anywhere inside it as
-well. What opens it is a real link pointing at the high-resolution file, which the controller intercepts:
-without javascript the file is still reachable, and the zoom is keyboard-operable for free.
+well, which is why it carries no close button: a cross in the corner would only cover a part of the very
+image it was opened to show. What opens it is a real link pointing at the high-resolution file, which the
+controller intercepts: without javascript the file is still reachable, and the zoom is keyboard-operable
+for free.
 
 The right click and the drag are blocked on the grids and on the media page
 (`assets/js/gallery-media-protect.js`), with the touch long-press neutralized in CSS. **This is a
@@ -529,13 +531,13 @@ its `animations.min.css` being served on every page. `--gallery-thumb-hover-anim
 shorthand: set it to another of UiBundle's keyframes, or to `none` to leave the grid still. A visitor
 asking for reduced motion gets no bounce whatever the token says.
 
-The gallery's own **colors** are admin-editable too, eleven entries in this bundle's own **gallery** config
+The gallery's own **colors** are admin-editable too, nine entries in this bundle's own **gallery** config
 group, so a design is retuned from the back office rather than from a file: passe-partout, arrows (color,
-hover color, background), lightbox backdrop and close button (color, background), breadcrumb, credits, and
-video badge (background, color). What makes them CSS values is their `theme-color-gallery-*` slug, not the
+hover color, background), lightbox backdrop, breadcrumb, credits, and video badge (background, color).
+What makes them CSS values is their `theme-color-gallery-*` slug, not the
 group they show in: UiBundle's `ThemeVariablesCssListener` compiles every `theme-` slug it finds into
 `--c975l-color-gallery-*`, which each token reads with the bundle's own default as its fallback — left
-empty, nothing changes. Seven of them are **loaded with that fallback as their own value**, so the back
+empty, nothing changes. Five of them are **loaded with that fallback as their own value**, so the back
 office states the color rather than showing an empty field an admin has to guess at; emptying one paints
 the very same color, the fallback being what it was read from. The four others are left empty on purpose:
 their fallback is not a fixed color but an expression — the theme's own ink for the passe-partout, the

@@ -130,10 +130,6 @@
                 <source>label.gallery_category</source>
                 <target>Catégorie</target>
             </trans-unit>
-            <trans-unit id="PPb5rpo">
-                <source>label.gallery_close</source>
-                <target>Fermer</target>
-            </trans-unit>
             <trans-unit id="l789a03">
                 <source>label.gallery_cover</source>
                 <target>Couverture</target>

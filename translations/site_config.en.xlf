@@ -42,14 +42,6 @@
                 <source>description.theme_color_gallery_frame</source>
                 <target>Color of the passe-partout framing a displayed media, its width being set apart in this group. Left empty, var(--text), the theme's own ink applies - white on a dark gallery and black on a light one, a mount the color of its ground being a mount nobody sees. A CSS color: a hex with its # (#ff0000), rgb() or a name.</target>
             </trans-unit>
-            <trans-unit id="Cu8Z9pe">
-                <source>description.theme_color_gallery_lightbox_close</source>
-                <target>Color of the cross closing the lightbox. Left empty, the #fff white applies. A CSS color: a hex with its # (#ff0000), rgb() or a name.</target>
-            </trans-unit>
-            <trans-unit id="5CS18Ba">
-                <source>description.theme_color_gallery_lightbox_close_background</source>
-                <target>Background of the cross closing the lightbox. Left empty, rgba(0, 0, 0, 0.55) applies. A CSS color: a hex with its # (#ff0000), rgb() or a name.</target>
-            </trans-unit>
             <trans-unit id="Yy_JQfE">
                 <source>description.theme_color_gallery_nav</source>
                 <target>Color of the chevron of the previous/next arrows sitting on the media. Left empty, the #fff white applies, the arrows being laid on the photo rather than on the page. A CSS color: a hex with its # (#ff0000), rgb() or a name.</target>
@@ -101,14 +93,6 @@
             <trans-unit id="0k_i3KC">
                 <source>label.theme_color_gallery_frame</source>
                 <target>Gallery: passe-partout color</target>
-            </trans-unit>
-            <trans-unit id="nXEoGpn">
-                <source>label.theme_color_gallery_lightbox_close</source>
-                <target>Gallery: close button color</target>
-            </trans-unit>
-            <trans-unit id="GYSHxB9">
-                <source>label.theme_color_gallery_lightbox_close_background</source>
-                <target>Gallery: close button background</target>
             </trans-unit>
             <trans-unit id="2jxfe7Q">
                 <source>label.theme_color_gallery_nav</source>

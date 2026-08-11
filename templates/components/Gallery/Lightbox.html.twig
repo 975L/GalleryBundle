@@ -12,11 +12,9 @@
 </a>
 
 {# A native <dialog>: the backdrop, the escape key and the focus trap come with it, no library involved. The image carries no src at all until it is opened - an empty one would have the browser re-request the page itself #}
+{# No close button: a click anywhere inside closes, and the escape key does too, so a cross in the corner would only cover a part of the very image it was opened to show #}
 <dialog class="gallery-lightbox"
     data-gallery-lightbox-target="dialog"
     data-action="click->gallery-lightbox#close">
     <img class="gallery-lightbox__image" data-gallery-lightbox-target="image" alt="{{ media.title }}">
-    <button type="button"
-        class="gallery-lightbox__close"
-        aria-label="{{ 'label.gallery_close'|trans({}, 'gallery') }}">&times;</button>
 </dialog>

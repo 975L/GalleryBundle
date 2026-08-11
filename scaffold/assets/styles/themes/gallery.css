@@ -20,13 +20,10 @@
     /* Measure of the media page - the stored (medium) file, the only one a page ever shows */
     /* --gallery-media-max-width: 800px; */
 
-    /* The lightbox the high resolution opens in, over the page - a bare <dialog>, so what is set here is its measure, the darkness of the page behind it and its close button. The mount around the image is not here, being the passe-partout below, the same one the page's own media is framed with */
+    /* The lightbox the high resolution opens in, over the page - a bare <dialog>, so what is set here is its measure and the darkness of the page behind it. The mount around the image is not here, being the passe-partout below, the same one the page's own media is framed with */
     /* --gallery-lightbox-max-width: 95vw; */
     /* --gallery-lightbox-max-height: 95vh; */
     /* --gallery-lightbox-backdrop: var(--c975l-color-gallery-backdrop, rgba(0, 0, 0, 0.9)); */
-    /* --gallery-lightbox-close-size: 2.5rem; */
-    /* --gallery-lightbox-close-color: var(--c975l-color-gallery-lightbox-close, #fff); */
-    /* --gallery-lightbox-close-background: var(--c975l-color-gallery-lightbox-close-background, rgba(0, 0, 0, 0.55)); */
 
     /* The passe-partout framing a displayed media, a print's own mount - on the page and in the lightbox alike. Its width is what the "gallery-frame" config picks (none, thin, wide), and its color the page's ink rather than its paper: white on a dark gallery and black on a light one, a mount the color of its ground being a mount nobody sees */
     /* --gallery-media-frame-width: 10px; */

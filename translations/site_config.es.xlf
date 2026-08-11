@@ -42,14 +42,6 @@
                 <source>description.theme_color_gallery_frame</source>
                 <target>Color del passe-partout que enmarca un medio mostrado, cuya anchura se ajusta aparte en este grupo. Vacío, se aplica var(--text), la tinta del tema, blanca en una galería oscura y negra en una galería clara, ya que un marco del color de su fondo es un marco invisible. Un color CSS: un hexadecimal con su # (#ff0000), rgb() o un nombre.</target>
             </trans-unit>
-            <trans-unit id="Cu8Z9pe">
-                <source>description.theme_color_gallery_lightbox_close</source>
-                <target>Color de la cruz que cierra la lightbox. Vacío, se aplica el blanco #fff. Un color CSS: un hexadecimal con su # (#ff0000), rgb() o un nombre.</target>
-            </trans-unit>
-            <trans-unit id="5CS18Ba">
-                <source>description.theme_color_gallery_lightbox_close_background</source>
-                <target>Fondo de la cruz que cierra la lightbox. Vacío, se aplica rgba(0, 0, 0, 0.55). Un color CSS: un hexadecimal con su # (#ff0000), rgb() o un nombre.</target>
-            </trans-unit>
             <trans-unit id="Yy_JQfE">
                 <source>description.theme_color_gallery_nav</source>
                 <target>Color del chevrón de las flechas anterior/siguiente colocadas sobre el medio. Vacío, se aplica el blanco #fff, ya que las flechas se apoyan en la foto y no en la página. Un color CSS: un hexadecimal con su # (#ff0000), rgb() o un nombre.</target>
@@ -101,14 +93,6 @@
             <trans-unit id="0k_i3KC">
                 <source>label.theme_color_gallery_frame</source>
                 <target>Galería: color del passe-partout</target>
-            </trans-unit>
-            <trans-unit id="nXEoGpn">
-                <source>label.theme_color_gallery_lightbox_close</source>
-                <target>Galería: color del botón de cierre</target>
-            </trans-unit>
-            <trans-unit id="GYSHxB9">
-                <source>label.theme_color_gallery_lightbox_close_background</source>
-                <target>Galería: fondo del botón de cierre</target>
             </trans-unit>
             <trans-unit id="2jxfe7Q">
                 <source>label.theme_color_gallery_nav</source>

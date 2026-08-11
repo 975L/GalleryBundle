@@ -42,14 +42,6 @@
                 <source>description.theme_color_gallery_frame</source>
                 <target>Couleur du passe-partout encadrant un média affiché, sa largeur étant réglée à part dans ce groupe. Vide : var(--text), l'encre du thème s'applique, blanche sur une galerie sombre et noire sur une galerie claire, un cadre de la couleur de son fond étant un cadre invisible. Une couleur CSS : hexadécimal avec son # (#ff0000), rgb() ou nom.</target>
             </trans-unit>
-            <trans-unit id="Cu8Z9pe">
-                <source>description.theme_color_gallery_lightbox_close</source>
-                <target>Couleur de la croix fermant la lightbox. Vide : le blanc #fff s'applique. Une couleur CSS : hexadécimal avec son # (#ff0000), rgb() ou nom.</target>
-            </trans-unit>
-            <trans-unit id="5CS18Ba">
-                <source>description.theme_color_gallery_lightbox_close_background</source>
-                <target>Fond de la croix fermant la lightbox. Vide : rgba(0, 0, 0, 0.55) s'applique. Une couleur CSS : hexadécimal avec son # (#ff0000), rgb() ou nom.</target>
-            </trans-unit>
             <trans-unit id="Yy_JQfE">
                 <source>description.theme_color_gallery_nav</source>
                 <target>Couleur du chevron des flèches précédent/suivant posées sur le média. Vide : le blanc #fff s'applique, les flèches étant posées sur la photo et non sur la page. Une couleur CSS : hexadécimal avec son # (#ff0000), rgb() ou nom.</target>
@@ -101,14 +93,6 @@
             <trans-unit id="0k_i3KC">
                 <source>label.theme_color_gallery_frame</source>
                 <target>Galerie : couleur du passe-partout</target>
-            </trans-unit>
-            <trans-unit id="nXEoGpn">
-                <source>label.theme_color_gallery_lightbox_close</source>
-                <target>Galerie : couleur du bouton de fermeture</target>
-            </trans-unit>
-            <trans-unit id="GYSHxB9">
-                <source>label.theme_color_gallery_lightbox_close_background</source>
-                <target>Galerie : fond du bouton de fermeture</target>
             </trans-unit>
             <trans-unit id="2jxfe7Q">
                 <source>label.theme_color_gallery_nav</source>

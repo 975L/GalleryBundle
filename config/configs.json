@@ -108,28 +108,6 @@
         "description": "description.theme_color_gallery_backdrop"
     },
     {
-        "label": "label.theme_color_gallery_lightbox_close",
-        "slug": "theme-color-gallery-lightbox-close",
-        "sensitive": false,
-        "restricted": false,
-        "value": "#fff",
-        "kind": "text",
-        "group": "gallery",
-        "severity": null,
-        "description": "description.theme_color_gallery_lightbox_close"
-    },
-    {
-        "label": "label.theme_color_gallery_lightbox_close_background",
-        "slug": "theme-color-gallery-lightbox-close-background",
-        "sensitive": false,
-        "restricted": false,
-        "value": "rgba(0, 0, 0, 0.55)",
-        "kind": "text",
-        "group": "gallery",
-        "severity": null,
-        "description": "description.theme_color_gallery_lightbox_close_background"
-    },
-    {
         "label": "label.theme_color_gallery_breadcrumb",
         "slug": "theme-color-gallery-breadcrumb",
         "sensitive": false,

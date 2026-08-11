@@ -23,9 +23,6 @@
   --gallery-lightbox-max-width: 95vw;
   --gallery-lightbox-max-height: 95vh;
   --gallery-lightbox-backdrop: var(--c975l-color-gallery-backdrop, rgba(0, 0, 0, 0.9));
-  --gallery-lightbox-close-size: 2.5rem;
-  --gallery-lightbox-close-color: var(--c975l-color-gallery-lightbox-close, #fff);
-  --gallery-lightbox-close-background: var(--c975l-color-gallery-lightbox-close-background, rgba(0, 0, 0, 0.55));
   /* The passe-partout framing a displayed media, a print's own mount - on the page and in the lightbox alike. Its width is what the "gallery-frame" config picks (none, thin, wide - see the blocks in _gallery.scss), the value here being the one an app whose config is not loaded yet gets, and its color the page's ink rather than its paper: white on a dark gallery and black on a light one, a mount the color of its ground being a mount nobody sees */
   --gallery-media-frame-width: 10px;
   --gallery-media-frame-color: var(--c975l-color-gallery-frame, var(--text));
@@ -321,19 +318,6 @@
   cursor: zoom-out;
 }
 
-.gallery-lightbox__close {
-  position: absolute;
-  top: 0;
-  right: 0;
-  padding: 0 0.3em;
-  border: 0;
-  background: var(--gallery-lightbox-close-background);
-  color: var(--gallery-lightbox-close-color);
-  font-size: var(--gallery-lightbox-close-size);
-  line-height: 1.2;
-  cursor: pointer;
-}
-
 .gallery-thumb img,
 .gallery-media-display,
 .gallery-lightbox__image {
@@ -404,5 +388,3 @@
 .gallery-media-container:has(.gallery-video--tiktok) {
   max-width: min(var(--gallery-media-max-width), var(--gallery-video-portrait-max-width));
 }
-
-/*# sourceMappingURL=styles.css.map */

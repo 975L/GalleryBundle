@@ -297,19 +297,6 @@
     cursor: zoom-out;
 }
 
-.gallery-lightbox__close {
-    position: absolute;
-    top: 0;
-    right: 0;
-    padding: 0 0.3em;
-    border: 0;
-    background: var(--gallery-lightbox-close-background);
-    color: var(--gallery-lightbox-close-color);
-    font-size: var(--gallery-lightbox-close-size);
-    line-height: 1.2;
-    cursor: pointer;
-}
-
 // The long press is the touch equivalent of the right click, and dragging the file out is the other way off the page - both are blocked here, the context menu itself in gallery-media-protect.js
 .gallery-thumb img,
 .gallery-media-display,

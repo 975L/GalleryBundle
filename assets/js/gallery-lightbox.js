@@ -23,7 +23,7 @@ export default class extends Controller {
         this.dialogTarget.showModal();
     }
 
-    // Anything clicked inside closes - the image, the close button and the backdrop alike. Escape is handled by the dialog itself
+    // Anything clicked inside closes - the image and the backdrop alike, which is why there is no close button. Escape is handled by the dialog itself
     close() {
         this.dialogTarget.close();
     }

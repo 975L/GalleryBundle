@@ -1,5 +1,12 @@
 # ChangeLog
 
+## v1.4.1
+
+- The lightbox closes on any click inside, the close button being removed
+
+- Removed the lightbox close button, a click anywhere inside closing it (11/08/2026)
+- Removed the `theme-color-gallery-lightbox-close` and `theme-color-gallery-lightbox-close-background` configs (11/08/2026)
+
 ## v1.4.0
 
 Rector runs over the bundle, with a site's own sets
