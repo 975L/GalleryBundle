@@ -1,5 +1,12 @@
 # ChangeLog
 
+## v1.3.1
+
+The lightbox frames the high resolution too
+
+- The passe-partout frames the high resolution in the lightbox as well as the media on the page (11/08/2026)
+- The lightbox image is `border-box`, the mount being taken off the dialog's measure rather than added to it (11/08/2026)
+
 ## v1.3.0
 
 A gallery is laid on a ground of its own

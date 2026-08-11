@@ -516,6 +516,14 @@ The **gallery-frame** config (kind `choice`) picks the passe-partout a displayed
 **ink**: white on a dark gallery, black on a light one, so it inverts along with the style — a mount the
 color of the ground it is laid on being a mount nobody sees. It stays admin-editable on its own.
 
+The same mount frames the **high resolution in the lightbox**, off those same two tokens: a print stays a
+print, opened over the page as laid on it, and the choice made in the back office carries to both without
+a token of its own. The image is `border-box` there, so the mount is taken off the dialog's measure rather
+than added to it — added, it would run past a `max-height` the dialog clips at. Worth knowing on a `light`
+gallery, whose ink is near-black against a lightbox backdrop that is near-black too: the mount is there,
+but barely read. A design wanting it seen on both grounds gives the lightbox a color of its own, the
+`--gallery-media-frame-color` token being overridable under the `.gallery-lightbox__image` selector.
+
 Hovering a thumbnail bounces it, with UiBundle's own `bounceHorizontal` — reused rather than redefined,
 its `animations.min.css` being served on every page. `--gallery-thumb-hover-animation` holds the whole
 shorthand: set it to another of UiBundle's keyframes, or to `none` to leave the grid still. A visitor

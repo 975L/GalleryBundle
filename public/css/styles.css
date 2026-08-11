@@ -26,8 +26,7 @@
   --gallery-lightbox-close-size: 2.5rem;
   --gallery-lightbox-close-color: var(--c975l-color-gallery-lightbox-close, #fff);
   --gallery-lightbox-close-background: var(--c975l-color-gallery-lightbox-close-background, rgba(0, 0, 0, 0.55));
-  /* The passe-partout framing a displayed media, a print's own mount. Its width is what the "gallery-frame" config picks (none, thin, wide - see the blocks in _gallery.scss), the value here being the one an app whose config is not loaded yet gets.
-     Its color is the page's ink and not its paper: a mount the color of the ground it is laid on is a mount nobody sees, so it is white on a dark gallery and black on a light one, inverting along with the style */
+  /* The passe-partout framing a displayed media, a print's own mount - on the page and in the lightbox alike. Its width is what the "gallery-frame" config picks (none, thin, wide - see the blocks in _gallery.scss), the value here being the one an app whose config is not loaded yet gets, and its color the page's ink rather than its paper: white on a dark gallery and black on a light one, a mount the color of its ground being a mount nobody sees */
   --gallery-media-frame-width: 10px;
   --gallery-media-frame-color: var(--c975l-color-gallery-frame, var(--text));
   /* The overlay arrows, sitting on the media itself rather than under it - a button's shape, so they stay findable on a media of any tone. The opacity is the one they are revealed at where a pointer can hover, and the one they simply stay at on a touch screen (see _gallery.scss) */
@@ -315,8 +314,10 @@
 
 .gallery-lightbox__image {
   display: block;
+  box-sizing: border-box;
   max-width: 100%;
   max-height: var(--gallery-lightbox-max-height);
+  border: var(--gallery-media-frame-width) solid var(--gallery-media-frame-color);
   cursor: zoom-out;
 }
 

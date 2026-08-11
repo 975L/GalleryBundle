@@ -287,11 +287,13 @@
     background: var(--gallery-lightbox-backdrop);
 }
 
-// Capped by the dialog's own measure, so a portrait is bound by the height and a landscape by the width
+// Capped by the dialog's own measure, and framed with the same passe-partout as the media on the page - border-box, so the mount is taken off that measure rather than added to it, the dialog clipping whatever runs past
 .gallery-lightbox__image {
     display: block;
+    box-sizing: border-box;
     max-width: 100%;
     max-height: var(--gallery-lightbox-max-height);
+    border: var(--gallery-media-frame-width) solid var(--gallery-media-frame-color);
     cursor: zoom-out;
 }
 
