@@ -19,6 +19,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGeneratorInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use Twig\Extension\AttributeExtension;
 
 class GalleryEditUrlExtensionTest extends TestCase
 {
@@ -26,7 +27,7 @@ class GalleryEditUrlExtensionTest extends TestCase
     {
         $names = array_map(
             static fn ($function): string => $function->getName(),
-            new GalleryEditUrlExtension($this->createStub(AdminUrlGeneratorInterface::class))->getFunctions()
+            new AttributeExtension(GalleryEditUrlExtension::class)->getFunctions()
         );
 
         $this->assertSame(['gallery_category_edit_url', 'gallery_media_edit_url'], $names);

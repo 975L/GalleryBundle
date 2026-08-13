@@ -1,5 +1,20 @@
 [
     {
+        "date": "2026-08-13",
+        "description": [
+            {
+                "en": "An exported gallery now carries every file of each photo — the one displayed, the thumbnail of the grid, the high resolution opened over it, the video and the original kept aside — and puts them back exactly as they left. Until now only the displayed file travelled, and the site receiving it rebuilt the others from that one: the high resolution came back at half its definition, and each transfer between two sites softened the photos a little more. A gallery moved from one site to another is now the very same gallery, down to the pixels and the signature laid on them",
+                "fr": "Une galerie exportée emporte désormais tous les fichiers de chaque photo — celui affiché, la vignette de la grille, la haute résolution ouverte par-dessus, la vidéo et l'original mis de côté — et les repose exactement tels qu'ils sont partis. Jusqu'ici seul le fichier affiché voyageait, et le site qui le recevait reconstruisait les autres à partir de lui : la haute résolution revenait à la moitié de sa définition, et chaque transfert entre deux sites adoucissait un peu plus les photos. Une galerie déplacée d'un site à un autre est maintenant exactement la même galerie, jusqu'aux pixels et à la signature posée dessus",
+                "es": "Una galería exportada lleva ahora todos los archivos de cada foto — el mostrado, la miniatura de la cuadrícula, la alta resolución que se abre encima, el vídeo y el original guardado aparte — y los deja exactamente como salieron. Hasta ahora solo viajaba el archivo mostrado, y el sitio que lo recibía reconstruía los demás a partir de él: la alta resolución volvía a la mitad de su definición, y cada transferencia entre dos sitios suavizaba un poco más las fotos. Una galería trasladada de un sitio a otro es ahora exactamente la misma galería, hasta los píxeles y la firma puesta sobre ellos"
+            },
+            {
+                "en": "The photos also keep their addresses. An imported gallery used to have every one of its files renamed on arrival, so the same photo answered at a different address on each site it was carried to — and any address shared or kept elsewhere pointed at nothing. Files now land back under the names they left with, which also makes importing a large gallery a matter of copying files rather than rebuilding every photo",
+                "fr": "Les photos gardent aussi leurs adresses. Une galerie importée voyait jusqu'ici chacun de ses fichiers renommé à l'arrivée : la même photo répondait à une adresse différente sur chaque site où elle était portée, et toute adresse partagée ou conservée ailleurs ne pointait plus sur rien. Les fichiers sont désormais reposés sous les noms qu'ils avaient au départ, ce qui fait aussi de l'import d'une grande galerie une copie de fichiers plutôt qu'une reconstruction de chaque photo",
+                "es": "Las fotos conservan también sus direcciones. Una galería importada veía hasta ahora cada uno de sus archivos renombrado al llegar: la misma foto respondía a una dirección distinta en cada sitio al que se llevaba, y cualquier dirección compartida o guardada en otro lugar ya no apuntaba a nada. Los archivos se colocan ahora bajo los nombres con los que salieron, lo que además convierte la importación de una galería grande en una copia de archivos en lugar de una reconstrucción de cada foto"
+            }
+        ]
+    },
+    {
         "date": "2026-08-11",
         "description": [
             {

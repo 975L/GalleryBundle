@@ -71,9 +71,13 @@ class GalleryExportProviderTest extends TestCase
         $this->assertCount(2, $item['medias']);
         $this->assertSame(1, $item['coverMediaIndex']);
         $this->assertArrayHasKey('file', $item['medias'][1]);
+        // A media whose derivatives have left the disk is exported without the keys, rather than pointing at bytes the archive doesn't hold
+        $this->assertArrayNotHasKey('thumbFile', $item['medias'][1]);
         // Both are carried so an import can put the media back at the very url it was exported from
         $this->assertSame('Media 1', $item['medias'][0]['title']);
         $this->assertSame('media-1', $item['medias'][0]['slug']);
+        // And the name of the file itself, so the images answer at the very same urls too
+        $this->assertSame('uploads/p1.jpg', $item['medias'][0]['filename']);
 
         $this->assertCount(2, $data['files']);
         $files = array_values($data['files']);
@@ -85,6 +89,35 @@ class GalleryExportProviderTest extends TestCase
 
         unlink($projectDir . '/public/uploads/p1.jpg');
         unlink($projectDir . '/public/uploads/p2.jpg');
+        rmdir($projectDir . '/public/uploads');
+        rmdir($projectDir . '/public');
+        rmdir($projectDir);
+    }
+
+    // The thumbnail and the high resolution travel beside the stored file: recomputed on the way back in, the high resolution would come back at the stored file's own width
+    public function testSerializeArchivesTheDerivativesBesideTheStoredFile(): void
+    {
+        $projectDir = sys_get_temp_dir() . '/gallery_export_provider_test_' . bin2hex(random_bytes(4));
+        mkdir($projectDir . '/public/uploads', 0777, true);
+        file_put_contents($projectDir . '/public/uploads/p1.webp', 'stored-bytes');
+        file_put_contents($projectDir . '/public/uploads/p1-thumb.webp', 'thumb-bytes');
+        file_put_contents($projectDir . '/public/uploads/p1-highres.webp', 'highres-bytes');
+
+        $category = new GalleryCategory()->setSlug('voyages')->setTitle('Voyages');
+        $media = new GalleryMedia()->setFilename('uploads/p1.webp')->setTitle('Media 1')->setSlug('media-1');
+        $category->addMedia($media);
+
+        $data = new GalleryExportProvider($this->createStub(GalleryCategoryRepository::class), new BlockDataExporter($projectDir), $projectDir)
+            ->serialize([$category]);
+
+        $mediaData = $data['items'][0]['medias'][0];
+        $this->assertSame($projectDir . '/public/uploads/p1-thumb.webp', $data['files'][$mediaData['thumbFile']]);
+        $this->assertSame($projectDir . '/public/uploads/p1-highres.webp', $data['files'][$mediaData['highresFile']]);
+        $this->assertCount(3, $data['files']);
+
+        unlink($projectDir . '/public/uploads/p1.webp');
+        unlink($projectDir . '/public/uploads/p1-thumb.webp');
+        unlink($projectDir . '/public/uploads/p1-highres.webp');
         rmdir($projectDir . '/public/uploads');
         rmdir($projectDir . '/public');
         rmdir($projectDir);
@@ -140,6 +173,8 @@ class GalleryExportProviderTest extends TestCase
         $mediaData = $data['items'][0]['medias'][0];
         $this->assertArrayHasKey('videoFile', $mediaData);
         $this->assertSame($projectDir . '/public/uploads/p1-a1b2c3.mp4', $data['files'][$mediaData['videoFile']]);
+        // The name travels beside the bytes, so the video is played from the very same url on the site it lands on
+        $this->assertSame('uploads/p1-a1b2c3.mp4', $mediaData['videoFilename']);
         $this->assertSame(GalleryMedia::MEDIA_TYPE_VIDEO, $mediaData['mediaType']);
         $this->assertCount(2, $data['files']);
 

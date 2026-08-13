@@ -18,15 +18,13 @@ use c975L\GalleryBundle\Entity\GalleryMedia;
 class GalleryBackupPathProvider implements BackupPathProviderInterface
 {
     // The category folder and the file name follow (see GalleryMedia::getVichMediaPath), so the two roots below cover the medium served, its thumb and highres siblings, the self-hosted videos and the kept originals alike
-    private const string MEDIA_DIRECTORY = 'medias/gallery';
-
     public function getBackupPaths(): array
     {
         return [
             // Mirrored rather than archived: a gallery grows without bound, bzip2 gains about nothing on a webp, and a photo needs a copy rather than a history
-            new BackupPath('public/' . self::MEDIA_DIRECTORY, BackupPath::MODE_MIRROR),
+            new BackupPath('public/' . GalleryMedia::MEDIA_DIRECTORY, BackupPath::MODE_MIRROR),
             // The untouched uploads kept outside the document root, which is what lets a media be re-processed later without a re-upload
-            new BackupPath(GalleryMedia::ORIGINAL_DIRECTORY . '/' . self::MEDIA_DIRECTORY, BackupPath::MODE_MIRROR),
+            new BackupPath(GalleryMedia::ORIGINAL_DIRECTORY . '/' . GalleryMedia::MEDIA_DIRECTORY, BackupPath::MODE_MIRROR),
         ];
     }
 }

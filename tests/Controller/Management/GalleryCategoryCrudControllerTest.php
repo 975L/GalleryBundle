@@ -134,8 +134,7 @@ class GalleryCategoryCrudControllerTest extends TestCase
         $request = new Request();
         $request->setSession($session);
 
-        $requestStack = new RequestStack();
-        $requestStack->push($request);
+        $requestStack = new RequestStack([$request]);
 
         return $requestStack;
     }

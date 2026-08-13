@@ -15,11 +15,10 @@ use c975L\GalleryBundle\Entity\GalleryMedia;
 use c975L\GalleryBundle\Repository\GalleryCategoryRepository;
 use c975L\GalleryBundle\Repository\GalleryMediaRepository;
 use Symfony\Contracts\Service\ResetInterface;
-use Twig\Extension\AbstractExtension;
-use Twig\TwigFunction;
+use Twig\Attribute\AsTwigFunction;
 
 // Resolves, at render time, what the block templates of this bundle display - a Block only ever stores what to show (a category slug, a maximum), never the medias themselves, so a block never goes stale against the media library. Same split as BookBundle's BookBlockExtension
-class GalleryBlockExtension extends AbstractExtension implements ResetInterface
+class GalleryBlockExtension implements ResetInterface
 {
     /** @var ?list<GalleryCategory> */
     private ?array $categories = null;
@@ -30,18 +29,10 @@ class GalleryBlockExtension extends AbstractExtension implements ResetInterface
     ) {
     }
 
-    #[\Override]
-    public function getFunctions(): array
-    {
-        return [
-            new TwigFunction('gallery_block_categories', $this->getCategories(...)),
-            new TwigFunction('gallery_block_medias', $this->getMedias(...)),
-        ];
-    }
-
     /**
      * @return list<GalleryCategory>
      */
+    #[AsTwigFunction('gallery_block_categories')]
     public function getCategories(?int $max = null): array
     {
         $categories = $this->loadCategories();
@@ -55,6 +46,7 @@ class GalleryBlockExtension extends AbstractExtension implements ResetInterface
      *
      * @return array{category: ?GalleryCategory, medias: list<GalleryMedia>}
      */
+    #[AsTwigFunction('gallery_block_medias')]
     public function getMedias(?string $categorySlug, ?int $max = null, bool $random = false): array
     {
         $category = null !== $categorySlug ? $this->findCategoryBySlug($categorySlug) : null;

@@ -136,6 +136,8 @@ class GalleryImportProviderTest extends TestCase
         $this->assertCount(2, $medias);
         $this->assertSame($medias[1], $category->getCoverMedia());
         $this->assertSame($filesDir . '/files/p2.jpg', $medias[1]->getFile()->getPathname());
+        // Not removed by Vich once stored: the very same file is copied back over what the pipeline made of it (see restoreArchivedFiles)
+        $this->assertFalse($medias[1]->getFile()->isRemoveReplacedFile());
         // The exported slug is put back as it was, so the imported medias answer at the very urls the archive came from
         $this->assertSame(['media-1', 'media-2'], array_map(static fn (GalleryMedia $media): ?string => $media->getSlug(), $medias));
 
@@ -269,14 +271,211 @@ class GalleryImportProviderTest extends TestCase
         // Dropped before the second flush, or GalleryMediaDerivativeCleanupListener would read it as a file replacement and erase what was just written
         $this->assertNull($media->getFile());
 
-        unlink($projectDir . '/private/uploads/p1-original.jpg');
-        rmdir($projectDir . '/private/uploads');
-        rmdir($projectDir . '/private');
-        rmdir($projectDir);
-        unlink($filesDir . '/files/ab12_p1-original.jpg');
-        unlink($filesDir . '/files/p1.webp');
-        rmdir($filesDir . '/files');
-        rmdir($filesDir);
+        $this->removeDir($projectDir);
+        $this->removeDir($filesDir);
+    }
+
+    // What the upload pipeline recomputes from the re-uploaded stored file is overwritten by the archived files: a high resolution derived from a stored file comes back at its width instead of its own, and every round-trip re-encodes the webp once more
+    public function testImportRestoresTheArchivedDerivativesOverTheRecomputedOnes(): void
+    {
+        $filesDir = $this->createFilesDir([
+            'ab12_p1.webp' => 'stored-bytes',
+            'ab12_p1-thumb.webp' => 'thumb-bytes',
+            'ab12_p1-highres.webp' => 'highres-bytes',
+        ]);
+        $projectDir = sys_get_temp_dir() . '/gallery_import_project_' . bin2hex(random_bytes(4));
+
+        // Stands in for what the pipeline wrote on the way in, which is exactly what the archive is meant to replace
+        mkdir($projectDir . '/public/uploads', 0777, true);
+        file_put_contents($projectDir . '/public/uploads/p1.webp', 'recomputed-stored');
+        file_put_contents($projectDir . '/public/uploads/p1-thumb.webp', 'recomputed-thumb');
+        file_put_contents($projectDir . '/public/uploads/p1-highres.webp', 'recomputed-highres');
+
+        $media = $this->importSingleMedia([
+            'title' => 'Media 1',
+            'slug' => 'media-1',
+            'file' => 'files/ab12_p1.webp',
+            'thumbFile' => 'files/ab12_p1-thumb.webp',
+            'highresFile' => 'files/ab12_p1-highres.webp',
+        ], $filesDir, $projectDir);
+
+        $this->assertSame('stored-bytes', file_get_contents($projectDir . '/public/uploads/p1.webp'));
+        $this->assertSame('thumb-bytes', file_get_contents($projectDir . '/public/uploads/p1-thumb.webp'));
+        $this->assertSame('highres-bytes', file_get_contents($projectDir . '/public/uploads/p1-highres.webp'));
+        // The column describes the file actually served, and the pipeline had set it to the size of its own re-encoding
+        $this->assertSame(\strlen('stored-bytes'), $media->getSize());
+
+        $this->removeDir($projectDir);
+        $this->removeDir($filesDir);
+    }
+
+    // The archive says what its files were called, and they go straight back under those names: nothing is handed to Vich, which would name them anew and leave the same gallery answering at different image urls on every site it is synced to
+    public function testImportKeepsTheExportedFilenameAndLaysTheFilesUnderIt(): void
+    {
+        $filesDir = $this->createFilesDir([
+            'ab12_nordkapp-a1b2c3.webp' => 'stored-bytes',
+            'ab12_nordkapp-a1b2c3-thumb.webp' => 'thumb-bytes',
+            'ab12_nordkapp-a1b2c3-highres.webp' => 'highres-bytes',
+        ]);
+        $projectDir = sys_get_temp_dir() . '/gallery_import_project_' . bin2hex(random_bytes(4));
+
+        $media = $this->importSingleMedia([
+            'title' => 'Nordkapp',
+            'slug' => 'nordkapp',
+            'filename' => 'medias/gallery/films/nordkapp-a1b2c3.webp',
+            'updatedAt' => '2026-08-01T10:00:00+00:00',
+            'file' => 'files/ab12_nordkapp-a1b2c3.webp',
+            'thumbFile' => 'files/ab12_nordkapp-a1b2c3-thumb.webp',
+            'highresFile' => 'files/ab12_nordkapp-a1b2c3-highres.webp',
+        ], $filesDir, $projectDir);
+
+        $this->assertSame('medias/gallery/films/nordkapp-a1b2c3.webp', $media->getFilename());
+
+        $base = $projectDir . '/public/medias/gallery/films/nordkapp-a1b2c3';
+        $this->assertSame('stored-bytes', file_get_contents($base . '.webp'));
+        $this->assertSame('thumb-bytes', file_get_contents($base . '-thumb.webp'));
+        $this->assertSame('highres-bytes', file_get_contents($base . '-highres.webp'));
+
+        // Written by the restoration alone, Vich never having seen a file to write them from
+        $this->assertSame(\strlen('stored-bytes'), $media->getSize());
+        $this->assertNotNull($media->getMimeType());
+        // Dated by when it was last touched on the site it comes from, not by the import
+        $this->assertSame('2026-08-01', $media->getUpdatedAt()?->format('Y-m-d'));
+
+        $this->removeDir($projectDir);
+        $this->removeDir($filesDir);
+    }
+
+    // The site's own video keeps its name too, an url that is shared and cached being no less an url for pointing at a video
+    public function testImportKeepsTheExportedVideoName(): void
+    {
+        $filesDir = $this->createFilesDir([
+            'ab12_nordkapp-a1b2c3.webp' => 'still-bytes',
+            'ab12_nordkapp-d4e5f6.mp4' => 'video-bytes',
+        ]);
+        $projectDir = sys_get_temp_dir() . '/gallery_import_project_' . bin2hex(random_bytes(4));
+
+        $media = $this->importSingleMedia([
+            'title' => 'Nordkapp',
+            'slug' => 'nordkapp',
+            'filename' => 'medias/gallery/films/nordkapp-a1b2c3.webp',
+            'file' => 'files/ab12_nordkapp-a1b2c3.webp',
+            'videoFilename' => 'medias/gallery/films/nordkapp-d4e5f6.mp4',
+            'videoFile' => 'files/ab12_nordkapp-d4e5f6.mp4',
+        ], $filesDir, $projectDir);
+
+        $this->assertSame('medias/gallery/films/nordkapp-d4e5f6.mp4', $media->getVideoFilename());
+        $this->assertSame('video-bytes', file_get_contents($projectDir . '/public/medias/gallery/films/nordkapp-d4e5f6.mp4'));
+        // Derived from the name it was given, exactly as it would be from one Vich gave it
+        $this->assertSame(GalleryMedia::MEDIA_TYPE_VIDEO, $media->getMediaType());
+        $this->assertSame(\strlen('video-bytes'), $media->getVideoSize());
+
+        $this->removeDir($projectDir);
+        $this->removeDir($filesDir);
+    }
+
+    // What comes out of an archive is a path an admin uploaded: a name climbing out of the bundle's own media directory is refused, and the file named by Vich instead rather than laid wherever the process can write
+    public function testImportRefusesAFilenameLeavingTheBundlesMediaDirectory(): void
+    {
+        $filesDir = $this->createFilesDir(['ab12_p1.webp' => 'stored-bytes']);
+        $projectDir = sys_get_temp_dir() . '/gallery_import_project_' . bin2hex(random_bytes(4));
+
+        $media = $this->importSingleMedia([
+            'title' => 'Media 1',
+            'slug' => 'media-1',
+            'filename' => 'medias/gallery/../../../escaped.webp',
+            'file' => 'files/ab12_p1.webp',
+        ], $filesDir, $projectDir);
+
+        // The name the stand-in for Vich gave it, the archive's own having been refused
+        $this->assertSame('uploads/p1.webp', $media->getFilename());
+        $this->assertFileDoesNotExist(sys_get_temp_dir() . '/escaped.webp');
+
+        $this->removeDir($projectDir);
+        $this->removeDir($filesDir);
+    }
+
+    // A name is only honoured under this bundle's own media directory, an absolute path naming a file anywhere the process can write
+    public function testImportRefusesAFilenameOutsideTheBundlesMediaDirectory(): void
+    {
+        $filesDir = $this->createFilesDir(['ab12_p1.webp' => 'stored-bytes']);
+        $projectDir = sys_get_temp_dir() . '/gallery_import_project_' . bin2hex(random_bytes(4));
+
+        $media = $this->importSingleMedia([
+            'title' => 'Media 1',
+            'slug' => 'media-1',
+            'filename' => '/etc/escaped.webp',
+            'file' => 'files/ab12_p1.webp',
+        ], $filesDir, $projectDir);
+
+        $this->assertSame('uploads/p1.webp', $media->getFilename());
+
+        $this->removeDir($projectDir);
+        $this->removeDir($filesDir);
+    }
+
+    // A null byte would have PHP stop reading the name where C does, so a name carrying one is refused whole
+    public function testImportRefusesAFilenameCarryingANullByte(): void
+    {
+        $filesDir = $this->createFilesDir(['ab12_p1.webp' => 'stored-bytes']);
+        $projectDir = sys_get_temp_dir() . '/gallery_import_project_' . bin2hex(random_bytes(4));
+
+        $media = $this->importSingleMedia([
+            'title' => 'Media 1',
+            'slug' => 'media-1',
+            'filename' => "medias/gallery/films/escaped.webp\0.txt",
+            'file' => 'files/ab12_p1.webp',
+        ], $filesDir, $projectDir);
+
+        $this->assertSame('uploads/p1.webp', $media->getFilename());
+
+        $this->removeDir($projectDir);
+        $this->removeDir($filesDir);
+    }
+
+    // An archive from before the stored files were converted holds a jpeg, where the name it would be restored under says webp - the recomputed file stands rather than being overwritten by bytes it doesn't describe
+    public function testImportKeepsTheRecomputedFileWhenTheArchivedOneCarriesAnotherFormat(): void
+    {
+        $filesDir = $this->createFilesDir(['ab12_p1.jpg' => 'legacy-jpeg-bytes']);
+        $projectDir = sys_get_temp_dir() . '/gallery_import_project_' . bin2hex(random_bytes(4));
+        mkdir($projectDir . '/public/uploads', 0777, true);
+        file_put_contents($projectDir . '/public/uploads/p1.webp', 'converted-webp');
+
+        $this->importSingleMedia([
+            'title' => 'Media 1',
+            'slug' => 'media-1',
+            'file' => 'files/ab12_p1.jpg',
+        ], $filesDir, $projectDir);
+
+        $this->assertSame('converted-webp', file_get_contents($projectDir . '/public/uploads/p1.webp'));
+
+        $this->removeDir($projectDir);
+        $this->removeDir($filesDir);
+    }
+
+    // Imports one media and hands it back, the flush standing in for Vich naming the stored file - which is what every archived file is then restored under
+    private function importSingleMedia(array $mediaData, string $filesDir, string $projectDir): GalleryMedia
+    {
+        $persisted = [];
+        $em = $this->createStub(EntityManagerInterface::class);
+        $em->method('persist')->willReturnCallback(static function (object $entity) use (&$persisted): void {
+            $persisted[] = $entity;
+        });
+        $em->method('flush')->willReturnCallback(static function () use (&$persisted): void {
+            foreach ($persisted as $entity) {
+                if ($entity instanceof GalleryMedia && null === $entity->getFilename()) {
+                    $entity->setFilename('uploads/p1.webp');
+                }
+            }
+        });
+
+        $this->createProvider($em, null, $projectDir)->import([[
+            'slug' => 'voyages',
+            'title' => 'Voyages',
+            'medias' => [$mediaData],
+        ]], $filesDir);
+
+        return array_values(array_filter($persisted, static fn (object $e): bool => $e instanceof GalleryMedia))[0];
     }
 
     // The url is all a media framed from a platform carries, so a round-trip losing it loses the video itself - and the type is derived from that url on the way back in, the exported one never being read
@@ -303,11 +502,13 @@ class GalleryImportProviderTest extends TestCase
             $persisted[] = $entity;
         });
 
-        $this->createProvider($em)->import($exported['items'], $filesDir);
+        $this->createProvider($em, null, $projectDir)->import($exported['items'], $filesDir);
 
         $imported = array_values(array_filter($persisted, static fn (object $e): bool => $e instanceof GalleryMedia))[0];
         $this->assertSame($exportedMedia->getExternalUrl(), $imported->getExternalUrl());
         $this->assertSame(VideoPlatform::Youtube->value, $imported->getMediaType());
+        // The whole point of the round-trip: the media lands at the very url it was exported from, images included
+        $this->assertSame($exportedMedia->getFilename(), $imported->getFilename());
 
         $this->removeDir($filesDir);
         $this->removeDir($projectDir);

@@ -33,6 +33,9 @@ class GalleryMedia implements VichMultiSizeImageInterface, VichMediaNamableInter
     // Where a kept original lands, outside public/: it is an untouched multi-megabyte upload nothing on the site ever serves, only kept so a media can be re-processed (a new target size, a new format) without a re-upload
     public const ORIGINAL_DIRECTORY = 'private';
 
+    // What every file of every media hangs under, on both sides (see getVichMediaPath) - the one directory this bundle writes in, which is what lets an import check that a name coming out of an archive lands where this bundle's files belong and nowhere else (see GalleryImportProvider::archivedFilename)
+    public const MEDIA_DIRECTORY = 'medias/gallery';
+
     // "Medium" is the uploaded file's own stored size/format, used for the standard media detail view. The thumbnail (grid) and highres (zoom) are generated as sibling files alongside it - see UiBundle's VichImageResizeListener::processMultiSizeDerivatives()
     // The thumbnail holds the whole media, its longest side capped here, the grid being what squares it (see the "gallery-thumbnail-whole" config): 600 rather than the tile's own measure so the cropped display, which only keeps the shortest side of a 3:2 photo, still has 400 pixels to fill a 150px tile on a 2x screen
     public const MEDIUM_WIDTH = 1024;
@@ -473,11 +476,12 @@ class GalleryMedia implements VichMultiSizeImageInterface, VichMediaNamableInter
     // The stored file is named after the slug the media is reached by, so the file on disk and the page pointing at it read the same - UiMediaNamer appends its own "-{uniqid}.{ext}", which is what keeps two same-titled medias apart and busts the cache when a file is replaced
     // Reads what is already in memory and nothing else: Vich's prePersist listener runs before the auto-increment id is assigned, hence a slug posed by whoever created the media (see GalleryMediaSlugger) rather than anything derived from the row
     // Renaming a media afterwards does not rename its file: the slug carried here is the one it had when the file was uploaded, and moving three files (medium, thumbnail, high resolution) would cost the old urls their place in an image index for a signal the alt text already carries
+    // Only ever asked for a file being uploaded: an imported media keeps the name it was exported under instead, so the same gallery answers at the same urls on every site it is synced to (see GalleryImportProvider)
     public function getVichMediaPath(): string
     {
         $categorySlug = $this->getCategory()?->getSlug() ?? 'uncategorized';
 
-        return 'medias/gallery/' . $categorySlug . '/' . ($this->slug ?? 'media');
+        return self::MEDIA_DIRECTORY . '/' . $categorySlug . '/' . ($this->slug ?? 'media');
     }
 
     // Sibling files generated alongside the stored (medium) one - see UiBundle's VichImageResizeListener::processMultiSizeDerivatives()

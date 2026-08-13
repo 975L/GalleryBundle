@@ -16,34 +16,26 @@ use c975L\GalleryBundle\Entity\GalleryCategory;
 use c975L\GalleryBundle\Entity\GalleryMedia;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGeneratorInterface;
-use Twig\Extension\AbstractExtension;
-use Twig\TwigFunction;
+use Twig\Attribute\AsTwigFunction;
 
 // Points the public pages' "edit" button at what is being looked at - the gallery on a category page, the media on its own - as UiBundle's own hover button does for a block (see BlockFocusUrl). The admin url is generated, never written out, the dashboard deciding where the CRUDs are mounted
 // The role deciding who is offered the button is checked by the templates, where it costs no query (see gallery/category.html.twig and gallery/media.html.twig)
-class GalleryEditUrlExtension extends AbstractExtension
+class GalleryEditUrlExtension
 {
     public function __construct(
         private readonly AdminUrlGeneratorInterface $adminUrlGenerator,
     ) {
     }
 
-    #[\Override]
-    public function getFunctions(): array
-    {
-        return [
-            new TwigFunction('gallery_category_edit_url', $this->getCategoryEditUrl(...)),
-            new TwigFunction('gallery_media_edit_url', $this->getMediaEditUrl(...)),
-        ];
-    }
-
     // A category's edit screen is the gallery itself: its heading blocks, its medias, their order and its cover (see GalleryCategoryCrudController)
+    #[AsTwigFunction('gallery_category_edit_url')]
     public function getCategoryEditUrl(GalleryCategory $category): ?string
     {
         return $this->editUrl(GalleryCategoryCrudController::class, $category->getId());
     }
 
     // The category is carried along the way every media screen carries it: it is where the media CRUD comes back to after a save, a delete or a cancel (see GalleryMediaCrudController::index())
+    #[AsTwigFunction('gallery_media_edit_url')]
     public function getMediaEditUrl(GalleryMedia $media): ?string
     {
         return $this->editUrl(GalleryMediaCrudController::class, $media->getId(), ['category' => $media->getCategory()?->getId()]);

@@ -11,12 +11,11 @@
 namespace c975L\GalleryBundle\Twig\Extension;
 
 use c975L\ConfigBundle\Service\ConfigServiceInterface;
-use Twig\Extension\AbstractExtension;
-use Twig\TwigFunction;
+use Twig\Attribute\AsTwigFunction;
 
 // What the viewer's pages hand to the layout's "bodyClass" block: the gallery's own class, the ready-made style the "gallery-style" config names, and the passe-partout the "gallery-frame" one picks
 // Each list lives here as much as in config/configs.json, and deliberately so: the config decides what an admin is offered, this decides what reaches the markup - a value stored before a style was renamed, or one arriving from an import, would otherwise write a class the stylesheet paints nothing for
-class GalleryStyleExtension extends AbstractExtension
+class GalleryStyleExtension
 {
     // Each value has its own block in sass/_gallery.scss, which GalleryStyleTest keeps in step with these two lists
     public const STYLES = ['light', 'dark'];
@@ -31,15 +30,8 @@ class GalleryStyleExtension extends AbstractExtension
     ) {
     }
 
-    #[\Override]
-    public function getFunctions(): array
-    {
-        return [
-            new TwigFunction('gallery_body_class', $this->getBodyClass(...)),
-        ];
-    }
-
     // No style, no frame, an unknown value or a config not loaded yet: the page keeps the gallery's own class alone, painted in the site's colors and framed at the token's own default, which is what a gallery did before either config existed
+    #[AsTwigFunction('gallery_body_class')]
     public function getBodyClass(): string
     {
         $classes = [self::PAGE_CLASS];

@@ -13,6 +13,7 @@ namespace c975L\GalleryBundle\Tests\Twig\Extension;
 use c975L\ConfigBundle\Service\ConfigServiceInterface;
 use c975L\GalleryBundle\Twig\Extension\GalleryStyleExtension;
 use PHPUnit\Framework\TestCase;
+use Twig\Extension\AttributeExtension;
 
 class GalleryStyleExtensionTest extends TestCase
 {
@@ -20,7 +21,7 @@ class GalleryStyleExtensionTest extends TestCase
     {
         $names = array_map(
             static fn ($function): string => $function->getName(),
-            $this->extension(null, null)->getFunctions()
+            new AttributeExtension(GalleryStyleExtension::class)->getFunctions()
         );
 
         $this->assertSame(['gallery_body_class'], $names);

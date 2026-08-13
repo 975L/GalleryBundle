@@ -1,5 +1,23 @@
 # ChangeLog
 
+## v1.4.2
+
+An imported gallery keeps the names its files were exported under
+
+- The export archives a media's thumbnail, high resolution and stored file alike (13/08/2026)
+- The export carries each file's name and the media's `updatedAt` (13/08/2026)
+- The import lays the archived files back under their exported names (13/08/2026)
+- An archived name is only honoured under `GalleryMedia::MEDIA_DIRECTORY` (13/08/2026)
+- Added `GalleryMedia::MEDIA_DIRECTORY`, used by `getVichMediaPath()` and `GalleryBackupPathProvider` (13/08/2026)
+- The Twig extensions declare their functions with `#[AsTwigFunction]` (13/08/2026)
+- Dropped `AbstractExtension` from the Twig extensions (13/08/2026)
+- Added `symfony/twig-bundle` and `twig/twig` to the requirements (13/08/2026)
+- Rector binds its Symfony and Doctrine rules to the installed versions through `withComposerBased()` (13/08/2026)
+- The `rector` composer script clears its cache (13/08/2026)
+- `bin/ci.sh` installs the quality tools in their latest release, as the CI does (13/08/2026)
+- `bin/ci.sh` prints the version of each quality tool it ran (13/08/2026)
+- `bin/ci.sh` runs Rector on a private `TMPDIR` (13/08/2026)
+
 ## v1.4.1
 
 - The lightbox closes on any click inside, the close button being removed

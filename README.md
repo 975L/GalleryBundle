@@ -679,11 +679,24 @@ A category's [heading blocks](#composing-a-categorys-heading) travel with it, th
 archive, and are replaced wholesale on import — the same way `PageImportProvider` replaces a page's. An
 archive exported before categories gained a heading imports as a category without one.
 
-A media that [kept its original](#uploading-a-batch) carries it into the archive too, put back under
-`private/` on import, so an imported gallery can still be re-processed without a re-upload. Nothing travels
-about the [watermark](#watermarking-the-batch), there being nothing stored to travel: the archived file
-already carries the signature in its pixels, and the import asks for none, which would lay a second one
-over the first.
+Every file a media holds travels: the stored one, its thumbnail and high resolution siblings, its
+self-hosted video, and the [original it kept](#uploading-a-batch) — put back under `private/` on import, so
+an imported gallery can still be re-processed without a re-upload. **They travel with their names**, and are
+laid straight back under them: the upload pipeline is skipped entirely, so an imported gallery is the same
+gallery down to the bytes, and answers at the very same image urls on every site it is synced to. That
+matters for urls that are shared and cached — and it also means importing a category of three hundred photos
+copies files instead of resizing three hundred images.
+
+A name coming out of an archive is only honoured under `public/medias/gallery/` (and `private/` for the
+original), as a plain relative name: anything climbing out of it is refused and the file named by Vich
+instead, as an archive exported before the names travelled is. Such an archive also has its thumbnail and
+high resolution recomputed from the stored file — which is why they travel now: the high resolution came
+back at the stored file's own width, and each round-trip re-encoded the webp once more.
+
+Nothing travels about the [watermark](#watermarking-the-batch), there being nothing stored to travel: the
+archived files already carry the signature in their pixels, and the import asks for none, which would lay
+a second one over the first. That is also why the derivatives are archived rather than rebuilt from the
+kept original, which is copied aside before any signature is laid.
 
 ### Sitemap and health check
 

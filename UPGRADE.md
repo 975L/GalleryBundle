@@ -2,6 +2,45 @@
 
 ## Unreleased
 
+### An imported gallery keeps the names its files were exported under
+
+The export carries each file's name beside its bytes, and the import lays the files straight back
+under those names instead of handing them to Vich, which gave each one a fresh `uniqid`. The images
+of a synced gallery therefore answer at the same urls on every site it is carried to.
+
+| Before | After |
+| --- | --- |
+| stored/thumb/highres/video renamed on import | put back under their exported names |
+| thumbnail and high resolution recomputed | archived and restored as exported |
+| media dated by the import | dated by the exported `updatedAt` |
+
+**Nothing to do, but expect one move.** A gallery already imported before this carries names its
+source site never used: the next sync replaces its medias, so its images change url **once** — to the
+names of the site the archive comes from — and stay there afterwards. A site serving those urls from a
+cache or a CDN wants that cache cleared once after the sync.
+
+An archive exported before the names travelled imports exactly as it used to, Vich naming its files.
+A name is only honoured under `GalleryMedia::MEDIA_DIRECTORY` (the new constant behind
+`getVichMediaPath()`), as a plain relative name — anything else falls back to Vich.
+
+### The Twig extensions declare their functions with an attribute
+
+`GalleryBlockExtension`, `GalleryEditUrlExtension` and `GalleryStyleExtension` no longer extend
+`AbstractExtension`: each function is declared where it is written, with `#[AsTwigFunction]`, and
+`getFunctions()` is gone from the three of them.
+
+| Before | After |
+| --- | --- |
+| `class …Extension extends AbstractExtension` | `class …Extension` |
+| `getFunctions()` returning `TwigFunction`s | `#[AsTwigFunction('name')]` on the method |
+
+A site subclassing one of them to add a function of its own calls `parent::getFunctions()` on a
+method that no longer exists. The subclass drops the override and puts `#[AsTwigFunction]` on its
+own methods instead - inherited attributes are read too, so the parent's functions keep working.
+
+The function names are unchanged: `gallery_block_categories`, `gallery_block_medias`,
+`gallery_category_edit_url`, `gallery_media_edit_url`, `gallery_body_class`.
+
 ### A video is an url now, and no longer YouTube or TikTok only
 
 `GalleryMedia` carried a `mediaType` picked from a list of three and an `externalId` typed next to it,

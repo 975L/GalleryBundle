@@ -16,6 +16,7 @@ use c975L\GalleryBundle\Repository\GalleryCategoryRepository;
 use c975L\GalleryBundle\Repository\GalleryMediaRepository;
 use c975L\GalleryBundle\Twig\Extension\GalleryBlockExtension;
 use PHPUnit\Framework\TestCase;
+use Twig\Extension\AttributeExtension;
 
 class GalleryBlockExtensionTest extends TestCase
 {
@@ -23,7 +24,7 @@ class GalleryBlockExtensionTest extends TestCase
     {
         $names = array_map(
             static fn ($function): string => $function->getName(),
-            $this->extension()->getFunctions()
+            new AttributeExtension(GalleryBlockExtension::class)->getFunctions()
         );
 
         $this->assertSame(['gallery_block_categories', 'gallery_block_medias'], $names);

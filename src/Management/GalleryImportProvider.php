@@ -27,14 +27,17 @@ class GalleryImportProvider implements ImportProviderInterface
 {
     public const KIND = 'gallery_category';
 
+    private readonly Filesystem $filesystem;
+
     public function __construct(
         private readonly EntityManagerInterface $em,
         private readonly GalleryCategoryRepository $categoryRepository,
         private readonly GalleryMediaSlugger $mediaSlugger,
         private readonly BlockDataImporter $blockDataImporter,
-        #[Autowire('%kernel.project_dir%')]
+        #[Autowire(param: 'kernel.project_dir')]
         private readonly string $projectDir,
     ) {
+        $this->filesystem = new Filesystem();
     }
 
     public function supportsImport(string $kind): bool
@@ -46,7 +49,7 @@ class GalleryImportProvider implements ImportProviderInterface
     {
         $created = 0;
         $updated = 0;
-        $originals = [];
+        $archived = [];
 
         foreach ($items as $item) {
             $category = $this->categoryRepository->findOneBySlug($item['slug']);
@@ -80,9 +83,9 @@ class GalleryImportProvider implements ImportProviderInterface
                 // Once the media has joined its category, the slug being unique within it - the exported one is honoured when it is still free, and the media's imported file is named after whatever it ends up being (see GalleryMedia::getVichMediaPath)
                 $this->mediaSlugger->assign($media, $mediaData['slug'] ?? null);
 
-                // Held back rather than restored right away: the file it is named after is only named by the flush below (see restoreOriginals)
-                if (null !== $filesDir && isset($mediaData['originalFile'])) {
-                    $originals[] = [$media, $filesDir . '/' . $mediaData['originalFile']];
+                // Held back rather than laid down right away: every archived file is named after the stored one, which is only named by the flush below (see restoreArchivedFiles)
+                if (null !== $filesDir) {
+                    $archived[] = [$media, $mediaData];
                 }
 
                 $newMedias[] = $media;
@@ -99,7 +102,9 @@ class GalleryImportProvider implements ImportProviderInterface
 
         $this->em->flush();
 
-        $this->restoreOriginals($originals);
+        if (null !== $filesDir) {
+            $this->restoreArchivedFiles($archived, $filesDir);
+        }
 
         return ['created' => $created, 'updated' => $updated];
     }
@@ -116,34 +121,81 @@ class GalleryImportProvider implements ImportProviderInterface
         }
     }
 
-    // Puts the archived originals back under private/, after the flush that had Vich store and name the files they are named after. Deliberately not left to UiBundle's VichImageResizeListener::keepOriginal(): what an import re-uploads is the already-processed file, so the listener would keep a webp copy of that instead of the untouched upload the archive actually carries
-    // @param list<array{0: GalleryMedia, 1: string}> $originals
-    private function restoreOriginals(array $originals): void
+    // Puts every archived file back exactly as it was exported, each under the name the stored one carries - which is why it can only run after the first flush, that name being the media's own when the archive carried it, and Vich's when it didn't
+    // For a media that kept its name nothing has written anything yet, and these copies are the whole storage. For one Vich named, what the upload pipeline recomputed is overwritten rather than kept: it derived the thumbnail and the high resolution from the re-uploaded stored file, so the largest of the three came back at that file's own width, and it re-encoded the webp it was handed once more (see UiBundle's VichImageResizeListener)
+    // The kept original is deliberately not left to that listener's own keepOriginal() either: what an import re-uploads is the already-processed file, so it would keep a webp copy of that instead of the untouched upload the archive actually carries
+    // @param list<array{0: GalleryMedia, 1: array}> $archived
+    private function restoreArchivedFiles(array $archived, string $filesDir): void
     {
-        if ([] === $originals) {
+        if ([] === $archived) {
             return;
         }
 
-        $filesystem = new Filesystem();
-        foreach ($originals as [$media, $archivedPath]) {
+        foreach ($archived as [$media, $mediaData]) {
             $filename = $media->getFilename();
-            if (null === $filename || !is_file($archivedPath)) {
+            if (null === $filename) {
                 continue;
             }
 
-            // Same naming as the listener's own: the stored file's name, suffixed and carrying the original's extension rather than the forced webp one
-            $originalFilename = preg_replace('/\.[^.\/]+$/', '-original.' . pathinfo($archivedPath, \PATHINFO_EXTENSION), $filename);
-            $filesystem->copy($archivedPath, $this->projectDir . '/' . GalleryMedia::ORIGINAL_DIRECTORY . '/' . $originalFilename, true);
-            $media->setOriginalFilename($originalFilename);
+            $storedPath = $this->restoreFile($filesDir, $mediaData['file'] ?? null, $filename, 'public');
+            if (null !== $storedPath) {
+                // The two columns describe the file actually served: nothing has written them when the media kept its exported name, Vich never having seen a file, and the pipeline had set them from its own re-encoding otherwise
+                $media
+                    ->setSize(filesize($storedPath) ?: null)
+                    ->setMimeType(mime_content_type($storedPath) ?: null);
+            }
 
-            // Vich has stored the file by now and left a plain File on the property (see its FileInjector), which is exactly what GalleryMediaDerivativeCleanupListener::preUpdate() reads as "a new file is being uploaded" - left in place, it would take the flush below for a file replacement and erase the very derivatives, and the original, that were just written
+            $this->restoreFile($filesDir, $mediaData['thumbFile'] ?? null, $media->getThumbnailFilename(), 'public');
+            $this->restoreFile($filesDir, $mediaData['highresFile'] ?? null, $media->getHighresFilename(), 'public');
+            $this->restoreOriginal($filesDir, $mediaData['originalFile'] ?? null, $media, $filename);
+
+            // Only ever restored for a media that kept its exported name: the other way round Vich has stored the video itself, under a name of its own, and removed the archived copy on the way (see buildMedia)
+            $videoPath = $this->restoreFile($filesDir, $mediaData['videoFile'] ?? null, $media->getVideoFilename(), 'public');
+            if (null !== $videoPath) {
+                $media
+                    ->setVideoSize(filesize($videoPath) ?: null)
+                    ->setVideoMimeType(mime_content_type($videoPath) ?: null);
+            }
+
+            // A media Vich stored carries a plain File on the property by now (see its FileInjector), which is exactly what GalleryMediaDerivativeCleanupListener::preUpdate() reads as "a new file is being uploaded" - left in place, it would take the flush below for a file replacement and erase the very files that were just restored
             $media->setFile(null);
         }
 
         $this->em->flush();
     }
 
-    // Same ReplacingFile technique as PageImportProvider/FontImportProvider - see PageCrudController::cloneMedia() for why a plain File won't do
+    // Copies one archived file over what the pipeline wrote in its place, and answers where it landed. Nothing is done for a key the archive doesn't carry - an archive exported before the derivatives travelled keeps the recomputed ones, which is the best it can describe
+    // Only when the two carry the same extension though: an archive from before the stored files were converted holds a jpeg, where the name it would be restored under says webp - that would serve a file as something it is not, where the recomputed one is merely softer
+    private function restoreFile(string $filesDir, ?string $archiveEntry, ?string $targetFilename, string $root): ?string
+    {
+        if (null === $archiveEntry || null === $targetFilename) {
+            return null;
+        }
+
+        $archivedPath = $filesDir . '/' . $archiveEntry;
+        if (!is_file($archivedPath) || pathinfo($archivedPath, \PATHINFO_EXTENSION) !== pathinfo($targetFilename, \PATHINFO_EXTENSION)) {
+            return null;
+        }
+
+        $target = $this->projectDir . '/' . $root . '/' . $targetFilename;
+        $this->filesystem->copy($archivedPath, $target, true);
+
+        return $target;
+    }
+
+    // Named apart from the three above: the original is the one file whose name is not the stored one's, it carries the upload's own extension where the others carry the forced webp one - hence no extension to match, and a name to build rather than to derive
+    private function restoreOriginal(string $filesDir, ?string $archiveEntry, GalleryMedia $media, string $filename): void
+    {
+        if (null === $archiveEntry || !is_file($filesDir . '/' . $archiveEntry)) {
+            return;
+        }
+
+        // Same naming as UiBundle's listener does its own: the stored file's name, suffixed and carrying the original's extension rather than the forced webp one
+        $originalFilename = preg_replace('/\.[^.\/]+$/', '-original.' . pathinfo($archiveEntry, \PATHINFO_EXTENSION), $filename);
+        $this->filesystem->copy($filesDir . '/' . $archiveEntry, $this->projectDir . '/' . GalleryMedia::ORIGINAL_DIRECTORY . '/' . $originalFilename, true);
+        $media->setOriginalFilename($originalFilename);
+    }
+
     private function buildMedia(array $mediaData, ?string $filesDir): GalleryMedia
     {
         // "alt" is what an archive exported before the title/slug rework carries, read as a fallback rather than importing medias with no name at all
@@ -157,15 +209,51 @@ class GalleryImportProvider implements ImportProviderInterface
             ->setPosition($mediaData['position'] ?? 0);
 
         if (null !== $filesDir && isset($mediaData['file'])) {
-            $media->setFile(new ReplacingFile($filesDir . '/' . $mediaData['file'], true, true, true));
+            $this->attachFiles($media, $mediaData, $filesDir);
         }
 
-        // Nothing to hold back for this one, unlike the kept original: it goes through Vich like the still above, so the flush stores and names it, and the type follows from the name it is given (see GalleryMedia::setVideoFilename)
-        if (null !== $filesDir && isset($mediaData['videoFile'])) {
-            $media->setVideoFile(new ReplacingFile($filesDir . '/' . $mediaData['videoFile'], true, true, true));
+        // Last, so it stands whichever way the files were attached: setFile() stamps a media with the moment it was handed a file, which for an import is the moment of the import. What the media is dated by is when it was actually touched, and the sitemap reads it (see GallerySitemapProvider)
+        if (isset($mediaData['updatedAt'])) {
+            $media->setUpdatedAt(new \DateTimeImmutable($mediaData['updatedAt']));
         }
 
         return $media;
+    }
+
+    // The two ways of putting a media's files back, decided by whether the archive says what they were called
+    private function attachFiles(GalleryMedia $media, array $mediaData, string $filesDir): void
+    {
+        // Named: the files are laid straight back under those names (see restoreArchivedFiles) and Vich never sees one at all, which is what keeps a gallery answering at the same image urls on every site it is synced to - and what spares an import the resizing of every photo it carries
+        $filename = $this->archivedFilename($mediaData['filename'] ?? null);
+        if (null !== $filename) {
+            $media->setFilename($filename);
+
+            // The type follows from the name, exactly as it would from the one Vich gave it (see GalleryMedia::setVideoFilename)
+            if (isset($mediaData['videoFile'])) {
+                $media->setVideoFilename($this->archivedFilename($mediaData['videoFilename'] ?? null));
+            }
+
+            return;
+        }
+
+        // Unnamed: Vich stores and names the files anew, on the same ReplacingFile technique as PageImportProvider/FontImportProvider - see PageCrudController::cloneMedia() for why a plain File won't do
+        // The still is left on disk once stored, where the video is removed: the very same file is copied back over what the pipeline made of it (see restoreArchivedFiles), so it has to outlive the flush. Nothing is leaked by it, ContentImportController removing the whole extraction directory in a finally
+        $media->setFile(new ReplacingFile($filesDir . '/' . $mediaData['file'], true, false, false));
+
+        if (isset($mediaData['videoFile'])) {
+            $media->setVideoFile(new ReplacingFile($filesDir . '/' . $mediaData['videoFile'], true, true, true));
+        }
+    }
+
+    // The name an archive says a file was served under, or null for anything this bundle would refuse to write. What comes out of an archive is a path an admin uploaded, so it is only honoured under this bundle's own media directory, and only as a plain relative name: a "../" or an absolute path would have an import lay files anywhere the process can write, and a null byte would have PHP stop reading the name where C does
+    // Null falls the caller back on Vich naming the file itself, which is also what an archive exported before the names travelled gets
+    private function archivedFilename(?string $filename): ?string
+    {
+        if (null === $filename || !str_starts_with($filename, GalleryMedia::MEDIA_DIRECTORY . '/')) {
+            return null;
+        }
+
+        return !str_contains($filename, "\0") && !in_array('..', explode('/', $filename), true) ? $filename : null;
     }
 
     // Rebuilds the url of an archive that predates it, from the platform name and the id it stored side by side - null for anything else, which imports as the image every entry already carries
