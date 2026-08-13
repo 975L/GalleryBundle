@@ -1,5 +1,11 @@
 # ChangeLog
 
+## v1.4.3
+
+The bundle carries its own stylelint config
+
+- Added `.stylelintrc.json` (13/08/2026)
+
 ## v1.4.2
 
 An imported gallery keeps the names its files were exported under
