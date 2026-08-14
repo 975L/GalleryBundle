@@ -1,5 +1,13 @@
 # ChangeLog
 
+## v1.5.2
+
+The gallery index is listed in "Descriptions d'urls"
+
+- Added `GalleryUrlMetadataProvider`, declaring the gallery index to `c975l:url-metadata:sync` (14/08/2026)
+- The declared path follows the configured route prefix, read at sync time (14/08/2026)
+- README documents the declared url and links it from the category summary (14/08/2026)
+
 ## v1.5.1
 
 The dev-only files stay out of the Composer archive, and the CI audits the dependencies

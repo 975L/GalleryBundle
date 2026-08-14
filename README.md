@@ -22,7 +22,7 @@ See it in action at [bundles.975l.com/pages/gallery-bundle](https://bundles.975l
 ## Contents
 
 - **Setup** — [requirements](#requirements) · [installation](#installation) · [configuration](#load-the-configuration) · [routes](#enable-routes) · [assets](#install-assets) · [theme](#install-the-theme)
-- **Using it** — [public routes](#public-routes) · [linking from a menu](#linking-a-gallery-from-a-menu) · [renaming a category](#renaming-a-category) · [deleting a gallery](#deleting-a-gallery) · [uploading a batch](#uploading-a-batch) · [renaming a media](#renaming-a-media) · [browsing and the lightbox](#browsing-and-the-lightbox) · [editing from the public pages](#editing-from-the-public-pages) · [blocks](#blocks-defined-by-this-bundle) · [category summary](#a-categorys-summary) · [category headings](#composing-a-categorys-heading) · [theme tokens](#theme) · [videos](#videos) · [deleting a selection](#deleting-a-selection-of-medias) · [credits / rights on a selection](#applying-credits-or-rights-to-a-selection) · [export / import categories](#export--import-categories) · [sitemap and health check](#sitemap-and-health-check) · [backup](#backup) · [what's new](#whats-new) · [guided projects](#guided-projects)
+- **Using it** — [public routes](#public-routes) · [linking from a menu](#linking-a-gallery-from-a-menu) · [renaming a category](#renaming-a-category) · [deleting a gallery](#deleting-a-gallery) · [uploading a batch](#uploading-a-batch) · [renaming a media](#renaming-a-media) · [browsing and the lightbox](#browsing-and-the-lightbox) · [editing from the public pages](#editing-from-the-public-pages) · [blocks](#blocks-defined-by-this-bundle) · [category summary](#a-categorys-summary) · [category headings](#composing-a-categorys-heading) · [theme tokens](#theme) · [videos](#videos) · [deleting a selection](#deleting-a-selection-of-medias) · [credits / rights on a selection](#applying-credits-or-rights-to-a-selection) · [export / import categories](#export--import-categories) · [sitemap and health check](#sitemap-and-health-check) · [describing the gallery index](#describing-the-gallery-index) · [backup](#backup) · [what's new](#whats-new) · [guided projects](#guided-projects)
 - **Operating** — [bringing an existing gallery in](#bringing-an-existing-gallery-in) · [upload ceilings](#upload-ceilings)
 
 ## Features
@@ -40,6 +40,7 @@ See it in action at [bundles.975l.com/pages/gallery-bundle](https://bundles.975l
 - Videos sit in the same categories as the photos: an entry becomes one by carrying the url of the page it is watched on, or a video file of the site's own, and each carries its own uploaded still, so one grid holds both kinds. YouTube, TikTok, Vimeo and Dailymotion are recognized, any other player being framed as pasted (see [videos](#videos)).
 - The bundle's own stylesheet and theme file, reading UiBundle's admin-editable colors and fonts, so a gallery looks like the site it is installed on without a line of CSS (see [theme](#theme)).
 - Sitemap generation (gallery index, categories and media pages), via ConfigBundle's `SitemapProviderInterface`
+- The gallery index listed in the "Descriptions d'urls" screen, via ConfigBundle's `UrlMetadataProviderInterface`, ready to be described without anyone typing its path (see [describing the gallery index](#describing-the-gallery-index))
 - The gallery index and each category offered as a SiteBundle menu target, so a navbar links straight to one of the site's galleries (see [linking a gallery from a menu](#linking-a-gallery-from-a-menu))
 - Categories can be exported/imported as a zip (heading blocks, medias and files bundled in), plugging into ConfigBundle's **Export sync (everything)** dashboard shortcut and **Import content** screen.
 - The two upload roots declared to the backup, via ConfigBundle's `BackupPathProviderInterface`, mirrored offsite rather than tarred (see [backup](#backup))
@@ -462,7 +463,8 @@ without one, and one exported before the rename read under its old `description`
 The two pages next to it fill the same variable their own way: a **media** composes it from the site name,
 its category, its own title and its credits — a photo carries no summary of its own, and these four are
 what situates one. The **index** of the gallery has no entity behind it at all, so it takes the summary an
-admin wrote for its path in ConfigBundle's `UrlMetadata`, without a line of code here.
+admin wrote for its path in ConfigBundle's `UrlMetadata`, without a line of code here (see
+[describing the gallery index](#describing-the-gallery-index)).
 
 It is centered by default, under a short rule parting it from the breadcrumb — aligned with the breadcrumb
 above it and the grid below, which is how a category page reads, and sized for the one to three lines a
@@ -739,6 +741,22 @@ its own, less frequent schedule — a gallery declares one url per media:
 ```bash
 php bin/console c975l:health-check:run --kind=urls-gallery
 ```
+
+### Describing the gallery index
+
+`GalleryUrlMetadataProvider` (ConfigBundle's `UrlMetadataProviderInterface`) declares the `/gallery` path in
+the **Descriptions d'urls** screen, so the row is there to be filled in rather than typed by hand — a path
+one slash apart would describe an url that does not exist, and nothing would say so. Nothing to register,
+the provider is picked up automatically:
+
+```bash
+php bin/console c975l:url-metadata:sync
+```
+
+That one page only: a category and a media each say their own from their columns (see
+[a category's summary](#a-categorys-summary)), and a row written for them would never be read. The
+configured route prefix is read at sync time, so a site renaming it gets the new url declared and the
+former one reported as orphaned, to be removed from the back office.
 
 ### Backup
 

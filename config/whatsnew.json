@@ -1,5 +1,15 @@
 [
     {
+        "date": "2026-08-14",
+        "description": [
+            {
+                "en": "The gallery's home page now shows up on its own in the screen where the sentence search engines and social networks display is written, ready to be filled in. Until now it had to be added there by hand, and its address typed a slash apart described a page that did not exist. Renaming the gallery's address adds the new one just as automatically, the former one being flagged so it can be removed",
+                "fr": "La page d'accueil de la galerie apparaît désormais d'elle-même dans l'écran où s'écrit la phrase affichée par les moteurs de recherche et les réseaux sociaux, prête à être remplie. Jusqu'ici il fallait l'y ajouter à la main, et son adresse saisie à un slash près décrivait une page inexistante. Renommer l'adresse de la galerie ajoute la nouvelle tout aussi automatiquement, l'ancienne étant signalée pour être supprimée",
+                "es": "La página de inicio de la galería aparece ahora por sí sola en la pantalla donde se escribe la frase que muestran los motores de búsqueda y las redes sociales, lista para rellenarse. Hasta ahora había que añadirla a mano, y su dirección escrita con una barra de más describía una página inexistente. Cambiar el nombre de la dirección de la galería añade la nueva con la misma automaticidad, y la anterior queda señalada para poder eliminarla"
+            }
+        ]
+    },
+    {
         "date": "2026-08-13",
         "description": [
             {
