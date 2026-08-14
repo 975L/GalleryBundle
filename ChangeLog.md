@@ -1,5 +1,16 @@
 # ChangeLog
 
+## v1.5.3
+
+Every gallery page carries a photo of its own as og:image
+
+- Added `GalleryCategory::getCoverOrRandomMedia()`, the cover or one of the medias at random (14/08/2026)
+- The public category component and the admin thumbnail read it instead of composing the fallback themselves (14/08/2026)
+- A media page sets its `ogImage` from its stored (medium) file (14/08/2026)
+- A category page sets its `ogImage` from its cover (14/08/2026)
+- The gallery index sets its `ogImage` from one of the categories' covers, unless its url metadata carries one (14/08/2026)
+- README documents the image a shared page carries (14/08/2026)
+
 ## v1.5.2
 
 The gallery index is listed in "Descriptions d'urls"

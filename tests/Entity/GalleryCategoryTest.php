@@ -67,6 +67,33 @@ class GalleryCategoryTest extends TestCase
         $this->assertSame(2, $category->getMediasCount());
     }
 
+    // The face the index tile, the admin listing and the page's og:image all read
+    public function testGetCoverOrRandomMediaPrefersTheCover(): void
+    {
+        $category = new GalleryCategory();
+        $cover = new GalleryMedia();
+        $category->addMedia(new GalleryMedia())->addMedia($cover)->setCoverMedia($cover);
+
+        $this->assertSame($cover, $category->getCoverOrRandomMedia());
+    }
+
+    // No cover picked yet: the category still has a face, taken among its own medias
+    public function testGetCoverOrRandomMediaFallsBackToOneOfTheMedias(): void
+    {
+        $category = new GalleryCategory();
+        $first = new GalleryMedia();
+        $second = new GalleryMedia();
+        $category->addMedia($first)->addMedia($second);
+
+        $this->assertContains($category->getCoverOrRandomMedia(), [$first, $second]);
+    }
+
+    // An empty category has nothing to show - the callers each draw their own placeholder
+    public function testGetCoverOrRandomMediaReturnsNullWhenTheCategoryIsEmpty(): void
+    {
+        $this->assertNull(new GalleryCategory()->getCoverOrRandomMedia());
+    }
+
     public function testRemoveMediaClearsBothSidesOfTheRelation(): void
     {
         $category = new GalleryCategory();

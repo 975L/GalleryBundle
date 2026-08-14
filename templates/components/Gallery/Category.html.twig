@@ -1,5 +1,5 @@
-{# Falls back to a random media rather than category.coverMedia alone - a category is left on no cover at all as long as none is picked on its edit screen (see GalleryCategoryCrudController::saveMediasLayout()), and it would otherwise never show a thumbnail (nor ever be reachable) on the public index - same fallback as the admin's _gallery_category_thumbnail.html.twig #}
-{% set coverMedia = category.coverMedia ?: (category.medias|length > 0 ? random(category.medias) : null) %}
+{# The cover, or one of the category's medias at random for lack of one - see GalleryCategory::getCoverOrRandomMedia(), which the admin listing and the page's own og:image read as well #}
+{% set coverMedia = category.coverOrRandomMedia %}
 {# Framed like the medias' own grid, the two reading as one gallery - see Media.html.twig #}
 {% set whole = config('gallery-thumbnail-whole') %}
 {% if coverMedia %}

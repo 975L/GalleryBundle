@@ -3,6 +3,16 @@
 {# Defines specific variables #}
 {% set title = 'label.gallery_page_title'|trans({}, 'gallery') %}
 
+{# One of the galleries' own photos when the index is shared, taken at random among the faces its tiles carry - the site's default og-image says nothing of what this page holds, and a gallery is better introduced by a photo than by a logo #}
+{# Only for lack of a row written for this url in "Descriptions d'urls", the one page of the bundle that is offered there (see GalleryUrlMetadataProvider): an image chosen for this very url is an admin's decision, where the one below is picked because nobody made it. The layout would never see it otherwise, a variable set here short-circuiting its whole chain #}
+{% set urlMetadata = url_metadata() %}
+{% if urlMetadata is null or urlMetadata.ogImage is null %}
+    {% set ogMedias = categories|map(category => category.coverOrRandomMedia)|filter(media => media is not null and media.filename is not null) %}
+    {% if ogMedias is not empty %}
+        {% set ogImage = absolute_url(asset(random(ogMedias).filename)) %}
+    {% endif %}
+{% endif %}
+
 {# The classes the whole page is painted from (see sass/_gallery.scss), on every screen of the viewer: a gallery laid on a ground of its own keeps it from its index down to each of its medias #}
 {% block bodyClass %}{{ gallery_body_class() }}{% endblock %}
 

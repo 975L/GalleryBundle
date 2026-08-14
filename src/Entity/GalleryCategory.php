@@ -160,6 +160,18 @@ class GalleryCategory implements HasBlocksInterface, \Stringable
         return $this->medias;
     }
 
+    // The face the category shows wherever it stands for itself - its index tile, its back-office row, its page's og:image - being the cover an admin picked, or one of its medias at random until one is (see GalleryCategoryCrudController::saveMediasLayout())
+    public function getCoverOrRandomMedia(): ?GalleryMedia
+    {
+        if (null !== $this->coverMedia) {
+            return $this->coverMedia;
+        }
+
+        $medias = $this->medias->toArray();
+
+        return [] === $medias ? null : $medias[array_rand($medias)];
+    }
+
     // What the back-office category listing shows instead of the medias themselves, the medias being managed from the category's own edit screen (see GalleryCategoryCrudController)
     public function getMediasCount(): int
     {

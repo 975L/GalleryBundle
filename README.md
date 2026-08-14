@@ -22,7 +22,7 @@ See it in action at [bundles.975l.com/pages/gallery-bundle](https://bundles.975l
 ## Contents
 
 - **Setup** — [requirements](#requirements) · [installation](#installation) · [configuration](#load-the-configuration) · [routes](#enable-routes) · [assets](#install-assets) · [theme](#install-the-theme)
-- **Using it** — [public routes](#public-routes) · [linking from a menu](#linking-a-gallery-from-a-menu) · [renaming a category](#renaming-a-category) · [deleting a gallery](#deleting-a-gallery) · [uploading a batch](#uploading-a-batch) · [renaming a media](#renaming-a-media) · [browsing and the lightbox](#browsing-and-the-lightbox) · [editing from the public pages](#editing-from-the-public-pages) · [blocks](#blocks-defined-by-this-bundle) · [category summary](#a-categorys-summary) · [category headings](#composing-a-categorys-heading) · [theme tokens](#theme) · [videos](#videos) · [deleting a selection](#deleting-a-selection-of-medias) · [credits / rights on a selection](#applying-credits-or-rights-to-a-selection) · [export / import categories](#export--import-categories) · [sitemap and health check](#sitemap-and-health-check) · [describing the gallery index](#describing-the-gallery-index) · [backup](#backup) · [what's new](#whats-new) · [guided projects](#guided-projects)
+- **Using it** — [public routes](#public-routes) · [linking from a menu](#linking-a-gallery-from-a-menu) · [renaming a category](#renaming-a-category) · [deleting a gallery](#deleting-a-gallery) · [uploading a batch](#uploading-a-batch) · [renaming a media](#renaming-a-media) · [browsing and the lightbox](#browsing-and-the-lightbox) · [editing from the public pages](#editing-from-the-public-pages) · [blocks](#blocks-defined-by-this-bundle) · [category summary](#a-categorys-summary) · [share image](#the-image-a-shared-page-carries) · [category headings](#composing-a-categorys-heading) · [theme tokens](#theme) · [videos](#videos) · [deleting a selection](#deleting-a-selection-of-medias) · [credits / rights on a selection](#applying-credits-or-rights-to-a-selection) · [export / import categories](#export--import-categories) · [sitemap and health check](#sitemap-and-health-check) · [describing the gallery index](#describing-the-gallery-index) · [backup](#backup) · [what's new](#whats-new) · [guided projects](#guided-projects)
 - **Operating** — [bringing an existing gallery in](#bringing-an-existing-gallery-in) · [upload ceilings](#upload-ceilings)
 
 ## Features
@@ -37,6 +37,7 @@ See it in action at [bundles.975l.com/pages/gallery-bundle](https://bundles.975l
 - Two block kinds contributed to UiBundle, so a gallery can be shown on any page composed in the back office instead of only under its own routes (see [blocks](#blocks-defined-by-this-bundle)).
 - A category owns UiBundle blocks of its own, giving it an editorial heading above its grid (see [category headings](#composing-a-categorys-heading)).
 - A category carries a rich-text summary, printed above its grid and reused as the page's social/search metas (see [summary](#a-categorys-summary)).
+- Every gallery page hands one of its own photos to a social network as its `og:image`, rather than the site's logo — a shared gallery shows what it holds (see [share image](#the-image-a-shared-page-carries)).
 - Videos sit in the same categories as the photos: an entry becomes one by carrying the url of the page it is watched on, or a video file of the site's own, and each carries its own uploaded still, so one grid holds both kinds. YouTube, TikTok, Vimeo and Dailymotion are recognized, any other player being framed as pasted (see [videos](#videos)).
 - The bundle's own stylesheet and theme file, reading UiBundle's admin-editable colors and fonts, so a gallery looks like the site it is installed on without a line of CSS (see [theme](#theme)).
 - Sitemap generation (gallery index, categories and media pages), via ConfigBundle's `SitemapProviderInterface`
@@ -472,6 +473,29 @@ gallery is actually introduced in. A site describing its categories in several p
 `--gallery-category-description-text-align: left` (centered running text stops reading well past a few
 lines), and one wanting no rule sets `--gallery-category-description-rule-height: 0` — see
 [theme](#theme) for the whole `--gallery-category-description-*` set.
+
+### The image a shared page carries
+
+A gallery pasted into a message is a photo, not a logo: each of the three pages sets the `ogImage` Twig
+variable the layout reads, so what a share shows is what the page actually holds.
+
+| Page | Image |
+| --- | --- |
+| A media | its own stored (medium) file - a video entry shares its still |
+| A category | its cover, or one of its medias at random for lack of one |
+| The index | one of the galleries' own faces, taken at random |
+
+`GalleryCategory::getCoverOrRandomMedia()` is what both the category and the index read, the same face a
+category's index tile and its back-office row carry - a category is left with no cover until one is picked
+on its edit screen, and would otherwise show nothing at all. The medium file rather than the highres: the
+thumbnail is capped at 600px and cropped by the grid, and the highres weighs megabytes for a card nobody
+views at 2048px.
+
+The index yields to an admin's own choice — a row written for its url in the **Descriptions d'urls** screen
+(see [describing the gallery index](#describing-the-gallery-index)) carrying an image wins, the random one
+being picked only because nobody picked one. A category and a media set theirs outright, having no row of
+their own to read. A page with no photo at all falls back on the site's default og-image, as any other page
+of the site does.
 
 ### Composing a category's heading
 

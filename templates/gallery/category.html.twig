@@ -5,6 +5,12 @@
 {# The name both layouts read to write the "description"/"og:description" metas - a category then describes itself to a search engine and to a social network with the very text it opens with on screen #}
 {# Handed over as typed: both layouts reduce it with "plain_text" themselves, which is where a rich-text summary has to be detoured - stripping it here as well would glue the lines that filter parts with a space #}
 {% set summarySocialNetwork = category.summarySocialNetwork %}
+{# What a shared gallery shows of itself: the very face its tile carries on the index - the cover an admin picked, or one of its photos at random for lack of one (see GalleryCategory::getCoverOrRandomMedia()) #}
+{# Read once into a variable: the method draws a fresh media on each call, so asking it twice would test one photo and share another #}
+{% set ogMedia = category.coverOrRandomMedia %}
+{% if ogMedia is not null and ogMedia.filename is not null %}
+    {% set ogImage = absolute_url(asset(ogMedia.filename)) %}
+{% endif %}
 
 {# The classes the whole page is painted from (see sass/_gallery.scss), the same ones the index and the medias carry #}
 {% block bodyClass %}{{ gallery_body_class() }}{% endblock %}
