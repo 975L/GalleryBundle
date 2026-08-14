@@ -1,6 +1,41 @@
 # UPGRADE
 
-## Unreleased
+## v1.5.0
+
+### A category's description is now its `summarySocialNetwork`
+
+`GalleryCategory::$description` is renamed `$summarySocialNetwork`, after the column SiteBundle's
+`Page` and ConfigBundle's `UrlMetadata` already carry under that name. Same field, same rich text,
+same two roles — printed above the grid and read by the layouts as the page's `description` /
+`og:description` metas — under the one name the whole ecosystem uses for it.
+
+| Before | After |
+| --- | --- |
+| `$category->getDescription()` | `$category->getSummarySocialNetwork()` |
+| `$category->setDescription(...)` | `$category->setSummarySocialNetwork(...)` |
+| `{{ category.description }}` | `{{ category.summarySocialNetwork }}` |
+| `label.gallery_description` (domain `gallery`) | `label.summary_social_network` (domain `config`) |
+| `label.gallery_description_help` | `label.gallery_summary_social_network_help` |
+
+**A migration to run, and one to read before running it.** The column is renamed, so
+`make:migration` writes it as a `DROP` followed by an `ADD` — which drops every category's lead-in
+along the way. Replace the two generated lines with a rename before migrating, taking the new column
+name from the migration itself (`summary_social_network` under Symfony's default naming strategy):
+
+```php
+$this->addSql('ALTER TABLE gallery_category RENAME COLUMN description TO summary_social_network');
+```
+
+An app overriding `gallery/category.html.twig` updates its two `category.description` accesses. An
+archive exported before this imports untouched, `GalleryImportProvider` still reading `description`
+when `summarySocialNetwork` is absent; an export written since carries the new key.
+
+**Requires `c975l/core-bundle` v1.10.0 or later — update CoreBundle first.** Until it, only
+SiteBundle's layout reduced the summary with `plain_text`; UiBundle's minimal one wrote the meta as
+it came, so an app running on it published escaped Trix markup as its meta description. Both reduce
+it now, and this bundle hands its summary over as typed rather than detouring it itself.
+
+## v1.4.2
 
 ### An imported gallery keeps the names its files were exported under
 

@@ -142,12 +142,22 @@ class GalleryCategoryCrudController extends AbstractCrudController
         ));
         $actions->setPermission('uploadMedias', $this->roleNeeded());
 
+        // Opens the category on the public site, in a new tab - the same action a Page carries in SiteBundle, a category being what a gallery url points at. No preview twin: a category has nothing to publish, it is online the moment it exists
+        // The route takes the slug alone, its prefix being filled from the request context (see GalleryRoutePrefixListener)
+        $viewOnSiteAction = Action::new('viewOnSite', t('action.view_on_site', [], 'gallery'), 'fa fa-external-link-alt')
+            ->linkToUrl(fn (GalleryCategory $category): string => $this->generateUrl('gallery_category', ['category' => $category->getSlug()]))
+            ->setHtmlAttributes(['target' => '_blank'])
+            ->addCssClass('btn btn-secondary');
+        $actions->setPermission('viewOnSite', $this->roleNeeded());
+
         // Lets the admin back out of a create/edit without saving - mirrors EasyAdmin's own built-in actions (linkToCrudAction targeting INDEX, same as Action::INDEX itself)
         $cancelAction = Action::new('cancel', $this->translator->trans('action.cancel', [], 'EasyAdminBundle'), 'fa fa-times')
             ->linkToCrudAction(Action::INDEX)
             ->addCssClass('btn btn-secondary');
 
         return $actions
+            ->add(Crud::PAGE_INDEX, $viewOnSiteAction)
+            ->add(Crud::PAGE_EDIT, $viewOnSiteAction)
             ->add(Crud::PAGE_NEW, $cancelAction)
             ->add(Crud::PAGE_EDIT, $cancelAction)
             // A gallery is dropped from its own screen as a media is from its (see GalleryMediaCrudController), rather than only from the row button one screen above - deleting it takes its medias and its heading blocks along, the association cascading
@@ -162,6 +172,10 @@ class GalleryCategoryCrudController extends AbstractCrudController
             ->update(Crud::PAGE_INDEX, Action::EDIT, fn (Action $action) => EasyAdminActionHelper::toIconOnly(
                 $action,
                 $this->translator->trans('action.edit', [], 'EasyAdminBundle'),
+            ))
+            ->update(Crud::PAGE_INDEX, 'viewOnSite', fn (Action $action) => EasyAdminActionHelper::toIconOnly(
+                $action,
+                $this->translator->trans('action.view_on_site', [], 'gallery'),
             ))
             // The catch-all "Non classé" category must always exist as a fallback for medias uploaded without a real one picked (see GalleryCategoryRepository::findOrCreateUncategorized)
             ->update(Crud::PAGE_INDEX, Action::DELETE, fn (Action $action) => EasyAdminActionHelper::toIconOnly(
@@ -386,9 +400,10 @@ class GalleryCategoryCrudController extends AbstractCrudController
                 ->setHelp(t('label.slug_help', [], 'gallery')),
 
             // TrixEditorType rather than EasyAdmin's own TextEditorField: it is the editor every other rich-text field of the ecosystem uses (see UiBundle's block form types), and its widget is where the rephrase button is wired - EasyAdmin's own renders through a different form block, which would leave this field the only one without it
-            TextareaField::new('description')
-                ->setLabel(t('label.gallery_description', [], 'gallery'))
-                ->setHelp(t('label.gallery_description_help', [], 'gallery'))
+            // Labelled from ConfigBundle's own 'config' domain, the very key SiteBundle's PageCrudController reads: the field plays the same role on a category as on a page, and an admin meets it under one name across the back office
+            TextareaField::new('summarySocialNetwork')
+                ->setLabel(t('label.summary_social_network', [], 'config'))
+                ->setHelp(t('label.gallery_summary_social_network_help', [], 'gallery'))
                 ->setFormType(TrixEditorType::class)
                 ->hideOnIndex(),
 

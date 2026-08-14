@@ -37,6 +37,14 @@ class MenuProviderTest extends TestCase
         $this->assertSame('gallery', $menus['gallery']['translation_domain']);
     }
 
+    // Without it the entry's onboarding step shows its label and nothing else - the key is the categories screen's own opening text, not one written for the tour
+    public function testTheEntryDescribesItselfForTheOnboardingTour(): void
+    {
+        $provider = new MenuProvider();
+
+        $this->assertSame('label.info_gallery_category', $provider->getMenus()['gallery']['description']);
+    }
+
     public function testGetLinksReturnsNone(): void
     {
         $provider = new MenuProvider();

@@ -22,7 +22,7 @@ See it in action at [bundles.975l.com/pages/gallery-bundle](https://bundles.975l
 ## Contents
 
 - **Setup** — [requirements](#requirements) · [installation](#installation) · [configuration](#load-the-configuration) · [routes](#enable-routes) · [assets](#install-assets) · [theme](#install-the-theme)
-- **Using it** — [public routes](#public-routes) · [linking from a menu](#linking-a-gallery-from-a-menu) · [renaming a category](#renaming-a-category) · [deleting a gallery](#deleting-a-gallery) · [uploading a batch](#uploading-a-batch) · [renaming a media](#renaming-a-media) · [browsing and the lightbox](#browsing-and-the-lightbox) · [editing from the public pages](#editing-from-the-public-pages) · [blocks](#blocks-defined-by-this-bundle) · [category description](#a-categorys-description) · [category headings](#composing-a-categorys-heading) · [theme tokens](#theme) · [videos](#videos) · [deleting a selection](#deleting-a-selection-of-medias) · [credits / rights on a selection](#applying-credits-or-rights-to-a-selection) · [export / import categories](#export--import-categories) · [sitemap and health check](#sitemap-and-health-check) · [backup](#backup) · [what's new](#whats-new)
+- **Using it** — [public routes](#public-routes) · [linking from a menu](#linking-a-gallery-from-a-menu) · [renaming a category](#renaming-a-category) · [deleting a gallery](#deleting-a-gallery) · [uploading a batch](#uploading-a-batch) · [renaming a media](#renaming-a-media) · [browsing and the lightbox](#browsing-and-the-lightbox) · [editing from the public pages](#editing-from-the-public-pages) · [blocks](#blocks-defined-by-this-bundle) · [category summary](#a-categorys-summary) · [category headings](#composing-a-categorys-heading) · [theme tokens](#theme) · [videos](#videos) · [deleting a selection](#deleting-a-selection-of-medias) · [credits / rights on a selection](#applying-credits-or-rights-to-a-selection) · [export / import categories](#export--import-categories) · [sitemap and health check](#sitemap-and-health-check) · [backup](#backup) · [what's new](#whats-new) · [guided projects](#guided-projects)
 - **Operating** — [bringing an existing gallery in](#bringing-an-existing-gallery-in) · [upload ceilings](#upload-ceilings)
 
 ## Features
@@ -36,13 +36,14 @@ See it in action at [bundles.975l.com/pages/gallery-bundle](https://bundles.975l
 - A public front-office viewer (index → category → media), browsed entirely in the stored (medium) resolution, with circular previous/next navigation whose neighbouring images are preloaded in the background so switching medias never shows a blank image while it loads. The high resolution opens in a lightbox over the image, fetched only when the visitor asks for it (see [browsing and the lightbox](#browsing-and-the-lightbox)).
 - Two block kinds contributed to UiBundle, so a gallery can be shown on any page composed in the back office instead of only under its own routes (see [blocks](#blocks-defined-by-this-bundle)).
 - A category owns UiBundle blocks of its own, giving it an editorial heading above its grid (see [category headings](#composing-a-categorys-heading)).
-- A category carries a rich-text description, printed above its grid and reused as the page's social/search metas (see [description](#a-categorys-description)).
+- A category carries a rich-text summary, printed above its grid and reused as the page's social/search metas (see [summary](#a-categorys-summary)).
 - Videos sit in the same categories as the photos: an entry becomes one by carrying the url of the page it is watched on, or a video file of the site's own, and each carries its own uploaded still, so one grid holds both kinds. YouTube, TikTok, Vimeo and Dailymotion are recognized, any other player being framed as pasted (see [videos](#videos)).
 - The bundle's own stylesheet and theme file, reading UiBundle's admin-editable colors and fonts, so a gallery looks like the site it is installed on without a line of CSS (see [theme](#theme)).
 - Sitemap generation (gallery index, categories and media pages), via ConfigBundle's `SitemapProviderInterface`
 - The gallery index and each category offered as a SiteBundle menu target, so a navbar links straight to one of the site's galleries (see [linking a gallery from a menu](#linking-a-gallery-from-a-menu))
 - Categories can be exported/imported as a zip (heading blocks, medias and files bundled in), plugging into ConfigBundle's **Export sync (everything)** dashboard shortcut and **Import content** screen.
 - The two upload roots declared to the backup, via ConfigBundle's `BackupPathProviderInterface`, mirrored offsite rather than tarred (see [backup](#backup))
+- Three replayable guided projects contributed to the dashboard, via ConfigBundle's `GuidedProjectProviderInterface`, walking a gallery's creation, its medias' arrangement and a media's own screen (see [guided projects](#guided-projects))
 
 ---
 
@@ -310,7 +311,9 @@ and stamping it again would lay a second one over the first.
 ### Renaming a media
 
 A media's **title** is its name and its `alt` text. It is **not** what its slug is built from: the two are
-posed together when the media is created and go their own way afterwards.
+posed together when the media is created and go their own way afterwards. A media left without a title takes
+its **category's** as its `alt` — on its thumbnail in the grid as in the lightbox — a photo being announced
+by the gallery it belongs to rather than by its url.
 
 That split is the point. A title uploaded in bulk is a placeholder — `Cailloux couleur 3`, or whatever the
 camera called the file — and it is retouched precisely *because* it was one. When the url followed the
@@ -392,6 +395,10 @@ the attributes.
 screen and the batch actions. A site wanting it reserved to its administrators sets the setting to
 `ROLE_ADMIN`.
 
+The trip back is a **View on site** action, on the categories list and on a category's own screen, opening
+the gallery in a new tab — the same action a page carries in SiteBundle. There is no preview twin to it: a
+category has nothing to publish, it is online the moment it exists.
+
 ### Thumbnail framing
 
 **The thumbnail file always holds the whole photo**, `GalleryMedia::THUMBNAIL_SIZE` (600px) capping its
@@ -434,22 +441,28 @@ Both are `cacheable: false`: they resolve their content live through `gallery_bl
 
 Being uncached is also what makes the random draw worth having: with "draw them at random" ticked, the maximum keeps that many medias out of the whole category, drawn again at every render - so a "our latest photos" section placed on a home page shows a different selection at each visit.
 
-### A category's description
+### A category's summary
 
-`GalleryCategory::$description` is the category's own lead-in: rich text typed in its EasyAdmin form
-(UiBundle's Trix editor, so **Donovan**'s rephrase button sits under it like under any other rich-text
+`GalleryCategory::$summarySocialNetwork` is the category's own lead-in: rich text typed in its EasyAdmin
+form (UiBundle's Trix editor, so **Donovan**'s rephrase button sits under it like under any other rich-text
 field of the ecosystem), printed above the grid by `gallery/category.html.twig` and, stripped of its
-markup, reused as the page's `description` / `og:description` metas — exactly what SiteBundle's
-`Page::$summarySocialNetwork` does for a page.
+markup, reused as the page's `description` / `og:description` metas — named after SiteBundle's
+`Page::$summarySocialNetwork` and ConfigBundle's `UrlMetadata::$summarySocialNetwork`, which hold the
+same text in the same role, so a site meets one name for it rather than one per bundle.
 
 One field for both on purpose: what introduces a gallery to a reader is what introduces it to a search
 engine, and an admin made to type the same sentence twice would leave one of the two stale. The metas
-themselves are written by SiteBundle's layout, which the template feeds through the `summarySocialNetwork`
-Twig variable it reads (`og:description` truncated to 150 characters there) — an app running on UiBundle's
-minimal layout instead simply ignores it, and the description still prints on the page.
+themselves are written by the layout, from the `summarySocialNetwork` Twig variable the template sets
+(`og:description` truncated to 150 characters) — the Trix markup is reduced there, by the `plain_text`
+filter both layouts apply, so the summary is handed over as typed.
 
 It travels with its category through the export/import, an archive predating it importing as a category
-without one.
+without one, and one exported before the rename read under its old `description` key.
+
+The two pages next to it fill the same variable their own way: a **media** composes it from the site name,
+its category, its own title and its credits — a photo carries no summary of its own, and these four are
+what situates one. The **index** of the gallery has no entity behind it at all, so it takes the summary an
+admin wrote for its path in ConfigBundle's `UrlMetadata`, without a line of code here.
 
 It is centered by default, under a short rule parting it from the breadcrumb — aligned with the breadcrumb
 above it and the grid below, which is how a category page reads, and sized for the one to three lines a
@@ -775,6 +788,37 @@ bundle covers; the visitor's own locale applies, English being the fallback:
 
 Written for the site's owner rather than for a developer: what changed on the screens and on the public
 pages, not which class carries it — the ChangeLog is where the code's history lives.
+
+### Guided projects
+
+`GalleryGuidedProjectProvider` (ConfigBundle's `GuidedProjectProviderInterface`) contributes three replayable
+exercises to the dashboard's "Guided projects" panel: **creating a gallery** with its first photographs in
+one go — the creation form carries the whole batch, which is the only screen doing both —, **arranging a
+gallery's medias** on its own edit screen, where the order, the cover and the batch edits all save as they
+go, and **filling in a media's own screen**, where a caption is written and a video attached. Nothing to
+register — the provider is picked up automatically.
+
+Only the opening step of each carries an `url`, all three sending the user to the categories, the single
+sidebar entry of the whole feature. From there the panel walks that screen, highlighting the button or the
+field they are meant to use next — one they click themselves, which brings the panel back on that very step:
+
+| Pointed at | What it is |
+| --- | --- |
+| `.action-new`, `.action-edit`, `.action-saveAndReturn` | EasyAdmin builds an `action-<name>` class from the action's own name — `saveAndReturn`, not `save` |
+| `#GalleryCategory_title`, `#GalleryCategory_titleRoot`, `#GalleryMedia_title`, `#GalleryMedia_credits`, `#GalleryMedia_externalUrl` | plain form fields, pointed at through their rendered id |
+| `#GalleryCategory_files` | the batch upload of the creation form |
+| `[data-gallery-upload-medias]`, `[data-gallery-cover-radio]`, `[data-gallery-media-sort-handle]`, `[data-gallery-media-selection-target="toggle"]` | markers carried by this bundle's own templates, the elements having no id of their own |
+| `.management-media-grid__item` | a thumbnail of the medias grid, opening the media it stands for |
+
+An app overriding `templates/management/gallery_category_edit.html.twig` keeps those `data-` attributes, or
+the steps resting on them point at nothing — they are read as selectors, not as behaviour.
+
+All three are gated by `site-role-editor`, the same ConfigBundle entry the gallery's management screens sit
+behind: an admin without it is never offered a parcours ending on an access-denied page. Their `order` (140,
+150, 160) continues the ecosystem's sequence, after ConfigBundle (10-30), SiteBundle (50-80), UiBundle
+(90-110) and SocialBundle (120-130). Nothing is derived from the site's own data, so a project is worth
+following on a site already full of galleries, and worth replaying once done (see ConfigBundle's README,
+"Contributing guided projects from other bundles").
 
 ---
 

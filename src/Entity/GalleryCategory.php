@@ -40,9 +40,10 @@ class GalleryCategory implements HasBlocksInterface, \Stringable
     #[ORM\Column(length: 255)]
     private ?string $title = null;
 
-    // The category's own lead-in, rich text typed in the back-office (see GalleryCategoryCrudController) - printed above the grid and, stripped of its markup, used as the page's description/og:description meta, exactly as SiteBundle's Page::$summarySocialNetwork is for a page (see gallery/category.html.twig). One field for both: what introduces a gallery to a reader is what introduces it to a search engine, and an admin having to type the same sentence twice would leave one of them stale
+    // The category's own lead-in, rich text typed in the back-office (see GalleryCategoryCrudController) - printed above the grid and, stripped of its markup, used as the page's description/og:description meta. One field for both: what introduces a gallery to a reader is what introduces it to a search engine, and an admin having to type the same sentence twice would leave one of them stale
+    // Named after SiteBundle's Page::$summarySocialNetwork, and ConfigBundle's UrlMetadata::$summarySocialNetwork, rather than after what it prints: it is the same text in the same role across the three, the one both layouts read through the Twig variable of that very name, and one name for it is what keeps a site from having to learn a second one per bundle
     #[ORM\Column(type: Types::TEXT, nullable: true)]
-    private ?string $description = null;
+    private ?string $summarySocialNetwork = null;
 
     #[ORM\Column]
     private int $position = 0;
@@ -105,14 +106,14 @@ class GalleryCategory implements HasBlocksInterface, \Stringable
         return $this;
     }
 
-    public function getDescription(): ?string
+    public function getSummarySocialNetwork(): ?string
     {
-        return $this->description;
+        return $this->summarySocialNetwork;
     }
 
-    public function setDescription(?string $description): self
+    public function setSummarySocialNetwork(?string $summarySocialNetwork): self
     {
-        $this->description = $description;
+        $this->summarySocialNetwork = $summarySocialNetwork;
 
         return $this;
     }

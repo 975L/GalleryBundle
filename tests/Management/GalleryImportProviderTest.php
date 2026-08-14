@@ -591,7 +591,27 @@ class GalleryImportProviderTest extends TestCase
     }
 
     // The lead-in travels with its category, and an archive predating it imports as a category without one rather than failing on the missing key
-    public function testImportCarriesTheDescriptionAndToleratesItsAbsence(): void
+    public function testImportCarriesTheSummaryAndToleratesItsAbsence(): void
+    {
+        $persisted = [];
+        $em = $this->createStub(EntityManagerInterface::class);
+        $em->method('persist')->willReturnCallback(static function (object $entity) use (&$persisted): void {
+            $persisted[] = $entity;
+        });
+
+        $provider = $this->createProvider($em);
+
+        $provider->import([
+            ['slug' => 'paysages', 'title' => 'Paysages', 'summarySocialNetwork' => '<div>Nos paysages</div>'],
+            ['slug' => 'portraits', 'title' => 'Portraits'],
+        ]);
+
+        $categories = array_values(array_filter($persisted, static fn (object $e): bool => $e instanceof GalleryCategory));
+        $this->assertSame(['<div>Nos paysages</div>', null], array_map(static fn (GalleryCategory $c): ?string => $c->getSummarySocialNetwork(), $categories));
+    }
+
+    // An archive exported before the rename carries "description": read as the lead-in it is, rather than importing a category stripped of it
+    public function testImportReadsTheLeadInOfAnArchivePredatingTheRename(): void
     {
         $persisted = [];
         $em = $this->createStub(EntityManagerInterface::class);
@@ -603,10 +623,9 @@ class GalleryImportProviderTest extends TestCase
 
         $provider->import([
             ['slug' => 'paysages', 'title' => 'Paysages', 'description' => '<div>Nos paysages</div>'],
-            ['slug' => 'portraits', 'title' => 'Portraits'],
         ]);
 
         $categories = array_values(array_filter($persisted, static fn (object $e): bool => $e instanceof GalleryCategory));
-        $this->assertSame(['<div>Nos paysages</div>', null], array_map(static fn (GalleryCategory $c): ?string => $c->getDescription(), $categories));
+        $this->assertSame('<div>Nos paysages</div>', $categories[0]->getSummarySocialNetwork());
     }
 }

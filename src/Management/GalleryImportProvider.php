@@ -59,8 +59,8 @@ class GalleryImportProvider implements ImportProviderInterface
             $category
                 ->setSlug($item['slug'])
                 ->setTitle($item['title'])
-                // Optional, an archive exported before the category gained a description staying importable - and read as "no description", which is what such an archive describes
-                ->setDescription($item['description'] ?? null)
+                // "description" is what an archive exported before the rename carries: read as a fallback rather than importing a category stripped of its lead-in. Both optional, an archive predating the field altogether staying importable - and read as "no lead-in", which is what such an archive describes
+                ->setSummarySocialNetwork($item['summarySocialNetwork'] ?? $item['description'] ?? null)
                 ->setPosition($item['position'] ?? 0)
                 ->setUncategorized($item['uncategorized'] ?? false)
                 ->setCoverMedia(null);

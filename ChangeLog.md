@@ -1,5 +1,27 @@
 # ChangeLog
 
+## v1.5.0
+
+A category names its summary as a page does, and every gallery page carries one
+
+- Renamed `GalleryCategory::$description` to `$summarySocialNetwork`, with its getter and setter (13/08/2026)
+- The category form labels it from ConfigBundle's `label.summary_social_network` (13/08/2026)
+- The export carries it as `summarySocialNetwork` (13/08/2026)
+- The import falls back on `description`, from an archive predating the rename (13/08/2026)
+- Requires `c975l/core-bundle` v1.10 (13/08/2026)
+- The media page composes its `summarySocialNetwork` from the site, the category, the title and the credits (13/08/2026)
+- A media with no title takes its category's as the alt of its thumbnail and of its lightbox (13/08/2026)
+- Added a "view on site" action to the category index and edit screens (13/08/2026)
+- Added `action.view_on_site` and `label.gallery_summary_social_network_help` (13/08/2026)
+- Dropped `label.gallery_description` and its help (13/08/2026)
+- Added `GalleryGuidedProjectProvider`, contributing three guided projects to the dashboard (13/08/2026)
+- The gallery menu entry carries a description, reused by the onboarding tour (13/08/2026)
+- Added `data-gallery-upload-medias` and `data-gallery-cover-radio`, read by the guided projects (13/08/2026)
+- Added the guided projects' labels and descriptions in the three locales (13/08/2026)
+- README documents the category's summary and the guided projects (14/08/2026)
+- README documents the "view on site" action and a media's alt fallback (14/08/2026)
+- UPGRADE documents the renamed field and its migration (14/08/2026)
+
 ## v1.4.3
 
 The bundle carries its own stylelint config

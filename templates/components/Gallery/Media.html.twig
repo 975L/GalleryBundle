@@ -1,9 +1,10 @@
 {# The thumbnail file holds the whole photo, its longest side capped at GalleryMedia::THUMBNAIL_SIZE (see UiBundle's VichImageResizeListener) - what the grid does with it is settled here, in one class the stylesheet reads. Falsy while the config has not been loaded yet, which is the cropped tile the gallery has always shown #}
 {% set whole = config('gallery-thumbnail-whole') %}
 {# A video entry's thumbnail is its own uploaded still, so one grid holds both kinds - the badge is what tells them apart before opening. A div, not a span: Image:Link wraps its own markup in a <p> #}
+{# The image is the whole content of its link, so its alt is the link's accessible name: a media whose title is empty falls back on its category's, which the entity holds as NOT NULL - an empty alt would leave a screen reader announcing the url #}
 <div class="gallery-thumb{{ whole ? ' gallery-thumb--whole' : '' }}{{ media.video ? ' gallery-thumb--video' : '' }}">
     <twig:c975LUi:Image:Link
         src="{{ media.thumbnailFilename }}"
         url="{{ path('gallery_media', { category: category.slug, slug: media.slug }) }}"
-        class="img-thumbnail" alt="{{ media.title }}" width="150" height="150"/>
+        class="img-thumbnail" alt="{{ media.title|default(category.title) }}" width="150" height="150"/>
 </div>

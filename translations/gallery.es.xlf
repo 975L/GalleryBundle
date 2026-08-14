@@ -30,6 +30,10 @@
                 <source>action.select_all</source>
                 <target>Seleccionar todo</target>
             </trans-unit>
+            <trans-unit id="CTyRVpC">
+                <source>action.view_on_site</source>
+                <target>Ver en el sitio</target>
+            </trans-unit>
             <trans-unit id="tu7Zw96">
                 <source>confirm.media_slug_change</source>
                 <target>¿Modificar el slug cambiará la URL pública del medio, se creará una redirección automáticamente. Continuar?</target>
@@ -37,6 +41,98 @@
             <trans-unit id="RYfKbzg">
                 <source>confirm.title_change</source>
                 <target>Modificar el título cambiará la URL de la categoría (slug), se establecerá automáticamente una redirección. ¿Continuar?</target>
+            </trans-unit>
+            <trans-unit id="KWlomLY">
+                <source>description.guided_project_gallery_creation</source>
+                <target>Una galería es una categoría de medios: nómbrela, deposite en ella sus fotos, y ya está en línea.</target>
+            </trans-unit>
+            <trans-unit id="TPdR3Kw">
+                <source>description.guided_project_gallery_media_detail</source>
+                <target>Leyenda, créditos, y el vídeo sobre el que un medio puede abrirse.</target>
+            </trans-unit>
+            <trans-unit id="3RfmhpD">
+                <source>description.guided_project_gallery_medias_arrangement</source>
+                <target>Ordene los medios, elija el que representa la galería, y modifique varios a la vez.</target>
+            </trans-unit>
+            <trans-unit id="nkC0lr6">
+                <source>description.guided_step_gallery_creation_done</source>
+                <target>No tiene nada que publicar: es visible desde que existe, y el botón «ver en el sitio» la abre.</target>
+            </trans-unit>
+            <trans-unit id="1CJpteY">
+                <source>description.guided_step_gallery_creation_files</source>
+                <target>Varios archivos a la vez, cada uno convirtiéndose en un medio de la galería - los tamaños indicados son lo que acepta el servidor.</target>
+            </trans-unit>
+            <trans-unit id="YGVaDLj">
+                <source>description.guided_step_gallery_creation_new</source>
+                <target>El formulario de creación lleva también el primer lote de medios: la galería se crea y se llena de una vez.</target>
+            </trans-unit>
+            <trans-unit id="gj9qVb7">
+                <source>description.guided_step_gallery_creation_open</source>
+                <target>Todas las galerías del sitio se listan aquí, en su orden de visualización.</target>
+            </trans-unit>
+            <trans-unit id="mi6eS0C">
+                <source>description.guided_step_gallery_creation_title</source>
+                <target>El título es lo que muestra el sitio, y la dirección de la galería se construye a partir de él.</target>
+            </trans-unit>
+            <trans-unit id="t_seNrA">
+                <source>description.guided_step_gallery_creation_title_root</source>
+                <target>Cada medio del lote toma este nombre, numerado - cada uno se retoca después, uno por uno.</target>
+            </trans-unit>
+            <trans-unit id="LiQHB9j">
+                <source>description.guided_step_gallery_media_detail_credits</source>
+                <target>Se muestran con el medio en el sitio - el mismo valor se escribe sobre toda una selección desde la galería.</target>
+            </trans-unit>
+            <trans-unit id="bYJJB2i">
+                <source>description.guided_step_gallery_media_detail_done</source>
+                <target>La dirección del medio solo se cambia detrás del candado, y la antigua sigue redirigiendo hacia la nueva.</target>
+            </trans-unit>
+            <trans-unit id="3ySJrIU">
+                <source>description.guided_step_gallery_media_detail_edit</source>
+                <target>Sus medios se listan bajo su formulario.</target>
+            </trans-unit>
+            <trans-unit id="8RRsfuf">
+                <source>description.guided_step_gallery_media_detail_open</source>
+                <target>A un medio siempre se llega desde la galería que lo contiene.</target>
+            </trans-unit>
+            <trans-unit id="KG3ez5A">
+                <source>description.guided_step_gallery_media_detail_thumbnail</source>
+                <target>Abre la única pantalla que tiene un medio - guardarlo le devuelve aquí.</target>
+            </trans-unit>
+            <trans-unit id="5D6bOZF">
+                <source>description.guided_step_gallery_media_detail_title</source>
+                <target>Se muestra bajo el medio y lo sustituye en voz alta para un lector de pantalla; retocarla no mueve ninguna dirección.</target>
+            </trans-unit>
+            <trans-unit id="8TKoMp7">
+                <source>description.guided_step_gallery_media_detail_video</source>
+                <target>Pegue la dirección de la página donde la estaba viendo, la plataforma se lee sola; el campo de abajo envía más bien la copia propia del sitio.</target>
+            </trans-unit>
+            <trans-unit id="ArzNyRe">
+                <source>description.guided_step_gallery_medias_arrangement_cover</source>
+                <target>El medio que representa la galería en todas partes donde se muestra - sin elección, se toma uno al azar cada vez.</target>
+            </trans-unit>
+            <trans-unit id="Te.35WI">
+                <source>description.guided_step_gallery_medias_arrangement_done</source>
+                <target>El orden y la portada se guardan sobre la marcha; solo los campos de la galería misma requieren el botón de guardar.</target>
+            </trans-unit>
+            <trans-unit id="cEF.MMa">
+                <source>description.guided_step_gallery_medias_arrangement_edit</source>
+                <target>Sus medios se listan bajo su formulario, y es ahí donde ocurre todo lo que sigue.</target>
+            </trans-unit>
+            <trans-unit id="_25nV6p">
+                <source>description.guided_step_gallery_medias_arrangement_open</source>
+                <target>La galería que quiere organizar es una de ellas.</target>
+            </trans-unit>
+            <trans-unit id="Otdae53">
+                <source>description.guided_step_gallery_medias_arrangement_selection</source>
+                <target>Marque los medios, luego escriba los mismos créditos en todos, márquelos como derechos reservados, o elimínelos de una vez.</target>
+            </trans-unit>
+            <trans-unit id="9EDpagA">
+                <source>description.guided_step_gallery_medias_arrangement_sort</source>
+                <target>Arrastre un medio por su asa: el nuevo orden se guarda en el momento en que lo suelta, sin nada que validar.</target>
+            </trans-unit>
+            <trans-unit id="xFlSzIS">
+                <source>description.guided_step_gallery_medias_arrangement_upload</source>
+                <target>Un lote a la vez, siempre desde la galería que los contiene - un medio nunca se crea por sí solo.</target>
             </trans-unit>
             <trans-unit id="xzaPeIL">
                 <source>label.block_category</source>
@@ -145,14 +241,6 @@
             <trans-unit id="piIsfVu">
                 <source>label.gallery_credits</source>
                 <target>Créditos: %credits%</target>
-            </trans-unit>
-            <trans-unit id="_vvAUvU">
-                <source>label.gallery_description</source>
-                <target>Descripción</target>
-            </trans-unit>
-            <trans-unit id="2l0..ut">
-                <source>label.gallery_description_help</source>
-                <target>Se muestra encima de la cuadrícula y se reutiliza como descripción de la página para los motores de búsqueda y las redes sociales (truncada a 150 caracteres para estas últimas).</target>
             </trans-unit>
             <trans-unit id="TdPUsM5">
                 <source>label.gallery_external_url</source>
@@ -294,6 +382,10 @@
                 <source>label.gallery_showcase_medias_description</source>
                 <target>Las fotos y vídeos de una categoría, en la misma cuadrícula.</target>
             </trans-unit>
+            <trans-unit id="kzjuixf">
+                <source>label.gallery_summary_social_network_help</source>
+                <target>Se muestra encima de la cuadrícula y se reutiliza como descripción de la página para los motores de búsqueda y las redes sociales (truncada a 150 caracteres para estas últimas).</target>
+            </trans-unit>
             <trans-unit id="K_aPgsR">
                 <source>label.gallery_title_root</source>
                 <target>Raíz de los títulos</target>
@@ -365,6 +457,106 @@
             <trans-unit id="JvOLpdi">
                 <source>label.gallery_watermark_top_right</source>
                 <target>Arriba a la derecha</target>
+            </trans-unit>
+            <trans-unit id="IINCTrH">
+                <source>label.guided_project_gallery_creation</source>
+                <target>Crear una galería y llenarla</target>
+            </trans-unit>
+            <trans-unit id="vUEEKrm">
+                <source>label.guided_project_gallery_media_detail</source>
+                <target>Retocar un medio</target>
+            </trans-unit>
+            <trans-unit id="5Kw6l6b">
+                <source>label.guided_project_gallery_medias_arrangement</source>
+                <target>Organizar una galería</target>
+            </trans-unit>
+            <trans-unit id="XVdjXZ2">
+                <source>label.guided_step_gallery_creation_done</source>
+                <target>Su galería está en línea</target>
+            </trans-unit>
+            <trans-unit id="UzAnVT7">
+                <source>label.guided_step_gallery_creation_files</source>
+                <target>Elija sus fotos</target>
+            </trans-unit>
+            <trans-unit id="zdXlkGQ">
+                <source>label.guided_step_gallery_creation_new</source>
+                <target>Añada una galería</target>
+            </trans-unit>
+            <trans-unit id="n1nNcIE">
+                <source>label.guided_step_gallery_creation_open</source>
+                <target>Abra sus galerías</target>
+            </trans-unit>
+            <trans-unit id="Mo1LKYK">
+                <source>label.guided_step_gallery_creation_save</source>
+                <target>Guarde</target>
+            </trans-unit>
+            <trans-unit id="0Hk76s1">
+                <source>label.guided_step_gallery_creation_title</source>
+                <target>Nómbrela</target>
+            </trans-unit>
+            <trans-unit id="0hrdUQX">
+                <source>label.guided_step_gallery_creation_title_root</source>
+                <target>Nombre el lote</target>
+            </trans-unit>
+            <trans-unit id="9HSb61v">
+                <source>label.guided_step_gallery_media_detail_credits</source>
+                <target>Acredite a su autor</target>
+            </trans-unit>
+            <trans-unit id="HmrPSos">
+                <source>label.guided_step_gallery_media_detail_done</source>
+                <target>Vuelta a la galería</target>
+            </trans-unit>
+            <trans-unit id="eauKfEm">
+                <source>label.guided_step_gallery_media_detail_edit</source>
+                <target>Abra la galería</target>
+            </trans-unit>
+            <trans-unit id="iBav8rm">
+                <source>label.guided_step_gallery_media_detail_open</source>
+                <target>Abra sus galerías</target>
+            </trans-unit>
+            <trans-unit id="QLYSf9k">
+                <source>label.guided_step_gallery_media_detail_save</source>
+                <target>Guarde</target>
+            </trans-unit>
+            <trans-unit id="OuLJJeG">
+                <source>label.guided_step_gallery_media_detail_thumbnail</source>
+                <target>Haga clic en una miniatura</target>
+            </trans-unit>
+            <trans-unit id="SlcSSZ0">
+                <source>label.guided_step_gallery_media_detail_title</source>
+                <target>Escriba su leyenda</target>
+            </trans-unit>
+            <trans-unit id="IF3UV4f">
+                <source>label.guided_step_gallery_media_detail_video</source>
+                <target>Adjunte un vídeo</target>
+            </trans-unit>
+            <trans-unit id="TIB.wO4">
+                <source>label.guided_step_gallery_medias_arrangement_cover</source>
+                <target>Elija la portada</target>
+            </trans-unit>
+            <trans-unit id="ftul.1E">
+                <source>label.guided_step_gallery_medias_arrangement_done</source>
+                <target>Nada que guardar</target>
+            </trans-unit>
+            <trans-unit id="DAX_cAK">
+                <source>label.guided_step_gallery_medias_arrangement_edit</source>
+                <target>Abra la galería</target>
+            </trans-unit>
+            <trans-unit id="1jtx0y6">
+                <source>label.guided_step_gallery_medias_arrangement_open</source>
+                <target>Abra sus galerías</target>
+            </trans-unit>
+            <trans-unit id="a.ZIaLM">
+                <source>label.guided_step_gallery_medias_arrangement_selection</source>
+                <target>Trabaje sobre varios a la vez</target>
+            </trans-unit>
+            <trans-unit id="rhpwTfo">
+                <source>label.guided_step_gallery_medias_arrangement_sort</source>
+                <target>Reordénelos</target>
+            </trans-unit>
+            <trans-unit id="66ermhL">
+                <source>label.guided_step_gallery_medias_arrangement_upload</source>
+                <target>Añada medios</target>
             </trans-unit>
             <trans-unit id="IJ3OllR">
                 <source>label.info_gallery_category</source>

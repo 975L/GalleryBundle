@@ -32,6 +32,8 @@ class MenuProvider implements MenuProviderInterface
                 'label' => 'label.gallery',
                 'translation_domain' => 'gallery',
                 'icon' => 'fas fa-images',
+                // The very text the categories screen opens on (see gallery_category_index.html.twig), reused as-is for the onboarding tour rather than written again for it
+                'description' => 'label.info_gallery_category',
             ],
         ];
     }

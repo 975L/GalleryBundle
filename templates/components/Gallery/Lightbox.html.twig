@@ -1,13 +1,15 @@
 {# The stored (medium) file is what the page shows and what previous/next browse; the high resolution is only fetched the moment the visitor asks for it, over the page rather than on a page of its own #}
 {# The markup is written out rather than delegated to c975LUi:Image:Link: that component lets nothing through onto the <a> itself, and both the Stimulus action and the class belong there #}
 {# A real link, pointing at the file: without javascript the high resolution stays reachable, and the zoom is operable from the keyboard for free #}
+{# The photo is what the page is for, so it is named in both places it appears - a media whose title is empty falls back on its category's, which the entity holds as NOT NULL #}
+{% set mediaAlt = media.title|default(media.category.title|default('')) %}
 <a href="{{ asset(media.highresFilename) }}"
     class="gallery-media-zoom"
     data-action="gallery-lightbox#open"
     aria-label="{{ 'label.gallery_see_high_resolution'|trans({}, 'gallery') }}">
     <img src="{{ asset(media.filename) }}"
         class="img img-responsive media gallery-media-display"
-        alt="{{ media.title }}"{% if media.title is empty %} aria-hidden="true"{% endif %}
+        alt="{{ mediaAlt }}"{% if mediaAlt is empty %} aria-hidden="true"{% endif %}
         loading="eager" fetchpriority="high">
 </a>
 
@@ -16,5 +18,5 @@
 <dialog class="gallery-lightbox"
     data-gallery-lightbox-target="dialog"
     data-action="click->gallery-lightbox#close">
-    <img class="gallery-lightbox__image" data-gallery-lightbox-target="image" alt="{{ media.title }}">
+    <img class="gallery-lightbox__image" data-gallery-lightbox-target="image" alt="{{ mediaAlt }}">
 </dialog>

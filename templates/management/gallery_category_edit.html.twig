@@ -11,7 +11,8 @@
 
     {# Rendered here rather than as an edit action, which put it up in the toolbar above the blocks collection - "Ajouter un UiBlock" was then the button under the hand of an admin meaning to add a media (media_upload_url comes from the same configureResponseParameters) #}
     {% set upload_medias_button %}
-        <a href="{{ media_upload_url|default('') }}" class="btn btn-secondary">
+        {# The attribute is what the guided project points at, this button having no other stable hook (see GalleryGuidedProjectProvider) #}
+        <a href="{{ media_upload_url|default('') }}" class="btn btn-secondary" data-gallery-upload-medias>
             <i class="fas fa-upload"></i> {{ ('label.gallery_upload_medias'|trans({}, 'gallery')) }}
         </a>
     {% endset %}
@@ -145,9 +146,11 @@
                         </a>
 
                         {# Same labelled bar as the selection one below, the radio group spanning the whole grid: a category is represented by one media, or by a random one #}
+                        {# The attribute tells the grid's radios apart from the "random" one up in the toolbar, which shares their name - it is the first of them the guided project points at (see GalleryGuidedProjectProvider) #}
                         <label class="d-flex align-items-center justify-content-center gap-2 p-1 border rounded ui-check-label">
                             <input type="radio"
                                 class="form-check-input m-0 ui-check-lg"
+                                data-gallery-cover-radio
                                 name="coverMediaId"
                                 value="{{ media.id }}"
                                 aria-label="{{ ('label.gallery_cover_select'|trans({'%media%': media.title}, 'gallery')) }}"

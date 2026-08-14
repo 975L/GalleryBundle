@@ -840,6 +840,30 @@ class GalleryCategoryCrudControllerTest extends TestCase
         $this->assertFalse($uploadMedias->getLabel());
     }
 
+    // The public page of a category, one click from the row and from its own screen - the same action a Page carries in SiteBundle. Icon-only on the index, labelled on the edit screen, and opening in a new tab in both
+    public function testConfigureActionsOpensTheCategoryOnTheSite(): void
+    {
+        $controller = $this->createController();
+
+        $actions = $controller->configureActions(
+            Actions::new()
+                ->add(Crud::PAGE_INDEX, Action::EDIT)
+                ->add(Crud::PAGE_INDEX, Action::DELETE)
+        );
+
+        $indexAction = $actions->getAsDto(Crud::PAGE_INDEX)->getAction(Crud::PAGE_INDEX, 'viewOnSite');
+        $editAction = $actions->getAsDto(Crud::PAGE_EDIT)->getAction(Crud::PAGE_EDIT, 'viewOnSite');
+
+        $this->assertNotNull($indexAction);
+        $this->assertFalse($indexAction->getLabel());
+        // Icon-only, so the label it dropped comes back as the button's tooltip (see EasyAdminActionHelper::toIconOnly)
+        $this->assertSame('_blank', $indexAction->getHtmlAttributes()['target']);
+        $this->assertArrayHasKey('title', $indexAction->getHtmlAttributes());
+        $this->assertNotNull($editAction);
+        $this->assertSame('action.view_on_site', $editAction->getLabel()->getMessage());
+        $this->assertSame('gallery', $editAction->getLabel()->getDomain());
+    }
+
     // The edit screen's toolbar sits above the blocks collection, so an upload button there left "Add a UiBlock" as the one under the hand of an admin meaning to add a media - it is rendered down with the medias instead (see gallery_category_edit.html.twig)
     public function testConfigureActionsAddsNoUploadMediasActionOnTheEditScreen(): void
     {
@@ -897,13 +921,23 @@ class GalleryCategoryCrudControllerTest extends TestCase
     }
 
     // The editor every other rich-text field of the ecosystem uses, not EasyAdmin's own: its widget is where the rephrase button is wired, and a different form block would leave this field the only one without it
-    public function testConfigureFieldsEditsTheDescriptionWithTheEcosystemRichTextEditor(): void
+    public function testConfigureFieldsEditsTheSummaryWithTheEcosystemRichTextEditor(): void
     {
-        $description = $this->findFieldDto($this->createController()->configureFields(Crud::PAGE_EDIT), 'description');
+        $summary = $this->findFieldDto($this->createController()->configureFields(Crud::PAGE_EDIT), 'summarySocialNetwork');
 
-        $this->assertNotNull($description);
-        $this->assertSame(TrixEditorType::class, $description->getFormType());
-        $this->assertFalse($description->isDisplayedOn(Crud::PAGE_INDEX));
+        $this->assertNotNull($summary);
+        $this->assertSame(TrixEditorType::class, $summary->getFormType());
+        $this->assertFalse($summary->isDisplayedOn(Crud::PAGE_INDEX));
+    }
+
+    // Labelled from ConfigBundle's own domain, the very key a Page's field carries: the same role deserves the same name across the back office
+    public function testConfigureFieldsLabelsTheSummaryFromTheConfigDomain(): void
+    {
+        $summary = $this->findFieldDto($this->createController()->configureFields(Crud::PAGE_EDIT), 'summarySocialNetwork');
+
+        $this->assertNotNull($summary);
+        $this->assertSame('label.summary_social_network', $summary->getLabel()->getMessage());
+        $this->assertSame('config', $summary->getLabel()->getDomain());
     }
 
     // A category is created to hold medias, so the creation form takes the same batch as the upload screen - only there, an existing category having its own screen for it

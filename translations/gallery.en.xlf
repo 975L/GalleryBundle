@@ -30,6 +30,10 @@
                 <source>action.select_all</source>
                 <target>Select all</target>
             </trans-unit>
+            <trans-unit id="CTyRVpC">
+                <source>action.view_on_site</source>
+                <target>View on site</target>
+            </trans-unit>
             <trans-unit id="tu7Zw96">
                 <source>confirm.media_slug_change</source>
                 <target>Changing the slug moves the media public URL, a redirect will be set up automatically. Continue?</target>
@@ -37,6 +41,98 @@
             <trans-unit id="RYfKbzg">
                 <source>confirm.title_change</source>
                 <target>Changing the title will change the category's URL (slug), a redirect will be automatically set up. Continue?</target>
+            </trans-unit>
+            <trans-unit id="KWlomLY">
+                <source>description.guided_project_gallery_creation</source>
+                <target>A gallery is a category of media: name it, drop your photographs on it, and it is online.</target>
+            </trans-unit>
+            <trans-unit id="TPdR3Kw">
+                <source>description.guided_project_gallery_media_detail</source>
+                <target>Caption, credits, and the video a media can open on.</target>
+            </trans-unit>
+            <trans-unit id="3RfmhpD">
+                <source>description.guided_project_gallery_medias_arrangement</source>
+                <target>Order the media, choose the one representing the gallery, and edit several of them at once.</target>
+            </trans-unit>
+            <trans-unit id="nkC0lr6">
+                <source>description.guided_step_gallery_creation_done</source>
+                <target>It has nothing to publish: it is visible the moment it exists, and the view on site button opens it.</target>
+            </trans-unit>
+            <trans-unit id="1CJpteY">
+                <source>description.guided_step_gallery_creation_files</source>
+                <target>Several files at once, each becoming a media of the gallery - the sizes shown are what the server accepts.</target>
+            </trans-unit>
+            <trans-unit id="YGVaDLj">
+                <source>description.guided_step_gallery_creation_new</source>
+                <target>The creation form carries the first batch of media too, so a gallery is created and filled in one go.</target>
+            </trans-unit>
+            <trans-unit id="gj9qVb7">
+                <source>description.guided_step_gallery_creation_open</source>
+                <target>Every gallery of the site is listed here, in the order they are displayed in.</target>
+            </trans-unit>
+            <trans-unit id="mi6eS0C">
+                <source>description.guided_step_gallery_creation_title</source>
+                <target>The title is what the site shows, and the address of the gallery is built from it.</target>
+            </trans-unit>
+            <trans-unit id="t_seNrA">
+                <source>description.guided_step_gallery_creation_title_root</source>
+                <target>Every media of the batch takes this name, numbered - each one is retouched afterwards, one by one.</target>
+            </trans-unit>
+            <trans-unit id="LiQHB9j">
+                <source>description.guided_step_gallery_media_detail_credits</source>
+                <target>Shown with the media on the site - the same value can be written on a whole selection from the gallery.</target>
+            </trans-unit>
+            <trans-unit id="bYJJB2i">
+                <source>description.guided_step_gallery_media_detail_done</source>
+                <target>The media's own address is changed behind the padlock only, and the old one keeps redirecting to the new one.</target>
+            </trans-unit>
+            <trans-unit id="3ySJrIU">
+                <source>description.guided_step_gallery_media_detail_edit</source>
+                <target>Its media are listed under its form.</target>
+            </trans-unit>
+            <trans-unit id="8RRsfuf">
+                <source>description.guided_step_gallery_media_detail_open</source>
+                <target>A media is always reached from the gallery holding it.</target>
+            </trans-unit>
+            <trans-unit id="KG3ez5A">
+                <source>description.guided_step_gallery_media_detail_thumbnail</source>
+                <target>It opens the only screen a media has - saving it brings you back here.</target>
+            </trans-unit>
+            <trans-unit id="5D6bOZF">
+                <source>description.guided_step_gallery_media_detail_title</source>
+                <target>It is shown under the media and stands for it aloud in a screen reader; retouching it moves no address.</target>
+            </trans-unit>
+            <trans-unit id="8TKoMp7">
+                <source>description.guided_step_gallery_media_detail_video</source>
+                <target>Paste the address of the page you were watching it on, the platform reads itself off it; the field below uploads the site's own copy instead.</target>
+            </trans-unit>
+            <trans-unit id="ArzNyRe">
+                <source>description.guided_step_gallery_medias_arrangement_cover</source>
+                <target>The media representing the gallery wherever it is shown - left unpicked, a random one is taken each time.</target>
+            </trans-unit>
+            <trans-unit id="Te.35WI">
+                <source>description.guided_step_gallery_medias_arrangement_done</source>
+                <target>The order and the cover are stored as you go; only the gallery's own fields need the save button.</target>
+            </trans-unit>
+            <trans-unit id="cEF.MMa">
+                <source>description.guided_step_gallery_medias_arrangement_edit</source>
+                <target>Its media are listed under its own form, which is where everything below happens.</target>
+            </trans-unit>
+            <trans-unit id="_25nV6p">
+                <source>description.guided_step_gallery_medias_arrangement_open</source>
+                <target>The gallery to arrange is one of these.</target>
+            </trans-unit>
+            <trans-unit id="Otdae53">
+                <source>description.guided_step_gallery_medias_arrangement_selection</source>
+                <target>Check the media, then write the same credits on all of them, mark them as rights reserved, or delete them in one go.</target>
+            </trans-unit>
+            <trans-unit id="9EDpagA">
+                <source>description.guided_step_gallery_medias_arrangement_sort</source>
+                <target>Drag a media by its handle: the new order is saved the moment you drop it, with nothing to validate.</target>
+            </trans-unit>
+            <trans-unit id="xFlSzIS">
+                <source>description.guided_step_gallery_medias_arrangement_upload</source>
+                <target>A batch at a time, always from the gallery holding them - a media is never created on its own.</target>
             </trans-unit>
             <trans-unit id="xzaPeIL">
                 <source>label.block_category</source>
@@ -145,14 +241,6 @@
             <trans-unit id="piIsfVu">
                 <source>label.gallery_credits</source>
                 <target>Credits: %credits%</target>
-            </trans-unit>
-            <trans-unit id="_vvAUvU">
-                <source>label.gallery_description</source>
-                <target>Description</target>
-            </trans-unit>
-            <trans-unit id="2l0..ut">
-                <source>label.gallery_description_help</source>
-                <target>Displayed above the grid, and reused as the page's description for search engines and social networks (truncated to 150 characters for the latter).</target>
             </trans-unit>
             <trans-unit id="TdPUsM5">
                 <source>label.gallery_external_url</source>
@@ -294,6 +382,10 @@
                 <source>label.gallery_showcase_medias_description</source>
                 <target>A category's photos and videos, in the same grid.</target>
             </trans-unit>
+            <trans-unit id="kzjuixf">
+                <source>label.gallery_summary_social_network_help</source>
+                <target>Displayed above the grid, and reused as the page's description for search engines and social networks (truncated to 150 characters for the latter).</target>
+            </trans-unit>
             <trans-unit id="K_aPgsR">
                 <source>label.gallery_title_root</source>
                 <target>Title root</target>
@@ -365,6 +457,106 @@
             <trans-unit id="JvOLpdi">
                 <source>label.gallery_watermark_top_right</source>
                 <target>Top right</target>
+            </trans-unit>
+            <trans-unit id="IINCTrH">
+                <source>label.guided_project_gallery_creation</source>
+                <target>Create a gallery and fill it</target>
+            </trans-unit>
+            <trans-unit id="vUEEKrm">
+                <source>label.guided_project_gallery_media_detail</source>
+                <target>Retouch a media</target>
+            </trans-unit>
+            <trans-unit id="5Kw6l6b">
+                <source>label.guided_project_gallery_medias_arrangement</source>
+                <target>Arrange a gallery</target>
+            </trans-unit>
+            <trans-unit id="XVdjXZ2">
+                <source>label.guided_step_gallery_creation_done</source>
+                <target>Your gallery is online</target>
+            </trans-unit>
+            <trans-unit id="UzAnVT7">
+                <source>label.guided_step_gallery_creation_files</source>
+                <target>Pick your photographs</target>
+            </trans-unit>
+            <trans-unit id="zdXlkGQ">
+                <source>label.guided_step_gallery_creation_new</source>
+                <target>Add a gallery</target>
+            </trans-unit>
+            <trans-unit id="n1nNcIE">
+                <source>label.guided_step_gallery_creation_open</source>
+                <target>Open your galleries</target>
+            </trans-unit>
+            <trans-unit id="Mo1LKYK">
+                <source>label.guided_step_gallery_creation_save</source>
+                <target>Save</target>
+            </trans-unit>
+            <trans-unit id="0Hk76s1">
+                <source>label.guided_step_gallery_creation_title</source>
+                <target>Name it</target>
+            </trans-unit>
+            <trans-unit id="0hrdUQX">
+                <source>label.guided_step_gallery_creation_title_root</source>
+                <target>Name the batch</target>
+            </trans-unit>
+            <trans-unit id="9HSb61v">
+                <source>label.guided_step_gallery_media_detail_credits</source>
+                <target>Credit its author</target>
+            </trans-unit>
+            <trans-unit id="HmrPSos">
+                <source>label.guided_step_gallery_media_detail_done</source>
+                <target>Back to the gallery</target>
+            </trans-unit>
+            <trans-unit id="eauKfEm">
+                <source>label.guided_step_gallery_media_detail_edit</source>
+                <target>Open the gallery</target>
+            </trans-unit>
+            <trans-unit id="iBav8rm">
+                <source>label.guided_step_gallery_media_detail_open</source>
+                <target>Open your galleries</target>
+            </trans-unit>
+            <trans-unit id="QLYSf9k">
+                <source>label.guided_step_gallery_media_detail_save</source>
+                <target>Save</target>
+            </trans-unit>
+            <trans-unit id="OuLJJeG">
+                <source>label.guided_step_gallery_media_detail_thumbnail</source>
+                <target>Click a thumbnail</target>
+            </trans-unit>
+            <trans-unit id="SlcSSZ0">
+                <source>label.guided_step_gallery_media_detail_title</source>
+                <target>Write its caption</target>
+            </trans-unit>
+            <trans-unit id="IF3UV4f">
+                <source>label.guided_step_gallery_media_detail_video</source>
+                <target>Attach a video</target>
+            </trans-unit>
+            <trans-unit id="TIB.wO4">
+                <source>label.guided_step_gallery_medias_arrangement_cover</source>
+                <target>Choose the cover</target>
+            </trans-unit>
+            <trans-unit id="ftul.1E">
+                <source>label.guided_step_gallery_medias_arrangement_done</source>
+                <target>Nothing left to save</target>
+            </trans-unit>
+            <trans-unit id="DAX_cAK">
+                <source>label.guided_step_gallery_medias_arrangement_edit</source>
+                <target>Open the gallery</target>
+            </trans-unit>
+            <trans-unit id="1jtx0y6">
+                <source>label.guided_step_gallery_medias_arrangement_open</source>
+                <target>Open your galleries</target>
+            </trans-unit>
+            <trans-unit id="a.ZIaLM">
+                <source>label.guided_step_gallery_medias_arrangement_selection</source>
+                <target>Work on several at once</target>
+            </trans-unit>
+            <trans-unit id="rhpwTfo">
+                <source>label.guided_step_gallery_medias_arrangement_sort</source>
+                <target>Reorder them</target>
+            </trans-unit>
+            <trans-unit id="66ermhL">
+                <source>label.guided_step_gallery_medias_arrangement_upload</source>
+                <target>Add media</target>
             </trans-unit>
             <trans-unit id="IJ3OllR">
                 <source>label.info_gallery_category</source>

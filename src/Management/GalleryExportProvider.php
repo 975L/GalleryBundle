@@ -71,7 +71,7 @@ class GalleryExportProvider implements ExportProviderInterface
         return [
             'slug' => $category->getSlug(),
             'title' => $category->getTitle(),
-            'description' => $category->getDescription(),
+            'summarySocialNetwork' => $category->getSummarySocialNetwork(),
             'position' => $category->getPosition(),
             'uncategorized' => $category->isUncategorized(),
             'coverMediaIndex' => $coverMediaIndex,

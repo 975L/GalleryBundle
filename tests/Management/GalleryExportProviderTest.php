@@ -30,7 +30,7 @@ class GalleryExportProviderTest extends TestCase
 
     public function testExportAllSerializesEveryCategoryFromTheRepository(): void
     {
-        $category = new GalleryCategory()->setSlug('voyages')->setTitle('Voyages')->setDescription('<div>Nos voyages</div>')->setPosition(0);
+        $category = new GalleryCategory()->setSlug('voyages')->setTitle('Voyages')->setSummarySocialNetwork('<div>Nos voyages</div>')->setPosition(0);
 
         $categoryRepository = $this->createMock(GalleryCategoryRepository::class);
         $categoryRepository->expects($this->once())->method('findAll')->willReturn([$category]);
@@ -40,7 +40,7 @@ class GalleryExportProviderTest extends TestCase
         $this->assertSame([[
             'slug' => 'voyages',
             'title' => 'Voyages',
-            'description' => '<div>Nos voyages</div>',
+            'summarySocialNetwork' => '<div>Nos voyages</div>',
             'position' => 0,
             'uncategorized' => false,
             'coverMediaIndex' => null,
