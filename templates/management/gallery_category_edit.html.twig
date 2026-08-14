@@ -3,6 +3,10 @@
 {% block main %}
     <p>{{ ('label.info_gallery_category'|trans({}, 'gallery')) }}</p>
 
+    {# The cover is picked further down this very screen, and a category with none is shared with one of its photos at random - the two cases where a preview already cached is the wrong one #}
+    {# The route takes the slug alone, its prefix being filled from the request context (see GalleryRoutePrefixListener) #}
+    {{ include('@c975LConfig/management/_sharing_debugger.html.twig', {url: path('gallery_category', {category: entity.instance.slug})}) }}
+
     {{ parent() }}
 
     {# The category's own medias, each opening its edit form (media_edit_urls comes from GalleryCategoryCrudController::configureResponseParameters) - same grid as UiBundle's media_index, on the "-thumb" derivative and reusing its CSS #}

@@ -1,5 +1,13 @@
 # ChangeLog
 
+## v1.5.4
+
+A category's edit screen links the sharing debugger
+
+- The category edit screen carries ConfigBundle's sharing debugger note, on the category's own url (14/08/2026)
+- Requires `c975l/core-bundle` v1.11.4 (14/08/2026)
+- README documents the note under the share image (14/08/2026)
+
 ## v1.5.3
 
 Every gallery page carries a photo of its own as og:image

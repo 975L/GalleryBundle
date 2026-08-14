@@ -497,6 +497,11 @@ being picked only because nobody picked one. A category and a media set theirs o
 their own to read. A page with no photo at all falls back on the site's default og-image, as any other page
 of the site does.
 
+A social network caches that preview under the page's url and never reads the page again on its own, so a
+cover picked after a first share only shows up once the page has been re-scraped. The category's edit screen
+carries ConfigBundle's note about it — the same one the page and **Descriptions d'urls** screens show —
+linking Facebook's sharing debugger on the category's own url.
+
 ### Composing a category's heading
 
 `GalleryCategory` implements UiBundle's `HasBlocksInterface`, so a category carries its own blocks, rendered above its grid by `gallery/category.html.twig`:

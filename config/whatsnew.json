@@ -11,6 +11,11 @@
                 "en": "A gallery shared on a social network now shows one of its own photos instead of the site's logo: a photo shows itself, a gallery shows its cover image, and the gallery home page shows one of the galleries it lists. Nothing to do for it, though a gallery you gave no cover image to shows one of its photos at random until you pick one",
                 "fr": "Une galerie partagée sur un réseau social affiche désormais une de ses propres photos plutôt que le logo du site : une photo s'affiche elle-même, une galerie affiche son image de couverture, et la page d'accueil des galeries affiche l'une des galeries qu'elle liste. Rien à faire pour cela, si ce n'est qu'une galerie à laquelle vous n'avez pas donné d'image de couverture affiche une de ses photos au hasard tant que vous n'en choisissez pas une",
                 "es": "Una galería compartida en una red social muestra ahora una de sus propias fotos en lugar del logotipo del sitio: una foto se muestra a sí misma, una galería muestra su imagen de portada, y la página de inicio de las galerías muestra una de las galerías que enumera. No hay nada que hacer para ello, salvo que una galería a la que no le haya dado una imagen de portada muestra una de sus fotos al azar mientras no elija una"
+            },
+            {
+                "en": "When you pick the cover image of a gallery already shared on a social network, its edit screen now shows you how to ask Facebook to read the page again, so that the new image replaces the one it had kept in memory",
+                "fr": "Lorsque vous choisissez l'image de couverture d'une galerie déjà partagée sur un réseau social, son écran de modification vous indique désormais comment demander à Facebook de relire la page, pour que la nouvelle image remplace celle qu'il avait gardée en mémoire",
+                "es": "Cuando elige la imagen de portada de una galería ya compartida en una red social, su pantalla de edición le indica ahora cómo pedir a Facebook que vuelva a leer la página, para que la nueva imagen sustituya a la que había guardado en memoria"
             }
         ]
     },
