@@ -1,5 +1,14 @@
 # ChangeLog
 
+## v1.5.1
+
+The dev-only files stay out of the Composer archive, and the CI audits the dependencies
+
+- Added `.gitattributes`, marking the dev-only paths `export-ignore` (14/08/2026)
+- Added the `audit-deps` script, run by `qa` and by the CI ahead of the other checks (14/08/2026)
+- Added `.github/FUNDING.yml` (14/08/2026)
+- ConfigBundle's guided projects are placed at 10-40, in the README and in `GalleryGuidedProjectProvider` (14/08/2026)
+
 ## v1.5.0
 
 A category names its summary as a page does, and every gallery page carries one
