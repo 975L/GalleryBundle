@@ -1,5 +1,14 @@
 # ChangeLog
 
+## v1.6.1
+
+The CI caches Composer's archives from one run to the next
+
+- Composer's archive cache is carried from one CI run to the next (17/08/2026)
+- The CI runs on a push to main and on pull requests only (17/08/2026)
+- Concurrent CI runs on the same ref are cancelled (17/08/2026)
+- The CI workflow's `GITHUB_TOKEN` is pinned to `contents: read` (17/08/2026)
+
 ## v1.6.0
 
 A gallery is never lost in one click
