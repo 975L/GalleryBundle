@@ -22,16 +22,16 @@ See it in action at [bundles.975l.com/pages/gallery-bundle](https://bundles.975l
 ## Contents
 
 - **Setup** — [requirements](#requirements) · [installation](#installation) · [configuration](#load-the-configuration) · [routes](#enable-routes) · [assets](#install-assets) · [theme](#install-the-theme)
-- **Using it** — [public routes](#public-routes) · [linking from a menu](#linking-a-gallery-from-a-menu) · [renaming a category](#renaming-a-category) · [deleting a gallery](#deleting-a-gallery) · [uploading a batch](#uploading-a-batch) · [renaming a media](#renaming-a-media) · [browsing and the lightbox](#browsing-and-the-lightbox) · [editing from the public pages](#editing-from-the-public-pages) · [blocks](#blocks-defined-by-this-bundle) · [category summary](#a-categorys-summary) · [share image](#the-image-a-shared-page-carries) · [category headings](#composing-a-categorys-heading) · [theme tokens](#theme) · [videos](#videos) · [deleting a selection](#deleting-a-selection-of-medias) · [credits / rights on a selection](#applying-credits-or-rights-to-a-selection) · [export / import categories](#export--import-categories) · [sitemap and health check](#sitemap-and-health-check) · [describing the gallery index](#describing-the-gallery-index) · [backup](#backup) · [what's new](#whats-new) · [guided projects](#guided-projects)
-- **Operating** — [bringing an existing gallery in](#bringing-an-existing-gallery-in) · [upload ceilings](#upload-ceilings)
+- **Using it** — [public routes](#public-routes) · [linking from a menu](#linking-a-gallery-from-a-menu) · [renaming a category](#renaming-a-category) · [deleting a gallery](#deleting-a-gallery) · [uploading a batch](#uploading-a-batch) · [renaming a media](#renaming-a-media) · [browsing and the lightbox](#browsing-and-the-lightbox) · [editing from the public pages](#editing-from-the-public-pages) · [blocks](#blocks-defined-by-this-bundle) · [category summary](#a-categorys-summary) · [share image](#the-image-a-shared-page-carries) · [category headings](#composing-a-categorys-heading) · [theme tokens](#theme) · [videos](#videos) · [trashing a selection](#trashing-a-selection-of-medias) · [credits / rights on a selection](#applying-credits-or-rights-to-a-selection) · [export / import categories](#export--import-categories) · [sitemap and health check](#sitemap-and-health-check) · [describing the gallery index](#describing-the-gallery-index) · [backup](#backup) · [what's new](#whats-new) · [guided projects](#guided-projects)
+- **Operating** — [bringing an existing gallery in](#bringing-an-existing-gallery-in) · [upload ceilings](#upload-ceilings) · [AI agent skills](#ai-agent-skills)
 
 ## Features
 
 - `GalleryCategory` → `GalleryMedia`: the category is the top-level unit, a site's galleries being its categories - no container above them.
-- Bulk upload: pick every file at once from the category they belong to, with a title root, credits and rights-reserved applied to the whole batch, retouched one media at a time afterwards. The same batch is offered on the category creation form, so a category is created with its medias in one go. Optionally, the untouched originals are kept outside the document root (see [uploading a batch](#uploading-a-batch)).
+- Bulk upload: pick every file at once from the category they belong to, with a title root, credits and rights-reserved applied to the whole batch, retouched one media at a time afterwards. The same batch is offered on the category creation form, so a category is created with its medias in one go. Optionally, the untouched originals are kept outside the document root (see [uploading a batch](#uploading-a-batch)). The screen counts the megabytes as they leave and then says the files are being processed, a batch being minutes of waiting.
 - Three derivatives generated automatically per uploaded image (thumbnail / medium / highres), all three holding the whole photo, via UiBundle's `VichImageResizeListener` and the `VichMultiSizeImageInterface` contract - naming and resizing stay centralized in UiBundle, this bundle only declares the target sizes and how its grids frame them (see [Thumbnail framing](#thumbnail-framing)).
 - One EasyAdmin menu entry ("Gallery", opening the categories, with their media count); a category's medias are listed under its own edit form, each thumbnail opening the media it stands for, and medias are added from the category itself.
-- Each media in that list carries a checkbox, so a selection of them is deleted in one go instead of one edit screen at a time (see [deleting a selection](#deleting-a-selection-of-medias)), or given the same credits and rights at once (see [credits / rights on a selection](#applying-credits-or-rights-to-a-selection)).
+- Each media in that list carries a checkbox, so a selection of them goes to the trash in one go instead of one edit screen at a time (see [trashing a selection](#trashing-a-selection-of-medias)), or given the same credits and rights at once (see [credits / rights on a selection](#applying-credits-or-rights-to-a-selection)).
 - A catch-all "Non classé" category is created lazily so an imported media always has one, even without a real one to attach it to.
 - A public front-office viewer (index → category → media), browsed entirely in the stored (medium) resolution, with circular previous/next navigation whose neighbouring images are preloaded in the background so switching medias never shows a blank image while it loads. The high resolution opens in a lightbox over the image, fetched only when the visitor asks for it (see [browsing and the lightbox](#browsing-and-the-lightbox)).
 - Two block kinds contributed to UiBundle, so a gallery can be shown on any page composed in the back office instead of only under its own routes (see [blocks](#blocks-defined-by-this-bundle)).
@@ -46,6 +46,7 @@ See it in action at [bundles.975l.com/pages/gallery-bundle](https://bundles.975l
 - Categories can be exported/imported as a zip (heading blocks, medias and files bundled in), plugging into ConfigBundle's **Export sync (everything)** dashboard shortcut and **Import content** screen.
 - The two upload roots declared to the backup, via ConfigBundle's `BackupPathProviderInterface`, mirrored offsite rather than tarred (see [backup](#backup))
 - Three replayable guided projects contributed to the dashboard, via ConfigBundle's `GuidedProjectProviderInterface`, walking a gallery's creation, its medias' arrangement and a media's own screen (see [guided projects](#guided-projects))
+- A skill written for the coding agents of the sites installing this bundle, shipped in the package and read straight from `vendor/` (see [AI agent skills](#ai-agent-skills))
 
 ---
 
@@ -200,27 +201,45 @@ category rather than leaving each media to 404.
 
 ### Deleting a gallery
 
-A category is deleted from its own edit screen as well as from the listing's row button, EasyAdmin's own
-confirmation modal standing in the way either way. **It takes everything under it along**: its medias —
-their three derivatives and any kept original with them, `Listener\GalleryMediaDerivativeCleanupListener`
-removing the files — and its heading blocks. The directory the category grouped its files under goes too,
-in `public/` and in `private/`, once it is actually empty.
+**Deleting takes two deliberate steps, and the first one loses nothing.** A category is moved to the
+trash from its own edit screen as well as from the listing's row button, EasyAdmin's own confirmation
+modal standing in the way either way. What that writes is a flag and nothing else
+(`GalleryCategory` carries CoreBundle's `TrashableTrait`): the category leaves the site, its medias, its
+heading blocks and every one of their files stay exactly where they are — the cascade on
+`GalleryCategory::$medias` and `Listener\GalleryMediaDerivativeCleanupListener` are simply never reached.
+
+The listing's **Corbeille** button switches it to what it holds, and back. There, a category carries two
+actions of its own: **Restaurer**, which puts it back untouched, and **Supprimer définitivement**, which
+is the one that removes the row, its medias, its heading blocks, their three derivatives and any kept
+original — and the directory the category grouped its files under, in `public/` and in `private/`, once
+it is actually empty. That one is held at `site-role-admin`, the rest of the gallery sitting at
+`site-role-editor`: it is the only irreversible action of the screen.
+
+**Exporting still works from the trash**, deliberately: a category can be carried to another site, or
+kept aside as an archive with all of its files, before it is dropped for good (see *Export / import
+categories*).
 
 The catch-all **"Non classé"** category shows no delete button anywhere: it is what a media uploaded
 without a real category falls back to, so it has to survive (`GalleryCategory::$uncategorized`, a flag
-rather than a slug, so translating or editing its title changes nothing).
+rather than a slug, so translating or editing its title changes nothing). Flagged as trashed some other
+way — a fixture, an import — `GalleryCategoryRepository::findOrCreateUncategorized()` lifts it back out.
 
-**The urls left behind answer 410 Gone**, not 404: every category page and every media page is declared
-in the sitemap (`Sitemap\GallerySitemapProvider`), and a 410 is what drops a url from an index, where a
-404 is retried for months. `Service\GalleryUrlRedirector` writes them in ConfigBundle's **Redirections**:
-one row for the deleted url, plus a single wildcarded one (`/{prefix}/{slug}/*`) covering every media of
-a deleted category rather than a row per media. The rows that redirected to that url answer the same 410
-directly, so nothing points at a page that is gone. Deleting a single media leaves one row, from its own
-screen as from the selection button under its category.
+**A trashed category or media answers 410 Gone**, not 404, and answers it from the row itself
+(`GalleryController::resolveCategory()`, the same shape SiteBundle serves a trashed `Page` with). That
+410 lasts exactly as long as the entity can still be restored.
 
-Creating a category or uploading a media under a slug a deletion had freed lifts its 410 by itself
-(`GalleryUrlRedirector::release()`) — the redirect is resolved before the router, so the page would
-otherwise exist while its url kept saying it doesn't. A row that redirects somewhere is never touched.
+**The permanent deletion is what declares the url gone for good.** Every category page and every media
+page is declared in the sitemap (`Sitemap\GallerySitemapProvider`), and a 410 is what drops a url from an
+index, where a 404 is retried for months. `Service\GalleryUrlRedirector` writes the rows in ConfigBundle's
+**Redirections**: one for the deleted url, plus a single wildcarded one (`/{prefix}/{slug}/*`) covering
+every media of a deleted category rather than a row per media. The rows that redirected to that url answer
+the same 410 directly, so nothing points at a page that is gone. Nothing is written at the move to trash:
+a url that can still come back must not be declared gone.
+
+Restoring a category releases any such row left under its url by an earlier permanent deletion, exactly as
+creating a category or uploading a media under a freed slug does (`GalleryUrlRedirector::release()`) — the
+redirect is resolved before the router, so the page would otherwise exist while its url kept saying it
+doesn't. A row that redirects somewhere is never touched.
 
 ### Uploading a batch
 
@@ -249,6 +268,18 @@ Without EXIF (a scan, a screenshot, a stripped file, or no `ext-exif` installed)
 filename and the rank in the batch; the hash is what makes that safe, nothing but hex reaching the url
 whatever the browser sent. Two shots taken in the same second hash alike and the second is suffixed `-2`,
 exactly as two identical filenames are.
+
+#### What the screen shows while the batch goes up
+
+Fifty photos are minutes of waiting: the transfer itself, then the resizing, the conversion and the
+watermarking of every one of them, all inside that one request. The upload screen therefore sends the
+form over `XMLHttpRequest` and states both phases — a progress bar counting the megabytes as they leave,
+then an indeterminate one saying the files are being processed — with the submit button taken away for
+the whole wait, a second click being what an idle-looking screen invites. That bar is UiBundle's
+`upload-progress` controller, armed by `UploadProgress::formAttr()` on this bundle's form; the controller
+hands the arrival url back to it instead of redirecting, so the "medias added" flash is shown on the
+screen that follows rather than spent on a page nobody sees. Nothing to wire up, and a browser running no
+JS at all still posts the form the plain way.
 
 #### Keeping the originals
 
@@ -656,17 +687,28 @@ fullscreen button does nothing. A directive missing is what an empty frame in pr
 development means. A platform declared under `embed` is the one case the parameter can't cover — its
 origin is whatever the admin pasted, and has to be added by hand.
 
-### Deleting a selection of medias
+### Trashing a selection of medias
 
 Under a category's edit form, each media carries a checkbox and the list a toolbar holding the
 **Add medias** button, a "Select all" box and a **Delete selection** button, disabled until something is
 checked (a category with no media yet shows the **Add medias** button on its own, and says so). The
 **Add medias** button sits there rather than in the edit toolbar above, where EasyAdmin's own "Add a
-block" action was the one under the hand of an admin meaning to add a media. The deletion is confirmed through
+block" action was the one under the hand of an admin meaning to add a media. The move is confirmed through
 EasyAdmin's own modal (the one its delete actions open) and posted to
 `GalleryCategoryCrudController::deleteMedias()`, which only ever touches the medias of the category the
-url carries, whatever ids reach it. The files go with the rows, derivatives included
-(`GalleryMediaDerivativeCleanupListener`), and a category whose cover was among them loses that cover.
+url carries, whatever ids reach it. **Nothing is removed**: the rows are flagged, their files stay, and a
+category whose cover was among them loses that cover rather than keeping one it no longer displays.
+
+A media has a **trash of its own**, independent of its category's, so a photo can be taken off a gallery
+that is perfectly online. The heading above the grid carries the way in, with the count it holds, and the
+way back. In the trash the toolbar swaps its arranging, crediting and cover controls — none of which mean
+anything there — for **Restaurer la sélection** and **Supprimer définitivement**, posting to
+`restoreMedias()` and `deleteMediasPermanently()`. The second is the only path in this bundle that ever
+removes a media, and the only one that reaches its four files
+(`GalleryMediaDerivativeCleanupListener`); like a category's, it is held at `site-role-admin`.
+
+A category put in the trash marks none of its medias, and restoring it gives back exactly the ones that
+were showing when it left.
 
 ### Applying credits or rights to a selection
 
@@ -722,6 +764,11 @@ category) also plugs categories into ConfigBundle's **Export sync (everything)**
 A category's [heading blocks](#composing-a-categorys-heading) travel with it, their own medias joining the
 archive, and are replaced wholesale on import — the same way `PageImportProvider` replaces a page's. An
 archive exported before categories gained a heading imports as a category without one.
+
+**The trash flag travels too**, on the category and on each of its medias: a category exported out of the
+trash comes back to the trash, not onto the site, and a sync mirrors its source rather than republishing
+what an admin had taken down (see [deleting a gallery](#deleting-a-gallery)). An archive predating the
+trash imports as what it describes — a category that is not in it.
 
 Every file a media holds travels: the stored one, its thumbnail and high resolution siblings, its
 self-hosted video, and the [original it kept](#uploading-a-batch) — put back under `private/` on import, so
@@ -934,6 +981,33 @@ files are originals and which are an old gallery's derivatives — has no answer
 to the next, and getting it wrong imports blurry duplicates that then have to be found and deleted by
 hand. Photos already managed by this bundle on *another* c975L site are a different matter: they move
 across with [export / import categories](#export--import-categories), files and all.
+
+## AI agent skills
+
+The package ships a skill of its own, `skills/c975l-gallery/SKILL.md`, written for the coding agent of
+the site installing this bundle rather than for someone modifying it. Point your agent at it:
+
+```text
+vendor/c975l/gallery-bundle/skills/
+```
+
+It holds what an agent gets wrong when left to its own habits — that the url prefix is admin-editable
+and never to be written out, that a setting goes in `config/configs.json` and not in `.env`, that the
+image derivatives are UiBundle's work and not a resizer to write, that a video platform is declared in
+UiBundle — alongside the routes, the entities, the config slugs, the blocks, the Twig functions and the
+components, each named as it actually is in the sources.
+
+Nothing is installed, nothing is copied into your project: the file sits in `vendor/` like any other
+part of the package and follows it at each `composer update`. A user of Claude Code wanting it to load
+by itself symlinks it into their own skills directory:
+
+```bash
+ln -s ../../vendor/c975l/gallery-bundle/skills/c975l-gallery .claude/skills/c975l-gallery
+```
+
+`Tests\SkillsTest` keeps the file honest: every path, route, config slug, command, class member,
+Twig function, block kind and component it quotes is checked against the sources, so renaming any of
+them fails the build rather than leaving an agent confidently wrong.
 
 ---
 

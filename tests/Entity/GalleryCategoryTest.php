@@ -94,6 +94,52 @@ class GalleryCategoryTest extends TestCase
         $this->assertNull(new GalleryCategory()->getCoverOrRandomMedia());
     }
 
+    // The number is read next to the category everywhere the grid is - one that kept counting the trash would never match what it names
+    public function testGetMediasCountLeavesTheTrashedMediasOut(): void
+    {
+        $category = new GalleryCategory();
+        $trashed = new GalleryMedia();
+        $trashed->setIsDeleted(true);
+        $category->addMedia(new GalleryMedia())->addMedia($trashed);
+
+        $this->assertSame(1, $category->getMediasCount());
+    }
+
+    // A photo taken off the site must not come back through the tile that stands for the whole category
+    public function testGetCoverOrRandomMediaNeverDrawsATrashedMedia(): void
+    {
+        $category = new GalleryCategory();
+        $shown = new GalleryMedia();
+        $trashed = new GalleryMedia();
+        $trashed->setIsDeleted(true);
+        $category->addMedia($trashed)->addMedia($shown);
+
+        $this->assertSame($shown, $category->getCoverOrRandomMedia());
+    }
+
+    // Same for a cover that has since been trashed: the category falls back on one it still shows rather than on the picked one
+    public function testGetCoverOrRandomMediaFallsBackWhenTheCoverIsTrashed(): void
+    {
+        $category = new GalleryCategory();
+        $cover = new GalleryMedia();
+        $cover->setIsDeleted(true);
+        $shown = new GalleryMedia();
+        $category->addMedia($cover)->addMedia($shown)->setCoverMedia($cover);
+
+        $this->assertSame($shown, $category->getCoverOrRandomMedia());
+    }
+
+    // Every media trashed leaves the category without a face, exactly as an empty one
+    public function testGetCoverOrRandomMediaReturnsNullWhenEveryMediaIsTrashed(): void
+    {
+        $category = new GalleryCategory();
+        $trashed = new GalleryMedia();
+        $trashed->setIsDeleted(true);
+        $category->addMedia($trashed);
+
+        $this->assertNull($category->getCoverOrRandomMedia());
+    }
+
     public function testRemoveMediaClearsBothSidesOfTheRelation(): void
     {
         $category = new GalleryCategory();

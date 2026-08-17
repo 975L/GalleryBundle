@@ -22,6 +22,7 @@ use c975L\GalleryBundle\Service\GalleryMediaFactory;
 use c975L\GalleryBundle\Service\GalleryMediaSlugger;
 use c975L\GalleryBundle\Service\GalleryUrlRedirector;
 use c975L\GalleryBundle\Service\UploadLimits;
+use c975L\UiBundle\Service\UploadProgress;
 use Doctrine\ORM\EntityManagerInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGeneratorInterface;
@@ -30,6 +31,8 @@ use Symfony\Component\DependencyInjection\Container;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Session\Session;
@@ -156,6 +159,7 @@ class GalleryMediaUploadControllerTest extends TestCase
             $adminUrlGenerator ?? $this->createAdminUrlGenerator(),
             $this->createConfigService(),
             new GalleryUrlRedirector($redirectRepository ?? $this->createStub(RedirectRepository::class)),
+            new UploadProgress($translator),
         );
     }
 
@@ -309,6 +313,7 @@ class GalleryMediaUploadControllerTest extends TestCase
         $this->assertSame('Studio 975L', $persisted[0]->getCredits());
         $this->assertSame('Studio 975L', $persisted[1]->getCredits());
         $this->assertTrue($persisted[0]->isRightsReserved());
+        $this->assertInstanceOf(RedirectResponse::class, $response);
         $this->assertSame('/management/gallery/42/edit', $response->getTargetUrl());
     }
 
@@ -429,6 +434,34 @@ class GalleryMediaUploadControllerTest extends TestCase
         $response = $controller->upload(Request::create('/gallery-upload?category=42', 'POST'));
 
         $this->assertTrue($session->getFlashBag()->has('success'));
+        $this->assertInstanceOf(RedirectResponse::class, $response);
         $this->assertSame('/management/gallery/42/edit', $response->getTargetUrl());
+    }
+
+    // A batch sent by the progress bar is answered with the url rather than redirected to it: XMLHttpRequest follows a 302 itself, and the "medias added" flash would be spent on a page nobody ever sees (see UploadProgress::redirect)
+    public function testUploadHandsTheUrlBackToTheProgressBarInsteadOfRedirecting(): void
+    {
+        $category = new GalleryCategory()->setSlug('voyages');
+
+        $data = ['files' => [$this->createUploadedFile()], 'credits' => null, 'rightsReserved' => false];
+        $captured = [];
+        [$requestStack, $session] = $this->createSessionRequestStack();
+
+        $controller = $this->createController($this->createCategoryRepository($category));
+        $controller->setContainer($this->createContainer([
+            'security.authorization_checker' => $this->createAuthorizationChecker(true),
+            'form.factory' => $this->createFormFactory($this->createSubmittedForm(true, true, $data), $captured),
+            'request_stack' => $requestStack,
+        ]));
+
+        $request = Request::create('/gallery-upload?category=42', 'POST');
+        $request->headers->set('X-Requested-With', 'XMLHttpRequest');
+
+        $response = $controller->upload($request);
+
+        $this->assertInstanceOf(JsonResponse::class, $response);
+        $this->assertSame('{"redirect":"\/management\/gallery\/42\/edit"}', $response->getContent());
+        // The flash still waits in the session, for the screen the bar sends the browser to
+        $this->assertTrue($session->getFlashBag()->has('success'));
     }
 }

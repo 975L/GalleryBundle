@@ -17,6 +17,7 @@ use c975L\GalleryBundle\Repository\GalleryCategoryRepository;
 use c975L\GalleryBundle\Repository\GalleryMediaRepository;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\DependencyInjection\Container;
+use Symfony\Component\HttpKernel\Exception\GoneHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Attribute\Route;
 use Twig\Environment;
@@ -90,7 +91,7 @@ class GalleryControllerTest extends TestCase
     {
         $categoryRepository = $this->createMock(GalleryCategoryRepository::class);
         $categoryRepository->expects($this->once())->method('findAllOrdered')->willReturn([new GalleryCategory(), new GalleryCategory()]);
-        $categoryRepository->expects($this->never())->method('count');
+        $categoryRepository->expects($this->never())->method('countVisible');
 
         $twig = $this->createStub(Environment::class);
         $capturedParameters = null;
@@ -122,7 +123,7 @@ class GalleryControllerTest extends TestCase
 
         $categoryRepository = $this->createMock(GalleryCategoryRepository::class);
         $categoryRepository->expects($this->once())->method('findOneBySlug')->with('voyages')->willReturn($category);
-        $categoryRepository->method('count')->willReturn(4);
+        $categoryRepository->method('countVisible')->willReturn(4);
         $mediaRepository = $this->createMock(GalleryMediaRepository::class);
         $mediaRepository->expects($this->once())->method('findByCategory')->with($category)->willReturn($medias);
 
@@ -160,6 +161,41 @@ class GalleryControllerTest extends TestCase
         $controller->category('unknown');
     }
 
+    // A category in the trash says the url held something and no longer does, rather than the 404 a crawler retries for months - the same answer SiteBundle serves for a trashed Page, and one that only lasts as long as the category can still be restored
+    public function testCategoryThrowsGoneWhenTheCategoryIsInTheTrash(): void
+    {
+        $category = new GalleryCategory()->setSlug('voyages');
+        $category->setIsDeleted(true);
+
+        $categoryRepository = $this->createStub(GalleryCategoryRepository::class);
+        $categoryRepository->method('findOneBySlug')->willReturn($category);
+
+        $controller = $this->createController(categoryRepository: $categoryRepository);
+
+        $this->expectException(GoneHttpException::class);
+        $controller->category('voyages');
+    }
+
+    // A media has a trash of its own, so it answers 410 under a category that is perfectly online
+    public function testMediaThrowsGoneWhenTheMediaIsInTheTrash(): void
+    {
+        $category = new GalleryCategory()->setSlug('voyages');
+        $media = new GalleryMedia()->setSlug('col-du-galibier');
+        $media->setCategory($category);
+        $media->setIsDeleted(true);
+
+        $categoryRepository = $this->createStub(GalleryCategoryRepository::class);
+        $categoryRepository->method('findOneBySlug')->willReturn($category);
+
+        $mediaRepository = $this->createStub(GalleryMediaRepository::class);
+        $mediaRepository->method('findOneBySlugInCategory')->willReturn($media);
+
+        $controller = $this->createController(categoryRepository: $categoryRepository, mediaRepository: $mediaRepository);
+
+        $this->expectException(GoneHttpException::class);
+        $controller->media('voyages', 'col-du-galibier');
+    }
+
     public function testMediaRendersMediumViewWithPreviousAndNext(): void
     {
         $category = new GalleryCategory()->setSlug('voyages');
@@ -169,7 +205,7 @@ class GalleryControllerTest extends TestCase
 
         $categoryRepository = $this->createStub(GalleryCategoryRepository::class);
         $categoryRepository->method('findOneBySlug')->willReturn($category);
-        $categoryRepository->method('count')->willReturn(4);
+        $categoryRepository->method('countVisible')->willReturn(4);
         $mediaRepository = $this->createMock(GalleryMediaRepository::class);
         $mediaRepository->expects($this->once())->method('findOneBySlugInCategory')->with($category, 'col-du-galibier')->willReturn($media);
         $mediaRepository->expects($this->once())->method('findPreviousAndNext')->with($media)->willReturn($previousNext);

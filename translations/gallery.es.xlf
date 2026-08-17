@@ -10,9 +10,9 @@
                 <source>action.apply_rights_reserved</source>
                 <target>Aplicar los derechos reservados</target>
             </trans-unit>
-            <trans-unit id="GQsNLOF">
-                <source>action.delete_selection</source>
-                <target>Eliminar la selección</target>
+            <trans-unit id="sSgetpg">
+                <source>action.delete_permanently</source>
+                <target>Eliminar definitivamente</target>
             </trans-unit>
             <trans-unit id="DYrEVzQ">
                 <source>action.export_selection</source>
@@ -22,6 +22,18 @@
                 <source>action.move</source>
                 <target>Mover</target>
             </trans-unit>
+            <trans-unit id="vUjYe27">
+                <source>action.move_to_trash</source>
+                <target>Mover a la papelera</target>
+            </trans-unit>
+            <trans-unit id="KrzhzB_">
+                <source>action.restore</source>
+                <target>Restaurar</target>
+            </trans-unit>
+            <trans-unit id="5xcBqgP">
+                <source>action.restore_selection</source>
+                <target>Restaurar la selección</target>
+            </trans-unit>
             <trans-unit id="egBlInb">
                 <source>action.select</source>
                 <target>Seleccionar</target>
@@ -30,9 +42,21 @@
                 <source>action.select_all</source>
                 <target>Seleccionar todo</target>
             </trans-unit>
+            <trans-unit id="8w7xgsI">
+                <source>action.trash</source>
+                <target>Papelera</target>
+            </trans-unit>
+            <trans-unit id="K8KQd57">
+                <source>action.trash_selection</source>
+                <target>Mover la selección a la papelera</target>
+            </trans-unit>
             <trans-unit id="CTyRVpC">
                 <source>action.view_on_site</source>
                 <target>Ver en el sitio</target>
+            </trans-unit>
+            <trans-unit id="X4j.TeG">
+                <source>confirm.delete_permanently</source>
+                <target>Esta galería se eliminará definitivamente, con sus medios y todos sus archivos. Esta acción es irreversible. ¿Continuar?</target>
             </trans-unit>
             <trans-unit id="tu7Zw96">
                 <source>confirm.media_slug_change</source>
@@ -133,6 +157,14 @@
             <trans-unit id="xFlSzIS">
                 <source>description.guided_step_gallery_medias_arrangement_upload</source>
                 <target>Un lote a la vez, siempre desde la galería que los contiene - un medio nunca se crea por sí solo.</target>
+            </trans-unit>
+            <trans-unit id="ZSCwjpo">
+                <source>flash.gallery_category_deleted_permanently</source>
+                <target>Galería eliminada definitivamente</target>
+            </trans-unit>
+            <trans-unit id="XcWUcOA">
+                <source>flash.gallery_category_restored</source>
+                <target>Galería restaurada</target>
             </trans-unit>
             <trans-unit id="xzaPeIL">
                 <source>label.block_category</source>
@@ -316,15 +348,27 @@
             </trans-unit>
             <trans-unit id="WHkdhcj">
                 <source>label.gallery_medias_delete_confirm</source>
-                <target>¿Eliminar definitivamente los medios seleccionados y sus archivos?</target>
+                <target>Estos medios se moverán a la papelera: saldrán del sitio, pero se conservan sus archivos y podrá restaurarlos. ¿Continuar?</target>
             </trans-unit>
-            <trans-unit id="1iptswo">
-                <source>label.gallery_medias_deleted</source>
-                <target>Medios eliminados (%count%)</target>
+            <trans-unit id="CR7vBJk">
+                <source>label.gallery_medias_delete_permanently_confirm</source>
+                <target>¿Eliminar definitivamente los medios seleccionados y sus archivos? Esta acción es irreversible.</target>
+            </trans-unit>
+            <trans-unit id="RQABxuW">
+                <source>label.gallery_medias_deleted_permanently</source>
+                <target>Medios eliminados definitivamente (%count%)</target>
             </trans-unit>
             <trans-unit id="ZKKrfjg">
                 <source>label.gallery_medias_layout_failed</source>
                 <target>No se han podido guardar el orden y la portada</target>
+            </trans-unit>
+            <trans-unit id="N1MazvR">
+                <source>label.gallery_medias_restored</source>
+                <target>Medios restaurados (%count%)</target>
+            </trans-unit>
+            <trans-unit id="V9d6r7K">
+                <source>label.gallery_medias_trashed</source>
+                <target>Medios movidos a la papelera (%count%)</target>
             </trans-unit>
             <trans-unit id="bX31DTF">
                 <source>label.gallery_medias_updated</source>
@@ -569,6 +613,14 @@
             <trans-unit id="w9lrEZ2">
                 <source>label.info_gallery_category_medias_empty</source>
                 <target>Esta categoría aún no tiene ningún medio.</target>
+            </trans-unit>
+            <trans-unit id="T42IlA6">
+                <source>label.info_gallery_category_medias_trash</source>
+                <target>Medios movidos a la papelera: ya no están en el sitio, pero se conservan sus archivos. Marque algunos para restaurarlos o para eliminarlos definitivamente.</target>
+            </trans-unit>
+            <trans-unit id="mAdNzM3">
+                <source>label.info_gallery_category_medias_trash_empty</source>
+                <target>La papelera de esta categoría está vacía.</target>
             </trans-unit>
             <trans-unit id="p9AVN3s">
                 <source>label.info_gallery_media</source>

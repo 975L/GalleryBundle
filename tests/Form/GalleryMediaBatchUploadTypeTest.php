@@ -13,6 +13,7 @@ namespace c975L\GalleryBundle\Tests\Form;
 use c975L\GalleryBundle\Form\GalleryMediaBatchUploadType;
 use c975L\GalleryBundle\Service\UploadLimits;
 use c975L\UiBundle\Contract\VichWatermarkableInterface;
+use c975L\UiBundle\Service\UploadProgress;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
@@ -37,7 +38,7 @@ class GalleryMediaBatchUploadTypeTest extends TestCase
                 : $id . ':' . implode(',', $parameters)
         );
 
-        return new GalleryMediaBatchUploadType(new UploadLimits('20', '2M', '8M'), $translator);
+        return new GalleryMediaBatchUploadType(new UploadLimits('20', '2M', '8M'), $translator, new UploadProgress($translator));
     }
 
     private function buildFields(array $options): array
@@ -109,7 +110,7 @@ class GalleryMediaBatchUploadTypeTest extends TestCase
 
         $attr = $resolver->resolve(['category_title' => 'Voyages'])['attr'];
 
-        $this->assertSame('gallery-upload-limits', $attr['data-controller']);
+        $this->assertSame('gallery-upload-limits upload-progress', $attr['data-controller']);
         $this->assertSame(20, $attr['data-gallery-upload-limits-max-files-value']);
         // 2M from php.ini wins over this bundle's own 20M, and 20 files x 2M stays under the 8M request ceiling
         $this->assertSame(2 * 1024 ** 2, $attr['data-gallery-upload-limits-max-file-size-value']);
@@ -119,6 +120,21 @@ class GalleryMediaBatchUploadTypeTest extends TestCase
         $this->assertSame('label.gallery_upload_too_many_files', $attr['data-gallery-upload-limits-files-message-value']);
         $this->assertSame('label.gallery_upload_file_too_large', $attr['data-gallery-upload-limits-size-message-value']);
         $this->assertSame('label.gallery_upload_batch_too_large', $attr['data-gallery-upload-limits-batch-message-value']);
+    }
+
+    // A batch of fifty photos is minutes of transfer and processing, and a screen showing nothing of it reads as a submit that never took - the bar is UiBundle's, armed over the ceilings this form already declares (see UploadProgress)
+    public function testConfigureOptionsArmsTheProgressBarAlongsideTheCeilings(): void
+    {
+        $type = $this->createType();
+        $resolver = new OptionsResolver();
+        $type->configureOptions($resolver);
+
+        $attr = $resolver->resolve(['category_title' => 'Voyages'])['attr'];
+
+        $this->assertSame('submit->upload-progress#send', $attr['data-action']);
+        $this->assertSame('label.upload_progress_uploading', $attr['data-upload-progress-uploading-message-value']);
+        $this->assertSame('label.upload_progress_processing', $attr['data-upload-progress-processing-message-value']);
+        $this->assertSame('label.upload_progress_failed', $attr['data-upload-progress-failed-message-value']);
     }
 
     // The same figures again, stated in the field's help before anything is picked

@@ -17,6 +17,7 @@ use c975L\GalleryBundle\Repository\GalleryMediaRepository;
 use c975L\GalleryBundle\Routing\GalleryRoutePrefix;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\GoneHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Attribute\Route;
 
@@ -54,7 +55,7 @@ class GalleryController extends AbstractController
         // The breadcrumb's home link carries the same count as on the index, counted here rather than listed, the page having no use for the categories themselves
         return $this->render('@c975LGallery/gallery/category.html.twig', [
             'category' => $category,
-            'categoriesCount' => $this->categoryRepository->count([]),
+            'categoriesCount' => $this->categoryRepository->countVisible(),
             'medias' => $this->mediaRepository->findByCategory($category),
         ]);
     }
@@ -68,18 +69,23 @@ class GalleryController extends AbstractController
 
         return $this->render('@c975LGallery/gallery/media.html.twig', [
             'category' => $category,
-            'categoriesCount' => $this->categoryRepository->count([]),
+            'categoriesCount' => $this->categoryRepository->countVisible(),
             'media' => $media,
             'previousNext' => $this->mediaRepository->findPreviousAndNext($media),
         ]);
     }
 
+    // A trashed category answers 410 rather than 404, the same way SiteBundle serves a trashed Page: it says the url held something and no longer does, which a search engine acts on far faster than on a 404 - and it only lasts as long as the category can still be restored, deletePermanently() replacing it with a "gone" Redirect that says it for good (see GalleryCategoryCrudController)
     private function resolveCategory(string $slug): GalleryCategory
     {
         $category = $this->categoryRepository->findOneBySlug($slug);
 
         if (null === $category) {
             throw new NotFoundHttpException('Gallery category not found');
+        }
+
+        if ($category->isDeleted()) {
+            throw new GoneHttpException();
         }
 
         return $category;
@@ -93,6 +99,10 @@ class GalleryController extends AbstractController
 
         if (!$media instanceof GalleryMedia) {
             throw new NotFoundHttpException('Gallery media not found');
+        }
+
+        if ($media->isDeleted()) {
+            throw new GoneHttpException();
         }
 
         return [$category, $media];

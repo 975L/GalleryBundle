@@ -12,10 +12,12 @@ namespace c975L\GalleryBundle\Entity;
 
 use c975L\ConfigBundle\Contract\UserInterface;
 use c975L\GalleryBundle\Repository\GalleryMediaRepository;
+use c975L\UiBundle\Contract\TrashableInterface;
 use c975L\UiBundle\Contract\VichMediaNamableInterface;
 use c975L\UiBundle\Contract\VichMultiSizeImageInterface;
 use c975L\UiBundle\Contract\VichOriginalKeepableInterface;
 use c975L\UiBundle\Contract\VichWatermarkableInterface;
+use c975L\UiBundle\Entity\Trait\TrashableTrait;
 use c975L\UiBundle\Video\VideoPlatform;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\HttpFoundation\File\File;
@@ -28,8 +30,11 @@ use Vich\UploaderBundle\Mapping\Attribute as Vich;
 #[ORM\Table(name: 'gallery_media')]
 #[ORM\UniqueConstraint(name: 'gallery_media_category_slug', columns: ['category_id', 'slug'])]
 #[Vich\Uploadable]
-class GalleryMedia implements VichMultiSizeImageInterface, VichMediaNamableInterface, VichOriginalKeepableInterface, VichWatermarkableInterface
+class GalleryMedia implements TrashableInterface, VichMultiSizeImageInterface, VichMediaNamableInterface, VichOriginalKeepableInterface, VichWatermarkableInterface
 {
+    // Its own trash, independent of its category's: a media put here is hidden while its category stays online, and a category put in the trash hides all of its medias without marking a single one - so restoring a category gives back exactly the medias that were showing when it left, no more
+    use TrashableTrait;
+
     // Where a kept original lands, outside public/: it is an untouched multi-megabyte upload nothing on the site ever serves, only kept so a media can be re-processed (a new target size, a new format) without a re-upload
     public const ORIGINAL_DIRECTORY = 'private';
 

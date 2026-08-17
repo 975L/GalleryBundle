@@ -10,9 +10,9 @@
                 <source>action.apply_rights_reserved</source>
                 <target>Appliquer les droits réservés</target>
             </trans-unit>
-            <trans-unit id="GQsNLOF">
-                <source>action.delete_selection</source>
-                <target>Supprimer la sélection</target>
+            <trans-unit id="sSgetpg">
+                <source>action.delete_permanently</source>
+                <target>Supprimer définitivement</target>
             </trans-unit>
             <trans-unit id="DYrEVzQ">
                 <source>action.export_selection</source>
@@ -22,6 +22,18 @@
                 <source>action.move</source>
                 <target>Déplacer</target>
             </trans-unit>
+            <trans-unit id="vUjYe27">
+                <source>action.move_to_trash</source>
+                <target>Mettre à la corbeille</target>
+            </trans-unit>
+            <trans-unit id="KrzhzB_">
+                <source>action.restore</source>
+                <target>Restaurer</target>
+            </trans-unit>
+            <trans-unit id="5xcBqgP">
+                <source>action.restore_selection</source>
+                <target>Restaurer la sélection</target>
+            </trans-unit>
             <trans-unit id="egBlInb">
                 <source>action.select</source>
                 <target>Sélectionner</target>
@@ -30,9 +42,21 @@
                 <source>action.select_all</source>
                 <target>Tout sélectionner</target>
             </trans-unit>
+            <trans-unit id="8w7xgsI">
+                <source>action.trash</source>
+                <target>Corbeille</target>
+            </trans-unit>
+            <trans-unit id="K8KQd57">
+                <source>action.trash_selection</source>
+                <target>Mettre la sélection à la corbeille</target>
+            </trans-unit>
             <trans-unit id="CTyRVpC">
                 <source>action.view_on_site</source>
                 <target>Voir sur le site</target>
+            </trans-unit>
+            <trans-unit id="X4j.TeG">
+                <source>confirm.delete_permanently</source>
+                <target>Cette galerie va être supprimée définitivement, avec ses médias et tous leurs fichiers. Cette action est irréversible. Continuer ?</target>
             </trans-unit>
             <trans-unit id="tu7Zw96">
                 <source>confirm.media_slug_change</source>
@@ -133,6 +157,14 @@
             <trans-unit id="xFlSzIS">
                 <source>description.guided_step_gallery_medias_arrangement_upload</source>
                 <target>Un lot à la fois, toujours depuis la galerie qui les porte - un média ne se crée jamais tout seul.</target>
+            </trans-unit>
+            <trans-unit id="ZSCwjpo">
+                <source>flash.gallery_category_deleted_permanently</source>
+                <target>Galerie supprimée définitivement</target>
+            </trans-unit>
+            <trans-unit id="XcWUcOA">
+                <source>flash.gallery_category_restored</source>
+                <target>Galerie restaurée</target>
             </trans-unit>
             <trans-unit id="xzaPeIL">
                 <source>label.block_category</source>
@@ -316,15 +348,27 @@
             </trans-unit>
             <trans-unit id="WHkdhcj">
                 <source>label.gallery_medias_delete_confirm</source>
-                <target>Supprimer définitivement les médias sélectionnés ainsi que leurs fichiers ?</target>
+                <target>Ces médias vont être mis à la corbeille : ils quitteront le site, mais leurs fichiers sont conservés et vous pourrez les restaurer. Continuer ?</target>
             </trans-unit>
-            <trans-unit id="1iptswo">
-                <source>label.gallery_medias_deleted</source>
-                <target>Médias supprimés (%count%)</target>
+            <trans-unit id="CR7vBJk">
+                <source>label.gallery_medias_delete_permanently_confirm</source>
+                <target>Supprimer définitivement les médias sélectionnés ainsi que leurs fichiers ? Cette action est irréversible.</target>
+            </trans-unit>
+            <trans-unit id="RQABxuW">
+                <source>label.gallery_medias_deleted_permanently</source>
+                <target>Médias supprimés définitivement (%count%)</target>
             </trans-unit>
             <trans-unit id="ZKKrfjg">
                 <source>label.gallery_medias_layout_failed</source>
                 <target>L'ordre et la couverture n'ont pas pu être enregistrés</target>
+            </trans-unit>
+            <trans-unit id="N1MazvR">
+                <source>label.gallery_medias_restored</source>
+                <target>Médias restaurés (%count%)</target>
+            </trans-unit>
+            <trans-unit id="V9d6r7K">
+                <source>label.gallery_medias_trashed</source>
+                <target>Médias mis à la corbeille (%count%)</target>
             </trans-unit>
             <trans-unit id="bX31DTF">
                 <source>label.gallery_medias_updated</source>
@@ -569,6 +613,14 @@
             <trans-unit id="w9lrEZ2">
                 <source>label.info_gallery_category_medias_empty</source>
                 <target>Cette catégorie n'a encore aucun média.</target>
+            </trans-unit>
+            <trans-unit id="T42IlA6">
+                <source>label.info_gallery_category_medias_trash</source>
+                <target>Médias mis à la corbeille : ils ne sont plus sur le site, mais leurs fichiers sont conservés. Cochez-en pour les restaurer, ou pour les supprimer définitivement.</target>
+            </trans-unit>
+            <trans-unit id="mAdNzM3">
+                <source>label.info_gallery_category_medias_trash_empty</source>
+                <target>La corbeille de cette catégorie est vide.</target>
             </trans-unit>
             <trans-unit id="p9AVN3s">
                 <source>label.info_gallery_media</source>

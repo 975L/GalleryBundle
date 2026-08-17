@@ -182,28 +182,25 @@ class GalleryMediaCrudController extends AbstractCrudController
         );
     }
 
-    // Deleted media - its page is declared in the sitemap (see GallerySitemapProvider), so the url is left answering 410 Gone rather than the 404 a crawler retries for months
+    // Move to trash: the media leaves the grid and its page answers 410 (see GalleryController::resolveCategoryAndMedia), but the row and its four files stay exactly where they are - what removes them is deletePermanently() on its category's trash screen, or the category's own permanent deletion
+    // No "gone" Redirect is recorded here any more: the 410 lasts only as long as the media can still be restored, and a Redirect row would outlive the restore (see GalleryCategoryCrudController::deletePermanently, which records the tree for good)
     #[\Override]
     public function deleteEntity(EntityManagerInterface $entityManager, object $entityInstance): void
     {
         if ($entityInstance instanceof GalleryMedia) {
-            $this->redirectGone($entityManager, $entityInstance);
-        }
+            // The cover is released here as GalleryCategoryCrudController::deleteMedias() does it for a whole selection - the two ways to trash a media must leave the category in the same state, or restoring one silently makes it the cover again
+            $category = $entityInstance->getCategory();
+            if ($category?->getCoverMedia() === $entityInstance) {
+                $category->setCoverMedia(null);
+            }
 
-        parent::deleteEntity($entityManager, $entityInstance);
-    }
+            $entityInstance->setIsDeleted(true);
+            $entityManager->flush();
 
-    // A media stored before slugs existed, or left without a category, has no public url to answer for - nothing was ever declared for it
-    private function redirectGone(EntityManagerInterface $entityManager, GalleryMedia $media): void
-    {
-        $categorySlug = $media->getCategory()?->getSlug();
-        $slug = $media->getSlug();
-
-        if (null === $categorySlug || null === $slug) {
             return;
         }
 
-        $this->urlRedirector->recordGone($entityManager, $this->generateUrl('gallery_media', ['category' => $categorySlug, 'slug' => $slug]));
+        parent::deleteEntity($entityManager, $entityInstance);
     }
 
     #[\Override]

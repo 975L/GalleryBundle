@@ -1,0 +1,267 @@
+---
+name: c975l-gallery
+description: "Use this skill when working with photo galleries in a Symfony application built on the c975L ecosystem with c975l/gallery-bundle. Covers categories and medias, the admin-renamable url prefix, the two-step trash, batch upload and the three image derivatives, videos and embeds, the two gallery blocks, theming, and every extension point the bundle offers. Triggers on: GalleryCategory, GalleryMedia, gallery-route-prefix, gallery_index, gallery_category, gallery_media, gallery_categories, gallery_medias, c975l:gallery:rebuild-thumbnails, c975l:gallery:fill-slugs, photo gallery, thumbnail, lightbox, batch upload, upload progress, passe-partout, trash, restore, delete permanently, 410 Gone."
+---
+
+# c975L GalleryBundle
+
+> Photo and video galleries on the c975L core — `GalleryCategory` → `GalleryMedia`, batch upload, automatic thumb/medium/highres derivatives, a public viewer, and two blocks so a gallery can be placed on any composed page.
+
+**Package:** `c975l/gallery-bundle` · **Namespace:** `c975L\GalleryBundle\` · **Twig namespace:** `@c975LGallery` · **Translation domain:** `gallery`
+
+**Key source paths** (relative to the package root):
+`src/Controller/GalleryController.php`, `src/Entity/`, `src/Repository/`, `src/Routing/GalleryRoutePrefix.php`, `src/Service/`, `src/Twig/Extension/`, `src/Management/`, `src/Form/Block/`, `templates/gallery/`, `templates/components/Gallery/`, `templates/blocks/`, `config/configs.json`, `config/services.yaml`
+
+**Related documentation:** this package's `README.md` is the exhaustive reference — every section named below is an anchor in it. The ecosystem's own rules (database-backed configuration, blocks, media library, management contributions) live in `c975l/core-bundle`.
+
+## Quick start
+
+```bash
+composer require c975l/gallery-bundle
+php bin/console doctrine:migrations:diff && php bin/console doctrine:migrations:migrate
+php bin/console c975l:config:load-all      # seeds config/configs.json into the back office
+php bin/console assets:install --symlink
+php bin/console c975l:scaffold:install     # copies assets/styles/themes/gallery.css into the app
+```
+
+```yaml
+# config/routes.yaml
+c975_l_gallery:
+    resource: "@c975LGalleryBundle/src/Controller/"
+    type: attribute
+    prefix: /
+```
+
+Nothing else is registered by hand. The Stimulus entrypoints (`assets/controllers.js` for the public
+pages, `assets/controllers-admin.js` for the back office) are picked up by UiBundle's script registry,
+and their `importmap.php` entries are written by `Management\ImportmapProvider` on the next
+`composer update`.
+
+`GalleryMedia::$user` is typed against `c975L\ConfigBundle\Contract\UserInterface`: the app's
+`App\Entity\User` must implement it. The scaffolded `User` already does.
+
+## The data model
+
+There is **no gallery entity**. A site's galleries *are* its categories — `GalleryCategory` is the
+top-level unit, and each holds its `GalleryMedia`.
+
+- `GalleryCategory` — `slug` (the url segment), `title`, `summarySocialNetwork` (rich text, printed
+  above the grid and reused as the page's description metas), `position`, `coverMedia`,
+  `uncategorized` (the lazily-created catch-all), `medias`. Implements `HasBlocksInterface` (its own
+  editorial heading) and `TrashableInterface`.
+- `GalleryMedia` — belongs to one category, keyed publicly by `slug` which is **unique within its
+  category only**. Carries `title`, `credits`, `rightsReserved`, `position`, `mediaType`
+  (`image` / a platform name / `embed`, always derived, never set), `externalUrl`, an optional
+  uploaded video file, and the Vich fields. Implements `TrashableInterface`,
+  `VichMultiSizeImageInterface`, `VichMediaNamableInterface`, `VichOriginalKeepableInterface`,
+  `VichWatermarkableInterface`.
+
+## Deleting takes two steps
+
+Both entities carry UiBundle's `TrashableTrait`, and **the delete button removes nothing**. It flags the
+row: the category leaves the site, its medias, its heading blocks and every one of their files stay
+exactly where they are — the cascade on the medias and `GalleryMediaDerivativeCleanupListener` are
+simply never reached.
+
+- The category index switches to what the trash holds with a `trash` query parameter, a category's edit
+  screen does the same for its medias with `mediasTrash`. A media has a trash of its own, so a photo is
+  taken off a gallery that stays online, and restoring a category gives back exactly the medias that
+  were showing when it left.
+- Only `GalleryCategoryCrudController::deletePermanently()` (and `deleteMediasPermanently()` for a
+  selection) ever removes a row and reaches its files. Those two sit behind the `site-role-admin`
+  setting; the rest of the gallery back office sits behind `site-role-editor`.
+- A trashed category or media answers **410 Gone** on its public url, not 404, straight from the row.
+  That 410 lasts only as long as the entity can be restored: the permanent deletion is what writes the
+  "gone" `Redirect` rows that outlive it, and restoring releases any such row left under the url.
+- Every listing query leaves the trash out — `findAllOrdered()`, `countVisible()`,
+  `GalleryMediaRepository::findByCategory()`, `GalleryCategory::getMediasCount()` and
+  `getCoverOrRandomMedia()`. `findOneBySlug()` and `findOneBySlugInCategory()` are deliberately
+  unfiltered, the front-office needing the row in hand to answer 410.
+- The export/import carries the flag both ways: a category archived out of the trash comes back to it.
+
+## Public routes and the renamable prefix
+
+| Route name | Url | Renders |
+| --- | --- | --- |
+| `gallery_index` | `/{prefix}` | one thumbnail per category |
+| `gallery_category` | `/{prefix}/{category}` | the category grid, photos and videos alike |
+| `gallery_media` | `/{prefix}/{category}/{slug}` | the medium-resolution photo, or the video player |
+
+The first segment is the `gallery-route-prefix` setting, renamed from the dashboard (`galerie`,
+`fotos`) with **no cache to clear**. A route path is compiled into the router cache, so the prefix
+cannot *be* the path: the three routes are declared as `/{gallery_prefix}/…` and each carries a
+`condition` asking `Routing\GalleryRoutePrefix` whether the segment it was handed is the configured
+one. `Listener\GalleryRoutePrefixListener` puts the same value in the router's request context, which
+is where the generator takes the missing parameter from.
+
+**Generate urls, never write them.** The route parameter is filled for you:
+
+```twig
+{{ path('gallery_index') }}
+{{ path('gallery_category', { category: category.slug }) }}
+{{ path('gallery_media', { category: category.slug, slug: media.slug }) }}
+```
+
+Route *names* never change, whatever the prefix. Renaming the prefix breaks the previously indexed
+urls — declare a redirect in ConfigBundle's **Redirections** screen. Renaming a *category* is handled
+for you: `GalleryCategoryCrudController::updateEntity()` writes the permanent redirect, plus a
+wildcarded row for the medias underneath.
+
+## Showing a gallery outside its own routes
+
+Two block kinds are contributed to UiBundle (declared in `config/services.yaml`), so a gallery goes on
+any page composed in the back office:
+
+| Kind | Shows | Options |
+| --- | --- | --- |
+| `gallery_categories` | every category, one thumbnail each | optional maximum |
+| `gallery_medias` | one category's medias | category, optional maximum, random draw, link to the full category |
+
+Both are `cacheable: false` and resolve their content live through
+`Twig\Extension\GalleryBlockExtension`, so a block never goes stale against the media library. What a
+block stores is *what* to show — a category **slug**, a maximum — never the medias themselves.
+
+In a template of your own, the same Twig functions and components are available:
+
+```twig
+{# categories, optionally capped #}
+{% for category in gallery_block_categories(6) %}…{% endfor %}
+
+{# one category's medias: slug, max, random #}
+{% set medias = gallery_block_medias('landscapes', 12, true) %}
+
+{# the grids themselves #}
+<twig:c975LGallery:Gallery:Categories categories="{{ categories }}"/>
+<twig:c975LGallery:Gallery:Medias category="{{ category }}" medias="{{ medias }}" displayTitle="{{ true }}"/>
+```
+
+Anonymous components under `templates/components/Gallery/`: `Categories`, `Category`, `Medias`,
+`Media`, `Navigation`, `Previous`, `Next`, `Lightbox`, `Video`, `Credits`.
+
+## Images: what the bundle generates
+
+Three derivatives per uploaded image, generated automatically by UiBundle's `VichImageResizeListener`
+through the `VichMultiSizeImageInterface` contract — this bundle only declares the sizes:
+
+| Derivative | Constant | Size | Used by |
+| --- | --- | --- | --- |
+| thumbnail | `GalleryMedia::THUMBNAIL_SIZE` | 600px longest side | both grids |
+| medium | `GalleryMedia::MEDIUM_WIDTH` | 1024px | the media page, and the `og:image` a share carries |
+| highres | `GalleryMedia::HIGHRES_WIDTH` | 2048px | the lightbox, fetched only on demand |
+
+**The thumbnail file always holds the whole photo** — it is square only for a square photo. What the
+grid does with it inside its square tile is the `gallery-thumbnail-whole` setting (`cover` off,
+`contain` on): one CSS class, applied on the next request, reversible, nothing regenerated.
+
+Originals can optionally be kept outside the document root (`GalleryMedia::ORIGINAL_DIRECTORY`).
+Media files live under `GalleryMedia::MEDIA_DIRECTORY` (`medias/gallery`).
+
+```bash
+php bin/console c975l:gallery:rebuild-thumbnails [--dry-run]   # rewrites every -thumb.webp from the highres
+php bin/console c975l:gallery:fill-slugs                       # backfills slugs on medias predating them
+```
+
+**Batch upload** ceilings are checked client-side before the request is sent, because PHP truncates an
+oversized batch silently rather than refusing it: `Service\UploadLimits::MAX_FILES` (100) and
+`MAX_FILE_SIZE` (20 MiB), each capped in turn by the running PHP's `max_file_uploads`,
+`upload_max_filesize` and `post_max_size`. Both constants are there to be raised by an app that knows
+its server takes more. The batch screen only ever creates images.
+
+A batch is minutes of transfer then of processing, so the form is armed with UiBundle's
+`UploadProgress`: it posts over `XMLHttpRequest`, counts the megabytes as they leave, then says the
+files are being processed, the submit button taken away for the whole wait. The controller answers with
+the arrival url instead of redirecting, so the "medias added" flash reaches the screen that follows.
+
+## Videos
+
+A media becomes a video by carrying **the url of the page the video is watched on** — nothing to
+extract by hand. Whatever it carries, an entry always has its own uploaded still, which is what the
+grids show, so one category holds photos and videos alike.
+
+- **Which platforms is UiBundle's question**, not this bundle's: `c975L\UiBundle\Video\VideoPlatform`
+  is where one is declared. YouTube, TikTok, Vimeo and Dailymotion ship declared. What gets stored is
+  always the platform's privacy-first embed url (`youtube-nocookie.com`, `dnt=1`).
+- An url belonging to no declared platform is stored as pasted, typed `embed`, framed 16/9. There is
+  deliberately **no "paste your embed code" field** — third-party HTML in the database is an XSS and a
+  CSP hole.
+- A media can also carry an **uploaded video file** (mp4, webm, ogg), played by the browser with the
+  still as its poster. A media carrying both plays its own copy.
+- Players render through `<twig:c975LUi:Video:Iframe>`, created client-side only once the visitor has
+  accepted the cookie banner.
+- CSP: UiBundle exposes every declared origin as `%c975l_ui.video.embed_origins%`, for `frame-src`,
+  `child-src` and any `Permissions-Policy` naming `fullscreen`.
+
+## Configuration
+
+Everything is in the database, declared in `config/configs.json`, group **gallery**, edited in
+EasyAdmin — **never in `.env`, `parameters:` or a Configuration/TreeBuilder class**. Read it with
+`ConfigServiceInterface::get('slug')` in PHP or `config('slug')` in Twig.
+
+| Slug | Kind | What it settles |
+| --- | --- | --- |
+| `gallery-route-prefix` | text | the first url segment (empty falls back to `gallery`) |
+| `gallery-thumbnail-whole` | bool | grid tiles `contain` instead of `cover` |
+| `gallery-style` | choice `light`/`dark` | the ground a photo is shown against; empty keeps the site's own colors |
+| `gallery-frame` | choice `none`/`thin`/`wide` | the passe-partout around a displayed media |
+| `theme-color-gallery-frame` | text | passe-partout color |
+| `theme-color-gallery-nav` | text | arrows |
+| `theme-color-gallery-nav-hover` | text | arrows, hovered |
+| `theme-color-gallery-nav-background` | text | arrow buttons |
+| `theme-color-gallery-backdrop` | text | lightbox backdrop |
+| `theme-color-gallery-breadcrumb` | text | breadcrumb |
+| `theme-color-gallery-credits` | text | credits line |
+| `theme-color-gallery-badge` | text | video badge |
+| `theme-color-gallery-badge-text` | text | video badge label |
+
+A `theme-` slug is compiled into a `--c975l-color-gallery-*` custom property by UiBundle's
+`ThemeVariablesCssListener`. Four of them are deliberately left empty, their fallback being an
+expression that follows a light or a dark gallery rather than a fixed color.
+
+The gallery back office sits behind ConfigBundle's `site-role-editor` setting, except the two permanent
+deletions, held at `site-role-admin` (see *Deleting takes two steps*).
+
+## Extending and overriding
+
+- **Templates** — every one of them is overridable from `templates/bundles/c975LGalleryBundle/`,
+  mirroring the path under `templates/`. Public templates `{% extends 'layout.html.twig' %}` (no `@`),
+  which the app's own file resolves.
+- **Theme** — `assets/styles/themes/gallery.css` is copied into the app by `c975l:scaffold:install`
+  and owned by it from then on. Every token ships commented out at the bundle's default: uncomment a
+  line to take it over. Fonts and site colors are deliberately absent — the gallery reads UiBundle's
+  `--text` / `--background` / `--font-family-body`, so it looks like the site it is installed on.
+- **Blocks on a category** — `GalleryCategory` implements `HasBlocksInterface`; render them with
+  `<twig:c975LUi:Blocks:Blocks blocks="{{ category.blocks }}"/>`.
+- **Repositories** — `GalleryCategoryRepository::findAllOrdered()`, `findOneBySlug()`,
+  `countVisible()`, `findOrCreateUncategorized()`; `GalleryMediaRepository::findByCategory()`,
+  `findOneBySlugInCategory()`, `findPreviousAndNext()`.
+
+What the bundle already contributes to the dashboard, so you do not have to: `MenuProvider`,
+`LinkableRouteProvider` (the index and each category offered as a SiteBundle menu target),
+`GallerySitemapProvider`, `GalleryUrlMetadataProvider`, `GalleryExportProvider` /
+`GalleryImportProvider` (categories as a zip, files included), `GalleryBackupPathProvider`,
+`GalleryBlockOwnerResolver`, `GalleryGuidedProjectProvider`, `WhatsNewProvider`, `ImportmapProvider`,
+`Service\ScriptProvider`, `Service\StylesheetProvider`, `Service\GalleryShowcaseProvider`.
+
+## Do not
+
+- **Do not hardcode `/gallery`** in a template, a link or a test. The prefix is admin-editable; use
+  `path('gallery_category', {category: slug})`.
+- **Do not add a `.env` variable, a container parameter or a bundle Configuration class** for a
+  gallery setting. It goes in `config/configs.json` and is read through `ConfigServiceInterface`.
+- **Do not write an image resizer, a thumbnail command or a Vich naming rule.** Sizes are declared on
+  the entity, the work belongs to UiBundle's `VichImageResizeListener`.
+- **Do not query a media by slug alone** — a slug is unique only within its category.
+- **Do not list categories or medias with `findAll()` / `findBy()`.** Those see the trash; use
+  `findAllOrdered()` and `GalleryMediaRepository::findByCategory()`, which do not.
+- **Do not call `remove()` on a category or a media**, and do not write a soft-delete flag of your own.
+  Flag it through `TrashableInterface`; the permanent deletion is the back office's own action.
+- **Do not add a video platform here.** Declare it in `c975L\UiBundle\Video\VideoPlatform`.
+- **Do not render a third-party iframe directly.** Use `<twig:c975LUi:Video:Iframe>`, which honours the
+  cookie banner.
+- **Do not make the gallery blocks cacheable.** They resolve live on purpose; caching them is what
+  makes a "latest photos" section go stale and freezes the random draw.
+- **Do not add a page layout to this bundle.** A satellite never ships one; templates extend the app's
+  `layout.html.twig`.
+- **Do not build an import command for an existing photo folder.** There is no reliable way to tell
+  originals from an old gallery's derivatives; photos already on another c975L site move across with
+  the export/import instead.

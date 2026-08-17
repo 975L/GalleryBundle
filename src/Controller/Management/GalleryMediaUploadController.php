@@ -18,6 +18,7 @@ use c975L\GalleryBundle\Repository\GalleryCategoryRepository;
 use c975L\GalleryBundle\Service\GalleryMediaFactory;
 use c975L\GalleryBundle\Service\GalleryUrlRedirector;
 use c975L\GalleryBundle\Service\UploadLimits;
+use c975L\UiBundle\Service\UploadProgress;
 use Doctrine\ORM\EntityManagerInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Attribute\AdminRoute;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
@@ -41,6 +42,7 @@ class GalleryMediaUploadController extends AbstractController
         private readonly AdminUrlGeneratorInterface $adminUrlGenerator,
         private readonly ConfigServiceInterface $configService,
         private readonly GalleryUrlRedirector $urlRedirector,
+        private readonly UploadProgress $uploadProgress,
     ) {
     }
 
@@ -62,7 +64,8 @@ class GalleryMediaUploadController extends AbstractController
             // Translated here rather than left as a key for the flash to resolve: the dashboard renders flashes in its own domain, not this bundle's
             $this->addFlash('danger', $this->translator->trans('label.gallery_upload_batch_refused', [], 'gallery'));
 
-            return $this->redirect($request->getUri());
+            // Through UploadProgress, the batch having been sent by its bar: a redirect the browser never sees would spend the flash inside the request instead of on the screen that follows
+            return $this->uploadProgress->redirect($request, $request->getUri());
         }
 
         $form = $this->createForm(GalleryMediaBatchUploadType::class, [], ['category_title' => (string) $category->getTitle()]);
@@ -107,7 +110,7 @@ class GalleryMediaUploadController extends AbstractController
                 ->generateUrl()
             ;
 
-            return $this->redirect($url);
+            return $this->uploadProgress->redirect($request, $url);
         }
 
         return $this->render('@c975LGallery/management/gallery_media_upload.html.twig', [

@@ -39,6 +39,22 @@ class GalleryCategoryRepositoryTest extends TestCase
         $this->assertSame($existing, $repository->findOrCreateUncategorized());
     }
 
+    // The catch-all is where an upload lands when no real category is picked, so it can never be a category the site does not show - flagged some other way (a fixture, an import, a hand-written query), it is lifted back out on the way through
+    public function testFindOrCreateUncategorizedLiftsTheExistingOneOutOfTheTrash(): void
+    {
+        $existing = new GalleryCategory()->setUncategorized(true);
+        $existing->setIsDeleted(true);
+
+        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $entityManager->expects($this->never())->method('persist');
+        $entityManager->expects($this->once())->method('flush');
+
+        $repository = new GalleryCategoryRepositoryFindOneByFixture($existing, $entityManager, $this->createTranslator());
+
+        $this->assertSame($existing, $repository->findOrCreateUncategorized());
+        $this->assertFalse($existing->isDeleted());
+    }
+
     // Catch-all category a GalleryMedia falls back to when imported without a real one - created lazily, translated at creation time only
     public function testFindOrCreateUncategorizedCreatesAndPersistsATranslatedCategoryWhenNoneExists(): void
     {

@@ -63,6 +63,8 @@ class GalleryImportProvider implements ImportProviderInterface
                 ->setSummarySocialNetwork($item['summarySocialNetwork'] ?? $item['description'] ?? null)
                 ->setPosition($item['position'] ?? 0)
                 ->setUncategorized($item['uncategorized'] ?? false)
+                // Optional like the rest, an archive predating the trash importing as a category that is not in it - which is what such an archive describes
+                ->setIsDeleted($item['isDeleted'] ?? false)
                 ->setCoverMedia(null);
 
             // The key is optional, an archive exported before the category gained a lead-in staying importable - what it describes then is a category without one, same reading as PageImportProvider
@@ -206,6 +208,8 @@ class GalleryImportProvider implements ImportProviderInterface
             // The type is derived from the url rather than imported alongside it (see GalleryMedia::setExternalUrl), so an archive can never carry the two out of step
             // "externalId" is what an archive exported before the url rework carries: an id next to a platform name, rebuilt into the url that platform gives it - an archive from a platform nobody declares anymore has nothing to rebuild, and imports as the image it already was
             ->setExternalUrl($mediaData['externalUrl'] ?? $this->legacyEmbedUrl($mediaData))
+            // Optional like the category's, an archive predating the trash importing as a media that is not in it
+            ->setIsDeleted($mediaData['isDeleted'] ?? false)
             ->setPosition($mediaData['position'] ?? 0);
 
         if (null !== $filesDir && isset($mediaData['file'])) {

@@ -1,5 +1,43 @@
 # ChangeLog
 
+## v1.6.0
+
+A gallery is never lost in one click
+
+- `GalleryCategory` and `GalleryMedia` carry UiBundle's `TrashableTrait`, each with a trash of its own (17/08/2026) [Needs db update]
+- Deleting a category now only moves it to the trash (17/08/2026)
+- No cascade and no file removed at the move to trash (17/08/2026)
+- The category index switches between the galleries and the trash (17/08/2026)
+- **Restore** and **Delete permanently** on each trashed category (17/08/2026)
+- A category's own edit screen carries the same trash for its medias (17/08/2026)
+- Permanent deletion is held at `site-role-admin` (17/08/2026)
+- A trashed category or media answers 410 (17/08/2026)
+- The "gone" `Redirect` tree moved from the deletion to the permanent one (17/08/2026)
+- Restoring releases the "gone" rows left under the url (17/08/2026)
+- `findAllOrdered()` filters the trash out (17/08/2026)
+- Added `countVisible()`, which counts the categories the site shows (17/08/2026)
+- `findOneBySlug()` stays unfiltered, the front-office answering 410 from the row (17/08/2026)
+- `getCoverOrRandomMedia()` and `getMediasCount()` skip the trash (17/08/2026)
+- The previous/next navigation and the random media skip trashed medias (17/08/2026)
+- The archive carries the flag both ways (17/08/2026)
+- `findOrCreateUncategorized()` lifts the flag off the catch-all category (17/08/2026)
+- Added the trash labels and confirmations in the three locales (17/08/2026)
+- `restore()` and `deletePermanently()` check a csrf token carried in their url (17/08/2026)
+- The medias' trash renders neither the drag handles nor the cover radios (17/08/2026)
+- `saveMediasLayout()` skips trashed medias (17/08/2026)
+- The selection actions only reach medias of the screen they belong to (17/08/2026)
+- Trashing a single media releases the cover it was (17/08/2026)
+- Dropped the unused `findByCategoryIncludingTrashed()` (17/08/2026)
+- The upload screen carries UiBundle's progress bar (17/08/2026)
+- `GalleryMediaBatchUploadType` arms it over the ceilings it already declares (17/08/2026)
+- `GalleryMediaUploadController` hands the arrival url back to the bar (17/08/2026)
+- Requires `c975l/core-bundle` v1.11.7 (17/08/2026)
+- `skills/c975l-gallery/SKILL.md` ships in the package, for the coding agents of the sites installing it (17/08/2026)
+- `SkillsTest` checks every path, route, config slug, command, class member, Twig function, block kind and component the skill quotes (17/08/2026)
+- README documents the two-step deletion and the trash screens (17/08/2026)
+- README documents what the upload screen shows while the batch goes up (17/08/2026)
+- README documents where an agent reads the skill from (17/08/2026)
+
 ## v1.5.4
 
 A category's edit screen links the sharing debugger
@@ -237,7 +275,7 @@ First production release
 - Added `Twig\Extension\GalleryEditUrlExtension`, with `gallery_category_edit_url()` and `gallery_media_edit_url()` (07/08/2026)
 - The gallery back-office moved from `ROLE_ADMIN` to the `site-role-editor` config (07/08/2026) [BC-Break]
 - README describes editing from the public pages (07/08/2026)
-- A category's edit screen carries its own delete button, hidden for "Non classé" (07/08/2026)
+- A category's edit screen carries its own delete button, hidden for "Uncategorized" (07/08/2026)
 - `GalleryMediaDerivativeCleanupListener` removes a media directory left empty, in `public/` and `private/` (07/08/2026)
 - The watermark position's placeholder carries its own translation domain (07/08/2026)
 - The categories screen says the watermark exists and where its three settings are (07/08/2026)

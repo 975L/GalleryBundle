@@ -19,6 +19,7 @@ use c975L\GalleryBundle\Entity\GalleryCategory;
 use c975L\GalleryBundle\Entity\GalleryMedia;
 use c975L\GalleryBundle\Management\GalleryExportProvider;
 use c975L\GalleryBundle\Repository\GalleryCategoryRepository;
+use c975L\GalleryBundle\Repository\GalleryMediaRepository;
 use c975L\GalleryBundle\Service\GalleryMediaFactory;
 use c975L\GalleryBundle\Service\GalleryMediaSlugger;
 use c975L\GalleryBundle\Service\GalleryUrlRedirector;
@@ -86,6 +87,7 @@ class GalleryCategoryCrudControllerTest extends TestCase
     {
         $manager = $this->createStub(CsrfTokenManagerInterface::class);
         $manager->method('isTokenValid')->willReturnCallback(static fn (CsrfToken $token) => $valid);
+        $manager->method('getToken')->willReturnCallback(static fn (string $tokenId): CsrfToken => new CsrfToken($tokenId, 'token'));
 
         return $manager;
     }
@@ -144,6 +146,8 @@ class GalleryCategoryCrudControllerTest extends TestCase
         ?ContentExporter $contentExporter = null,
         ?GalleryExportProvider $galleryExportProvider = null,
         ?RedirectRepository $redirectRepository = null,
+        ?RequestStack $requestStack = null,
+        ?GalleryMediaRepository $galleryMediaRepository = null,
     ): GalleryCategoryCrudController {
         $translator = $this->createStub(TranslatorInterface::class);
         $translator->method('trans')->willReturnArgument(0);
@@ -163,6 +167,9 @@ class GalleryCategoryCrudControllerTest extends TestCase
             new UploadLimits(),
             new GalleryUrlRedirector($redirectRepository ?? $this->createStub(RedirectRepository::class)),
             $this->createConfigService(),
+            $requestStack ?? new RequestStack([new Request()]),
+            $galleryMediaRepository ?? $this->createStub(GalleryMediaRepository::class),
+            $this->createCsrfTokenManager(true),
         );
     }
 
@@ -292,6 +299,17 @@ class GalleryCategoryCrudControllerTest extends TestCase
         return $category;
     }
 
+    // The state the trash screen's own actions work on - restoring or dropping a media for good only ever reaches one already flagged
+    private function createCategoryWithTrashedMedias(int ...$mediaIds): GalleryCategory
+    {
+        $category = $this->createCategoryWithMedias(...$mediaIds);
+        foreach ($category->getMedias() as $media) {
+            $media->setIsDeleted(true);
+        }
+
+        return $category;
+    }
+
     private function createDeleteMediasRequest(array $mediaIds, string $token = 'valid'): Request
     {
         return new Request(request: ['_token' => $token, 'mediaIds' => array_map(strval(...), $mediaIds)]);
@@ -346,10 +364,70 @@ class GalleryCategoryCrudControllerTest extends TestCase
         $this->assertSame('/management/gallery-categories', $response->getTargetUrl());
     }
 
-    // Only the checked medias go, and only those of the category the url carries - an id from another category is posted here and must be ignored
-    public function testDeleteMediasRemovesOnlyTheCheckedMediasOfTheCategory(): void
+    // Only the checked medias go to the trash, and only those of the category the url carries - an id from another category is posted here and must be ignored
+    // Nothing is removed at all: the whole point of the trash is that the rows and their files stay until deleteMediasPermanently() is asked for
+    public function testDeleteMediasTrashesOnlyTheCheckedMediasOfTheCategory(): void
     {
         $category = $this->createCategoryWithMedias(7, 8, 9);
+
+        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $entityManager->expects($this->never())->method('remove');
+        $entityManager->expects($this->once())->method('flush');
+
+        $controller = $this->createController();
+        $controller->setContainer($this->createContainer([
+            'security.authorization_checker' => $this->createAuthorizationChecker(true),
+            'security.csrf.token_manager' => $this->createCsrfTokenManager(true),
+            'request_stack' => $this->createRequestStackWithSession(),
+        ]));
+
+        $response = $controller->deleteMedias($this->createAdminContext($category), $this->createDeleteMediasRequest([7, 9, 999]), $entityManager);
+
+        $trashed = [];
+        foreach ($category->getMedias() as $media) {
+            if ($media->isDeleted()) {
+                $trashed[] = $media->getId();
+            }
+        }
+
+        $this->assertSame([7, 9], $trashed);
+        $this->assertSame('/management/gallery-categories', $response->getTargetUrl());
+    }
+
+    // The mirror action, on the same selection form: the checked medias come back to the grid and nothing else moves
+    public function testRestoreMediasPutsOnlyTheCheckedMediasBack(): void
+    {
+        $category = $this->createCategoryWithMedias(7, 8, 9);
+        foreach ($category->getMedias() as $media) {
+            $media->setIsDeleted(true);
+        }
+
+        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $entityManager->expects($this->never())->method('remove');
+
+        $controller = $this->createController();
+        $controller->setContainer($this->createContainer([
+            'security.authorization_checker' => $this->createAuthorizationChecker(true),
+            'security.csrf.token_manager' => $this->createCsrfTokenManager(true),
+            'request_stack' => $this->createRequestStackWithSession(),
+        ]));
+
+        $controller->restoreMedias($this->createAdminContext($category), $this->createDeleteMediasRequest([7, 9, 999]), $entityManager);
+
+        $stillTrashed = [];
+        foreach ($category->getMedias() as $media) {
+            if ($media->isDeleted()) {
+                $stillTrashed[] = $media->getId();
+            }
+        }
+
+        $this->assertSame([8], $stillTrashed);
+    }
+
+    // The one path of the bundle that actually removes a media, and the only one that reaches its files (see GalleryMediaDerivativeCleanupListener)
+    public function testDeleteMediasPermanentlyRemovesOnlyTheCheckedMedias(): void
+    {
+        $category = $this->createCategoryWithTrashedMedias(7, 8, 9);
         $removed = [];
 
         $entityManager = $this->createMock(EntityManagerInterface::class);
@@ -365,10 +443,62 @@ class GalleryCategoryCrudControllerTest extends TestCase
             'request_stack' => $this->createRequestStackWithSession(),
         ]));
 
-        $response = $controller->deleteMedias($this->createAdminContext($category), $this->createDeleteMediasRequest([7, 9, 999]), $entityManager);
+        $controller->deleteMediasPermanently($this->createAdminContext($category), $this->createDeleteMediasRequest([7, 9, 999]), $entityManager);
 
         $this->assertSame([7, 9], $removed);
-        $this->assertSame('/management/gallery-categories', $response->getTargetUrl());
+    }
+
+    // The normal grid and the trash share one token, so the selection is kept to the medias of the screen the action belongs to - a post forged from the normal grid would otherwise skip the trash the two-step deletion is built on
+    public function testDeleteMediasPermanentlyLeavesMediasThatAreNotInTheTrash(): void
+    {
+        $category = $this->createCategoryWithMedias(7, 8);
+
+        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $entityManager->expects($this->never())->method('remove');
+
+        $controller = $this->createController();
+        $controller->setContainer($this->createContainer([
+            'security.authorization_checker' => $this->createAuthorizationChecker(true),
+            'security.csrf.token_manager' => $this->createCsrfTokenManager(true),
+            'request_stack' => $this->createRequestStackWithSession(),
+        ]));
+
+        $controller->deleteMediasPermanently($this->createAdminContext($category), $this->createDeleteMediasRequest([7, 8]), $entityManager);
+    }
+
+    // The mirror of the check above: a media still showing in the grid is not something the trash screen puts back
+    public function testRestoreMediasLeavesMediasThatAreNotInTheTrash(): void
+    {
+        $category = $this->createCategoryWithMedias(7);
+
+        $controller = $this->createController();
+        $controller->setContainer($this->createContainer([
+            'security.authorization_checker' => $this->createAuthorizationChecker(true),
+            'security.csrf.token_manager' => $this->createCsrfTokenManager(true),
+            'request_stack' => $this->createRequestStackWithSession(),
+        ]));
+
+        $controller->restoreMedias($this->createAdminContext($category), $this->createDeleteMediasRequest([7]), $this->createStub(EntityManagerInterface::class));
+
+        $this->assertFalse($category->getMedias()->first()->isDeleted());
+    }
+
+    // A media already in the trash is not moved there twice - the selection of the normal grid is kept to what it actually shows
+    public function testDeleteMediasLeavesMediasAlreadyInTheTrash(): void
+    {
+        $category = $this->createCategoryWithTrashedMedias(7);
+        $category->setCoverMedia($category->getMedias()->first());
+
+        $controller = $this->createController();
+        $controller->setContainer($this->createContainer([
+            'security.authorization_checker' => $this->createAuthorizationChecker(true),
+            'security.csrf.token_manager' => $this->createCsrfTokenManager(true),
+            'request_stack' => $this->createRequestStackWithSession(),
+        ]));
+
+        $controller->deleteMedias($this->createAdminContext($category), $this->createDeleteMediasRequest([7]), $this->createStub(EntityManagerInterface::class));
+
+        $this->assertNotNull($category->getCoverMedia());
     }
 
     // The category would keep pointing at a cover that is gone, the join column's "on delete set null" only reaching the row
@@ -409,10 +539,40 @@ class GalleryCategoryCrudControllerTest extends TestCase
         $this->assertSame([], $requestStack->getSession()->getFlashBag()->all());
     }
 
-    // Same 410 the media CRUD leaves behind when it deletes one at a time (see GalleryMediaCrudControllerTest), a media page being declared in the sitemap whichever screen removes it
-    public function testDeleteMediasLeavesEachDeletedMediaUrlAnsweringGone(): void
+    // The 410 is now the permanent deletion's, not the move to trash's: a media page is declared in the sitemap, but a media that can still be restored has no url to declare gone
+    public function testDeleteMediasPermanentlyLeavesEachMediaUrlAnsweringGone(): void
     {
-        $category = $this->createCategoryWithMedias(7, 8);
+        $category = $this->createCategoryWithTrashedMedias(7, 8);
+        foreach ($category->getMedias() as $media) {
+            $media->setSlug('media-' . $media->getId());
+        }
+
+        $persisted = [];
+        $entityManager = $this->createStub(EntityManagerInterface::class);
+        $entityManager->method('persist')->willReturnCallback(static function (object $entity) use (&$persisted): void {
+            $persisted[] = $entity;
+        });
+
+        $controller = $this->createController();
+        $controller->setContainer($this->createContainer([
+            'security.authorization_checker' => $this->createAuthorizationChecker(true),
+            'security.csrf.token_manager' => $this->createCsrfTokenManager(true),
+            'request_stack' => $this->createRequestStackWithSession(),
+            'router' => $this->createRouter(),
+        ]));
+
+        $controller->deleteMediasPermanently($this->createAdminContext($category), $this->createDeleteMediasRequest([7]), $entityManager);
+
+        $redirects = array_values(array_filter($persisted, static fn (object $entity): bool => $entity instanceof Redirect));
+        $this->assertCount(1, $redirects);
+        $this->assertSame('/gallery/voyages/media-7', $redirects[0]->getFromPath());
+        $this->assertTrue($redirects[0]->isGone());
+    }
+
+    // The move to trash leaves the redirect table alone - the url answers 410 from the row itself while the media can still come back (see GalleryController::resolveCategoryAndMedia)
+    public function testDeleteMediasRecordsNoGoneRedirect(): void
+    {
+        $category = $this->createCategoryWithMedias(7);
         foreach ($category->getMedias() as $media) {
             $media->setSlug('media-' . $media->getId());
         }
@@ -433,10 +593,7 @@ class GalleryCategoryCrudControllerTest extends TestCase
 
         $controller->deleteMedias($this->createAdminContext($category), $this->createDeleteMediasRequest([7]), $entityManager);
 
-        $redirects = array_values(array_filter($persisted, static fn (object $entity): bool => $entity instanceof Redirect));
-        $this->assertCount(1, $redirects);
-        $this->assertSame('/gallery/voyages/media-7', $redirects[0]->getFromPath());
-        $this->assertTrue($redirects[0]->isGone());
+        $this->assertSame([], array_values(array_filter($persisted, static fn (object $entity): bool => $entity instanceof Redirect)));
     }
 
     // --- editMedias --------------------------------------------------------------------------------------
@@ -780,6 +937,25 @@ class GalleryCategoryCrudControllerTest extends TestCase
         $this->assertNull($category->getCoverMedia());
     }
 
+    // The trash screen renders neither the drag handles nor the cover radios, but a post reaching here anyway must not renumber trashed medias over the positions of the ones still online, nor make one of them the cover
+    public function testSaveMediasLayoutIgnoresTrashedMedias(): void
+    {
+        $category = $this->createCategoryWithMedias(7, 8);
+        $trashed = $category->getMedias()->first();
+        $trashed->setIsDeleted(true)->setPosition(5);
+
+        $controller = $this->createController();
+        $controller->setContainer($this->createContainer([
+            'security.authorization_checker' => $this->createAuthorizationChecker(true),
+            'security.csrf.token_manager' => $this->createCsrfTokenManager(true),
+        ]));
+
+        $controller->saveMediasLayout($this->createAdminContext($category), $this->createMediasLayoutRequest([7, 8], '7'), $this->createStub(EntityManagerInterface::class));
+
+        $this->assertSame(5, $trashed->getPosition());
+        $this->assertNull($category->getCoverMedia());
+    }
+
     // --- configureActions --------------------------------------------------------------------------------
 
     // Detail adds no information beyond what edit already shows - disabled entirely, and a Cancel action lets the admin back out of a create/edit without saving
@@ -819,6 +995,60 @@ class GalleryCategoryCrudControllerTest extends TestCase
     private function createEntityDto(GalleryCategory $category): EntityDto
     {
         return new EntityDto(GalleryCategory::class, new ClassMetadata(GalleryCategory::class), null, $category);
+    }
+
+    // "Delete" only moves a category to the trash now, so the button says so rather than promising a removal it does not perform
+    public function testConfigureActionsLabelsTheDeleteActionAsAMoveToTheTrash(): void
+    {
+        $actions = $this->createController()->configureActions(
+            Actions::new()
+                ->add(Crud::PAGE_INDEX, Action::EDIT)
+                ->add(Crud::PAGE_INDEX, Action::DELETE)
+        );
+
+        $label = $actions->getAsDto(Crud::PAGE_EDIT)->getAction(Crud::PAGE_EDIT, Action::DELETE)->getLabel();
+
+        $this->assertInstanceOf(TranslatableMessage::class, $label);
+        $this->assertSame('action.move_to_trash', $label->getMessage());
+    }
+
+    // In the trash a category is off the site and takes no upload, so the actions assuming the opposite go away and the two that only mean anything there appear - "exportSelection" deliberately stays, a category being carried elsewhere or kept aside before it is dropped for good
+    public function testConfigureActionsAddsTheTrashActionsOnTheTrashView(): void
+    {
+        $controller = $this->createController(requestStack: new RequestStack([new Request(query: ['trash' => 1])]));
+
+        $actions = $controller->configureActions(
+            Actions::new()
+                ->add(Crud::PAGE_INDEX, Action::EDIT)
+                ->add(Crud::PAGE_INDEX, Action::DELETE)
+        );
+
+        $index = $actions->getAsDto(Crud::PAGE_INDEX);
+        $disabled = $actions->getAsDto(null)->getDisabledActions();
+
+        $this->assertNotNull($index->getAction(Crud::PAGE_INDEX, 'restore'));
+        $this->assertNotNull($index->getAction(Crud::PAGE_INDEX, 'deletePermanently'));
+        $this->assertContains(Action::NEW, $disabled);
+        $this->assertContains(Action::DELETE, $disabled);
+        $this->assertContains('uploadMedias', $disabled);
+        $this->assertNotContains('exportSelection', $disabled);
+    }
+
+    // The galleries screen carries neither, so it always takes two deliberate steps to lose one - only the way into the trash, which is there whatever the screen
+    public function testConfigureActionsAddsNoTrashActionsOnTheGalleriesView(): void
+    {
+        $actions = $this->createController()->configureActions(
+            Actions::new()
+                ->add(Crud::PAGE_INDEX, Action::EDIT)
+                ->add(Crud::PAGE_INDEX, Action::DELETE)
+        );
+
+        $index = $actions->getAsDto(Crud::PAGE_INDEX);
+
+        $this->assertNull($index->getAction(Crud::PAGE_INDEX, 'restore'));
+        $this->assertNull($index->getAction(Crud::PAGE_INDEX, 'deletePermanently'));
+        $this->assertNotNull($index->getAction(Crud::PAGE_INDEX, 'trash'));
+        $this->assertNotContains(Action::NEW, $actions->getAsDto(null)->getDisabledActions());
     }
 
     // Medias are only ever added from the category they belong to, so each row carries its own upload link (GalleryMediaCrudController has no upload button at all)
@@ -1138,6 +1368,51 @@ class GalleryCategoryCrudControllerTest extends TestCase
         $this->assertInstanceOf(UploadLimits::class, $parameters->get('upload_limits'));
     }
 
+    // The grid is handed its list rather than reading category.medias, which holds the trashed ones too - and the count is what the heading's way into the trash carries
+    public function testConfigureResponseParametersHandsTheEditScreenTheMediasThatAreShowing(): void
+    {
+        $category = $this->createCategoryWithMedias(7, 8);
+        $shown = $category->getMedias()->first();
+        $category->getMedias()->last()->setIsDeleted(true);
+
+        $mediaRepository = $this->createStub(GalleryMediaRepository::class);
+        $mediaRepository->method('findByCategory')->willReturn([$shown]);
+
+        $parameters = $this->createEditScreenParameters($category, $mediaRepository);
+
+        $this->assertSame([$shown], $parameters->get('medias'));
+        $this->assertFalse($parameters->get('medias_trash'));
+        $this->assertSame(1, $parameters->get('medias_trash_count'));
+    }
+
+    // The same screen under "mediasTrash" shows the trashed medias and nothing else - one screen serving both lists, as the index switches between the galleries and theirs
+    public function testConfigureResponseParametersHandsTheTrashViewTheTrashedMediasOnly(): void
+    {
+        $category = $this->createCategoryWithMedias(7, 8);
+        $trashed = $category->getMedias()->last();
+        $trashed->setIsDeleted(true);
+
+        $parameters = $this->createEditScreenParameters($category, trash: true);
+
+        $this->assertSame([$trashed], $parameters->get('medias'));
+        $this->assertTrue($parameters->get('medias_trash'));
+    }
+
+    // The edit screen's own parameters, the medias' grid being handed its list from here
+    private function createEditScreenParameters(GalleryCategory $category, ?GalleryMediaRepository $galleryMediaRepository = null, bool $trash = false): KeyValueStore
+    {
+        $controller = $this->createController(
+            requestStack: new RequestStack([new Request(query: $trash ? ['mediasTrash' => 1] : [])]),
+            galleryMediaRepository: $galleryMediaRepository,
+        );
+        $controller->setContainer($this->createContainer(['router' => $this->createRouter()]));
+
+        return $controller->configureResponseParameters(KeyValueStore::new([
+            'pageName' => Crud::PAGE_EDIT,
+            'entity' => new EntityDto(GalleryCategory::class, new ClassMetadata(GalleryCategory::class), null, $category),
+        ]));
+    }
+
     // --- slug normalization --------------------------------------------------------------------------------
 
     // A slug already taken is now reported by the entity's unique constraint instead of being silently suffixed, which requires the submitted slug to be normalized before validation runs - hence PRE_SUBMIT rather than persistEntity
@@ -1384,8 +1659,22 @@ class GalleryCategoryCrudControllerTest extends TestCase
 
     // --- deleteEntity ------------------------------------------------------------------------------------
 
-    // The category page and every media page under it are declared in the sitemap (see GallerySitemapProvider), so the urls are left answering 410 - the medias through a single wildcard row rather than one row each
-    public function testDeleteEntityLeavesTheCategoryAndEverythingUnderItAnsweringGone(): void
+    // The category is only flagged: no removal, so neither the cascade on its medias nor GalleryMediaDerivativeCleanupListener ever runs, and not one file leaves the disk
+    public function testDeleteEntityOnlyMovesTheCategoryToTheTrash(): void
+    {
+        $category = new GalleryCategory()->setTitle('Voyages')->setSlug('voyages');
+
+        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $entityManager->expects($this->never())->method('remove');
+        $entityManager->expects($this->once())->method('flush');
+
+        $this->createControllerWithRouter($this->createRedirectRepository())->deleteEntity($entityManager, $category);
+
+        $this->assertTrue($category->isDeleted());
+    }
+
+    // A category that can still be restored has no url to declare gone - the 410 comes from the row itself while it sits in the trash (see GalleryController::resolveCategory)
+    public function testDeleteEntityRecordsNoGoneRedirect(): void
     {
         $category = new GalleryCategory()->setTitle('Voyages')->setSlug('voyages');
         $persisted = [];
@@ -1397,11 +1686,133 @@ class GalleryCategoryCrudControllerTest extends TestCase
 
         $this->createControllerWithRouter($this->createRedirectRepository())->deleteEntity($entityManager, $category);
 
+        $this->assertSame([], array_values(array_filter($persisted, static fn (object $entity): bool => $entity instanceof Redirect)));
+    }
+
+    // --- deletePermanently -------------------------------------------------------------------------------
+
+    // The category page and every media page under it are declared in the sitemap (see GallerySitemapProvider), so the urls are left answering 410 - the medias through a single wildcard row rather than one row each
+    public function testDeletePermanentlyLeavesTheCategoryAndEverythingUnderItAnsweringGone(): void
+    {
+        $category = new GalleryCategory()->setTitle('Voyages')->setSlug('voyages');
+        $persisted = [];
+        $removed = [];
+
+        $entityManager = $this->createStub(EntityManagerInterface::class);
+        $entityManager->method('persist')->willReturnCallback(static function (object $entity) use (&$persisted): void {
+            $persisted[] = $entity;
+        });
+        $entityManager->method('remove')->willReturnCallback(static function (object $entity) use (&$removed): void {
+            $removed[] = $entity;
+        });
+
+        $controller = $this->createController(redirectRepository: $this->createRedirectRepository());
+        $controller->setContainer($this->createContainer([
+            'router' => $this->createRouter(),
+            'security.authorization_checker' => $this->createAuthorizationChecker(true),
+            'security.csrf.token_manager' => $this->createCsrfTokenManager(true),
+            'request_stack' => $this->createRequestStackWithSession(),
+        ]));
+
+        $controller->deletePermanently($this->createAdminContext($category), new Request(['token' => 'token']), $entityManager);
+
         $redirects = array_values(array_filter($persisted, static fn (object $entity): bool => $entity instanceof Redirect));
         $this->assertSame(['/gallery/voyages', '/gallery/voyages/*'], array_map(static fn (Redirect $redirect): ?string => $redirect->getFromPath(), $redirects));
         $this->assertNull($redirects[0]->getToUrl());
         $this->assertTrue($redirects[0]->isGone());
         $this->assertTrue($redirects[1]->isGone());
+        $this->assertSame([$category], $removed);
+    }
+
+    // Only the admin role drops a gallery for good, the rest of the screens sitting at the editor's
+    public function testDeletePermanentlyDeniesAccessBelowTheAdminRole(): void
+    {
+        $controller = $this->createController();
+        $controller->setContainer($this->createContainer([
+            'security.authorization_checker' => $this->createAuthorizationChecker(false),
+        ]));
+
+        $this->expectException(AccessDeniedException::class);
+
+        $controller->deletePermanently(
+            $this->createAdminContext(new GalleryCategory()->setTitle('Voyages')->setSlug('voyages')),
+            new Request(['token' => 'token']),
+            $this->createStub(EntityManagerInterface::class),
+        );
+    }
+
+    // The action is reached by a GET, so nothing but the token tells a click on the trash screen apart from a request an <img> fired on a logged-in admin
+    public function testDeletePermanentlyRemovesNothingWhenCsrfTokenIsInvalid(): void
+    {
+        $category = new GalleryCategory()->setTitle('Voyages')->setSlug('voyages');
+        $category->setIsDeleted(true);
+
+        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $entityManager->expects($this->never())->method('remove');
+        $entityManager->expects($this->never())->method('flush');
+
+        $controller = $this->createController();
+        $controller->setContainer($this->createContainer([
+            'router' => $this->createRouter(),
+            'security.authorization_checker' => $this->createAuthorizationChecker(true),
+            'security.csrf.token_manager' => $this->createCsrfTokenManager(false),
+        ]));
+
+        $controller->deletePermanently($this->createAdminContext($category), new Request(), $entityManager);
+    }
+
+    // --- restore -----------------------------------------------------------------------------------------
+
+    // Putting a category back lifts the flag and frees the url, a "gone" row an earlier permanent deletion left there shadowing it for good otherwise
+    public function testRestoreLiftsTheFlagAndReleasesTheGoneRows(): void
+    {
+        $category = new GalleryCategory()->setTitle('Voyages')->setSlug('voyages');
+        $category->setIsDeleted(true);
+
+        $gone = [
+            '/gallery/voyages' => new Redirect()->setFromPath('/gallery/voyages')->setGone(true),
+            '/gallery/voyages/*' => new Redirect()->setFromPath('/gallery/voyages/*')->setGone(true),
+        ];
+        $removed = [];
+
+        $entityManager = $this->createStub(EntityManagerInterface::class);
+        $entityManager->method('remove')->willReturnCallback(static function (object $entity) use (&$removed): void {
+            $removed[] = $entity;
+        });
+
+        $controller = $this->createController(redirectRepository: $this->createRedirectRepository($gone));
+        $controller->setContainer($this->createContainer([
+            'router' => $this->createRouter(),
+            'security.authorization_checker' => $this->createAuthorizationChecker(true),
+            'security.csrf.token_manager' => $this->createCsrfTokenManager(true),
+            'request_stack' => $this->createRequestStackWithSession(),
+        ]));
+
+        $controller->restore($this->createAdminContext($category), new Request(['token' => 'token']), $entityManager);
+
+        $this->assertFalse($category->isDeleted());
+        $this->assertSame(array_values($gone), $removed);
+    }
+
+    // Same GET as deletePermanently(), and the same token standing between a click and a forged request
+    public function testRestoreLiftsNothingWhenCsrfTokenIsInvalid(): void
+    {
+        $category = new GalleryCategory()->setTitle('Voyages')->setSlug('voyages');
+        $category->setIsDeleted(true);
+
+        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $entityManager->expects($this->never())->method('flush');
+
+        $controller = $this->createController();
+        $controller->setContainer($this->createContainer([
+            'router' => $this->createRouter(),
+            'security.authorization_checker' => $this->createAuthorizationChecker(true),
+            'security.csrf.token_manager' => $this->createCsrfTokenManager(false),
+        ]));
+
+        $controller->restore($this->createAdminContext($category), new Request(), $entityManager);
+
+        $this->assertTrue($category->isDeleted());
     }
 
     // The public urls the redirect is built from are generated, the first segment being the configured route prefix (see GalleryRoutePrefix) - here the default one

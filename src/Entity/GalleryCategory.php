@@ -11,8 +11,10 @@
 namespace c975L\GalleryBundle\Entity;
 
 use c975L\UiBundle\Contract\HasBlocksInterface;
+use c975L\UiBundle\Contract\TrashableInterface;
 use c975L\UiBundle\Entity\Block;
 use c975L\UiBundle\Entity\Trait\HasBlocksTrait;
+use c975L\UiBundle\Entity\Trait\TrashableTrait;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
@@ -25,9 +27,11 @@ use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 #[ORM\Entity(repositoryClass: \c975L\GalleryBundle\Repository\GalleryCategoryRepository::class)]
 #[ORM\Table(name: 'gallery_category')]
 #[UniqueEntity('slug')]
-class GalleryCategory implements HasBlocksInterface, \Stringable
+class GalleryCategory implements HasBlocksInterface, TrashableInterface, \Stringable
 {
     use HasBlocksTrait;
+    // A category deleted from the back-office only lands here, its medias and their files untouched - what actually removes them is deletePermanently() (see GalleryCategoryCrudController), the only path left that reaches the cascade below
+    use TrashableTrait;
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -161,21 +165,32 @@ class GalleryCategory implements HasBlocksInterface, \Stringable
     }
 
     // The face the category shows wherever it stands for itself - its index tile, its back-office row, its page's og:image - being the cover an admin picked, or one of its medias at random until one is (see GalleryCategoryCrudController::saveMediasLayout())
+    // A trashed media is never drawn, nor kept as a cover: it is a photo an admin took off the site, and having it stand for the whole category on the index would put it back on the very page it was removed from
     public function getCoverOrRandomMedia(): ?GalleryMedia
     {
-        if (null !== $this->coverMedia) {
+        if (null !== $this->coverMedia && !$this->coverMedia->isDeleted()) {
             return $this->coverMedia;
         }
 
-        $medias = $this->medias->toArray();
+        $medias = $this->visibleMedias();
 
         return [] === $medias ? null : $medias[array_rand($medias)];
     }
 
     // What the back-office category listing shows instead of the medias themselves, the medias being managed from the category's own edit screen (see GalleryCategoryCrudController)
+    // Counts what the site shows, not what the table holds: the number is read next to the category everywhere, and one that kept counting the trash would never match the grid it names
     public function getMediasCount(): int
     {
-        return $this->medias->count();
+        return count($this->visibleMedias());
+    }
+
+    /** @return list<GalleryMedia> */
+    private function visibleMedias(): array
+    {
+        return array_values(array_filter(
+            $this->medias->toArray(),
+            static fn (GalleryMedia $media): bool => !$media->isDeleted()
+        ));
     }
 
     public function addMedia(GalleryMedia $media): self

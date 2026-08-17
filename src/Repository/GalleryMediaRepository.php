@@ -25,13 +25,15 @@ class GalleryMediaRepository extends ServiceEntityRepository
         parent::__construct($registry, GalleryMedia::class);
     }
 
+    // What the public grid lists, the trash left out of it
     /** @return GalleryMedia[] */
     public function findByCategory(GalleryCategory $category): array
     {
-        return $this->findBy(['category' => $category], ['position' => 'ASC']);
+        return $this->findBy(['category' => $category, 'isDeleted' => false], ['position' => 'ASC']);
     }
 
     // What the public media page resolves on - the category is part of the match, a slug only being unique within it (see GalleryMediaSlugger)
+    // Unfiltered on purpose, like GalleryCategoryRepository::findOneBySlug(): the page answers 410 for a trashed media, which it can only do holding the row
     public function findOneBySlugInCategory(GalleryCategory $category, string $slug): ?GalleryMedia
     {
         return $this->findOneBy(['category' => $category, 'slug' => $slug]);
@@ -53,6 +55,7 @@ class GalleryMediaRepository extends ServiceEntityRepository
         $qb = $this->createQueryBuilder('p')
             ->where('p.category = :category')
             ->andWhere('p != :media')
+            ->andWhere('p.isDeleted = false')
             ->setParameter('category', $category)
             ->setParameter('media', $media)
             ->setParameter('position', $media->getPosition())
@@ -75,6 +78,7 @@ class GalleryMediaRepository extends ServiceEntityRepository
     {
         $qb = $this->createQueryBuilder('p')
             ->where('p.category = :category')
+            ->andWhere('p.isDeleted = false')
             ->setParameter('category', $category)
             ->setMaxResults(1)
         ;

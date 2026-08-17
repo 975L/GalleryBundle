@@ -12,6 +12,7 @@ namespace c975L\GalleryBundle\Form;
 
 use c975L\GalleryBundle\Service\UploadLimits;
 use c975L\UiBundle\Contract\VichWatermarkableInterface;
+use c975L\UiBundle\Service\UploadProgress;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
@@ -29,6 +30,7 @@ class GalleryMediaBatchUploadType extends AbstractType
     public function __construct(
         private readonly UploadLimits $uploadLimits,
         private readonly TranslatorInterface $translator,
+        private readonly UploadProgress $uploadProgress,
     ) {
     }
 
@@ -109,7 +111,8 @@ class GalleryMediaBatchUploadType extends AbstractType
             'data_class' => null,
             'translation_domain' => 'gallery',
             // Declared on the form itself rather than in the template, so an app overriding gallery_media_upload.html.twig keeps the check - the messages are translated here, javascript having no translator of its own
-            'attr' => [
+            // UiBundle's own upload-progress controller is armed over them: a batch of fifty photos is minutes of transfer and processing, and a screen showing nothing of it reads as a submit that never took (see UploadProgress)
+            'attr' => $this->uploadProgress->formAttr([
                 'data-controller' => 'gallery-upload-limits',
                 'data-gallery-upload-limits-max-files-value' => $this->uploadLimits->getMaxFiles(),
                 'data-gallery-upload-limits-max-file-size-value' => $this->uploadLimits->getMaxFileSize(),
@@ -117,7 +120,7 @@ class GalleryMediaBatchUploadType extends AbstractType
                 'data-gallery-upload-limits-files-message-value' => $this->translator->trans('label.gallery_upload_too_many_files', [], 'gallery'),
                 'data-gallery-upload-limits-size-message-value' => $this->translator->trans('label.gallery_upload_file_too_large', [], 'gallery'),
                 'data-gallery-upload-limits-batch-message-value' => $this->translator->trans('label.gallery_upload_batch_too_large', [], 'gallery'),
-            ],
+            ]),
         ]);
         $resolver->setRequired('category_title');
         $resolver->setAllowedTypes('category_title', 'string');

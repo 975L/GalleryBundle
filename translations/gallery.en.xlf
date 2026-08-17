@@ -10,9 +10,9 @@
                 <source>action.apply_rights_reserved</source>
                 <target>Apply rights reserved</target>
             </trans-unit>
-            <trans-unit id="GQsNLOF">
-                <source>action.delete_selection</source>
-                <target>Delete selection</target>
+            <trans-unit id="sSgetpg">
+                <source>action.delete_permanently</source>
+                <target>Delete permanently</target>
             </trans-unit>
             <trans-unit id="DYrEVzQ">
                 <source>action.export_selection</source>
@@ -22,6 +22,18 @@
                 <source>action.move</source>
                 <target>Move</target>
             </trans-unit>
+            <trans-unit id="vUjYe27">
+                <source>action.move_to_trash</source>
+                <target>Move to trash</target>
+            </trans-unit>
+            <trans-unit id="KrzhzB_">
+                <source>action.restore</source>
+                <target>Restore</target>
+            </trans-unit>
+            <trans-unit id="5xcBqgP">
+                <source>action.restore_selection</source>
+                <target>Restore selection</target>
+            </trans-unit>
             <trans-unit id="egBlInb">
                 <source>action.select</source>
                 <target>Select</target>
@@ -30,9 +42,21 @@
                 <source>action.select_all</source>
                 <target>Select all</target>
             </trans-unit>
+            <trans-unit id="8w7xgsI">
+                <source>action.trash</source>
+                <target>Trash</target>
+            </trans-unit>
+            <trans-unit id="K8KQd57">
+                <source>action.trash_selection</source>
+                <target>Move selection to trash</target>
+            </trans-unit>
             <trans-unit id="CTyRVpC">
                 <source>action.view_on_site</source>
                 <target>View on site</target>
+            </trans-unit>
+            <trans-unit id="X4j.TeG">
+                <source>confirm.delete_permanently</source>
+                <target>This gallery will be permanently deleted, with its medias and all of their files. This cannot be undone. Continue?</target>
             </trans-unit>
             <trans-unit id="tu7Zw96">
                 <source>confirm.media_slug_change</source>
@@ -133,6 +157,14 @@
             <trans-unit id="xFlSzIS">
                 <source>description.guided_step_gallery_medias_arrangement_upload</source>
                 <target>A batch at a time, always from the gallery holding them - a media is never created on its own.</target>
+            </trans-unit>
+            <trans-unit id="ZSCwjpo">
+                <source>flash.gallery_category_deleted_permanently</source>
+                <target>Gallery permanently deleted</target>
+            </trans-unit>
+            <trans-unit id="XcWUcOA">
+                <source>flash.gallery_category_restored</source>
+                <target>Gallery restored</target>
             </trans-unit>
             <trans-unit id="xzaPeIL">
                 <source>label.block_category</source>
@@ -316,15 +348,27 @@
             </trans-unit>
             <trans-unit id="WHkdhcj">
                 <source>label.gallery_medias_delete_confirm</source>
-                <target>Permanently delete the selected media and their files?</target>
+                <target>These medias will be moved to the trash: they leave the site, but their files are kept and you will be able to restore them. Continue?</target>
             </trans-unit>
-            <trans-unit id="1iptswo">
-                <source>label.gallery_medias_deleted</source>
-                <target>Media deleted (%count%)</target>
+            <trans-unit id="CR7vBJk">
+                <source>label.gallery_medias_delete_permanently_confirm</source>
+                <target>Permanently delete the selected medias and their files? This cannot be undone.</target>
+            </trans-unit>
+            <trans-unit id="RQABxuW">
+                <source>label.gallery_medias_deleted_permanently</source>
+                <target>Medias permanently deleted (%count%)</target>
             </trans-unit>
             <trans-unit id="ZKKrfjg">
                 <source>label.gallery_medias_layout_failed</source>
                 <target>The order and cover could not be saved</target>
+            </trans-unit>
+            <trans-unit id="N1MazvR">
+                <source>label.gallery_medias_restored</source>
+                <target>Medias restored (%count%)</target>
+            </trans-unit>
+            <trans-unit id="V9d6r7K">
+                <source>label.gallery_medias_trashed</source>
+                <target>Medias moved to trash (%count%)</target>
             </trans-unit>
             <trans-unit id="bX31DTF">
                 <source>label.gallery_medias_updated</source>
@@ -569,6 +613,14 @@
             <trans-unit id="w9lrEZ2">
                 <source>label.info_gallery_category_medias_empty</source>
                 <target>This category has no media yet.</target>
+            </trans-unit>
+            <trans-unit id="T42IlA6">
+                <source>label.info_gallery_category_medias_trash</source>
+                <target>Medias moved to trash: they are off the site, but their files are kept. Check some to restore them, or to delete them permanently.</target>
+            </trans-unit>
+            <trans-unit id="mAdNzM3">
+                <source>label.info_gallery_category_medias_trash_empty</source>
+                <target>The trash of this category is empty.</target>
             </trans-unit>
             <trans-unit id="p9AVN3s">
                 <source>label.info_gallery_media</source>

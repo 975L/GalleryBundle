@@ -147,6 +147,38 @@ class GalleryImportProviderTest extends TestCase
         rmdir($filesDir);
     }
 
+    // A category exported out of the trash comes back to the trash, its medias each carrying their own flag - and an archive predating the trash imports as what it describes, a category that is not in it
+    public function testImportCarriesTheTrashFlagAndDefaultsToOutOfIt(): void
+    {
+        $persisted = [];
+        $em = $this->createStub(EntityManagerInterface::class);
+        $em->method('persist')->willReturnCallback(static function (object $entity) use (&$persisted): void {
+            $persisted[] = $entity;
+        });
+
+        $this->createProvider($em)->import([[
+            'slug' => 'voyages',
+            'title' => 'Voyages',
+            'isDeleted' => true,
+            'medias' => [
+                ['title' => 'Media 1', 'slug' => 'media-1', 'isDeleted' => true],
+                ['title' => 'Media 2', 'slug' => 'media-2'],
+            ],
+        ], [
+            'slug' => 'montagnes',
+            'title' => 'Montagnes',
+            'medias' => [],
+        ]]);
+
+        $categories = array_values(array_filter($persisted, static fn (object $entity): bool => $entity instanceof GalleryCategory));
+        $medias = array_values(array_filter($persisted, static fn (object $entity): bool => $entity instanceof GalleryMedia));
+
+        $this->assertTrue($categories[0]->isDeleted());
+        $this->assertFalse($categories[1]->isDeleted());
+        $this->assertTrue($medias[0]->isDeleted());
+        $this->assertFalse($medias[1]->isDeleted());
+    }
+
     // An archive exported before the "photos" -> "medias" rename still imports its entries, rather than landing an empty category
     public function testImportReadsTheLegacyPhotoKeys(): void
     {

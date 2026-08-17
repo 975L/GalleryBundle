@@ -487,8 +487,8 @@ class GalleryMediaCrudControllerTest extends TestCase
 
     // --- deleteEntity --------------------------------------------------------------------------------------
 
-    // A media page is declared in the sitemap (see GallerySitemapProvider), so its url is left answering 410 rather than the 404 a crawler retries for months
-    public function testDeleteEntityLeavesTheUrlOfADeletedMediaAnsweringGone(): void
+    // The media is only flagged: its four files (stored, -thumb, -highres, original) stay on disk, GalleryMediaDerivativeCleanupListener never being reached
+    public function testDeleteEntityOnlyMovesTheMediaToTheTrash(): void
     {
         $category = new GalleryCategory()->setSlug('voyages');
         $media = new GalleryMedia()->setTitle('Mont Blanc')->setSlug('mont-blanc');
@@ -499,18 +499,14 @@ class GalleryMediaCrudControllerTest extends TestCase
 
         $this->createControllerWithRouter()->deleteEntity($entityManager, $media);
 
-        $redirects = array_values(array_filter($persisted, static fn (object $entity): bool => $entity instanceof Redirect));
-        $this->assertCount(1, $redirects);
-        $this->assertSame('/gallery/voyages/mont-blanc', $redirects[0]->getFromPath());
-        $this->assertNull($redirects[0]->getToUrl());
-        $this->assertTrue($redirects[0]->isGone());
+        $this->assertTrue($media->isDeleted());
     }
 
-    // A media stored before slugs existed has no public url to answer for - nothing was ever declared for it
-    public function testDeleteEntityRecordsNothingForAMediaWithoutASlug(): void
+    // A media that can still be restored has no url to declare gone - the 410 comes from the row itself while it sits in the trash (see GalleryController::resolveCategoryAndMedia), the permanent deletion recording the Redirect that outlives it
+    public function testDeleteEntityRecordsNoGoneRedirect(): void
     {
         $category = new GalleryCategory()->setSlug('voyages');
-        $media = new GalleryMedia()->setTitle('Mont Blanc');
+        $media = new GalleryMedia()->setTitle('Mont Blanc')->setSlug('mont-blanc');
         $category->addMedia($media);
 
         $persisted = [];
@@ -519,5 +515,37 @@ class GalleryMediaCrudControllerTest extends TestCase
         $this->createControllerWithRouter()->deleteEntity($entityManager, $media);
 
         $this->assertSame([], array_values(array_filter($persisted, static fn (object $entity): bool => $entity instanceof Redirect)));
+    }
+
+    // Same release GalleryCategoryCrudController::deleteMedias() does for a whole selection - the two ways to trash a media leave the category in the same state, so restoring one never silently makes it the cover again
+    public function testDeleteEntityClearsTheCoverItPointedAt(): void
+    {
+        $category = new GalleryCategory()->setSlug('voyages');
+        $media = new GalleryMedia()->setTitle('Mont Blanc')->setSlug('mont-blanc');
+        $category->addMedia($media);
+        $category->setCoverMedia($media);
+
+        $persisted = [];
+
+        $this->createControllerWithRouter()->deleteEntity($this->createEntityManager([], $persisted), $media);
+
+        $this->assertNull($category->getCoverMedia());
+    }
+
+    // A media that was not the cover leaves it exactly where it was
+    public function testDeleteEntityLeavesACoverItDoesNotPointAt(): void
+    {
+        $category = new GalleryCategory()->setSlug('voyages');
+        $cover = new GalleryMedia()->setTitle('Cover')->setSlug('cover');
+        $media = new GalleryMedia()->setTitle('Mont Blanc')->setSlug('mont-blanc');
+        $category->addMedia($cover);
+        $category->addMedia($media);
+        $category->setCoverMedia($cover);
+
+        $persisted = [];
+
+        $this->createControllerWithRouter()->deleteEntity($this->createEntityManager([], $persisted), $media);
+
+        $this->assertSame($cover, $category->getCoverMedia());
     }
 }

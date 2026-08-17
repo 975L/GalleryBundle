@@ -43,6 +43,7 @@ class GalleryExportProviderTest extends TestCase
             'summarySocialNetwork' => '<div>Nos voyages</div>',
             'position' => 0,
             'uncategorized' => false,
+            'isDeleted' => false,
             'coverMediaIndex' => null,
             'blocks' => [],
             'medias' => [],
@@ -86,6 +87,37 @@ class GalleryExportProviderTest extends TestCase
             $projectDir . '/public/uploads/p1.jpg',
             $projectDir . '/public/uploads/p2.jpg',
         ], $files);
+
+        unlink($projectDir . '/public/uploads/p1.jpg');
+        unlink($projectDir . '/public/uploads/p2.jpg');
+        rmdir($projectDir . '/public/uploads');
+        rmdir($projectDir . '/public');
+        rmdir($projectDir);
+    }
+
+    // An archive kept aside before a permanent deletion comes back exactly as it left: the category and each of its medias travel with their trash flag, rather than being republished on the site the import runs on
+    public function testSerializeCarriesTheTrashFlagOfTheCategoryAndOfItsMedias(): void
+    {
+        $projectDir = sys_get_temp_dir() . '/gallery_export_provider_test_' . bin2hex(random_bytes(4));
+        mkdir($projectDir . '/public/uploads', 0777, true);
+        file_put_contents($projectDir . '/public/uploads/p1.jpg', 'bytes-1');
+        file_put_contents($projectDir . '/public/uploads/p2.jpg', 'bytes-2');
+
+        $category = new GalleryCategory()->setSlug('voyages')->setTitle('Voyages');
+        $category->setIsDeleted(true);
+        $shown = new GalleryMedia()->setFilename('uploads/p1.jpg')->setTitle('Media 1')->setSlug('media-1');
+        $trashed = new GalleryMedia()->setFilename('uploads/p2.jpg')->setTitle('Media 2')->setSlug('media-2');
+        $trashed->setIsDeleted(true);
+        $category->addMedia($shown)->addMedia($trashed);
+
+        $data = new GalleryExportProvider($this->createStub(GalleryCategoryRepository::class), new BlockDataExporter($projectDir), $projectDir)
+            ->serialize([$category]);
+
+        $item = $data['items'][0];
+        $this->assertTrue($item['isDeleted']);
+        // A category put in the trash marks none of its medias, so the two flags travel apart
+        $this->assertFalse($item['medias'][0]['isDeleted']);
+        $this->assertTrue($item['medias'][1]['isDeleted']);
 
         unlink($projectDir . '/public/uploads/p1.jpg');
         unlink($projectDir . '/public/uploads/p2.jpg');
