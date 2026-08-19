@@ -51,8 +51,12 @@
 
     {# The category's own medias, each opening its edit form (media_edit_urls comes from GalleryCategoryCrudController::configureResponseParameters) - same grid as UiBundle's media_index, on the "-thumb" derivative and reusing its CSS #}
     {% set category = entity.instance %}
-    {# "medias" and "medias_trash" come from the same configureResponseParameters: the grid never reads category.medias, which holds the trashed ones too #}
+    {# "medias", "medias_trash" and "medias_automatic" come from the same configureResponseParameters: the grid never reads category.medias, which holds the trashed ones too - and on the automatic gallery holds none of what is shown #}
     {% set medias_trash = medias_trash|default(false) %}
+    {# The gallery of the last additions: its medias belong to other categories, so it takes no upload, keeps no trash and arranges nothing - what is left is exactly what acts on a selection #}
+    {% set automatic = medias_automatic|default(false) %}
+    {# The two things a tile carries only where they mean something: the drag handle and the cover radio #}
+    {% set sortable = not medias_trash and not automatic %}
     <h2 class="mt-4">
         {{ ((medias_trash ? 'action.trash' : 'label.gallery_medias')|trans({}, 'gallery')) }}
 
@@ -61,7 +65,7 @@
             <a href="{{ ea_url().setAction('edit').unset('mediasTrash') }}" class="btn btn-secondary btn-sm align-middle ms-2">
                 <i class="fa fa-images"></i> {{ ('label.gallery_medias'|trans({}, 'gallery')) }}
             </a>
-        {% elseif medias_trash_count|default(0) > 0 %}
+        {% elseif not automatic and medias_trash_count|default(0) > 0 %}
             <a href="{{ ea_url().setAction('edit').set('mediasTrash', 1) }}" class="btn btn-secondary btn-sm align-middle ms-2">
                 <i class="fa fa-trash-alt"></i> {{ ('action.trash'|trans({}, 'gallery')) }} ({{ medias_trash_count }})
             </a>
@@ -77,15 +81,19 @@
     {% endset %}
 
     {% if medias|default([])|length > 0 %}
-        <p>{{ ((medias_trash ? 'label.info_gallery_category_medias_trash' : 'label.info_gallery_category_medias')|trans({}, 'gallery')) }}</p>
+        {% if automatic %}
+            <p>{{ ('label.info_gallery_category_medias_automatic'|trans({'%count%': medias|length}, 'gallery')) }}</p>
+        {% else %}
+            <p>{{ ((medias_trash ? 'label.info_gallery_category_medias_trash' : 'label.info_gallery_category_medias')|trans({}, 'gallery')) }}</p>
+        {% endif %}
 
         {# The checked medias are posted to GalleryCategoryCrudController::deleteMedias(), or to editMedias() by the buttons carrying their own "formaction". A form of its own, after the edit form parent() has already closed above: an html form never nests in another #}
         {# It carries the sort controller too, rather than a wrapper of its own: the cover's "random" radio sits in the toolbar and the medias in the grid, and the form is the smallest element holding both #}
         {# In the trash the sort controller is left off entirely: a trashed photo is neither arranged nor made a cover, and a drag there would renumber it over the positions of the ones still online #}
         <form method="post"
             action="{{ ea_url().setAction('deleteMedias') }}"
-            data-controller="gallery-media-selection{{ medias_trash ? '' : ' gallery-media-sort' }}"
-            {% if not medias_trash %}
+            data-controller="gallery-media-selection{{ sortable ? ' gallery-media-sort' : '' }}"
+            {% if sortable %}
                 data-gallery-media-sort-url-value="{{ ea_url().setAction('saveMediasLayout') }}"
                 data-gallery-media-sort-token-value="{{ csrf_token('gallery_medias_layout') }}"
                 data-gallery-media-sort-failed-label-value="{{ ('label.gallery_medias_layout_failed'|trans({}, 'gallery')) }}"
@@ -94,7 +102,7 @@
 
             {# Every action here works off the same checked medias, each button posting the selection to its own route (see the "formaction" ones below) #}
             <div class="mb-3 d-flex flex-wrap gap-3 align-items-center">
-                {% if not medias_trash %}{{ upload_medias_button }}{% endif %}
+                {% if not medias_trash and not automatic %}{{ upload_medias_button }}{% endif %}
 
                 <label class="d-flex align-items-center gap-2 p-1 ui-check-label">
                     <input type="checkbox"
@@ -133,6 +141,8 @@
                 {% else %}
 
                 {# The way back to a random cover once one has been picked - no media checked is exactly what the public components fall back on #}
+                {# Left out of the automatic gallery, which shows its newest photo rather than a cover (see GalleryCategory::getCoverOrRandomMedia) #}
+                {% if sortable %}
                 <label class="d-flex align-items-center gap-2 p-1 ui-check-label">
                     <input type="radio"
                         class="form-check-input m-0 ui-check-lg"
@@ -142,6 +152,7 @@
                         data-action="gallery-media-sort#save">
                     {{ ('label.gallery_cover_random'|trans({}, 'gallery')) }}
                 </label>
+                {% endif %}
 
                 {# The same value written on the whole selection at once, rather than opened media by media - one button per field, so setting the credits never touches the rights and the other way round #}
                 <input type="hidden" name="_edit_token" value="{{ csrf_token('gallery_media_edit_selection') }}">
@@ -204,72 +215,29 @@
                 {% endif %}
             </div>
 
-            <div class="management-media-grid" data-gallery-media-sort-target="grid">
-                {% for media in medias %}
-                    {# The thumbnail keeps opening the media's edit screen, so the checkbox sits under it rather than inside the link it would otherwise swallow the click of #}
-                    {# The id the new order is posted with, read off the tiles themselves: dragging one moves it with the tile, so nothing has to be renumbered client-side #}
-                    <div class="text-center{{ medias_trash ? '' : ' ui-sort-grabbable' }}"
-                        data-media-id="{{ media.id }}"
-                        {% if not medias_trash %}data-gallery-media-sort-target="item"{% endif %}>
-                        {# The grab point a finger gets, the whole tile being reserved to the mouse (see gallery-media-sort.js). Inline svg rather than an icon class: it is the move icon UiBundle draws on a block's own handle, and this bundle knows nothing of the icon set the dashboard ships #}
-                        {% if not medias_trash %}
-                            <div class="d-flex align-items-center justify-content-center p-1 border rounded ui-sort-grabbable"
-                                role="button"
-                                aria-label="{{ ('action.move'|trans({}, 'gallery')) }}"
-                                title="{{ ('action.move'|trans({}, 'gallery')) }}"
-                                data-gallery-media-sort-handle>
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                    <polyline points="5 9 2 12 5 15"/><polyline points="9 5 12 2 15 5"/>
-                                    <polyline points="15 19 12 22 9 19"/><polyline points="19 9 22 12 19 15"/>
-                                    <line x1="2" y1="12" x2="22" y2="12"/><line x1="12" y1="2" x2="12" y2="22"/>
-                                </svg>
-                            </div>
-                        {% endif %}
+            {# The tile itself lives in a partial: the automatic gallery draws one grid per day of additions, every other category one grid for the whole of it #}
+            {% set tile = '@c975LGallery/management/_gallery_media_tile.html.twig' %}
+            {% if automatic %}
+                {# A heading per day, which is what an upload session is: the photos of one day are credited, downloaded or trashed as the batch they arrived in, whatever galleries they were dispatched to #}
+                {% for group in medias_by_day|default([]) %}
+                    <h3 class="h6 mt-4">
+                        {{ group.day|format_date('long') }}
+                        <span class="badge bg-secondary">{{ group.medias|length }}</span>
+                    </h3>
 
-                        {# draggable="false" on the link and its image, which the browser would otherwise drag as a url of their own, its native drag fighting the pointer gesture above #}
-                        <a href="{{ media_edit_urls[media.id]|default('') }}" class="management-media-grid__item" draggable="false">
-                            {% if media.thumbnailFilename %}
-                                {# The "--cover" modifier of UiBundle's shared .management-media-grid__thumb, whose base rule stays "contain" for its own generic media_index.html.twig where arbitrary-aspect originals must not be cropped #}
-                                <img src="{{ asset(media.thumbnailFilename) }}" alt="{{ media.title }}" width="150" height="150" class="management-media-grid__thumb management-media-grid__thumb--cover" draggable="false">
-                            {% else %}
-                                <div class="management-media-grid__placeholder">{{ media.filename }}</div>
-                            {% endif %}
-                            <p class="text-center small">
-                                {{ media.title }}
-                                {% if media.video %}<span class="badge bg-secondary">{{ ('label.gallery_media_type_' ~ media.mediaType)|trans({}, 'gallery') }}</span>{% endif %}
-                            </p>
-                        </a>
-
-                        {# Same labelled bar as the selection one below, the radio group spanning the whole grid: a category is represented by one media, or by a random one #}
-                        {# The attribute tells the grid's radios apart from the "random" one up in the toolbar, which shares their name - it is the first of them the guided project points at (see GalleryGuidedProjectProvider) #}
-                        {% if not medias_trash %}
-                            <label class="d-flex align-items-center justify-content-center gap-2 p-1 border rounded ui-check-label">
-                                <input type="radio"
-                                    class="form-check-input m-0 ui-check-lg"
-                                    data-gallery-cover-radio
-                                    name="coverMediaId"
-                                    value="{{ media.id }}"
-                                    aria-label="{{ ('label.gallery_cover_select'|trans({'%media%': media.title}, 'gallery')) }}"
-                                    {{ category.coverMedia is same as(media) ? 'checked' : '' }}
-                                    data-action="gallery-media-sort#save">
-                                <span class="small">{{ ('label.gallery_cover'|trans({}, 'gallery')) }}</span>
-                            </label>
-                        {% endif %}
-
-                        {# A labelled bar rather than a bare box: under a 150px thumbnail a checkbox on its own reads as an artefact of the image, and the whole bar is the click target #}
-                        <label class="d-flex align-items-center justify-content-center gap-2 p-1 border rounded ui-check-label">
-                            <input type="checkbox"
-                                class="form-check-input m-0 ui-check-lg"
-                                name="mediaIds[]"
-                                value="{{ media.id }}"
-                                aria-label="{{ ('label.gallery_select_media'|trans({'%media%': media.title}, 'gallery')) }}"
-                                data-gallery-media-selection-target="checkbox"
-                                data-action="gallery-media-selection#update">
-                            <span class="small">{{ ('action.select'|trans({}, 'gallery')) }}</span>
-                        </label>
+                    <div class="management-media-grid">
+                        {% for media in group.medias %}
+                            {{ include(tile, {media: media, edit_url: media_edit_urls[media.id]|default(''), sortable: false, owner: true, cover_media_id: null}, with_context: false) }}
+                        {% endfor %}
                     </div>
                 {% endfor %}
-            </div>
+            {% else %}
+                <div class="management-media-grid" data-gallery-media-sort-target="grid">
+                    {% for media in medias %}
+                        {{ include(tile, {media: media, edit_url: media_edit_urls[media.id]|default(''), sortable: sortable, owner: false, cover_media_id: category.coverMedia ? category.coverMedia.id : null}, with_context: false) }}
+                    {% endfor %}
+                </div>
+            {% endif %}
         </form>
     {% elseif medias_trash %}
         {# Reached right after the last trashed media is restored or dropped, the two actions redirecting back here - the way out is the only thing left to offer #}
@@ -280,6 +248,9 @@
                 <i class="fa fa-images"></i> {{ ('label.gallery_medias'|trans({}, 'gallery')) }}
             </a>
         </div>
+    {% elseif automatic %}
+        {# Nothing has been added yet, or the last additions all went to the trash - there is no upload to offer here, this gallery being fed by the others #}
+        <p>{{ ('label.info_gallery_category_medias_automatic_empty'|trans({}, 'gallery')) }}</p>
     {% else %}
         <p>{{ ('label.info_gallery_category_medias_empty'|trans({}, 'gallery')) }}</p>
 

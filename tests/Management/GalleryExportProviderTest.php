@@ -43,6 +43,7 @@ class GalleryExportProviderTest extends TestCase
             'summarySocialNetwork' => '<div>Nos voyages</div>',
             'position' => 0,
             'uncategorized' => false,
+            'automatic' => false,
             'isDeleted' => false,
             'coverMediaIndex' => null,
             'blocks' => [],

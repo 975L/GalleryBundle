@@ -29,6 +29,8 @@ use Vich\UploaderBundle\Mapping\Attribute as Vich;
 #[ORM\Entity(repositoryClass: GalleryMediaRepository::class)]
 #[ORM\Table(name: 'gallery_media')]
 #[ORM\UniqueConstraint(name: 'gallery_media_category_slug', columns: ['category_id', 'slug'])]
+// The automatic gallery reads the whole table ordered by date of addition, once per page it appears on (see GalleryMediaRepository::findLatest) - the index is what keeps that read off a full scan on a library of thousands of photos
+#[ORM\Index(name: 'gallery_media_created_at', columns: ['created_at'])]
 #[Vich\Uploadable]
 class GalleryMedia implements TrashableInterface, VichMultiSizeImageInterface, VichMediaNamableInterface, VichOriginalKeepableInterface, VichWatermarkableInterface
 {

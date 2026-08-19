@@ -1,6 +1,6 @@
 ---
 name: c975l-gallery
-description: "Use this skill when working with photo galleries in a Symfony application built on the c975L ecosystem with c975l/gallery-bundle. Covers categories and medias, the admin-renamable url prefix, the two-step trash, batch upload and the three image derivatives, videos and embeds, the two gallery blocks, theming, and every extension point the bundle offers. Triggers on: GalleryCategory, GalleryMedia, gallery-route-prefix, gallery_index, gallery_category, gallery_media, gallery_categories, gallery_medias, c975l:gallery:rebuild-thumbnails, c975l:gallery:fill-slugs, photo gallery, thumbnail, lightbox, batch upload, upload progress, passe-partout, trash, restore, delete permanently, 410 Gone, download highres, download originals, GalleryMediaArchiver, files-gallery, health check."
+description: "Use this skill when working with photo galleries in a Symfony application built on the c975L ecosystem with c975l/gallery-bundle. Covers categories and medias, the admin-renamable url prefix, the two-step trash, batch upload and the three image derivatives, videos and embeds, the two gallery blocks, theming, and every extension point the bundle offers. Triggers on: GalleryCategory, GalleryMedia, gallery-route-prefix, gallery_index, gallery_category, gallery_media, gallery_categories, gallery_medias, c975l:gallery:rebuild-thumbnails, c975l:gallery:fill-slugs, photo gallery, thumbnail, lightbox, batch upload, upload progress, passe-partout, trash, restore, delete permanently, 410 Gone, download highres, download originals, GalleryMediaArchiver, files-gallery, health check, automatic gallery, latest additions, GalleryLatestProvider, findOrCreateAutomatic, findLatest, gallery-latest-days, gallery-latest-max."
 ---
 
 # c975L GalleryBundle
@@ -47,8 +47,9 @@ top-level unit, and each holds its `GalleryMedia`.
 
 - `GalleryCategory` — `slug` (the url segment), `title`, `summarySocialNetwork` (rich text, printed
   above the grid and reused as the page's description metas), `position`, `coverMedia`,
-  `uncategorized` (the lazily-created catch-all), `medias`. Implements `HasBlocksInterface` (its own
-  editorial heading) and `TrashableInterface`.
+  `uncategorized` (the lazily-created catch-all), `automatic` (the gallery of the last additions, see
+  below), `medias`. Implements `HasBlocksInterface` (its own editorial heading) and
+  `TrashableInterface`.
 - `GalleryMedia` — belongs to one category, keyed publicly by `slug` which is **unique within its
   category only**. Carries `title`, `credits`, `rightsReserved`, `position`, `mediaType`
   (`image` / a platform name / `embed`, always derived, never set), `externalUrl`, an optional
@@ -106,6 +107,47 @@ Route *names* never change, whatever the prefix. Renaming the prefix breaks the 
 urls — declare a redirect in ConfigBundle's **Redirections** screen. Renaming a *category* is handled
 for you: `GalleryCategoryCrudController::updateEntity()` writes the permanent redirect, plus a
 wildcarded row for the medias underneath.
+
+## The gallery of the last additions
+
+A category flagged `automatic` **holds no media of its own**: it shows what every other category
+received over the last days of upload. It is written by
+`GalleryCategoryRepository::findOrCreateAutomatic()` the first time the galleries are listed (the
+back-office listing, the public index or a categories block, whichever comes first) and is a normal
+category from then on — renamed, described, given a heading, arranged, linked from a menu, declared in
+the sitemap. **Nobody creates it, and it is never an option ticked on one of the site's own galleries.**
+Moving it to the trash is how a site says it does not want it: unlike the catch-all, a trashed one is
+left exactly where it was put.
+
+`Service\GalleryLatestProvider` is the one place that answers what it holds — the front-office viewer,
+the blocks and the back-office screen all ask it, and it reads once per request (`ResetInterface`).
+Its list comes from `GalleryMediaRepository::findLatest($days, $max)`: a rolling window of calendar
+days, today included, falling back on the last day that carries an addition when the window catches
+nothing, so the gallery is never empty as long as the site holds a photo. The `gallery_media_created_at`
+index on `created_at` is what keeps that read off a full scan.
+
+- `prepare(array $categories)` — hands back the listed categories with the automatic one among them,
+  holding its medias. For a caller reading the list itself (the public index, the categories block).
+- `hydrate(iterable $categories)` — hands the automatic one its list, the others left alone. For a
+  caller holding entities it did not read (the back-office listing, whose rows EasyAdmin paginates).
+- `getMedias()`, `getMediasByDay()`, `findPreviousAndNext($media)`, `ensureCategory()`.
+
+`GalleryCategory::getMediasCount()` and `getCoverOrRandomMedia()` read that handed list rather than the
+relation, so a tile, a count and an `og:image` work without knowing which kind of category they hold —
+the automatic one showing its **newest** photo rather than one at random.
+
+**Urls stay canonical.** A thumbnail of the automatic gallery links its photo under **its own**
+category, never a second path, with `?from=<automatic slug>` over it. `GalleryController::media()`
+reads it: previous and next are then the medias added just before and just after, whatever category
+they sit in, and the breadcrumb leads back to the last additions. A photo that has left the window is
+browsed as its own category's again.
+
+**Its back-office edit screen is the cross-gallery selection screen**: the same grid
+(`templates/management/_gallery_media_tile.html.twig`) cut into one section per day, each thumbnail
+naming the gallery the photo belongs to. Credits, rights, downloads and move to trash act on the photo
+where it really sits, cover included. What the owning category alone carries is left out: no upload
+button, no drag to reorder, no cover radio, no trash view. The media CRUD's category picker leaves out
+the automatic and the trashed galleries.
 
 ## Showing a gallery outside its own routes
 
@@ -216,6 +258,8 @@ EasyAdmin — **never in `.env`, `parameters:` or a Configuration/TreeBuilder cl
 | --- | --- | --- |
 | `gallery-route-prefix` | text | the first url segment (empty falls back to `gallery`) |
 | `gallery-thumbnail-whole` | bool | grid tiles `contain` instead of `cover` |
+| `gallery-latest-days` | int | how many days back the automatic gallery reaches (empty or 0 falls back to 7) |
+| `gallery-latest-max` | int | how many medias it stops at (empty or 0 falls back to 200) |
 | `gallery-style` | choice `light`/`dark` | the ground a photo is shown against; empty keeps the site's own colors |
 | `gallery-frame` | choice `none`/`thin`/`wide` | the passe-partout around a displayed media |
 | `theme-color-gallery-frame` | text | passe-partout color |
@@ -247,9 +291,10 @@ deletions, held at `site-role-admin` (see *Deleting takes two steps*).
 - **Blocks on a category** — `GalleryCategory` implements `HasBlocksInterface`; render them with
   `<twig:c975LUi:Blocks:Blocks blocks="{{ category.blocks }}"/>`.
 - **Repositories** — `GalleryCategoryRepository::findAllOrdered()`, `findOneBySlug()`,
-  `countVisible()`, `findOrCreateUncategorized()`; `GalleryMediaRepository::findByCategory()`,
-  `findOneBySlugInCategory()`, `findPreviousAndNext()`, `findWithFilename()` (the rows naming a file,
-  for the files health check).
+  `countVisible()`, `findOrCreateUncategorized()`, `findOrCreateAutomatic()` (both suffixing a slug
+  already taken); `GalleryMediaRepository::findByCategory()`, `findOneBySlugInCategory()`,
+  `findPreviousAndNext()`, `findLatest()` (what the automatic gallery shows), `findWithFilename()`
+  (the rows naming a file, for the files health check).
 
 What the bundle already contributes to the dashboard, so you do not have to: `MenuProvider`,
 `LinkableRouteProvider` (the index and each category offered as a SiteBundle menu target),
@@ -268,6 +313,9 @@ What the bundle already contributes to the dashboard, so you do not have to: `Me
   gallery setting. It goes in `config/configs.json` and is read through `ConfigServiceInterface`.
 - **Do not write an image resizer, a thumbnail command or a Vich naming rule.** Sizes are declared on
   the entity, the work belongs to UiBundle's `VichImageResizeListener`.
+- **Do not read an automatic category's `medias` relation** — it is empty by definition. Ask
+  `GalleryLatestProvider`, or go through `getMediasCount()` / `getCoverOrRandomMedia()`, which already
+  do. And do not create a second one, nor turn one of the site's own galleries into it.
 - **Do not query a media by slug alone** — a slug is unique only within its category.
 - **Do not list categories or medias with `findAll()` / `findBy()`.** Those see the trash; use
   `findAllOrdered()` and `GalleryMediaRepository::findByCategory()`, which do not.

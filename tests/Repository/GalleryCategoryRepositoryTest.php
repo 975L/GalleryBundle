@@ -75,23 +75,90 @@ class GalleryCategoryRepositoryTest extends TestCase
         $this->assertSame('label.gallery_uncategorized', $category->getTitle());
         $this->assertTrue($category->isUncategorized());
     }
+
+    // Nobody creates the gallery of the last additions: it is written the first time the galleries are listed, and read back every time after
+    public function testFindOrCreateAutomaticCreatesAndPersistsATranslatedCategoryWhenNoneExists(): void
+    {
+        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $persisted = null;
+        $entityManager->expects($this->once())->method('persist')->with($this->callback(function (GalleryCategory $category) use (&$persisted) {
+            $persisted = $category;
+
+            return true;
+        }));
+        $entityManager->expects($this->once())->method('flush');
+
+        $category = new GalleryCategoryRepositoryFindOneByFixture(null, $entityManager, $this->createTranslator())->findOrCreateAutomatic();
+
+        $this->assertSame($persisted, $category);
+        $this->assertSame('latest', $category->getSlug());
+        $this->assertSame('label.gallery_latest_title', $category->getTitle());
+        $this->assertTrue($category->isAutomatic());
+    }
+
+    // Moving it to the trash is the only way an admin has of being rid of it, so it is left exactly where it was put - unlike the catch-all above, which an upload has to be able to land on
+    public function testFindOrCreateAutomaticLeavesATrashedOneInTheTrash(): void
+    {
+        $existing = new GalleryCategory()->setAutomatic(true);
+        $existing->setIsDeleted(true);
+
+        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $entityManager->expects($this->never())->method('persist');
+        $entityManager->expects($this->never())->method('flush');
+
+        $repository = new GalleryCategoryRepositoryFindOneByFixture($existing, $entityManager, $this->createTranslator());
+
+        $this->assertSame($existing, $repository->findOrCreateAutomatic());
+        $this->assertTrue($existing->isDeleted());
+    }
+
+    // The slug is a constant on a column held unique: a site that already named a gallery "latest" would meet a UniqueConstraintViolationException on every page listing its galleries, so the taken one is suffixed until it is free
+    public function testFindOrCreateAutomaticSuffixesASlugAlreadyTaken(): void
+    {
+        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $entityManager->expects($this->once())->method('persist');
+        $entityManager->expects($this->once())->method('flush');
+
+        $repository = new GalleryCategoryRepositoryFindOneByFixture(null, $entityManager, $this->createTranslator(), ['latest', 'latest-2']);
+
+        $this->assertSame('latest-3', $repository->findOrCreateAutomatic()->getSlug());
+    }
+
+    // Same slug, same constraint, same suffixing - and the catch-all is the one an upload lands on, so failing to create it would leave the medias nowhere to go
+    public function testFindOrCreateUncategorizedSuffixesASlugAlreadyTaken(): void
+    {
+        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $entityManager->expects($this->once())->method('persist');
+        $entityManager->expects($this->once())->method('flush');
+
+        $repository = new GalleryCategoryRepositoryFindOneByFixture(null, $entityManager, $this->createTranslator(), ['non-classe']);
+
+        $this->assertSame('non-classe-2', $repository->findOrCreateUncategorized()->getSlug());
+    }
 }
 
 // findOneBy() is resolved by Doctrine's real EntityRepository internals - overriding it directly (a real, non-magic, declared method here) plus getEntityManager() instead, parent constructor never invoked, mirrors ConfigRepositoryFindOneBySlugFixture in ConfigBundle/SiteBundle. GalleryCategoryRepository's own $translator (used by the inherited, un-overridden findOrCreateUncategorized()) is private to that class and typed non-nullable - reflection initializes it directly since the skipped constructor never gets the chance to
 class GalleryCategoryRepositoryFindOneByFixture extends GalleryCategoryRepository
 {
     public function __construct(
-        private readonly ?GalleryCategory $existingUncategorized,
+        private readonly ?GalleryCategory $existingCategory,
         private readonly EntityManagerInterface $entityManager,
         TranslatorInterface $translator,
+        /** @var list<string> */
+        private readonly array $takenSlugs = [],
     ) {
         new \ReflectionProperty(GalleryCategoryRepository::class, 'translator')->setValue($this, $translator);
     }
 
+    // The slug lookup freeSlug() makes is answered from the taken list, everything else - the automatic and uncategorized flags - by the single category the fixture was given
     #[\Override]
     public function findOneBy(array $criteria, ?array $orderBy = null): ?object
     {
-        return $this->existingUncategorized;
+        if (isset($criteria['slug'])) {
+            return \in_array($criteria['slug'], $this->takenSlugs, true) ? new GalleryCategory()->setSlug($criteria['slug']) : null;
+        }
+
+        return $this->existingCategory;
     }
 
     #[\Override]

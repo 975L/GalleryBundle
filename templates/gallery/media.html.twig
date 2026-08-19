@@ -17,7 +17,10 @@
 {% set editUrl = is_granted(config('site-role-editor')) ? gallery_media_edit_url(media) : null %}
 
 {% block content %}
-    <twig:c975LGallery:Gallery:Navigation category="{{ category }}" categoriesCount="{{ categoriesCount }}" current="{{ (media.video ? 'label.gallery_video' : 'label.gallery_media')|trans({}, 'gallery') }}"/>
+    {# The gallery the visitor is walking through rather than the one filing the photo, when the two differ - the trail leads back where he came from, which is the only way out he is looking for (see GalleryController::media) #}
+    {% set browsedFrom = browsedFrom|default(null) %}
+    {% set from = browsedFrom ? browsedFrom.slug : null %}
+    <twig:c975LGallery:Gallery:Navigation category="{{ browsedFrom ?? category }}" categoriesCount="{{ categoriesCount }}" current="{{ (media.video ? 'label.gallery_video' : 'label.gallery_media')|trans({}, 'gallery') }}"/>
     {# Right click and drag are blocked here too, the lightbox being a child of this container #}
     <div class="gallery-media-container"
         data-controller="gallery-media-preload gallery-lightbox gallery-media-protect{{ editUrl ? ' blockEditOverlay' : '' }}"
@@ -31,8 +34,8 @@
         {% else %}
             <twig:c975LGallery:Gallery:Lightbox media="{{ media }}"/>
         {% endif %}
-        <twig:c975LGallery:Gallery:Previous category="{{ category }}" previousNext="{{ previousNext }}" route="gallery_media"/>
-        <twig:c975LGallery:Gallery:Next category="{{ category }}" previousNext="{{ previousNext }}" route="gallery_media"/>
+        <twig:c975LGallery:Gallery:Previous previousNext="{{ previousNext }}" route="gallery_media" from="{{ from }}"/>
+        <twig:c975LGallery:Gallery:Next previousNext="{{ previousNext }}" route="gallery_media" from="{{ from }}"/>
     </div>
     {# Outside the container, the arrows overlaying it being positioned against it - under the media, as under a print #}
     <twig:c975LGallery:Gallery:Credits media="{{ media }}"/>

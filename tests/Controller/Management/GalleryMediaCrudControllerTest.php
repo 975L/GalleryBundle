@@ -22,6 +22,7 @@ use c975L\GalleryBundle\Service\GalleryUrlRedirector;
 use c975L\GalleryBundle\Service\UploadLimits;
 use c975L\UiBundle\Contract\VichWatermarkableInterface;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\QueryBuilder;
 use Doctrine\ORM\UnitOfWork;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
@@ -29,6 +30,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext;
 use EasyCorp\Bundle\EasyAdminBundle\Context\RequestContext;
 use EasyCorp\Bundle\EasyAdminBundle\Dto\FieldDto;
+use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\SlugField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\UrlField;
 use EasyCorp\Bundle\EasyAdminBundle\Form\Type\SlugType;
@@ -352,6 +354,25 @@ class GalleryMediaCrudControllerTest extends TestCase
         $this->assertIsCallable($listener);
 
         return $listener;
+    }
+
+    // Only the galleries actually showing their medias are offered: the automatic one holds none of its own and a trashed one shows none, so a media moved to either would leave every grid at once
+    public function testConfigureFieldsOffersNeitherTheAutomaticNorTheTrashedGalleries(): void
+    {
+        $categoryField = $this->findField($this->createController()->configureFields(Crud::PAGE_EDIT), 'category');
+
+        $this->assertNotNull($categoryField);
+
+        $queryBuilderCallable = $categoryField->getCustomOption(AssociationField::OPTION_QUERY_BUILDER_CALLABLE);
+        $this->assertIsCallable($queryBuilderCallable);
+
+        $queryBuilder = new QueryBuilder($this->createStub(EntityManagerInterface::class))
+            ->select('entity')
+            ->from(GalleryCategory::class, 'entity');
+
+        $dql = $queryBuilderCallable($queryBuilder)->getDQL();
+        $this->assertStringContainsString('entity.automatic = false', $dql);
+        $this->assertStringContainsString('entity.isDeleted = false', $dql);
     }
 
     private function findField(iterable $fields, string $property): ?FieldDto

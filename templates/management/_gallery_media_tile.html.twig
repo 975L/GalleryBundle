@@ -1,0 +1,68 @@
+{# One tile of the medias grid, included by gallery_category_edit.html.twig - the grid is drawn once per day on the automatic gallery and once for the whole category everywhere else, which is the only reason this markup lives on its own #}
+{# Rendered without the ambient context: everything it reads is passed in, so the two callers hand it exactly what a tile needs and nothing else #}
+{# "sortable" is what turns the drag handle and the cover radio on: a trashed media is neither arranged nor made a cover, and an automatic gallery's medias are arranged in the category that actually holds them #}
+<div class="text-center{{ sortable ? ' ui-sort-grabbable' : '' }}"
+    data-media-id="{{ media.id }}"
+    {% if sortable %}data-gallery-media-sort-target="item"{% endif %}>
+    {# The grab point a finger gets, the whole tile being reserved to the mouse (see gallery-media-sort.js). Inline svg rather than an icon class: it is the move icon UiBundle draws on a block's own handle, and this bundle knows nothing of the icon set the dashboard ships #}
+    {% if sortable %}
+        <div class="d-flex align-items-center justify-content-center p-1 border rounded ui-sort-grabbable"
+            role="button"
+            aria-label="{{ ('action.move'|trans({}, 'gallery')) }}"
+            title="{{ ('action.move'|trans({}, 'gallery')) }}"
+            data-gallery-media-sort-handle>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <polyline points="5 9 2 12 5 15"/><polyline points="9 5 12 2 15 5"/>
+                <polyline points="15 19 12 22 9 19"/><polyline points="19 9 22 12 19 15"/>
+                <line x1="2" y1="12" x2="22" y2="12"/><line x1="12" y1="2" x2="12" y2="22"/>
+            </svg>
+        </div>
+    {% endif %}
+
+    {# draggable="false" on the link and its image, which the browser would otherwise drag as a url of their own, its native drag fighting the pointer gesture above #}
+    <a href="{{ edit_url|default('') }}" class="management-media-grid__item" draggable="false">
+        {% if media.thumbnailFilename %}
+            {# The "--cover" modifier of UiBundle's shared .management-media-grid__thumb, whose base rule stays "contain" for its own generic media_index.html.twig where arbitrary-aspect originals must not be cropped #}
+            <img src="{{ asset(media.thumbnailFilename) }}" alt="{{ media.title }}" width="150" height="150" class="management-media-grid__thumb management-media-grid__thumb--cover" draggable="false">
+        {% else %}
+            <div class="management-media-grid__placeholder">{{ media.filename }}</div>
+        {% endif %}
+        <p class="text-center small">
+            {{ media.title }}
+            {% if media.video %}<span class="badge bg-secondary">{{ ('label.gallery_media_type_' ~ media.mediaType)|trans({}, 'gallery') }}</span>{% endif %}
+        </p>
+    </a>
+
+    {# Which gallery the photo actually belongs to - only named on the automatic one, where the grid holds medias from as many categories as the last days of uploads touched #}
+    {% if owner %}
+        <p class="text-center small text-muted mb-1">{{ media.category.title }}</p>
+    {% endif %}
+
+    {# Same labelled bar as the selection one below, the radio group spanning the whole grid: a category is represented by one media, or by a random one #}
+    {# The attribute tells the grid's radios apart from the "random" one up in the toolbar, which shares their name - it is the first of them the guided project points at (see GalleryGuidedProjectProvider) #}
+    {% if sortable %}
+        <label class="d-flex align-items-center justify-content-center gap-2 p-1 border rounded ui-check-label">
+            <input type="radio"
+                class="form-check-input m-0 ui-check-lg"
+                data-gallery-cover-radio
+                name="coverMediaId"
+                value="{{ media.id }}"
+                aria-label="{{ ('label.gallery_cover_select'|trans({'%media%': media.title}, 'gallery')) }}"
+                {{ cover_media_id == media.id ? 'checked' : '' }}
+                data-action="gallery-media-sort#save">
+            <span class="small">{{ ('label.gallery_cover'|trans({}, 'gallery')) }}</span>
+        </label>
+    {% endif %}
+
+    {# A labelled bar rather than a bare box: under a 150px thumbnail a checkbox on its own reads as an artefact of the image, and the whole bar is the click target #}
+    <label class="d-flex align-items-center justify-content-center gap-2 p-1 border rounded ui-check-label">
+        <input type="checkbox"
+            class="form-check-input m-0 ui-check-lg"
+            name="mediaIds[]"
+            value="{{ media.id }}"
+            aria-label="{{ ('label.gallery_select_media'|trans({'%media%': media.title}, 'gallery')) }}"
+            data-gallery-media-selection-target="checkbox"
+            data-action="gallery-media-selection#update">
+        <span class="small">{{ ('action.select'|trans({}, 'gallery')) }}</span>
+    </label>
+</div>

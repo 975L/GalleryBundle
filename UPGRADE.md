@@ -1,5 +1,22 @@
 # UPGRADE
 
+## v1.8.0
+
+### The automatic gallery adds a column and an index
+
+`GalleryCategory` gains an `automatic` column and `GalleryMedia` a `gallery_media_created_at` index
+on `created_at`, read by the gallery of the last additions (see `GalleryLatestProvider`). An app
+already running this bundle generates and plays its migration after updating it, otherwise the first
+visit to the galleries fails on an unknown column:
+
+```bash
+php bin/console make:migration
+php bin/console doctrine:migrations:migrate
+```
+
+Nothing else to do: the gallery itself is written the first time the galleries are listed, and is a
+normal category from then on — renamed, described, arranged or moved to the trash like any other.
+
 ## v1.5.0
 
 ### A category's description is now its `summarySocialNetwork`

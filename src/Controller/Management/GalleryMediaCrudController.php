@@ -18,6 +18,7 @@ use c975L\GalleryBundle\Service\GalleryUrlRedirector;
 use c975L\GalleryBundle\Service\UploadLimits;
 use c975L\UiBundle\Contract\VichWatermarkableInterface;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\QueryBuilder;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
@@ -207,8 +208,12 @@ class GalleryMediaCrudController extends AbstractCrudController
     public function configureFields(string $pageName): iterable
     {
         return [
+            // Only the galleries that actually show their medias are offered: an automatic gallery holds none of its own (it lists the last additions of the others, see GalleryLatestProvider), and a trashed one would show none - a media moved to either would disappear from every grid, front and back alike
             AssociationField::new('category')
                 ->setLabel(t('label.gallery_category', [], 'gallery'))
+                ->setQueryBuilder(static fn (QueryBuilder $queryBuilder): QueryBuilder => $queryBuilder
+                    ->andWhere('entity.automatic = false')
+                    ->andWhere('entity.isDeleted = false'))
                 ->setRequired(true),
 
             Field::new('file')

@@ -6,6 +6,14 @@
                 <source>description.gallery_frame</source>
                 <target>Largeur du passe-partout encadrant un média affiché : "none" (aucun cadre, la photo à plat), "thin" (10 px, défaut) ou "wide" (25 px). Sa couleur est celle de l'encre du thème, blanche sur une galerie sombre et noire sur une galerie claire ; elle se règle à part dans ce groupe.</target>
             </trans-unit>
+            <trans-unit id="AHd3sWy">
+                <source>description.gallery_latest_days</source>
+                <target>Nombre de jours du calendrier, aujourd'hui compris, sur lesquels la galerie automatique montre les médias ajoutés - 7 par défaut. Si rien n'a été ajouté sur cette période, elle retombe sur la dernière journée qui porte un ajout, de sorte qu'elle n'est jamais vide tant qu'il existe une photo. Vide ou 0, 7 est appliqué.</target>
+            </trans-unit>
+            <trans-unit id="6QTN5rG">
+                <source>description.gallery_latest_max</source>
+                <target>Nombre maximal de médias affichés par la galerie automatique, 200 par défaut. Il protège la journée où toute une photothèque est entrée d'un coup - reprise, import - qui remplirait sinon la page de milliers de vignettes. Au-delà, seuls les plus récents sont montrés. Vide ou 0, 200 est appliqué.</target>
+            </trans-unit>
             <trans-unit id="a033O9O">
                 <source>description.gallery_route_prefix</source>
                 <target>Premier segment des URL publiques de la galerie, ex. "gallery" pour /gallery/ma-categorie. La modification est immédiate, mais les anciennes URL renvoient une page introuvable : prévoyez une redirection si elles sont indexées. Vide, le préfixe "gallery" est appliqué.</target>
@@ -57,6 +65,14 @@
             <trans-unit id="xKXGBHT">
                 <source>label.gallery_frame</source>
                 <target>Cadre autour des médias</target>
+            </trans-unit>
+            <trans-unit id="JV7sMph">
+                <source>label.gallery_latest_days</source>
+                <target>Galerie automatique : nombre de jours</target>
+            </trans-unit>
+            <trans-unit id="paiRW9j">
+                <source>label.gallery_latest_max</source>
+                <target>Galerie automatique : nombre maximal de médias</target>
             </trans-unit>
             <trans-unit id="lbaVu72">
                 <source>label.gallery_route_prefix</source>

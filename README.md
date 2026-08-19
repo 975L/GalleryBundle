@@ -22,7 +22,7 @@ See it in action at [bundles.975l.com/pages/gallery-bundle](https://bundles.975l
 ## Contents
 
 - **Setup** — [requirements](#requirements) · [installation](#installation) · [configuration](#load-the-configuration) · [routes](#enable-routes) · [assets](#install-assets) · [theme](#install-the-theme)
-- **Using it** — [public routes](#public-routes) · [linking from a menu](#linking-a-gallery-from-a-menu) · [renaming a category](#renaming-a-category) · [deleting a gallery](#deleting-a-gallery) · [uploading a batch](#uploading-a-batch) · [renaming a media](#renaming-a-media) · [browsing and the lightbox](#browsing-and-the-lightbox) · [editing from the public pages](#editing-from-the-public-pages) · [blocks](#blocks-defined-by-this-bundle) · [category summary](#a-categorys-summary) · [share image](#the-image-a-shared-page-carries) · [category headings](#composing-a-categorys-heading) · [theme tokens](#theme) · [videos](#videos) · [trashing a selection](#trashing-a-selection-of-medias) · [credits / rights on a selection](#applying-credits-or-rights-to-a-selection) · [downloading a selection](#downloading-a-selections-files) · [export / import categories](#export--import-categories) · [sitemap and health check](#sitemap-and-health-check) · [describing the gallery index](#describing-the-gallery-index) · [backup](#backup) · [what's new](#whats-new) · [guided projects](#guided-projects)
+- **Using it** — [public routes](#public-routes) · [linking from a menu](#linking-a-gallery-from-a-menu) · [the automatic gallery](#the-automatic-gallery) · [renaming a category](#renaming-a-category) · [deleting a gallery](#deleting-a-gallery) · [uploading a batch](#uploading-a-batch) · [renaming a media](#renaming-a-media) · [browsing and the lightbox](#browsing-and-the-lightbox) · [editing from the public pages](#editing-from-the-public-pages) · [blocks](#blocks-defined-by-this-bundle) · [category summary](#a-categorys-summary) · [share image](#the-image-a-shared-page-carries) · [category headings](#composing-a-categorys-heading) · [theme tokens](#theme) · [videos](#videos) · [trashing a selection](#trashing-a-selection-of-medias) · [credits / rights on a selection](#applying-credits-or-rights-to-a-selection) · [downloading a selection](#downloading-a-selections-files) · [export / import categories](#export--import-categories) · [sitemap and health check](#sitemap-and-health-check) · [describing the gallery index](#describing-the-gallery-index) · [backup](#backup) · [what's new](#whats-new) · [guided projects](#guided-projects)
 - **Operating** — [bringing an existing gallery in](#bringing-an-existing-gallery-in) · [upload ceilings](#upload-ceilings) · [AI agent skills](#ai-agent-skills)
 
 ## Features
@@ -33,6 +33,7 @@ See it in action at [bundles.975l.com/pages/gallery-bundle](https://bundles.975l
 - One EasyAdmin menu entry ("Gallery", opening the categories, with their media count); a category's medias are listed under its own edit form, each thumbnail opening the media it stands for, and medias are added from the category itself.
 - Each media in that list carries a checkbox, so a selection of them goes to the trash in one go instead of one edit screen at a time (see [trashing a selection](#trashing-a-selection-of-medias)), or given the same credits and rights at once (see [credits / rights on a selection](#applying-credits-or-rights-to-a-selection)), or their files handed back as one zip (see [downloading a selection](#downloading-a-selections-files)).
 - A catch-all "Non classé" category is created lazily so an imported media always has one, even without a real one to attach it to.
+- One category of the site can be turned into **the gallery of the last additions**: it holds no media of its own and shows what every other category received on its last days of upload, whatever gallery each photo landed in - as a public page, as a block, and as a back-office screen where a whole upload session is credited, downloaded or trashed in one go (see [the automatic gallery](#the-automatic-gallery)).
 - A public front-office viewer (index → category → media), browsed entirely in the stored (medium) resolution, with circular previous/next navigation whose neighbouring images are preloaded in the background so switching medias never shows a blank image while it loads. The high resolution opens in a lightbox over the image, fetched only when the visitor asks for it (see [browsing and the lightbox](#browsing-and-the-lightbox)).
 - Two block kinds contributed to UiBundle, so a gallery can be shown on any page composed in the back office instead of only under its own routes (see [blocks](#blocks-defined-by-this-bundle)).
 - A category owns UiBundle blocks of its own, giving it an editorial heading above its grid (see [category headings](#composing-a-categorys-heading)).
@@ -180,6 +181,63 @@ items from the rendered menu, as it does for any target that no longer resolves.
 
 The item's own **label** field overrides that title, for a category whose name is too long to sit in a
 navbar.
+
+### The automatic gallery
+
+**The gallery of the last additions is a gallery of its own, and nobody creates it.** A photo library is
+arranged by subject - Animaux, Arbres, Fleurs - so an upload session is dispatched across a dozen
+categories at once, and nothing on the site says a single photo has arrived. **Derniers ajouts** is the one
+screen that shows them all: `GalleryCategoryRepository::findOrCreateAutomatic()` writes it the first time
+the galleries are listed - the back-office listing, the public index or a categories block, whichever comes
+first - and it is a normal category from then on, flagged `GalleryCategory::$automatic`. Rename it,
+describe it, give it a heading, move it up or down the index: it takes everything a gallery takes. It is
+never an option carried by one of your own galleries, which ticking a box on *Animaux* would turn into
+something it isn't.
+
+**What it shows is a rolling window of calendar days**, today included
+(`GalleryMediaRepository::findLatest()`, driven by `Service\GalleryLatestProvider`), settled by the two
+configuration entries of the **Galerie** group:
+
+| Entry | Default | What it decides |
+| --- | --- | --- |
+| `gallery-latest-days` | `7` | How many days back the gallery reaches, today counting as one of them |
+| `gallery-latest-max` | `200` | The ceiling. Past it, only the most recent medias are shown |
+
+**It is never empty as long as the site holds a photo**: a window that catches nothing - nothing published
+for a week - falls back on the last day that does carry an addition, and on that day alone. Without it, a
+site publishing once a month would show an empty gallery three weeks out of four, and its tile would simply
+vanish from the index, having no photo left to draw itself with.
+
+The ceiling is what keeps the day a whole library came in at once, a migration or an import, from being
+served whole: it also bounds each query the gallery costs, which the index on `gallery_media.created_at`
+answers. Past it the most recent medias are the ones kept, the list being ordered by date of addition.
+
+**On the public site it is a gallery like any other**: same route, same template, same grid, its own
+summary, its own [heading blocks](#composing-a-categorys-heading), its own tile on the index (showing its
+newest photo rather than one at random), a [menu target](#linking-a-gallery-from-a-menu) and a line in the
+sitemap. Its thumbnails link each photo **under its own category** - `/{prefix}/objets/objet-1`, never a
+second path to the same photo - with `?from=<its slug>` over it, which is what says the visitor is walking
+the last additions rather than the gallery filing that photo. The media page reads it: previous and next
+are then the medias added just before and just after, whatever category they sit in, and the breadcrumb
+leads back to the last additions. A photo that has since left the window is browsed as its own category's
+again, and ConfigBundle's `canonical_url()` drops the query string, so the canonical url stays the media's
+own. Its slug is picked like any other category's, the shipped one being `latest`. Pointing a
+[**Galerie - médias** block](#blocks-defined-by-this-bundle) at it puts the site's last additions on the
+home page.
+
+**In the back office its edit screen is the cross-gallery selection screen**: the same grid, cut into one
+section per day of additions, each thumbnail naming the gallery the photo actually belongs to and opening
+its edit form. The selection toolbar is the one every category carries - [credits and
+rights](#applying-credits-or-rights-to-a-selection), [downloads](#downloading-a-selections-files),
+[move to trash](#trashing-a-selection-of-medias) - and each of them acts on the photo where it really sits:
+trashing one from here takes it out of its own gallery, cover included. What is left out is what belongs to
+the owning category alone: no upload button, no drag to reorder, no cover radio, no trash view of its own.
+
+**Moving it to the trash is how a site says it doesn't want it**, the same button every other gallery
+carries: `findOrCreateAutomatic()` leaves a trashed one exactly where it was put, where the catch-all
+"Non classé" is lifted back out. Restore it and it is back, with the additions of the moment. An imported
+archive carrying the flag only takes it on a site that holds no such gallery at all, trash included, so an
+import never leaves two of them behind.
 
 ### Renaming a category
 

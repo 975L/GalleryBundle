@@ -5,7 +5,7 @@
 {% if coverMedia %}
     <div class="gallery-thumb{{ whole ? ' gallery-thumb--whole' : '' }}">
         <twig:c975LUi:Image:Link
-            label="{{ category.title }} ({{ category.medias|length }})"
+            label="{{ category.title }} ({{ category.mediasCount }})"
             src="{{ coverMedia.thumbnailFilename }}"
             url="{{ path('gallery_category', { category: category.slug }) }}"
             class="img-thumbnail" alt="{{ category.title }}" width="150" height="150"/>

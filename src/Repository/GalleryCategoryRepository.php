@@ -22,6 +22,10 @@ class GalleryCategoryRepository extends ServiceEntityRepository
 {
     private const string UNCATEGORIZED_SLUG = 'non-classe';
 
+    // The url of the gallery of the last additions, posed once at creation and an admin's to rename afterwards - a rename records its redirect like any other category's (see GalleryCategoryCrudController::updateEntity)
+    // English, as everything this bundle names itself: it is a value shipped by a package, where the title next to it is translated because it is read by whoever visits the site
+    private const string AUTOMATIC_SLUG = 'latest';
+
     public function __construct(
         ManagerRegistry $registry,
         private readonly TranslatorInterface $translator,
@@ -61,6 +65,29 @@ class GalleryCategoryRepository extends ServiceEntityRepository
         ;
     }
 
+    // The gallery of the last additions, which nobody has to create: it is a gallery of its own, not an option carried by one of the site's - so it is written the first time the galleries are listed and is a normal category from then on, renamed, described, arranged and given a heading like any other (see GalleryLatestProvider for what it shows)
+    // Unlike the catch-all below, one left in the trash is left there: it is the only way to say "this site does not want that gallery", and lifting it back out would give an admin no way at all to be rid of it
+    public function findOrCreateAutomatic(): GalleryCategory
+    {
+        $category = $this->findOneBy(['automatic' => true]);
+        if (null !== $category) {
+            return $category;
+        }
+
+        // Translated at creation time only - like any other category it's a normal DB row afterwards, editable/renamable later from the Management CRUD
+        $category = new GalleryCategory()
+            ->setSlug($this->freeSlug(self::AUTOMATIC_SLUG))
+            ->setTitle($this->translator->trans('label.gallery_latest_title', [], 'gallery'))
+            ->setAutomatic(true)
+        ;
+
+        $em = $this->getEntityManager();
+        $em->persist($category);
+        $em->flush();
+
+        return $category;
+    }
+
     // Catch-all category a GalleryMedia falls back to when imported without a real one to attach it to. Created lazily so it only ever exists once it's actually needed, and flushed immediately so it's safe to reference the same row from within the same request right after.
     public function findOrCreateUncategorized(): GalleryCategory
     {
@@ -77,7 +104,7 @@ class GalleryCategoryRepository extends ServiceEntityRepository
 
         // Translated at creation time only - like any other category it's a normal DB row afterwards, editable/renamable later from the Management CRUD
         $category = new GalleryCategory()
-            ->setSlug(self::UNCATEGORIZED_SLUG)
+            ->setSlug($this->freeSlug(self::UNCATEGORIZED_SLUG))
             ->setTitle($this->translator->trans('label.gallery_uncategorized', [], 'gallery'))
             ->setUncategorized(true)
         ;
@@ -87,5 +114,18 @@ class GalleryCategoryRepository extends ServiceEntityRepository
         $em->flush();
 
         return $category;
+    }
+
+    // The slug both creations above write is a constant, on a column the schema holds unique: a site that already named a gallery "latest" or "non-classe" would meet a UniqueConstraintViolationException on every page listing its galleries, with nothing ever freeing the slug
+    // So the taken one is suffixed until it is free, and the admin renames the category afterwards if the url matters
+    private function freeSlug(string $slug): string
+    {
+        $free = $slug;
+        $suffix = 1;
+        while (null !== $this->findOneBySlug($free)) {
+            $free = $slug . '-' . ++$suffix;
+        }
+
+        return $free;
     }
 }

@@ -1,0 +1,5 @@
+{# @var ea \EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext #}
+{# @var field \EasyCorp\Bundle\EasyAdminBundle\Dto\FieldDto #}
+{# @var entity \EasyCorp\Bundle\EasyAdminBundle\Dto\EntityDto #}
+{# Read at render time, after GalleryLatestProvider::hydrate() has filled the automatic gallery - see GalleryCategoryCrudController::configureResponseParameters() #}
+{{ entity.instance.mediasCount }}

@@ -185,6 +185,34 @@ class GalleryCategoryTest extends TestCase
         $this->assertCount(0, $category->getBlocks());
     }
 
+    // The automatic gallery holds none of the medias it shows, so its count and its tile come from the list it is handed (see GalleryLatestProvider)
+    public function testAnAutomaticCategoryCountsTheMediasItIsHanded(): void
+    {
+        $category = new GalleryCategory()->setAutomatic(true);
+        $category->setAutomaticMedias([new GalleryMedia(), new GalleryMedia()]);
+
+        $this->assertSame(2, $category->getMediasCount());
+    }
+
+    // Its face is its newest photo, not one of them at random: what it stands for is precisely what has just arrived
+    public function testAnAutomaticCategoryShowsItsNewestMedia(): void
+    {
+        $newest = new GalleryMedia();
+        $category = new GalleryCategory()->setAutomatic(true);
+        $category->setAutomaticMedias([$newest, new GalleryMedia(), new GalleryMedia()]);
+
+        $this->assertSame($newest, $category->getCoverOrRandomMedia());
+    }
+
+    // A list handed to a category that isn't the automatic one changes nothing: it counts and pictures its own medias
+    public function testANormalCategoryIgnoresAHandedList(): void
+    {
+        $category = new GalleryCategory();
+        $category->setAutomaticMedias([new GalleryMedia(), new GalleryMedia()]);
+
+        $this->assertSame(0, $category->getMediasCount());
+    }
+
     // BlockRelocator renumbers what's left after a block has been moved out
     public function testReorderBlocksRenumbersFromZero(): void
     {

@@ -11,9 +11,9 @@
         <a href="{{ path('gallery_index') }}">{{ home }}</a>
         <span class="gallery-breadcrumb__separator" aria-hidden="true">&rsaquo;</span>
         {% if current|default('') is empty %}
-            <span class="gallery-breadcrumb__current" aria-current="page">{{ category.title }} ({{ category.medias|length }})</span>
+            <span class="gallery-breadcrumb__current" aria-current="page">{{ category.title }} ({{ category.mediasCount }})</span>
         {% else %}
-            <a href="{{ path('gallery_category', { category: category.slug }) }}">{{ category.title }} ({{ category.medias|length }})</a>
+            <a href="{{ path('gallery_category', { category: category.slug }) }}">{{ category.title }} ({{ category.mediasCount }})</a>
             <span class="gallery-breadcrumb__separator" aria-hidden="true">&rsaquo;</span>
             <span class="gallery-breadcrumb__current" aria-current="page">{{ current }}</span>
         {% endif %}

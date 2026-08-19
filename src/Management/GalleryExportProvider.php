@@ -74,6 +74,8 @@ class GalleryExportProvider implements ExportProviderInterface
             'summarySocialNetwork' => $category->getSummarySocialNetwork(),
             'position' => $category->getPosition(),
             'uncategorized' => $category->isUncategorized(),
+            // The gallery of the last additions carries its flag too, so a site restoring its content gets it back rather than an empty category nobody remembers what it was for
+            'automatic' => $category->isAutomatic(),
             // The archive is a faithful copy, here as everywhere else in this bundle: a category exported out of the trash comes back to the trash, not onto the site, and a sync mirrors the source rather than publishing what it had taken down
             'isDeleted' => $category->isDeleted(),
             'coverMediaIndex' => $coverMediaIndex,

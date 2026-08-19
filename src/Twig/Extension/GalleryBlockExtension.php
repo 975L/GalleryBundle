@@ -14,6 +14,7 @@ use c975L\GalleryBundle\Entity\GalleryCategory;
 use c975L\GalleryBundle\Entity\GalleryMedia;
 use c975L\GalleryBundle\Repository\GalleryCategoryRepository;
 use c975L\GalleryBundle\Repository\GalleryMediaRepository;
+use c975L\GalleryBundle\Service\GalleryLatestProvider;
 use Symfony\Contracts\Service\ResetInterface;
 use Twig\Attribute\AsTwigFunction;
 
@@ -26,6 +27,7 @@ class GalleryBlockExtension implements ResetInterface
     public function __construct(
         private readonly GalleryCategoryRepository $categoryRepository,
         private readonly GalleryMediaRepository $mediaRepository,
+        private readonly GalleryLatestProvider $latestProvider,
     ) {
     }
 
@@ -55,7 +57,8 @@ class GalleryBlockExtension implements ResetInterface
             return ['category' => null, 'medias' => []];
         }
 
-        $medias = $this->mediaRepository->findByCategory($category);
+        // The automatic gallery is offered in the block form like any other category, and dropped on a page it is what shows the site's last additions there - its list comes from the last days of uploads, not from a relation it has none of (see GalleryLatestProvider)
+        $medias = $category->isAutomatic() ? $this->latestProvider->getMedias() : $this->mediaRepository->findByCategory($category);
 
         if ($random) {
             shuffle($medias);
@@ -71,7 +74,8 @@ class GalleryBlockExtension implements ResetInterface
     /** @return list<GalleryCategory> */
     private function loadCategories(): array
     {
-        return $this->categories ??= $this->categoryRepository->findAllOrdered();
+        // The gallery of the last additions is part of the list, holding the medias it shows - a block listing the categories carries it like any other, having none of its own (see GalleryLatestProvider)
+        return $this->categories ??= $this->latestProvider->prepare($this->categoryRepository->findAllOrdered());
     }
 
     private function findCategoryBySlug(string $slug): ?GalleryCategory

@@ -6,6 +6,14 @@
                 <source>description.gallery_frame</source>
                 <target>Anchura del passe-partout que enmarca un medio mostrado: "none" (sin marco, la foto plana), "thin" (10 px, predeterminado) o "wide" (25 px). Su color es la tinta del tema, blanco en una galería oscura y negro en una galería clara; se ajusta aparte en este grupo.</target>
             </trans-unit>
+            <trans-unit id="AHd3sWy">
+                <source>description.gallery_latest_days</source>
+                <target>Número de días del calendario, hoy incluido, sobre los que la galería automática muestra los medios añadidos - 7 por defecto. Si no se añadió nada en ese periodo, recurre al último día con incorporaciones, de modo que nunca está vacía mientras exista una foto. Vacío o 0, se aplica 7.</target>
+            </trans-unit>
+            <trans-unit id="6QTN5rG">
+                <source>description.gallery_latest_max</source>
+                <target>Número máximo de medios que muestra la galería automática, 200 por defecto. Protege el día en que entró toda una fototeca de una vez - una migración, una importación - que si no llenaría la página con miles de miniaturas. Más allá, solo se muestran los más recientes. Vacío o 0, se aplica 200.</target>
+            </trans-unit>
             <trans-unit id="a033O9O">
                 <source>description.gallery_route_prefix</source>
                 <target>Primer segmento de las URL públicas de la galería, p. ej. "gallery" para /gallery/mi-categoria. El cambio es inmediato, pero las URL anteriores devuelven una página no encontrada: prevea una redirección si estaban indexadas. Vacío, se aplica el prefijo "gallery".</target>
@@ -57,6 +65,14 @@
             <trans-unit id="xKXGBHT">
                 <source>label.gallery_frame</source>
                 <target>Marco alrededor de los medios</target>
+            </trans-unit>
+            <trans-unit id="JV7sMph">
+                <source>label.gallery_latest_days</source>
+                <target>Galería automática: número de días</target>
+            </trans-unit>
+            <trans-unit id="paiRW9j">
+                <source>label.gallery_latest_max</source>
+                <target>Galería automática: número máximo de medios</target>
             </trans-unit>
             <trans-unit id="lbaVu72">
                 <source>label.gallery_route_prefix</source>

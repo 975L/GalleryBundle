@@ -20,6 +20,7 @@ use c975L\GalleryBundle\Entity\GalleryMedia;
 use c975L\GalleryBundle\Management\GalleryExportProvider;
 use c975L\GalleryBundle\Repository\GalleryCategoryRepository;
 use c975L\GalleryBundle\Repository\GalleryMediaRepository;
+use c975L\GalleryBundle\Service\GalleryLatestProvider;
 use c975L\GalleryBundle\Service\GalleryMediaArchiver;
 use c975L\GalleryBundle\Service\GalleryMediaFactory;
 use c975L\GalleryBundle\Service\GalleryMediaSlugger;
@@ -151,6 +152,7 @@ class GalleryCategoryCrudControllerTest extends TestCase
         ?RequestStack $requestStack = null,
         ?GalleryMediaRepository $galleryMediaRepository = null,
         ?GalleryMediaArchiver $galleryMediaArchiver = null,
+        ?GalleryLatestProvider $latestProvider = null,
     ): GalleryCategoryCrudController {
         $translator = $this->createStub(TranslatorInterface::class);
         $translator->method('trans')->willReturnArgument(0);
@@ -174,6 +176,7 @@ class GalleryCategoryCrudControllerTest extends TestCase
             $galleryMediaRepository ?? $this->createStub(GalleryMediaRepository::class),
             $this->createCsrfTokenManager(true),
             $galleryMediaArchiver ?? new GalleryMediaArchiver(sys_get_temp_dir()),
+            $latestProvider ?? $this->createStub(GalleryLatestProvider::class),
         );
     }
 
@@ -1540,6 +1543,88 @@ class GalleryCategoryCrudControllerTest extends TestCase
         return $listener;
     }
 
+    // --- the automatic gallery -----------------------------------------------------------------------------
+
+    // Its screen lists the last additions of the whole gallery, cut into the days they arrived on, and offers no upload: its medias belong to the categories that actually received them
+    public function testTheAutomaticGalleryListsTheLatestMediasGroupedByDay(): void
+    {
+        $category = new GalleryCategory()->setSlug('latest')->setAutomatic(true);
+        new \ReflectionProperty(GalleryCategory::class, 'id')->setValue($category, 42);
+        $media = new GalleryMedia();
+        new \ReflectionProperty(GalleryMedia::class, 'id')->setValue($media, 7);
+
+        $latestProvider = $this->createStub(GalleryLatestProvider::class);
+        $latestProvider->method('getMedias')->willReturn([$media]);
+        $latestProvider->method('getMediasByDay')->willReturn([['day' => new \DateTimeImmutable('2026-08-19'), 'medias' => [$media]]]);
+
+        $entityDto = new EntityDto(GalleryCategory::class, new ClassMetadata(GalleryCategory::class), null, $category);
+
+        $parameters = $this->createControllerWithRouter(latestProvider: $latestProvider)->configureResponseParameters(KeyValueStore::new([
+            'pageName' => Crud::PAGE_EDIT,
+            'entity' => $entityDto,
+        ]));
+
+        $this->assertTrue($parameters->get('medias_automatic'));
+        $this->assertSame([$media], $parameters->get('medias'));
+        $this->assertCount(1, $parameters->get('medias_by_day'));
+        $this->assertNull($parameters->get('media_upload_url'));
+        $this->assertSame([7 => '/management/gallery-categories'], $parameters->get('media_edit_urls'));
+    }
+
+    // The selection acts on the very list the screen listed, which the category holds none of - a media that has since left the last days of additions is simply dropped
+    public function testTheAutomaticGalleryAppliesCreditsToTheMediasItShows(): void
+    {
+        $category = new GalleryCategory()->setSlug('latest')->setAutomatic(true);
+        $media = new GalleryMedia()->setTitle('Media 7');
+        new \ReflectionProperty(GalleryMedia::class, 'id')->setValue($media, 7);
+
+        $latestProvider = $this->createStub(GalleryLatestProvider::class);
+        $latestProvider->method('getMedias')->willReturn([$media]);
+
+        $controller = $this->createController(latestProvider: $latestProvider);
+        $controller->setContainer($this->createContainer([
+            'security.authorization_checker' => $this->createAuthorizationChecker(true),
+            'security.csrf.token_manager' => $this->createCsrfTokenManager(true),
+            'request_stack' => $this->createRequestStackWithSession(),
+        ]));
+
+        $controller->editMedias(
+            $this->createAdminContext($category),
+            $this->createEditMediasRequest([7, 999], 'credits', ['credits' => '(c) 975L']),
+            $this->createStub(EntityManagerInterface::class)
+        );
+
+        $this->assertSame('(c) 975L', $media->getCredits());
+    }
+
+    // A photo trashed from the automatic gallery leaves the gallery that actually holds it, cover included - the screen it was checked on holds nothing
+    public function testTrashingFromTheAutomaticGalleryClearsTheCoverOfTheOwningCategory(): void
+    {
+        $owner = $this->createCategoryWithMedias(7);
+        $media = $owner->getMedias()->first();
+        $owner->setCoverMedia($media);
+
+        $automatic = new GalleryCategory()->setSlug('latest')->setAutomatic(true);
+        $latestProvider = $this->createStub(GalleryLatestProvider::class);
+        $latestProvider->method('getMedias')->willReturn([$media]);
+
+        $controller = $this->createController(latestProvider: $latestProvider);
+        $controller->setContainer($this->createContainer([
+            'security.authorization_checker' => $this->createAuthorizationChecker(true),
+            'security.csrf.token_manager' => $this->createCsrfTokenManager(true),
+            'request_stack' => $this->createRequestStackWithSession(),
+        ]));
+
+        $controller->deleteMedias(
+            $this->createAdminContext($automatic),
+            $this->createDeleteMediasRequest([7]),
+            $this->createStub(EntityManagerInterface::class)
+        );
+
+        $this->assertTrue($media->isDeleted());
+        $this->assertNull($owner->getCoverMedia());
+    }
+
     // --- configureResponseParameters -----------------------------------------------------------------------
 
     // The edit screen lists the category's medias, each thumbnail opening the media edit form - and carrying the category, which is what sends the admin back here once the media is saved or deleted
@@ -1553,7 +1638,7 @@ class GalleryCategoryCrudControllerTest extends TestCase
 
         $entityDto = new EntityDto(GalleryCategory::class, new ClassMetadata(GalleryCategory::class), null, $category);
 
-        $parameters = $this->createControllerWithRouter()->configureResponseParameters(KeyValueStore::new([
+        $parameters = $this->createControllerWithRouter(galleryMediaRepository: $this->createMediaRepositoryHolding([$media]))->configureResponseParameters(KeyValueStore::new([
             'pageName' => Crud::PAGE_EDIT,
             'entity' => $entityDto,
         ]));
@@ -2051,12 +2136,22 @@ class GalleryCategoryCrudControllerTest extends TestCase
         return $router;
     }
 
-    private function createControllerWithRouter(?RedirectRepository $redirectRepository = null): GalleryCategoryCrudController
+    private function createControllerWithRouter(?RedirectRepository $redirectRepository = null, ?GalleryMediaRepository $galleryMediaRepository = null, ?GalleryLatestProvider $latestProvider = null): GalleryCategoryCrudController
     {
-        $controller = $this->createController(redirectRepository: $redirectRepository);
+        $controller = $this->createController(redirectRepository: $redirectRepository, galleryMediaRepository: $galleryMediaRepository, latestProvider: $latestProvider);
         $controller->setContainer($this->createContainer(['router' => $this->createRouter()]));
 
         return $controller;
+    }
+
+    // The list a category's edit screen is handed for its grid, and the very one the edit urls are built off (see GalleryCategoryCrudController::mediasShown)
+    /** @param list<GalleryMedia> $medias */
+    private function createMediaRepositoryHolding(array $medias): GalleryMediaRepository
+    {
+        $repository = $this->createStub(GalleryMediaRepository::class);
+        $repository->method('findByCategory')->willReturn($medias);
+
+        return $repository;
     }
 
     private function createUnitOfWorkHolding(array $originalData): UnitOfWork

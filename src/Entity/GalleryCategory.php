@@ -60,6 +60,15 @@ class GalleryCategory implements HasBlocksInterface, TrashableInterface, \String
     #[ORM\Column(options: ['default' => false])]
     private bool $uncategorized = false;
 
+    // The gallery of the last additions: a category holding no media of its own, showing those the other categories received on their last days of upload (see GalleryLatestProvider). Flagged rather than matched by slug, exactly as the catch-all above, so it survives a rename - and written by GalleryCategoryRepository::findOrCreateAutomatic(), the import guarding against a second one (see GalleryImportProvider::import): the schema does not enforce it
+    // It is a real row rather than a category built on the fly, so it is arranged, described, given a heading, linked from a menu and declared in the sitemap like any other gallery, without a single screen having to learn a second kind of category
+    #[ORM\Column(options: ['default' => false])]
+    private bool $automatic = false;
+
+    // Not a column: an automatic gallery's medias belong to other categories, so they are handed over at read time rather than held by the relation below - everything reading a category's medias (its index tile, its count, its og:image) then works on it without knowing which kind it has in hand
+    /** @var list<GalleryMedia> */
+    private array $automaticMedias = [];
+
     #[ORM\OneToMany(mappedBy: 'category', targetEntity: GalleryMedia::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
     #[ORM\OrderBy(['position' => 'ASC'])]
     private Collection $medias;
@@ -158,6 +167,27 @@ class GalleryCategory implements HasBlocksInterface, TrashableInterface, \String
         return $this;
     }
 
+    public function isAutomatic(): bool
+    {
+        return $this->automatic;
+    }
+
+    public function setAutomatic(?bool $automatic): self
+    {
+        $this->automatic = $automatic ?? false;
+
+        return $this;
+    }
+
+    // Posed by GalleryLatestProvider alone, on the automatic category and on no other - a category given a list it isn't meant to show would report a media count it doesn't display
+    /** @param list<GalleryMedia> $medias */
+    public function setAutomaticMedias(array $medias): self
+    {
+        $this->automaticMedias = $medias;
+
+        return $this;
+    }
+
     /** @return Collection<int, GalleryMedia> */
     public function getMedias(): Collection
     {
@@ -173,8 +203,12 @@ class GalleryCategory implements HasBlocksInterface, TrashableInterface, \String
         }
 
         $medias = $this->visibleMedias();
+        if ([] === $medias) {
+            return null;
+        }
 
-        return [] === $medias ? null : $medias[array_rand($medias)];
+        // The automatic gallery shows its newest photo rather than one of them at random: its list is ordered by date of addition, and what it stands for is precisely what has just arrived
+        return $this->automatic ? $medias[0] : $medias[array_rand($medias)];
     }
 
     // What the back-office category listing shows instead of the medias themselves, the medias being managed from the category's own edit screen (see GalleryCategoryCrudController)
@@ -187,6 +221,11 @@ class GalleryCategory implements HasBlocksInterface, TrashableInterface, \String
     /** @return list<GalleryMedia> */
     private function visibleMedias(): array
     {
+        // Handed over rather than held: the relation of an automatic gallery is empty by definition, and reading it would leave its tile blank and its count at zero
+        if ($this->automatic) {
+            return $this->automaticMedias;
+        }
+
         return array_values(array_filter(
             $this->medias->toArray(),
             static fn (GalleryMedia $media): bool => !$media->isDeleted()

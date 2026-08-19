@@ -306,6 +306,10 @@
                 <source>label.gallery_keep_originals</source>
                 <target>Conservar los originales</target>
             </trans-unit>
+            <trans-unit id="tkYIy2h">
+                <source>label.gallery_latest_title</source>
+                <target>Últimas incorporaciones</target>
+            </trans-unit>
             <trans-unit id="HdrTU43">
                 <source>label.gallery_media</source>
                 <target>Medio</target>
@@ -637,6 +641,14 @@
             <trans-unit id="MN07kow">
                 <source>label.info_gallery_category_medias</source>
                 <target>Medios de la categoría, haga clic en uno de ellos para cambiar su archivo, leyenda o créditos, o marque varios para eliminarlos de una vez. Arrástrelos para reordenarlos y elija el que representa la categoría, ambos se guardan al instante.</target>
+            </trans-unit>
+            <trans-unit id="OkZgRPb">
+                <source>label.info_gallery_category_medias_automatic</source>
+                <target>%count% medios añadidos estos últimos días, con todas las galerías juntas, agrupados por día. Cada foto pertenece a la galería indicada bajo su miniatura: los créditos, los derechos, la descarga y el envío a la papelera se aplican donde realmente está.</target>
+            </trans-unit>
+            <trans-unit id="Db6BKrG">
+                <source>label.info_gallery_category_medias_automatic_empty</source>
+                <target>Todavía no se ha añadido ningún medio: esta galería se llena sola en cuanto otra recibe fotos.</target>
             </trans-unit>
             <trans-unit id="w9lrEZ2">
                 <source>label.info_gallery_category_medias_empty</source>

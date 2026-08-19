@@ -3,11 +3,15 @@
     {# No class: the heading takes the site's own h2 (size, primary color), where UiBundle's .section-title would force a size of its own, above that of the page's h1 #}
     <h2>{{ category.title }}</h2>
 {% endif %}
+{# Only the automatic gallery sends a visitor to a photo it doesn't hold, so it is the only grid whose links say where they were clicked from #}
+{% set from = category.automatic ? category.slug : null %}
 {# Right click and drag are blocked on the grid rather than on each thumbnail, one controller instead of one per media #}
 <div class="flex-center gallery-grid"
     data-controller="gallery-media-protect"
     data-action="contextmenu->gallery-media-protect#block dragstart->gallery-media-protect#block">
     {% for media in medias %}
-        <twig:c975LGallery:Gallery:Media category="{{ category }}" media="{{ media }}"/>
+        {# The media's own category, not the one the grid stands under: they are the same in a normal gallery, and in the automatic one it is what keeps every photo linked at its canonical url rather than under a second path (see GalleryLatestProvider) #}
+        {# "from" carries what the url alone then no longer says - which gallery is being walked through, so the photo's page browses the last additions rather than the category filing it #}
+        <twig:c975LGallery:Gallery:Media category="{{ media.category }}" media="{{ media }}" from="{{ from }}"/>
     {% endfor %}
 </div>

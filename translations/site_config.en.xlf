@@ -6,6 +6,14 @@
                 <source>description.gallery_frame</source>
                 <target>Width of the passe-partout framing a displayed media: "none" (no frame, the photo laid flat), "thin" (10px, the default) or "wide" (25px). Its color is the theme's own ink, white on a dark gallery and black on a light one; it is set apart in this group.</target>
             </trans-unit>
+            <trans-unit id="AHd3sWy">
+                <source>description.gallery_latest_days</source>
+                <target>Number of calendar days, today included, the automatic gallery shows the medias added over - 7 by default. If nothing was added over that period, it falls back on the last day carrying an addition, so it is never empty as long as a single photo exists. Empty or 0, 7 is applied.</target>
+            </trans-unit>
+            <trans-unit id="6QTN5rG">
+                <source>description.gallery_latest_max</source>
+                <target>Maximum number of medias the automatic gallery shows, 200 by default. It guards the day a whole library came in at once - a migration, an import - which would otherwise fill the page with thousands of thumbnails. Past it, only the most recent ones are shown. Empty or 0, 200 is applied.</target>
+            </trans-unit>
             <trans-unit id="a033O9O">
                 <source>description.gallery_route_prefix</source>
                 <target>First segment of the gallery's public urls, e.g. "gallery" for /gallery/my-category. A change applies straight away, but the previous urls then return a not found page: set up a redirect if they were indexed. Left empty, the "gallery" prefix applies.</target>
@@ -57,6 +65,14 @@
             <trans-unit id="xKXGBHT">
                 <source>label.gallery_frame</source>
                 <target>Frame around the medias</target>
+            </trans-unit>
+            <trans-unit id="JV7sMph">
+                <source>label.gallery_latest_days</source>
+                <target>Automatic gallery: number of days</target>
+            </trans-unit>
+            <trans-unit id="paiRW9j">
+                <source>label.gallery_latest_max</source>
+                <target>Automatic gallery: maximum number of medias</target>
             </trans-unit>
             <trans-unit id="lbaVu72">
                 <source>label.gallery_route_prefix</source>

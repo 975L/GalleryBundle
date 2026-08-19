@@ -15,8 +15,10 @@ use c975L\GalleryBundle\Entity\GalleryCategory;
 use c975L\GalleryBundle\Entity\GalleryMedia;
 use c975L\GalleryBundle\Repository\GalleryCategoryRepository;
 use c975L\GalleryBundle\Repository\GalleryMediaRepository;
+use c975L\GalleryBundle\Service\GalleryLatestProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\DependencyInjection\Container;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\GoneHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Attribute\Route;
@@ -28,10 +30,12 @@ class GalleryControllerTest extends TestCase
     private function createController(
         ?GalleryCategoryRepository $categoryRepository = null,
         ?GalleryMediaRepository $mediaRepository = null,
+        ?GalleryLatestProvider $latestProvider = null,
     ): GalleryController {
         $controller = new GalleryController(
             $categoryRepository ?? $this->createStub(GalleryCategoryRepository::class),
             $mediaRepository ?? $this->createStub(GalleryMediaRepository::class),
+            $latestProvider ?? $this->createLatestProvider(),
         );
 
         $twig = $this->createStub(Environment::class);
@@ -42,6 +46,16 @@ class GalleryControllerTest extends TestCase
         $controller->setContainer($container);
 
         return $controller;
+    }
+
+    // The index is handed back the list it read, the gallery of the last additions being already in it here
+    private function createLatestProvider(array $medias = []): GalleryLatestProvider
+    {
+        $latestProvider = $this->createStub(GalleryLatestProvider::class);
+        $latestProvider->method('prepare')->willReturnArgument(0);
+        $latestProvider->method('getMedias')->willReturn($medias);
+
+        return $latestProvider;
     }
 
     public function testIndexRendersEveryCategory(): void
@@ -76,6 +90,7 @@ class GalleryControllerTest extends TestCase
         $controller = new GalleryController(
             $categoryRepository,
             $this->createStub(GalleryMediaRepository::class),
+            $this->createLatestProvider(),
         );
         $container = new Container();
         $container->set('twig', $twig);
@@ -106,6 +121,7 @@ class GalleryControllerTest extends TestCase
         $controller = new GalleryController(
             $categoryRepository,
             $this->createStub(GalleryMediaRepository::class),
+            $this->createLatestProvider(),
         );
         $container = new Container();
         $container->set('twig', $twig);
@@ -137,7 +153,7 @@ class GalleryControllerTest extends TestCase
             }
         );
 
-        $controller = new GalleryController($categoryRepository, $mediaRepository);
+        $controller = new GalleryController($categoryRepository, $mediaRepository, $this->createLatestProvider());
         $container = new Container();
         $container->set('twig', $twig);
         $controller->setContainer($container);
@@ -148,6 +164,137 @@ class GalleryControllerTest extends TestCase
         $this->assertSame($category, $capturedParameters['category']);
         $this->assertSame(4, $capturedParameters['categoriesCount']);
         $this->assertSame($medias, $capturedParameters['medias']);
+    }
+
+    // The automatic gallery is served by this very route and this very template: only its list comes from the last days of additions instead of from a relation it has none of
+    public function testCategoryOfTheAutomaticGalleryRendersTheLatestMedias(): void
+    {
+        $category = new GalleryCategory()->setSlug('latest')->setAutomatic(true);
+        $latest = [new GalleryMedia(), new GalleryMedia()];
+
+        $categoryRepository = $this->createStub(GalleryCategoryRepository::class);
+        $categoryRepository->method('findOneBySlug')->willReturn($category);
+        $mediaRepository = $this->createMock(GalleryMediaRepository::class);
+        $mediaRepository->expects($this->never())->method('findByCategory');
+
+        $latestProvider = $this->createLatestProvider($latest);
+
+        $twig = $this->createStub(Environment::class);
+        $capturedParameters = null;
+        $twig->method('render')->willReturnCallback(
+            function (string $view, array $parameters = []) use (&$capturedParameters): string {
+                $capturedParameters = $parameters;
+
+                return $view;
+            }
+        );
+
+        $controller = new GalleryController($categoryRepository, $mediaRepository, $latestProvider);
+        $container = new Container();
+        $container->set('twig', $twig);
+        $controller->setContainer($container);
+
+        $controller->category('latest');
+
+        $this->assertSame($latest, $capturedParameters['medias']);
+    }
+
+    // Opened from the last additions, a photo is walked among them: the neighbours come from that list and the trail leads back to it, the url staying the media's own
+    public function testMediaBrowsedFromTheLatestGalleryWalksItsList(): void
+    {
+        $automatic = new GalleryCategory()->setSlug('latest')->setAutomatic(true);
+        $category = new GalleryCategory()->setSlug('objets');
+        $media = new GalleryMedia()->setSlug('objet-1')->setCategory($category);
+        $neighbours = ['previous' => new GalleryMedia(), 'next' => new GalleryMedia()];
+
+        $categoryRepository = $this->createStub(GalleryCategoryRepository::class);
+        $categoryRepository->method('findOneBySlug')->willReturnCallback(
+            static fn (string $slug): ?GalleryCategory => 'latest' === $slug ? $automatic : $category
+        );
+        $mediaRepository = $this->createMock(GalleryMediaRepository::class);
+        $mediaRepository->method('findOneBySlugInCategory')->willReturn($media);
+        $mediaRepository->expects($this->never())->method('findPreviousAndNext');
+
+        $latestProvider = $this->createLatestProvider();
+        $latestProvider->method('findPreviousAndNext')->willReturn($neighbours);
+
+        $capturedParameters = $this->renderMedia($categoryRepository, $mediaRepository, $latestProvider, new Request(['from' => 'latest']));
+
+        $this->assertSame($neighbours, $capturedParameters['previousNext']);
+        $this->assertSame($automatic, $capturedParameters['browsedFrom']);
+        $this->assertSame($category, $capturedParameters['category']);
+    }
+
+    // A media that has since left the last additions is browsed as its own category's, whatever the url says it was opened from
+    public function testMediaFallsBackOnItsCategoryWhenItLeftTheLatestGallery(): void
+    {
+        $automatic = new GalleryCategory()->setSlug('latest')->setAutomatic(true);
+        $category = new GalleryCategory()->setSlug('objets');
+        $media = new GalleryMedia()->setSlug('objet-1')->setCategory($category);
+        $neighbours = ['previous' => new GalleryMedia(), 'next' => new GalleryMedia()];
+
+        $categoryRepository = $this->createStub(GalleryCategoryRepository::class);
+        $categoryRepository->method('findOneBySlug')->willReturnCallback(
+            static fn (string $slug): ?GalleryCategory => 'latest' === $slug ? $automatic : $category
+        );
+        $mediaRepository = $this->createStub(GalleryMediaRepository::class);
+        $mediaRepository->method('findOneBySlugInCategory')->willReturn($media);
+        $mediaRepository->method('findPreviousAndNext')->willReturn($neighbours);
+
+        $latestProvider = $this->createLatestProvider();
+        $latestProvider->method('findPreviousAndNext')->willReturn(null);
+
+        $capturedParameters = $this->renderMedia($categoryRepository, $mediaRepository, $latestProvider, new Request(['from' => 'latest']));
+
+        $this->assertSame($neighbours, $capturedParameters['previousNext']);
+        $this->assertNull($capturedParameters['browsedFrom']);
+    }
+
+    // A "from" naming a normal gallery changes nothing: that one holds its medias, so the url already says which gallery is being walked
+    public function testMediaIgnoresAFromNamingAGalleryHoldingItsOwnMedias(): void
+    {
+        $category = new GalleryCategory()->setSlug('objets');
+        $media = new GalleryMedia()->setSlug('objet-1')->setCategory($category);
+
+        $categoryRepository = $this->createStub(GalleryCategoryRepository::class);
+        $categoryRepository->method('findOneBySlug')->willReturn($category);
+        $mediaRepository = $this->createStub(GalleryMediaRepository::class);
+        $mediaRepository->method('findOneBySlugInCategory')->willReturn($media);
+        $mediaRepository->method('findPreviousAndNext')->willReturn(['previous' => $media, 'next' => $media]);
+
+        $latestProvider = $this->createMock(GalleryLatestProvider::class);
+        $latestProvider->expects($this->never())->method('findPreviousAndNext');
+
+        $capturedParameters = $this->renderMedia($categoryRepository, $mediaRepository, $latestProvider, new Request(['from' => 'objets']));
+
+        $this->assertNull($capturedParameters['browsedFrom']);
+    }
+
+    /** @return array<string, mixed> */
+    private function renderMedia(
+        GalleryCategoryRepository $categoryRepository,
+        GalleryMediaRepository $mediaRepository,
+        GalleryLatestProvider $latestProvider,
+        Request $request,
+    ): array {
+        $twig = $this->createStub(Environment::class);
+        $capturedParameters = [];
+        $twig->method('render')->willReturnCallback(
+            function (string $view, array $parameters = []) use (&$capturedParameters): string {
+                $capturedParameters = $parameters;
+
+                return $view;
+            }
+        );
+
+        $controller = new GalleryController($categoryRepository, $mediaRepository, $latestProvider);
+        $container = new Container();
+        $container->set('twig', $twig);
+        $controller->setContainer($container);
+
+        $controller->media('objets', 'objet-1', $request);
+
+        return $capturedParameters;
     }
 
     public function testCategoryThrowsNotFoundWhenSlugIsUnknown(): void
@@ -193,7 +340,7 @@ class GalleryControllerTest extends TestCase
         $controller = $this->createController(categoryRepository: $categoryRepository, mediaRepository: $mediaRepository);
 
         $this->expectException(GoneHttpException::class);
-        $controller->media('voyages', 'col-du-galibier');
+        $controller->media('voyages', 'col-du-galibier', new Request());
     }
 
     public function testMediaRendersMediumViewWithPreviousAndNext(): void
@@ -220,12 +367,12 @@ class GalleryControllerTest extends TestCase
             }
         );
 
-        $controller = new GalleryController($categoryRepository, $mediaRepository);
+        $controller = new GalleryController($categoryRepository, $mediaRepository, $this->createLatestProvider());
         $container = new Container();
         $container->set('twig', $twig);
         $controller->setContainer($container);
 
-        $response = $controller->media('voyages', 'col-du-galibier');
+        $response = $controller->media('voyages', 'col-du-galibier', new Request());
 
         $this->assertSame(200, $response->getStatusCode());
         $this->assertSame($media, $capturedParameters['media']);
@@ -248,7 +395,7 @@ class GalleryControllerTest extends TestCase
         );
 
         $this->expectException(NotFoundHttpException::class);
-        $controller->media('voyages', 'unknown');
+        $controller->media('voyages', 'unknown', new Request());
     }
 
     // A media slug browsed under a category it doesn't belong to must not resolve - the category is part of the lookup, a slug only being unique within one
@@ -270,7 +417,7 @@ class GalleryControllerTest extends TestCase
         );
 
         $this->expectException(NotFoundHttpException::class);
-        $controller->media('voyages', 'col-du-galibier');
+        $controller->media('voyages', 'col-du-galibier', new Request());
     }
 
     // The high resolution is served by the lightbox from the stored file's own url, so no route may hand out a page for it - a leftover one would keep the two navigations this bundle deliberately merged into one

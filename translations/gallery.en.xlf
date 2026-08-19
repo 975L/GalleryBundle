@@ -306,6 +306,10 @@
                 <source>label.gallery_keep_originals</source>
                 <target>Keep the originals</target>
             </trans-unit>
+            <trans-unit id="tkYIy2h">
+                <source>label.gallery_latest_title</source>
+                <target>Latest additions</target>
+            </trans-unit>
             <trans-unit id="HdrTU43">
                 <source>label.gallery_media</source>
                 <target>Media</target>
@@ -637,6 +641,14 @@
             <trans-unit id="MN07kow">
                 <source>label.info_gallery_category_medias</source>
                 <target>The category's media, click one of them to change its file, caption or credits, or check several of them to delete them in one go. Drag them to reorder them and pick the one representing the category, both being saved as you go.</target>
+            </trans-unit>
+            <trans-unit id="OkZgRPb">
+                <source>label.info_gallery_category_medias_automatic</source>
+                <target>%count% media added over the last days, all galleries taken together, grouped by day. Each photo belongs to the gallery named under its thumbnail: credits, rights, download and move to trash apply where it actually sits.</target>
+            </trans-unit>
+            <trans-unit id="Db6BKrG">
+                <source>label.info_gallery_category_medias_automatic_empty</source>
+                <target>No media added yet: this gallery fills itself as soon as another one receives photos.</target>
             </trans-unit>
             <trans-unit id="w9lrEZ2">
                 <source>label.info_gallery_category_medias_empty</source>

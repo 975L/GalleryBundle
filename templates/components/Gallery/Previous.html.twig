@@ -1,4 +1,5 @@
 {# Overlay arrow shaped as a button (see sass/_gallery.scss) - aria-label carries the meaning, the glyph alone having no visible text #}
-<a href="{{ path(route, { category: category.slug, slug: previousNext.previous.slug }) }}"
+{# The neighbour's own category, not the page's: they are the same in a gallery holding its medias, and in the last additions the neighbour is filed somewhere else entirely #}
+<a href="{{ path(route, { category: previousNext.previous.category.slug, slug: previousNext.previous.slug }|merge(from|default(null) ? { from: from } : {})) }}"
     class="gallery-media-nav gallery-media-nav--previous"
     aria-label="{{ 'label.gallery_previous_media'|trans({}, 'gallery') }}">&lt;</a>

@@ -48,6 +48,55 @@ class GalleryMediaRepository extends ServiceEntityRepository
         ;
     }
 
+    // The medias added over the last days, whatever category they landed in - what the automatic gallery shows, and what its back-office screen lets an admin credit, download or trash in one go (see GalleryLatestProvider)
+    // A rolling window of calendar days, today included: "what has arrived lately" is what a visitor reads under that title, and a date is what he counts it in
+    // It falls back on the last day that carries an addition when that window holds nothing: a site publishing once a month would otherwise show an empty gallery for three weeks out of four, and its tile would simply vanish from the index (see components/Gallery/Category.html.twig, which draws nothing without a media)
+    // The ceiling is what keeps the day a whole library came in at once - a migration, an import - from being served whole, and it is also what bounds each query below
+    /** @return list<GalleryMedia> */
+    public function findLatest(int $days, int $max): array
+    {
+        if ($days < 1 || $max < 1) {
+            return [];
+        }
+
+        // Today counts as one of them, so a seven-day window opens six days back
+        $since = new \DateTimeImmutable('today')->modify(sprintf('-%d days', $days - 1));
+
+        $medias = $this->latestMedias($since, $max);
+        if ([] !== $medias) {
+            return $medias;
+        }
+
+        // Nothing this week: the most recent media names the day the gallery falls back on, and that day alone - being the most recent one, "since its morning" holds exactly it
+        $last = $this->latestMedias(null, 1)[0] ?? null;
+        $day = $last?->getCreatedAt()?->setTime(0, 0);
+
+        return null === $day ? [] : $this->latestMedias($day, $max);
+    }
+
+    // The most recently added medias, from a date on or from the whole table, most recent first
+    // A trashed category's medias are left out as its own trashed medias are: they are off the site, and an addition is only an addition to something that shows. So are the medias of the automatic category itself, which a category flagged after it was filled would otherwise feed itself with
+    /** @return list<GalleryMedia> */
+    protected function latestMedias(?\DateTimeImmutable $since, int $limit): array
+    {
+        $qb = $this->createQueryBuilder('m')
+            ->innerJoin('m.category', 'c')
+            ->addSelect('c')
+            ->where('m.isDeleted = false')
+            ->andWhere('c.isDeleted = false')
+            ->andWhere('c.automatic = false')
+            ->orderBy('m.createdAt', 'DESC')
+            ->addOrderBy('m.id', 'DESC')
+            ->setMaxResults($limit)
+        ;
+
+        if (null !== $since) {
+            $qb->andWhere('m.createdAt >= :since')->setParameter('since', $since);
+        }
+
+        return $qb->getQuery()->getResult();
+    }
+
     // What the public media page resolves on - the category is part of the match, a slug only being unique within it (see GalleryMediaSlugger)
     // Unfiltered on purpose, like GalleryCategoryRepository::findOneBySlug(): the page answers 410 for a trashed media, which it can only do holding the row
     public function findOneBySlugInCategory(GalleryCategory $category, string $slug): ?GalleryMedia

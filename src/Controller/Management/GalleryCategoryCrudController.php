@@ -21,6 +21,7 @@ use c975L\GalleryBundle\Management\GalleryImportProvider;
 use c975L\GalleryBundle\Model\GalleryMediaBatch;
 use c975L\GalleryBundle\Repository\GalleryCategoryRepository;
 use c975L\GalleryBundle\Repository\GalleryMediaRepository;
+use c975L\GalleryBundle\Service\GalleryLatestProvider;
 use c975L\GalleryBundle\Service\GalleryMediaArchiver;
 use c975L\GalleryBundle\Service\GalleryMediaFactory;
 use c975L\GalleryBundle\Service\GalleryUrlRedirector;
@@ -31,6 +32,7 @@ use c975L\UiBundle\Form\BlockType;
 use c975L\UiBundle\Form\TrixEditorType;
 use c975L\UiBundle\Form\Util\CollectionReconciler;
 use c975L\UiBundle\Service\BlockMoveRowAttrBuilder;
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\QueryBuilder;
@@ -109,6 +111,7 @@ class GalleryCategoryCrudController extends AbstractCrudController
         private readonly GalleryMediaRepository $galleryMediaRepository,
         private readonly CsrfTokenManagerInterface $csrfTokenManager,
         private readonly GalleryMediaArchiver $galleryMediaArchiver,
+        private readonly GalleryLatestProvider $latestProvider,
     ) {
     }
 
@@ -162,8 +165,10 @@ class GalleryCategoryCrudController extends AbstractCrudController
 
         // Medias are only ever added from the category they belong to (NEW is disabled on GalleryMediaCrudController, which has no upload button of its own): the category is what this link carries, and the upload screen shows it without letting it be changed
         // Icon-only among the index's row buttons. The edit screen has no action of its own: up in the toolbar the button sits above the blocks collection, whose own "add" button is then the one clicked to add a media - it is rendered down with the medias instead (see configureResponseParameters and gallery_category_edit.html.twig)
+        // Never on the automatic gallery: it displays medias it doesn't hold, so an upload made from it would land in a category that shows none of its own
         $uploadMediasAction = Action::new('uploadMedias', t('label.gallery_upload_medias', [], 'gallery'), 'fas fa-upload')
-            ->linkToUrl(fn (GalleryCategory $category): string => $this->uploadMediasUrl($category));
+            ->linkToUrl(fn (GalleryCategory $category): string => $this->uploadMediasUrl($category))
+            ->displayIf(static fn (GalleryCategory $category): bool => !$category->isAutomatic());
         $actions->add(Crud::PAGE_INDEX, EasyAdminActionHelper::toIconOnly(
             $uploadMediasAction,
             $this->translator->trans('label.gallery_upload_medias', [], 'gallery'),
@@ -307,6 +312,9 @@ class GalleryCategoryCrudController extends AbstractCrudController
         FieldCollection $fields,
         FilterCollection $filters,
     ): QueryBuilder {
+        // The gallery of the last additions is written here, before the listing reads its rows, so an admin opening his galleries simply finds it among them - nobody creates it, and nothing else on this screen has to know it is special (see GalleryLatestProvider)
+        $this->latestProvider->ensureCategory();
+
         return parent::createIndexQueryBuilder($searchDto, $entityDto, $fields, $filters)
             ->andWhere('entity.isDeleted = :isDeleted')
             ->setParameter('isDeleted', $this->isTrash())
@@ -568,10 +576,12 @@ class GalleryCategoryCrudController extends AbstractCrudController
                 ]),
 
             // Counted on the loaded collection (GalleryCategory::getMediasCount()), so there is no column to sort on
-            IntegerField::new('mediasCount')
+            // Rendered by a template, like the thumbnail above: the automatic gallery only receives its medias in configureResponseParameters(), long after the fields are processed, so the count has to be read at render time
+            Field::new('mediasCount')
                 ->setLabel(t('label.gallery_medias', [], 'gallery'))
                 ->setSortable(false)
-                ->onlyOnIndex(),
+                ->onlyOnIndex()
+                ->setTemplatePath('@c975LGallery/management/_gallery_category_medias_count.html.twig'),
 
             SlugField::new('slug')
                 ->setLabel(t('label.slug', [], 'gallery'))
@@ -706,6 +716,23 @@ class GalleryCategoryCrudController extends AbstractCrudController
             $responseParameters->set('upload_limits', $this->uploadLimits);
         }
 
+        // The listing draws each category's thumbnail and counts its medias, which the automatic one only has once it has been handed the list it shows (see GalleryLatestProvider)
+        if (Crud::PAGE_INDEX === $responseParameters->get('pageName')) {
+            $entities = $responseParameters->get('entities');
+            $categories = [];
+            if (is_iterable($entities)) {
+                foreach ($entities as $entityDto) {
+                    $instance = $entityDto instanceof EntityDto ? $entityDto->getInstance() : null;
+                    if ($instance instanceof GalleryCategory) {
+                        $categories[] = $instance;
+                    }
+                }
+            }
+            $this->latestProvider->hydrate($categories);
+
+            return $responseParameters;
+        }
+
         if (Crud::PAGE_EDIT !== $responseParameters->get('pageName')) {
             return $responseParameters;
         }
@@ -714,21 +741,31 @@ class GalleryCategoryCrudController extends AbstractCrudController
         $mediaEditUrls = [];
 
         if ($category instanceof GalleryCategory) {
-            // The "Add medias" button sits with the medias rather than up in the toolbar, where it was above the blocks collection and its own "add" button (see gallery_category_edit.html.twig)
-            $responseParameters->set('media_upload_url', $this->uploadMediasUrl($category));
+            // The medias the screen actually lists, its own or the last additions of the whole gallery (see mediasShown)
+            $medias = $this->mediasShown($category);
 
-            // The grid is handed its list rather than reading category.medias itself, that collection holding the trash too: one screen shows either the medias or the trashed ones, the same way the index switches between the galleries and theirs
-            $isTrash = $this->isMediasTrash();
-            $responseParameters->set('medias_trash', $isTrash);
-            $responseParameters->set('medias', $isTrash
-                ? array_values(array_filter($category->getMedias()->toArray(), static fn (GalleryMedia $media): bool => $media->isDeleted()))
-                : $this->galleryMediaRepository->findByCategory($category));
-            $responseParameters->set('medias_trash_count', count(array_filter(
-                $category->getMedias()->toArray(),
-                static fn (GalleryMedia $media): bool => $media->isDeleted()
-            )));
+            // The automatic gallery takes no upload, holds no trash and arranges nothing: its medias belong to other categories, which is where each of them is added, trashed and ordered
+            if ($category->isAutomatic()) {
+                $responseParameters->set('medias_automatic', true);
+                // Cut into the days it was read as: what an admin credits or downloads in one go is an upload session, and a heading per day is what tells one from the next
+                $responseParameters->set('medias_by_day', $this->latestProvider->getMediasByDay());
+                $responseParameters->set('medias_trash', false);
+                $responseParameters->set('medias_trash_count', 0);
+            } else {
+                // The "Add medias" button sits with the medias rather than up in the toolbar, where it was above the blocks collection and its own "add" button (see gallery_category_edit.html.twig)
+                $responseParameters->set('media_upload_url', $this->uploadMediasUrl($category));
 
-            foreach ($category->getMedias() as $media) {
+                $responseParameters->set('medias_trash', $this->isMediasTrash());
+                $responseParameters->set('medias_trash_count', count(array_filter(
+                    $category->getMedias()->toArray(),
+                    static fn (GalleryMedia $media): bool => $media->isDeleted()
+                )));
+            }
+
+            $responseParameters->set('medias', $medias);
+
+            // Built off the list the screen shows rather than off the category's own collection: on the automatic gallery the medias are other categories' - each is edited from here and comes back here once saved, the category the url carries being where the media CRUD sends the admin back to
+            foreach ($medias as $media) {
                 $mediaEditUrls[$media->getId()] = $this->adminUrlGenerator
                     ->setController(GalleryMediaCrudController::class)
                     ->setAction(Action::EDIT)
@@ -742,6 +779,25 @@ class GalleryCategoryCrudController extends AbstractCrudController
         $responseParameters->set('media_edit_urls', $mediaEditUrls);
 
         return $responseParameters;
+    }
+
+    // What a category's edit screen lists: the medias it holds, those of them in the trash, or the last additions of the whole gallery when it is the automatic one
+    // The grid is handed its list rather than reading category.medias itself, that collection holding the trash too - and the three selection actions read the very same list back, so what is acted on is always what was shown (see selectedMedias)
+    /** @return list<GalleryMedia> */
+    private function mediasShown(GalleryCategory $category): array
+    {
+        if ($category->isAutomatic()) {
+            return $this->latestProvider->getMedias();
+        }
+
+        if ($this->isMediasTrash()) {
+            return array_values(array_filter(
+                $category->getMedias()->toArray(),
+                static fn (GalleryMedia $media): bool => $media->isDeleted()
+            ));
+        }
+
+        return $this->galleryMediaRepository->findByCategory($category);
     }
 
     // Moves the medias checked under the category's edit form (see gallery_category_edit.html.twig) to the trash - the media CRUD only ever handles one at a time, which is a screen per media for a batch an admin wants off the grid in one go
@@ -761,8 +817,10 @@ class GalleryCategoryCrudController extends AbstractCrudController
 
         foreach ($medias as $media) {
             // The category would keep showing a cover it no longer displays anywhere else - cleared here rather than left to getCoverOrRandomMedia() to step over, so restoring the media does not silently make it the cover again
-            if ($category->getCoverMedia() === $media) {
-                $category->setCoverMedia(null);
+            // The media's own category, not the screen's: from the automatic gallery a photo is trashed out of the gallery it actually belongs to, which is the one holding it as a cover
+            $owner = $media->getCategory() ?? $category;
+            if ($owner->getCoverMedia() === $media) {
+                $owner->setCoverMedia(null);
             }
 
             // Same move to trash the media CRUD makes one at a time (see GalleryMediaCrudController::deleteEntity): the files stay, and so does the row, until the media is dropped from the trash screen
@@ -981,7 +1039,12 @@ class GalleryCategoryCrudController extends AbstractCrudController
     {
         $ids = array_map(static fn (mixed $id): int => \is_scalar($id) ? (int) $id : 0, $request->request->all('mediaIds'));
 
-        return $category->getMedias()->filter(static fn (GalleryMedia $media): bool => \in_array($media->getId(), $ids, true)
+        // The automatic gallery holds none of the medias it shows, so the selection is kept to the very list its screen listed - a media that has since left the last days of additions is simply dropped, exactly as an id belonging to another category is below
+        $medias = $category->isAutomatic()
+            ? new ArrayCollection($this->latestProvider->getMedias())
+            : $category->getMedias();
+
+        return $medias->filter(static fn (GalleryMedia $media): bool => \in_array($media->getId(), $ids, true)
             && (null === $deleted || $media->isDeleted() === $deleted));
     }
 

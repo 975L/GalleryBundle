@@ -51,10 +51,20 @@ class GalleryImportProvider implements ImportProviderInterface
         $updated = 0;
         $archived = [];
 
+        // Read once, then carried through the loop: import() only flushes at the end, so asking the database inside it would have every item of the same archive see it still empty and keep the flag (see below)
+        $automatic = $this->categoryRepository->findOneBy(['automatic' => true]);
+
         foreach ($items as $item) {
             $category = $this->categoryRepository->findOneBySlug($item['slug']);
             $isNew = null === $category;
             $category ??= new GalleryCategory();
+
+            // Only taken when the site holds no gallery of the last additions at all, or when this very category is it: the site writes its own (see GalleryCategoryRepository::findOrCreateAutomatic), and a second one would show the same medias under a second url
+            // The first item marked wins it, the ones after are imported as normal categories
+            $takesAutomatic = ($item['automatic'] ?? false) && \in_array($automatic, [null, $category], true);
+            if ($takesAutomatic) {
+                $automatic = $category;
+            }
 
             $category
                 ->setSlug($item['slug'])
@@ -63,6 +73,7 @@ class GalleryImportProvider implements ImportProviderInterface
                 ->setSummarySocialNetwork($item['summarySocialNetwork'] ?? $item['description'] ?? null)
                 ->setPosition($item['position'] ?? 0)
                 ->setUncategorized($item['uncategorized'] ?? false)
+                ->setAutomatic($takesAutomatic)
                 // Optional like the rest, an archive predating the trash importing as a category that is not in it - which is what such an archive describes
                 ->setIsDeleted($item['isDeleted'] ?? false)
                 ->setCoverMedia(null);

@@ -5,6 +5,6 @@
 <div class="gallery-thumb{{ whole ? ' gallery-thumb--whole' : '' }}{{ media.video ? ' gallery-thumb--video' : '' }}">
     <twig:c975LUi:Image:Link
         src="{{ media.thumbnailFilename }}"
-        url="{{ path('gallery_media', { category: category.slug, slug: media.slug }) }}"
+        url="{{ path('gallery_media', { category: category.slug, slug: media.slug }|merge(from|default(null) ? { from: from } : {})) }}"
         class="img-thumbnail" alt="{{ media.title|default(category.title) }}" width="150" height="150"/>
 </div>

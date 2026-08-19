@@ -27,10 +27,12 @@ use Symfony\Component\String\Slugger\AsciiSlugger;
 
 class GalleryImportProviderTest extends TestCase
 {
-    private function createCategoryRepository(?GalleryCategory $existingCategory = null): GalleryCategoryRepository
+    private function createCategoryRepository(?GalleryCategory $existingCategory = null, ?GalleryCategory $automaticCategory = null): GalleryCategoryRepository
     {
         $repository = $this->createStub(GalleryCategoryRepository::class);
         $repository->method('findOneBySlug')->willReturn($existingCategory);
+        // What the import asks before taking an archive's "automatic" flag: the gallery of the last additions this site already holds, if it has one
+        $repository->method('findOneBy')->willReturn($automaticCategory);
 
         return $repository;
     }
@@ -76,11 +78,11 @@ class GalleryImportProviderTest extends TestCase
         rmdir($dir);
     }
 
-    private function createProvider(EntityManagerInterface $em, ?GalleryCategory $existingCategory = null, ?string $projectDir = null): GalleryImportProvider
+    private function createProvider(EntityManagerInterface $em, ?GalleryCategory $existingCategory = null, ?string $projectDir = null, ?GalleryCategory $automaticCategory = null): GalleryImportProvider
     {
         return new GalleryImportProvider(
             $em,
-            $this->createCategoryRepository($existingCategory),
+            $this->createCategoryRepository($existingCategory, $automaticCategory),
             new GalleryMediaSlugger(new AsciiSlugger()),
             new BlockDataImporter($em, $this->createStub(FormBlockDependencyRegistry::class)),
             $projectDir ?? sys_get_temp_dir(),
@@ -148,6 +150,72 @@ class GalleryImportProviderTest extends TestCase
     }
 
     // A category exported out of the trash comes back to the trash, its medias each carrying their own flag - and an archive predating the trash imports as what it describes, a category that is not in it
+    // The gallery of the last additions comes back as one on a site that has none - what the archive describes is a site whose automatic gallery is this very category
+    public function testImportTakesTheAutomaticFlagWhenNoGalleryHoldsIt(): void
+    {
+        $persisted = [];
+        $em = $this->createStub(EntityManagerInterface::class);
+        $em->method('persist')->willReturnCallback(static function (object $entity) use (&$persisted): void {
+            $persisted[] = $entity;
+        });
+
+        $this->createProvider($em)->import([[
+            'slug' => 'latest',
+            'title' => 'Derniers ajouts',
+            'automatic' => true,
+            'medias' => [],
+        ]]);
+
+        $this->assertTrue($persisted[0]->isAutomatic());
+    }
+
+    // Two of them would show the same medias under two urls, so the flag is left where it already is - the imported category lands as a plain gallery
+    public function testImportLeavesTheAutomaticFlagToTheGalleryAlreadyHoldingIt(): void
+    {
+        $persisted = [];
+        $em = $this->createStub(EntityManagerInterface::class);
+        $em->method('persist')->willReturnCallback(static function (object $entity) use (&$persisted): void {
+            $persisted[] = $entity;
+        });
+
+        $this->createProvider($em, automaticCategory: new GalleryCategory()->setAutomatic(true))->import([[
+            'slug' => 'latest',
+            'title' => 'Derniers ajouts',
+            'automatic' => true,
+            'medias' => [],
+        ]]);
+
+        $this->assertFalse($persisted[0]->isAutomatic());
+    }
+
+    // import() only flushes once, at the end: asking the database inside the loop would have both items of the archive see it still empty and keep the flag, so the first one marked wins it and the ones after land as plain galleries
+    public function testImportGivesTheAutomaticFlagToOnlyOneCategoryOfTheSameArchive(): void
+    {
+        $persisted = [];
+        $em = $this->createStub(EntityManagerInterface::class);
+        $em->method('persist')->willReturnCallback(static function (object $entity) use (&$persisted): void {
+            $persisted[] = $entity;
+        });
+
+        $this->createProvider($em)->import([
+            [
+                'slug' => 'latest',
+                'title' => 'Derniers ajouts',
+                'automatic' => true,
+                'medias' => [],
+            ],
+            [
+                'slug' => 'latest-bis',
+                'title' => 'Derniers ajouts bis',
+                'automatic' => true,
+                'medias' => [],
+            ],
+        ]);
+
+        $this->assertTrue($persisted[0]->isAutomatic());
+        $this->assertFalse($persisted[1]->isAutomatic());
+    }
+
     public function testImportCarriesTheTrashFlagAndDefaultsToOutOfIt(): void
     {
         $persisted = [];

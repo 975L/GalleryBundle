@@ -53,6 +53,28 @@
         "description": "description.gallery_frame"
     },
     {
+        "label": "label.gallery_latest_days",
+        "slug": "gallery-latest-days",
+        "sensitive": false,
+        "restricted": false,
+        "value": "7",
+        "kind": "int",
+        "group": "gallery",
+        "severity": null,
+        "description": "description.gallery_latest_days"
+    },
+    {
+        "label": "label.gallery_latest_max",
+        "slug": "gallery-latest-max",
+        "sensitive": false,
+        "restricted": false,
+        "value": "200",
+        "kind": "int",
+        "group": "gallery",
+        "severity": null,
+        "description": "description.gallery_latest_max"
+    },
+    {
         "label": "label.theme_color_gallery_frame",
         "slug": "theme-color-gallery-frame",
         "sensitive": false,

@@ -1,5 +1,33 @@
 # ChangeLog
 
+## v1.8.0
+
+A gallery gathers the latest additions of all the others
+
+- Added `GalleryCategory::$automatic`, a gallery holding no media of its own (19/08/2026) [Needs db update]
+- Added an index on `gallery_media.created_at` (19/08/2026) [Needs db update]
+- Added `Service\GalleryLatestProvider`, the one place answering what that gallery shows (19/08/2026)
+- Added `GalleryMediaRepository::findLatest()`, the medias of the last days, all galleries taken together (19/08/2026)
+- It falls back on the last day carrying an addition when the window catches nothing (19/08/2026)
+- Added `GalleryCategoryRepository::findOrCreateAutomatic()`, writing it on the first listing (19/08/2026)
+- A trashed automatic gallery is left in the trash, unlike the catch-all (19/08/2026)
+- Added `GalleryCategoryRepository::freeSlug()`, suffixing a slug already taken (19/08/2026)
+- Added `gallery-latest-days` and `gallery-latest-max` to the **gallery** configuration group (19/08/2026)
+- `GalleryCategory::getCoverOrRandomMedia()` returns the newest photo on that gallery (19/08/2026)
+- A grid links each media under its own category, with `?from=` naming the gallery being walked (19/08/2026)
+- The media page browses the last additions when that parameter names them (19/08/2026)
+- The **Galerie - médias** block shows the last additions when pointed at that gallery (19/08/2026)
+- The medias count of the automatic gallery is rendered by its own template (19/08/2026)
+- Its edit screen lists the medias of every gallery, cut into one section per day (19/08/2026)
+- Each tile there names the gallery the media belongs to, and the selection acts on it (19/08/2026)
+- The screen offers no upload, no reordering, no cover and no trash view (19/08/2026)
+- Extracted the medias grid tile into `_gallery_media_tile.html.twig` (19/08/2026)
+- The category picker of a media leaves out the automatic and trashed galleries (19/08/2026)
+- The export carries the automatic flag, and an import gives it to one category at most (19/08/2026)
+- The README documents the automatic gallery, UPGRADE its migration (19/08/2026)
+- The shipped skill names `GalleryLatestProvider`, the two entries and the `?from=` parameter (19/08/2026)
+- Added `GalleryLatestProviderTest` and cases to nine existing test classes (19/08/2026)
+
 ## v1.7.0
 
 A gallery hands its files back, and reports the ones it lost
