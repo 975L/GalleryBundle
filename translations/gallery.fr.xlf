@@ -14,6 +14,14 @@
                 <source>action.delete_permanently</source>
                 <target>Supprimer définitivement</target>
             </trans-unit>
+            <trans-unit id="GeDA.v_">
+                <source>action.download_highres</source>
+                <target>Télécharger les HD</target>
+            </trans-unit>
+            <trans-unit id="_KYuKvZ">
+                <source>action.download_originals</source>
+                <target>Télécharger les originaux</target>
+            </trans-unit>
             <trans-unit id="DYrEVzQ">
                 <source>action.export_selection</source>
                 <target>Exporter la sélection</target>
@@ -258,6 +266,10 @@
                 <source>label.gallery_category</source>
                 <target>Catégorie</target>
             </trans-unit>
+            <trans-unit id="ERw4UJk">
+                <source>label.gallery_category_delete</source>
+                <target>Supprimer cette galerie</target>
+            </trans-unit>
             <trans-unit id="l789a03">
                 <source>label.gallery_cover</source>
                 <target>Couverture</target>
@@ -357,6 +369,18 @@
             <trans-unit id="RQABxuW">
                 <source>label.gallery_medias_deleted_permanently</source>
                 <target>Médias supprimés définitivement (%count%)</target>
+            </trans-unit>
+            <trans-unit id="ktR2r9c">
+                <source>label.gallery_medias_download_empty</source>
+                <target>Aucun fichier à télécharger pour cette sélection : les originaux n'ont pas été conservés à l'envoi, ou les fichiers ne sont plus sur le serveur</target>
+            </trans-unit>
+            <trans-unit id="7BWtrCD">
+                <source>label.gallery_medias_download_failed</source>
+                <target>L'archive n'a pas pu être écrite sur le serveur : réessayez, et prévenez l'administrateur si cela se reproduit</target>
+            </trans-unit>
+            <trans-unit id="elSpSsF">
+                <source>label.gallery_medias_download_too_large</source>
+                <target>Cette sélection pèse %size% Mo, au-delà des %limit% Mo qu'une archive peut porter : sélectionnez moins de photographies</target>
             </trans-unit>
             <trans-unit id="ZKKrfjg">
                 <source>label.gallery_medias_layout_failed</source>
@@ -605,6 +629,10 @@
             <trans-unit id="IJ3OllR">
                 <source>label.info_gallery_category</source>
                 <target>Catégories des médias, elles sont la galerie du site. "Non classé" est une catégorie de secours, non supprimable. Créez, modifiez ou supprimez une catégorie, réordonnez leur position d'affichage et ajoutez-y des médias.</target>
+            </trans-unit>
+            <trans-unit id="FyUiQ4f">
+                <source>label.info_gallery_category_delete</source>
+                <target>Met la galerie à la corbeille : elle quitte le site immédiatement, mais ses photographies et leurs fichiers restent intacts et vous pouvez la restaurer depuis la corbeille des galeries</target>
             </trans-unit>
             <trans-unit id="MN07kow">
                 <source>label.info_gallery_category_medias</source>

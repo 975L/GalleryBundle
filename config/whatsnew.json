@@ -1,5 +1,30 @@
 [
     {
+        "date": "2026-08-19",
+        "description": [
+            {
+                "en": "The Health check page now lists the photographs whose file has disappeared from the server, in red, each linking to its own screen — until now a gallery could lose an image for months, the record still there and only the tile that failed to load saying anything. A photograph's video of its own is checked the same way",
+                "fr": "La page Contrôle de santé liste désormais en rouge les photographies dont le fichier a disparu du serveur, chacune renvoyant à sa propre fiche — jusqu'ici une galerie pouvait perdre une image pendant des mois, la fiche toujours là et seule la vignette qui ne s'affichait pas pour le dire. La vidéo propre à une photographie est vérifiée de la même façon",
+                "es": "La página Control de salud enumera ahora en rojo las fotografías cuyo archivo ha desaparecido del servidor, cada una con enlace a su propia ficha — hasta ahora una galería podía perder una imagen durante meses, con la ficha aún presente y solo la miniatura que no se mostraba para decirlo. El vídeo propio de una fotografía se comprueba del mismo modo"
+            },
+            {
+                "en": "Photographs added to a gallery holding trashed ones now follow on from the photographs online, without counting those in the trash: emptying a gallery and sending it again no longer leaves a hole in its order, and a photograph taken back out of the trash returns at the end of the gallery",
+                "fr": "Les photographies ajoutées à une galerie contenant des éléments à la corbeille reprennent désormais la suite des photographies en ligne, sans compter celles à la corbeille : vider une galerie puis la renvoyer ne laisse plus de trou dans son ordre, et une photographie ressortie de la corbeille revient en fin de galerie",
+                "es": "Las fotografías añadidas a una galería que contiene elementos en la papelera continúan ahora tras las fotografías en línea, sin contar las de la papelera: vaciar una galería y volver a enviarla ya no deja un hueco en su orden, y una fotografía sacada de la papelera vuelve al final de la galería"
+            },
+            {
+                "en": "A gallery's screen can now hand you the files back: check the photographs you want and download either their high resolution version or the untouched originals kept when they were sent, as a single zip. Each file inside carries the photograph's own name rather than the one the site stored it under. A selection holding nothing to download says so, and one too heavy for a browser download is refused with its size rather than handed over incomplete",
+                "fr": "L'écran d'une galerie peut désormais vous rendre les fichiers : cochez les photographies voulues et téléchargez soit leur version haute définition, soit les originaux intacts conservés à l'envoi, en une seule archive zip. Chaque fichier y porte le nom de la photographie plutôt que celui sous lequel le site l'a rangé. Une sélection sans rien à télécharger vous le dit, et une sélection trop lourde pour un téléchargement par navigateur est refusée avec son poids, plutôt que remise incomplète",
+                "es": "La pantalla de una galería puede ahora devolverle los archivos: marque las fotografías que quiera y descargue su versión en alta resolución o los originales intactos conservados al enviarlas, en un único archivo zip. Cada archivo lleva dentro el nombre de la fotografía y no aquel con el que el sitio la guardó. Una selección sin nada que descargar se lo indica, y una selección demasiado pesada para una descarga por navegador se rechaza indicando su peso, en lugar de entregarse incompleta"
+            },
+            {
+                "en": "The button that moves a whole gallery to the trash has left the toolbar at the top of its screen for the foot of the page, under a heading of its own. It sat one row above the photographs being checked, next to Save, where a click meant for the selection took the entire gallery off the site instead",
+                "fr": "Le bouton qui met une galerie entière à la corbeille a quitté la barre d'outils en haut de son écran pour le bas de la page, sous un titre à lui. Il se trouvait une ligne au-dessus des photographies que l'on cochait, à côté d'Enregistrer, où un clic destiné à la sélection retirait en fait toute la galerie du site",
+                "es": "El botón que mueve una galería entera a la papelera ha dejado la barra de herramientas de la parte superior de su pantalla para situarse al pie de la página, bajo un título propio. Estaba una fila por encima de las fotografías que se marcaban, junto a Guardar, donde un clic destinado a la selección retiraba en realidad toda la galería del sitio"
+            }
+        ]
+    },
+    {
         "date": "2026-08-17",
         "description": [
             {

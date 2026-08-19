@@ -21,6 +21,7 @@ use c975L\GalleryBundle\Management\GalleryImportProvider;
 use c975L\GalleryBundle\Model\GalleryMediaBatch;
 use c975L\GalleryBundle\Repository\GalleryCategoryRepository;
 use c975L\GalleryBundle\Repository\GalleryMediaRepository;
+use c975L\GalleryBundle\Service\GalleryMediaArchiver;
 use c975L\GalleryBundle\Service\GalleryMediaFactory;
 use c975L\GalleryBundle\Service\GalleryUrlRedirector;
 use c975L\GalleryBundle\Service\UploadLimits;
@@ -107,6 +108,7 @@ class GalleryCategoryCrudController extends AbstractCrudController
         private readonly RequestStack $requestStack,
         private readonly GalleryMediaRepository $galleryMediaRepository,
         private readonly CsrfTokenManagerInterface $csrfTokenManager,
+        private readonly GalleryMediaArchiver $galleryMediaArchiver,
     ) {
     }
 
@@ -789,8 +791,17 @@ class GalleryCategoryCrudController extends AbstractCrudController
 
         $medias = $this->selectedMedias($category, $request, deleted: true);
 
+        // A restored media comes back at the end of the gallery rather than at the rank it held: an upload made while it sat in the trash counts nothing of the trash and may have taken that very rank (see GalleryMediaFactory::nextPosition), and two medias sharing one position leave their order to the database
+        $next = 0;
+        foreach ($category->getMedias() as $existing) {
+            if (!$existing->isDeleted()) {
+                $next = max($next, $existing->getPosition() + 1);
+            }
+        }
+
         foreach ($medias as $media) {
             $media->setIsDeleted(false);
+            $media->setPosition($next++);
 
             // The media page answered 410 while the media sat in the trash and answers the media again from here, so a "gone" row an earlier permanent deletion left under that url would shadow it - same release persistEntity() does for a category
             if (\is_string($category->getSlug()) && \is_string($media->getSlug())) {
@@ -905,6 +916,63 @@ class GalleryCategoryCrudController extends AbstractCrudController
         }
 
         return $this->redirect($url);
+    }
+
+    // Hands the files of the checked medias back as one zip - their high resolution version, or the untouched originals kept at upload, the button pressed naming which (see GalleryMediaArchiver)
+    // The one way to get those files back without an ssh session: the highres is public but linked nowhere as a file, and the original sits outside public/ altogether. Both are read-only here, which is why this sits at the editor's role like the rest of the screen rather than at the admin's
+    // Only medias of the category the url carries are ever read, whatever ids are posted, exactly as deleteMedias() does - offered from the grid and from the trash alike, which is why it is the one selection action not filtering on the trash state
+    #[AdminRoute('/{entityId}/download-medias', options: ['methods' => ['POST']])]
+    public function downloadMedias(AdminContext $context, Request $request): Response
+    {
+        $this->denyAccessUnlessGranted($this->roleNeeded());
+
+        [$category, $url] = $this->mediaSelectionContext($context, trash: $this->isMediasTrash());
+
+        $variant = $request->request->getString('variant');
+        if (!\in_array($variant, GalleryMediaArchiver::VARIANTS, true) || !$this->isCsrfTokenValid(self::DELETE_MEDIAS_CSRF_TOKEN, $request->request->getString('_token'))) {
+            return $this->redirect($url);
+        }
+
+        // The trash state is left out of the filter here, unlike everywhere else on this screen: it is what keeps a selection posted from the grid away from the permanent deletion, where reading a file is the same act whether the photo is online or waiting to be dropped - and getting the originals back is most wanted precisely before dropping them
+        $medias = $this->selectedMedias($category, $request);
+        if ($medias->isEmpty()) {
+            return $this->redirect($url);
+        }
+
+        // Weighed before a single byte is written: a whole gallery of originals is tens of gigabytes, which no browser download and no temporary directory should be asked to carry - refused with its own size stated, never handed over truncated
+        $weight = $this->galleryMediaArchiver->weigh($medias, $variant);
+        if ($weight > GalleryMediaArchiver::MAX_TOTAL_BYTES) {
+            $this->addFlash('danger', $this->translator->trans('label.gallery_medias_download_too_large', [
+                '%size%' => $this->megabytes($weight),
+                '%limit%' => $this->megabytes(GalleryMediaArchiver::MAX_TOTAL_BYTES),
+            ], 'gallery'));
+
+            return $this->redirect($url);
+        }
+
+        // The archive is refused rather than truncated, so a temporary directory that would not take it, or a disk that filled up mid write, says so on its own flash - an admin reading "nothing to download" would go looking at the wrong place
+        try {
+            $archive = $this->galleryMediaArchiver->archive($medias, $variant, (string) $category->getSlug());
+        } catch (\RuntimeException) {
+            $this->addFlash('danger', $this->translator->trans('label.gallery_medias_download_failed', [], 'gallery'));
+
+            return $this->redirect($url);
+        }
+
+        // Nothing on disk for the whole selection - originals asked of a batch uploaded without keeping any, most of the time, which is a message to read rather than an empty zip to open
+        if (null === $archive) {
+            $this->addFlash('warning', $this->translator->trans('label.gallery_medias_download_empty', [], 'gallery'));
+
+            return $this->redirect($url);
+        }
+
+        return $archive;
+    }
+
+    // The size a flash states, in whole megabytes - the byte count is what the archiver measures and nobody reads
+    private function megabytes(int $bytes): int
+    {
+        return (int) round($bytes / 1048576);
     }
 
     // The checked medias, kept to those the category actually holds - a posted id belonging to another category is simply dropped

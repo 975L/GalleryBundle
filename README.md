@@ -22,7 +22,7 @@ See it in action at [bundles.975l.com/pages/gallery-bundle](https://bundles.975l
 ## Contents
 
 - **Setup** — [requirements](#requirements) · [installation](#installation) · [configuration](#load-the-configuration) · [routes](#enable-routes) · [assets](#install-assets) · [theme](#install-the-theme)
-- **Using it** — [public routes](#public-routes) · [linking from a menu](#linking-a-gallery-from-a-menu) · [renaming a category](#renaming-a-category) · [deleting a gallery](#deleting-a-gallery) · [uploading a batch](#uploading-a-batch) · [renaming a media](#renaming-a-media) · [browsing and the lightbox](#browsing-and-the-lightbox) · [editing from the public pages](#editing-from-the-public-pages) · [blocks](#blocks-defined-by-this-bundle) · [category summary](#a-categorys-summary) · [share image](#the-image-a-shared-page-carries) · [category headings](#composing-a-categorys-heading) · [theme tokens](#theme) · [videos](#videos) · [trashing a selection](#trashing-a-selection-of-medias) · [credits / rights on a selection](#applying-credits-or-rights-to-a-selection) · [export / import categories](#export--import-categories) · [sitemap and health check](#sitemap-and-health-check) · [describing the gallery index](#describing-the-gallery-index) · [backup](#backup) · [what's new](#whats-new) · [guided projects](#guided-projects)
+- **Using it** — [public routes](#public-routes) · [linking from a menu](#linking-a-gallery-from-a-menu) · [renaming a category](#renaming-a-category) · [deleting a gallery](#deleting-a-gallery) · [uploading a batch](#uploading-a-batch) · [renaming a media](#renaming-a-media) · [browsing and the lightbox](#browsing-and-the-lightbox) · [editing from the public pages](#editing-from-the-public-pages) · [blocks](#blocks-defined-by-this-bundle) · [category summary](#a-categorys-summary) · [share image](#the-image-a-shared-page-carries) · [category headings](#composing-a-categorys-heading) · [theme tokens](#theme) · [videos](#videos) · [trashing a selection](#trashing-a-selection-of-medias) · [credits / rights on a selection](#applying-credits-or-rights-to-a-selection) · [downloading a selection](#downloading-a-selections-files) · [export / import categories](#export--import-categories) · [sitemap and health check](#sitemap-and-health-check) · [describing the gallery index](#describing-the-gallery-index) · [backup](#backup) · [what's new](#whats-new) · [guided projects](#guided-projects)
 - **Operating** — [bringing an existing gallery in](#bringing-an-existing-gallery-in) · [upload ceilings](#upload-ceilings) · [AI agent skills](#ai-agent-skills)
 
 ## Features
@@ -31,7 +31,7 @@ See it in action at [bundles.975l.com/pages/gallery-bundle](https://bundles.975l
 - Bulk upload: pick every file at once from the category they belong to, with a title root, credits and rights-reserved applied to the whole batch, retouched one media at a time afterwards. The same batch is offered on the category creation form, so a category is created with its medias in one go. Optionally, the untouched originals are kept outside the document root (see [uploading a batch](#uploading-a-batch)). The screen counts the megabytes as they leave and then says the files are being processed, a batch being minutes of waiting.
 - Three derivatives generated automatically per uploaded image (thumbnail / medium / highres), all three holding the whole photo, via UiBundle's `VichImageResizeListener` and the `VichMultiSizeImageInterface` contract - naming and resizing stay centralized in UiBundle, this bundle only declares the target sizes and how its grids frame them (see [Thumbnail framing](#thumbnail-framing)).
 - One EasyAdmin menu entry ("Gallery", opening the categories, with their media count); a category's medias are listed under its own edit form, each thumbnail opening the media it stands for, and medias are added from the category itself.
-- Each media in that list carries a checkbox, so a selection of them goes to the trash in one go instead of one edit screen at a time (see [trashing a selection](#trashing-a-selection-of-medias)), or given the same credits and rights at once (see [credits / rights on a selection](#applying-credits-or-rights-to-a-selection)).
+- Each media in that list carries a checkbox, so a selection of them goes to the trash in one go instead of one edit screen at a time (see [trashing a selection](#trashing-a-selection-of-medias)), or given the same credits and rights at once (see [credits / rights on a selection](#applying-credits-or-rights-to-a-selection)), or their files handed back as one zip (see [downloading a selection](#downloading-a-selections-files)).
 - A catch-all "Non classé" category is created lazily so an imported media always has one, even without a real one to attach it to.
 - A public front-office viewer (index → category → media), browsed entirely in the stored (medium) resolution, with circular previous/next navigation whose neighbouring images are preloaded in the background so switching medias never shows a blank image while it loads. The high resolution opens in a lightbox over the image, fetched only when the visitor asks for it (see [browsing and the lightbox](#browsing-and-the-lightbox)).
 - Two block kinds contributed to UiBundle, so a gallery can be shown on any page composed in the back office instead of only under its own routes (see [blocks](#blocks-defined-by-this-bundle)).
@@ -202,8 +202,9 @@ category rather than leaving each media to 404.
 ### Deleting a gallery
 
 **Deleting takes two deliberate steps, and the first one loses nothing.** A category is moved to the
-trash from its own edit screen as well as from the listing's row button, EasyAdmin's own confirmation
-modal standing in the way either way. What that writes is a flag and nothing else
+trash from its own edit screen — at the foot of it, deliberately (see
+[where that button sits](#where-the-gallerys-own-delete-button-sits)) — as well as from the listing's row
+button, EasyAdmin's own confirmation modal standing in the way either way. What that writes is a flag and nothing else
 (`GalleryCategory` carries CoreBundle's `TrashableTrait`): the category leaves the site, its medias, its
 heading blocks and every one of their files stay exactly where they are — the cascade on
 `GalleryCategory::$medias` and `Listener\GalleryMediaDerivativeCleanupListener` are simply never reached.
@@ -687,6 +688,16 @@ fullscreen button does nothing. A directive missing is what an empty frame in pr
 development means. A platform declared under `embed` is the one case the parameter can't cover — its
 origin is whatever the admin pasted, and has to be added by hand.
 
+### Where the gallery's own delete button sits
+
+**Move to trash** for the whole category is deliberately *not* in the page toolbar, where EasyAdmin puts
+it by default: it sat one row above the photographs an admin was checking, next to Save, and a click meant
+for the media selection took the entire gallery off the site. `gallery_category_edit.html.twig` overrides
+`page_actions` to leave it out and renders it at the **foot of the page** instead, under its own heading
+and a line saying what the trash keeps — read before it is clicked, which is the whole point. It is
+EasyAdmin's own action, only rendered elsewhere: same url, same confirmation modal, same permission. The
+row button on the galleries index is untouched.
+
 ### Trashing a selection of medias
 
 Under a category's edit form, each media carries a checkbox and the list a toolbar holding the
@@ -719,6 +730,34 @@ way round, and both post to `GalleryCategoryCrudController::editMedias()`, which
 button pressed names (a submit button posts its own name/value alone, the other button's control travelling
 with it unread). The value is applied as the toolbar shows it: an empty credits box clears the credits, an
 unchecked box takes the rights back off — which is the only way to blank either on a whole selection.
+
+### Downloading a selection's files
+
+Two more buttons on that toolbar hand the files themselves back, as one zip:
+**Download high resolution** packs each checked media's `-highres.webp`, **Download originals** packs the
+untouched uploads kept aside at upload time (see [uploading a batch](#uploading-a-batch)). They are the two
+files a site holds and no url hands back — the highres exists under `public/` but is linked nowhere as a
+file, and the original sits outside `public/` altogether — so getting a batch of them back used to mean an
+ssh session.
+
+The same two buttons sit in the **trash view** of that screen: a photograph waiting to be dropped is
+exactly the one whose originals are worth getting back first. They are the one selection action that does
+not filter on the trash state — reading a file is the same act online or not, where the state is what keeps
+a selection posted from the grid away from the permanent deletion.
+
+Both post to `GalleryCategoryCrudController::downloadMedias()`, which reads only the medias of the category
+in the url, exactly as the trash does. Inside the archive each file is named after its media's **slug**
+rather than after the stored name, keeping its own extension (`mont-blanc.webp`, `mont-blanc.jpg`) — an
+original keeps the format it was shot in, where every derivative is a webp. Entries are stored, not
+deflated: a webp and a jpeg are already compressed, and the pass would cost a full read of every byte for a
+percent.
+
+A media whose file is gone, or whose original was never kept, simply contributes nothing; a selection where
+that is true of every media gives no archive at all but a message saying so. The selection is **weighed
+first**, and refused past `GalleryMediaArchiver::MAX_TOTAL_BYTES` (1 GB) with its own size stated: a whole
+gallery of originals is tens of gigabytes, which no browser download should be asked to carry — nothing is
+ever handed over truncated. Both actions sit at `site-role-editor` like the rest of the screen, reading
+files and changing nothing.
 
 ### Ordering the medias and picking a cover
 
@@ -816,6 +855,18 @@ its own, less frequent schedule — a gallery declares one url per media:
 
 ```bash
 php bin/console c975l:health-check:run --kind=urls-gallery
+```
+
+A second check answers for the **files** rather than for the pages: `Management\GalleryFilesHealthCheckProvider`
+(kind `files-gallery`) reports, as an error, every photograph whose stored image — or whose self-hosted video —
+is no longer under `public/`. A gallery is the one place where that goes unnoticed for months: the row is still
+there, the grid still lists it, and only the tile that fails to load says anything. Everything the check does is
+UiBundle's `AbstractDeclaredFilesHealthCheckProvider`, this only names the files to look for: the ones the rows
+themselves name, never the thumbnail and highres derived from them, which a re-upload rebuilds. The trash is left
+out — a media taken off the site is served nowhere.
+
+```bash
+php bin/console c975l:health-check:run --kind=files-gallery
 ```
 
 ### Describing the gallery index

@@ -1,5 +1,30 @@
 # ChangeLog
 
+## v1.7.0
+
+A gallery hands its files back, and reports the ones it lost
+
+- Added `Management\GalleryFilesHealthCheckProvider` (kind `files-gallery`), reporting the medias whose file is gone from the server (19/08/2026)
+- A media hosting its own video gets one row per file (19/08/2026)
+- Added `GalleryMediaRepository::findWithFilename()`, the trash left out (19/08/2026)
+- `GalleryMediaFactory` no longer counts the trash when placing a new batch (19/08/2026)
+- A media taken out of the trash comes back at the end of the gallery (19/08/2026)
+- `c975l/core-bundle` is required from `^1.12.5` (19/08/2026)
+- Added `GalleryFilesHealthCheckProviderTest` and two cases to `GalleryMediaFactoryTest` (19/08/2026)
+- Added `Service\GalleryMediaArchiver` and `GalleryCategoryCrudController::downloadMedias()`, handing a selection's files back as one zip (19/08/2026)
+- **Download high resolution** and **Download originals** on the medias toolbar of a category (19/08/2026)
+- The two downloads are offered in the medias trash as well (19/08/2026)
+- Each archive entry is named after its media's slug (19/08/2026)
+- Entries are stored rather than deflated (19/08/2026)
+- A selection past 1 GB is refused with its size stated (19/08/2026)
+- A selection holding no file says so rather than downloading an empty archive (19/08/2026)
+- An archive that could not be written says so on its own flash (19/08/2026)
+- `ext-zip` is now required (19/08/2026)
+- Added `GalleryMediaArchiverTest` and eight cases to `GalleryCategoryCrudControllerTest` (19/08/2026)
+- The category's own **Move to trash** leaves the page toolbar for the foot of the page (19/08/2026)
+- The README documents the new check, the two downloads and where the delete button now sits (19/08/2026)
+- The shipped skill names the files check, `findWithFilename()` and `GalleryMediaArchiver` (19/08/2026)
+
 ## v1.6.1
 
 The CI caches Composer's archives from one run to the next

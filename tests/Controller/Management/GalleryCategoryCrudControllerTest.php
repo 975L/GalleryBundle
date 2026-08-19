@@ -20,6 +20,7 @@ use c975L\GalleryBundle\Entity\GalleryMedia;
 use c975L\GalleryBundle\Management\GalleryExportProvider;
 use c975L\GalleryBundle\Repository\GalleryCategoryRepository;
 use c975L\GalleryBundle\Repository\GalleryMediaRepository;
+use c975L\GalleryBundle\Service\GalleryMediaArchiver;
 use c975L\GalleryBundle\Service\GalleryMediaFactory;
 use c975L\GalleryBundle\Service\GalleryMediaSlugger;
 use c975L\GalleryBundle\Service\GalleryUrlRedirector;
@@ -48,6 +49,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\DependencyInjection\Container;
+use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Form\FormEvents;
@@ -148,6 +150,7 @@ class GalleryCategoryCrudControllerTest extends TestCase
         ?RedirectRepository $redirectRepository = null,
         ?RequestStack $requestStack = null,
         ?GalleryMediaRepository $galleryMediaRepository = null,
+        ?GalleryMediaArchiver $galleryMediaArchiver = null,
     ): GalleryCategoryCrudController {
         $translator = $this->createStub(TranslatorInterface::class);
         $translator->method('trans')->willReturnArgument(0);
@@ -170,6 +173,7 @@ class GalleryCategoryCrudControllerTest extends TestCase
             $requestStack ?? new RequestStack([new Request()]),
             $galleryMediaRepository ?? $this->createStub(GalleryMediaRepository::class),
             $this->createCsrfTokenManager(true),
+            $galleryMediaArchiver ?? new GalleryMediaArchiver(sys_get_temp_dir()),
         );
     }
 
@@ -422,6 +426,27 @@ class GalleryCategoryCrudControllerTest extends TestCase
         }
 
         $this->assertSame([8], $stillTrashed);
+    }
+
+    // An upload made while a media sat in the trash counts nothing of the trash (see GalleryMediaFactory::nextPosition), so what comes back takes the next free rank rather than the one it held
+    public function testRestoreMediasGivesTheRestoredMediasARankOfTheirOwn(): void
+    {
+        $category = $this->createCategoryWithMedias(7, 8);
+        $trashed = $category->getMedias()->first();
+        $trashed->setIsDeleted(true)->setPosition(0);
+        $category->getMedias()->last()->setPosition(0);
+
+        $controller = $this->createController();
+        $controller->setContainer($this->createContainer([
+            'security.authorization_checker' => $this->createAuthorizationChecker(true),
+            'security.csrf.token_manager' => $this->createCsrfTokenManager(true),
+            'request_stack' => $this->createRequestStackWithSession(),
+        ]));
+
+        $controller->restoreMedias($this->createAdminContext($category), $this->createDeleteMediasRequest([7]), $this->createStub(EntityManagerInterface::class));
+
+        $this->assertSame(1, $trashed->getPosition());
+        $this->assertSame(0, $category->getMedias()->last()->getPosition());
     }
 
     // The one path of the bundle that actually removes a media, and the only one that reaches its files (see GalleryMediaDerivativeCleanupListener)
@@ -794,6 +819,207 @@ class GalleryCategoryCrudControllerTest extends TestCase
         );
 
         $this->assertSame([], $requestStack->getSession()->getFlashBag()->all());
+    }
+
+    // --- downloadMedias ----------------------------------------------------------------------------------
+
+    // The same selection form as the trash and the credits buttons, the pressed one naming which files it wants
+    private function createDownloadMediasRequest(array $mediaIds, string $variant = 'highres', string $token = 'valid'): Request
+    {
+        return new Request(request: [
+            '_token' => $token,
+            'variant' => $variant,
+            'mediaIds' => array_map(strval(...), $mediaIds),
+        ]);
+    }
+
+    // A category holding one media whose highres file really sits under the given project dir
+    private function createCategoryWithFilesIn(string $projectDir): GalleryCategory
+    {
+        $category = $this->createCategoryWithMedias(7);
+        foreach ($category->getMedias() as $media) {
+            $media->setSlug('mont-blanc')->setFilename('medias/gallery/voyages/voyages-abc-123.webp');
+        }
+
+        $path = $projectDir . '/public/medias/gallery/voyages';
+        mkdir($path, 0777, true);
+        file_put_contents($path . '/voyages-abc-123-highres.webp', 'file');
+
+        return $category;
+    }
+
+    public function testDownloadMediasDeniesAccessBelowTheEditorRole(): void
+    {
+        $this->expectException(AccessDeniedException::class);
+
+        $controller = $this->createController();
+        $controller->setContainer($this->createContainer([
+            'security.authorization_checker' => $this->createAuthorizationChecker(false),
+        ]));
+
+        $controller->downloadMedias($this->createAdminContext(), $this->createDownloadMediasRequest([1]));
+    }
+
+    // The url is reached with no category resolved at all - nothing to download from
+    public function testDownloadMediasThrowsNotFoundWithoutACategory(): void
+    {
+        $this->expectException(NotFoundHttpException::class);
+
+        $context = AdminContext::forTesting(crudContext: CrudContext::forTesting(
+            entityDto: new EntityDto(GalleryCategory::class, new ClassMetadata(GalleryCategory::class), null, null),
+        ));
+
+        $controller = $this->createController();
+        $controller->setContainer($this->createContainer([
+            'security.authorization_checker' => $this->createAuthorizationChecker(true),
+        ]));
+
+        $controller->downloadMedias($context, $this->createDownloadMediasRequest([1]));
+    }
+
+    // A variant nobody's button posts is a forged request, answered exactly as an invalid token is
+    public function testDownloadMediasRefusesAnUnknownVariant(): void
+    {
+        $controller = $this->createController();
+        $controller->setContainer($this->createContainer([
+            'security.authorization_checker' => $this->createAuthorizationChecker(true),
+            'security.csrf.token_manager' => $this->createCsrfTokenManager(true),
+        ]));
+
+        $response = $controller->downloadMedias(
+            $this->createAdminContext($this->createCategoryWithMedias(7)),
+            $this->createDownloadMediasRequest([7], 'thumbnail')
+        );
+
+        $this->assertInstanceOf(RedirectResponse::class, $response);
+    }
+
+    public function testDownloadMediasRefusesAnInvalidToken(): void
+    {
+        $controller = $this->createController();
+        $controller->setContainer($this->createContainer([
+            'security.authorization_checker' => $this->createAuthorizationChecker(true),
+            'security.csrf.token_manager' => $this->createCsrfTokenManager(false),
+        ]));
+
+        $response = $controller->downloadMedias(
+            $this->createAdminContext($this->createCategoryWithMedias(7)),
+            $this->createDownloadMediasRequest([7], token: 'invalid')
+        );
+
+        $this->assertInstanceOf(RedirectResponse::class, $response);
+    }
+
+    // The files of the checked medias come back as the archive itself, not as a redirect
+    public function testDownloadMediasHandsBackTheArchive(): void
+    {
+        $projectDir = sys_get_temp_dir() . '/gallery-download-test-' . uniqid();
+        $category = $this->createCategoryWithFilesIn($projectDir);
+
+        $controller = $this->createController(galleryMediaArchiver: new GalleryMediaArchiver($projectDir));
+        $controller->setContainer($this->createContainer([
+            'security.authorization_checker' => $this->createAuthorizationChecker(true),
+            'security.csrf.token_manager' => $this->createCsrfTokenManager(true),
+            'request_stack' => $this->createRequestStackWithSession(),
+        ]));
+
+        $response = $controller->downloadMedias($this->createAdminContext($category), $this->createDownloadMediasRequest([7]));
+
+        $this->assertInstanceOf(BinaryFileResponse::class, $response);
+        $this->assertSame('application/zip', $response->headers->get('Content-Type'));
+
+        unlink($response->getFile()->getPathname());
+        new Filesystem()->remove($projectDir);
+    }
+
+    // The one selection action that reads the trash too: a photo waiting to be dropped is exactly the one whose originals are worth getting back first
+    public function testDownloadMediasReachesTheTrashedMediasToo(): void
+    {
+        $projectDir = sys_get_temp_dir() . '/gallery-download-trash-test-' . uniqid();
+        $category = $this->createCategoryWithFilesIn($projectDir);
+        foreach ($category->getMedias() as $media) {
+            $media->setIsDeleted(true);
+        }
+
+        $controller = $this->createController(galleryMediaArchiver: new GalleryMediaArchiver($projectDir));
+        $controller->setContainer($this->createContainer([
+            'security.authorization_checker' => $this->createAuthorizationChecker(true),
+            'security.csrf.token_manager' => $this->createCsrfTokenManager(true),
+            'request_stack' => $this->createRequestStackWithSession(),
+        ]));
+
+        $response = $controller->downloadMedias($this->createAdminContext($category), $this->createDownloadMediasRequest([7]));
+
+        $this->assertInstanceOf(BinaryFileResponse::class, $response);
+
+        unlink($response->getFile()->getPathname());
+        new Filesystem()->remove($projectDir);
+    }
+
+    // Originals asked of a batch uploaded without keeping any: a message rather than an empty zip
+    public function testDownloadMediasFlashesWhenTheSelectionHasNoFile(): void
+    {
+        $requestStack = $this->createRequestStackWithSession();
+
+        $controller = $this->createController();
+        $controller->setContainer($this->createContainer([
+            'security.authorization_checker' => $this->createAuthorizationChecker(true),
+            'security.csrf.token_manager' => $this->createCsrfTokenManager(true),
+            'request_stack' => $requestStack,
+        ]));
+
+        $response = $controller->downloadMedias(
+            $this->createAdminContext($this->createCategoryWithMedias(7)),
+            $this->createDownloadMediasRequest([7], 'original')
+        );
+
+        $this->assertInstanceOf(RedirectResponse::class, $response);
+        $this->assertSame(['warning' => ['label.gallery_medias_download_empty']], $requestStack->getSession()->getFlashBag()->all());
+    }
+
+    // Nothing checked (a submit slipping past the disabled button) asks for no archive and says nothing
+    public function testDownloadMediasDoesNothingOnAnEmptySelection(): void
+    {
+        $requestStack = $this->createRequestStackWithSession();
+
+        $controller = $this->createController();
+        $controller->setContainer($this->createContainer([
+            'security.authorization_checker' => $this->createAuthorizationChecker(true),
+            'security.csrf.token_manager' => $this->createCsrfTokenManager(true),
+            'request_stack' => $requestStack,
+        ]));
+
+        $response = $controller->downloadMedias(
+            $this->createAdminContext($this->createCategoryWithMedias(7)),
+            $this->createDownloadMediasRequest([])
+        );
+
+        $this->assertInstanceOf(RedirectResponse::class, $response);
+        $this->assertSame([], $requestStack->getSession()->getFlashBag()->all());
+    }
+
+    // A selection past the cap is refused before a byte is written, its own size stated
+    public function testDownloadMediasRefusesASelectionPastTheCap(): void
+    {
+        $requestStack = $this->createRequestStackWithSession();
+
+        $archiver = $this->createStub(GalleryMediaArchiver::class);
+        $archiver->method('weigh')->willReturn(GalleryMediaArchiver::MAX_TOTAL_BYTES + 1);
+
+        $controller = $this->createController(galleryMediaArchiver: $archiver);
+        $controller->setContainer($this->createContainer([
+            'security.authorization_checker' => $this->createAuthorizationChecker(true),
+            'security.csrf.token_manager' => $this->createCsrfTokenManager(true),
+            'request_stack' => $requestStack,
+        ]));
+
+        $response = $controller->downloadMedias(
+            $this->createAdminContext($this->createCategoryWithMedias(7)),
+            $this->createDownloadMediasRequest([7])
+        );
+
+        $this->assertInstanceOf(RedirectResponse::class, $response);
+        $this->assertSame(['danger' => ['label.gallery_medias_download_too_large']], $requestStack->getSession()->getFlashBag()->all());
     }
 
     // --- saveMediasLayout --------------------------------------------------------------------------------

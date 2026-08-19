@@ -1,5 +1,45 @@
 {% extends '@EasyAdmin/crud/edit.html.twig' %}
 
+{# The two downloads, identical in the grid and in the trash: a file is read the same way whether the photo is online or waiting to be dropped, and the trash is where wanting the originals back is most likely - the action url comes in, a macro seeing no ambient context #}
+{% macro download_buttons(action_url) %}
+    <div class="d-flex flex-wrap gap-2 align-items-center">
+        <button type="submit"
+            name="variant"
+            value="highres"
+            formaction="{{ action_url }}"
+            class="btn btn-secondary"
+            disabled
+            data-gallery-media-selection-target="submit">
+            <i class="fa fa-download"></i> {{ ('action.download_highres'|trans({}, 'gallery')) }}
+        </button>
+
+        <button type="submit"
+            name="variant"
+            value="original"
+            formaction="{{ action_url }}"
+            class="btn btn-secondary"
+            disabled
+            data-gallery-media-selection-target="submit">
+            <i class="fa fa-download"></i> {{ ('action.download_originals'|trans({}, 'gallery')) }}
+        </button>
+    </div>
+{% endmacro %}
+
+{% import _self as macros %}
+
+{# EasyAdmin renders every action of the page here, "move to trash" included - and that button sat one row above the photographs an admin was checking, so a click meant for the selection took the whole gallery off the site. It is left out here and rendered at the foot of the page instead (see the end of "main"), where nothing else is clicked #}
+{% block page_actions %}
+    {% for item in entity.actions|reverse %}
+        {% if item.name != 'delete' %}
+            {% if item.isActionGroup %}
+                {{ include(item.templatePath, {group: item, entity: entity}, with_context: false) }}
+            {% else %}
+                {{ include(item.templatePath, {action: item, entity: entity}, with_context: false) }}
+            {% endif %}
+        {% endif %}
+    {% endfor %}
+{% endblock %}
+
 {% block main %}
     <p>{{ ('label.info_gallery_category'|trans({}, 'gallery')) }}</p>
 
@@ -88,6 +128,8 @@
                         data-gallery-media-selection-target="submit">
                         <i class="fa fa-trash"></i> {{ ('action.delete_permanently'|trans({}, 'gallery')) }}
                     </button>
+
+                    {{ macros.download_buttons(ea_url().setAction('downloadMedias')) }}
                 {% else %}
 
                 {# The way back to a random cover once one has been picked - no media checked is exactly what the public components fall back on #}
@@ -143,6 +185,8 @@
                         <i class="fa fa-lock"></i> {{ ('action.apply_rights_reserved'|trans({}, 'gallery')) }}
                     </button>
                 </div>
+
+                {{ macros.download_buttons(ea_url().setAction('downloadMedias')) }}
 
                 {# Disabled until something is checked, the controller above enabling it on the first box ticked. The confirmation is EasyAdmin's own modal, the one its delete actions open: app.js submits this form once confirmed (its "standalone button inside a form" case), so nothing here has to ask on its own #}
                 <button type="submit"
@@ -241,4 +285,15 @@
 
         <div class="mb-3">{{ upload_medias_button }}</div>
     {% endif %}
+
+    {# The only action of this screen that takes the whole gallery off the site, kept away from the toolbar and set apart down here: it is read before it is clicked, which is the whole point of moving it #}
+    {% for item in entity.actions %}
+        {% if item.name == 'delete' %}
+            <div class="mt-5 pt-4 border-top">
+                <h2 class="h5">{{ ('label.gallery_category_delete'|trans({}, 'gallery')) }}</h2>
+                <p>{{ ('label.info_gallery_category_delete'|trans({}, 'gallery')) }}</p>
+                {{ include(item.templatePath, {action: item, entity: entity}, with_context: false) }}
+            </div>
+        {% endif %}
+    {% endfor %}
 {% endblock main %}

@@ -1,6 +1,6 @@
 ---
 name: c975l-gallery
-description: "Use this skill when working with photo galleries in a Symfony application built on the c975L ecosystem with c975l/gallery-bundle. Covers categories and medias, the admin-renamable url prefix, the two-step trash, batch upload and the three image derivatives, videos and embeds, the two gallery blocks, theming, and every extension point the bundle offers. Triggers on: GalleryCategory, GalleryMedia, gallery-route-prefix, gallery_index, gallery_category, gallery_media, gallery_categories, gallery_medias, c975l:gallery:rebuild-thumbnails, c975l:gallery:fill-slugs, photo gallery, thumbnail, lightbox, batch upload, upload progress, passe-partout, trash, restore, delete permanently, 410 Gone."
+description: "Use this skill when working with photo galleries in a Symfony application built on the c975L ecosystem with c975l/gallery-bundle. Covers categories and medias, the admin-renamable url prefix, the two-step trash, batch upload and the three image derivatives, videos and embeds, the two gallery blocks, theming, and every extension point the bundle offers. Triggers on: GalleryCategory, GalleryMedia, gallery-route-prefix, gallery_index, gallery_category, gallery_media, gallery_categories, gallery_medias, c975l:gallery:rebuild-thumbnails, c975l:gallery:fill-slugs, photo gallery, thumbnail, lightbox, batch upload, upload progress, passe-partout, trash, restore, delete permanently, 410 Gone, download highres, download originals, GalleryMediaArchiver, files-gallery, health check."
 ---
 
 # c975L GalleryBundle
@@ -156,6 +156,21 @@ grid does with it inside its square tile is the `gallery-thumbnail-whole` settin
 Originals can optionally be kept outside the document root (`GalleryMedia::ORIGINAL_DIRECTORY`).
 Media files live under `GalleryMedia::MEDIA_DIRECTORY` (`medias/gallery`).
 
+`Service\GalleryMediaArchiver` is what hands those two back: the medias checked on a category's edit
+screen are downloaded as one zip, either their highres derivatives or the kept originals
+(`GalleryCategoryCrudController::downloadMedias()`, `site-role-editor` like the rest of the screen).
+Entries are named after each media's slug and stored rather than deflated, a selection past
+`MAX_TOTAL_BYTES` is refused with its size rather than truncated, and a selection with no file at all
+gives a message rather than an empty archive. **Do not write a file download of your own** for a
+gallery's medias, and do not expose the original directory over http.
+
+Both downloads are offered in the medias trash as well, and are the one selection action that does not
+filter on `isDeleted` - the state is what keeps a selection posted from the grid away from the permanent
+deletion, where reading a file is the same act either way. The category's own **Move to trash** is
+rendered at the **foot of the edit screen**, not in the page toolbar (`page_actions` is overridden to
+leave it out): next to Save, one row above the photographs being checked, it was clicked for a selection
+and took the whole gallery off the site.
+
 ```bash
 php bin/console c975l:gallery:rebuild-thumbnails [--dry-run]   # rewrites every -thumb.webp from the highres
 php bin/console c975l:gallery:fill-slugs                       # backfills slugs on medias predating them
@@ -233,11 +248,14 @@ deletions, held at `site-role-admin` (see *Deleting takes two steps*).
   `<twig:c975LUi:Blocks:Blocks blocks="{{ category.blocks }}"/>`.
 - **Repositories** — `GalleryCategoryRepository::findAllOrdered()`, `findOneBySlug()`,
   `countVisible()`, `findOrCreateUncategorized()`; `GalleryMediaRepository::findByCategory()`,
-  `findOneBySlugInCategory()`, `findPreviousAndNext()`.
+  `findOneBySlugInCategory()`, `findPreviousAndNext()`, `findWithFilename()` (the rows naming a file,
+  for the files health check).
 
 What the bundle already contributes to the dashboard, so you do not have to: `MenuProvider`,
 `LinkableRouteProvider` (the index and each category offered as a SiteBundle menu target),
-`GallerySitemapProvider`, `GalleryUrlMetadataProvider`, `GalleryExportProvider` /
+`GallerySitemapProvider`, `GalleryUrlMetadataProvider`, `GalleryFilesHealthCheckProvider` (kind
+`files-gallery`, reporting every media whose image or self-hosted video is gone from the server),
+`GalleryExportProvider` /
 `GalleryImportProvider` (categories as a zip, files included), `GalleryBackupPathProvider`,
 `GalleryBlockOwnerResolver`, `GalleryGuidedProjectProvider`, `WhatsNewProvider`, `ImportmapProvider`,
 `Service\ScriptProvider`, `Service\StylesheetProvider`, `Service\GalleryShowcaseProvider`.

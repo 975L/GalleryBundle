@@ -32,6 +32,22 @@ class GalleryMediaRepository extends ServiceEntityRepository
         return $this->findBy(['category' => $category, 'isDeleted' => false], ['position' => 'ASC']);
     }
 
+    // Rows naming a file, for the check that then looks for each one on disk (see GalleryFilesHealthCheckProvider) - a media can name two, its image and its self-hosted video
+    // The trash is left out: a media an admin took off the site is served nowhere, and its files are its category's to keep or to drop, never a defect to report
+    /** @return GalleryMedia[] */
+    public function findWithFilename(): array
+    {
+        return $this->createQueryBuilder('m')
+            ->where('m.isDeleted = false')
+            // Parenthesised by hand: andWhere() joins with AND without bracketing what it is given, and an unbracketed OR would bind looser than it and let the trash back in
+            ->andWhere('(m.filename IS NOT NULL AND m.filename != :empty) OR (m.videoFilename IS NOT NULL AND m.videoFilename != :empty)')
+            ->setParameter('empty', '')
+            ->orderBy('m.filename', 'ASC')
+            ->getQuery()
+            ->getResult()
+        ;
+    }
+
     // What the public media page resolves on - the category is part of the match, a slug only being unique within it (see GalleryMediaSlugger)
     // Unfiltered on purpose, like GalleryCategoryRepository::findOneBySlug(): the page answers 410 for a trashed media, which it can only do holding the row
     public function findOneBySlugInCategory(GalleryCategory $category, string $slug): ?GalleryMedia

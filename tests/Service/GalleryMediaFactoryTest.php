@@ -76,6 +76,29 @@ class GalleryMediaFactoryTest extends TestCase
         $this->assertSame([6, 7], array_map(static fn (GalleryMedia $media): int => $media->getPosition(), $medias));
     }
 
+    // A trashed media holds a position nothing occupies on the site, and a batch that counted it would start past a rank the grid has already closed
+    public function testTheBatchIgnoresTheTrashedPositions(): void
+    {
+        $category = new GalleryCategory()->setSlug('voyages');
+        $category->addMedia(new GalleryMedia()->setPosition(0));
+        $category->addMedia(new GalleryMedia()->setPosition(5)->setIsDeleted(true));
+
+        $medias = $this->createFactory()->createFromUploads($category, [$this->createUploadedFile('a.webp')]);
+
+        $this->assertSame([1], array_map(static fn (GalleryMedia $media): int => $media->getPosition(), $medias));
+    }
+
+    // A category holding nothing but trash starts over at zero, the site showing no media at all
+    public function testACategoryHoldingOnlyTrashStartsAtZero(): void
+    {
+        $category = new GalleryCategory()->setSlug('voyages');
+        $category->addMedia(new GalleryMedia()->setPosition(3)->setIsDeleted(true));
+
+        $medias = $this->createFactory()->createFromUploads($category, [$this->createUploadedFile('a.webp')]);
+
+        $this->assertSame(0, $medias[0]->getPosition());
+    }
+
     public function testTheFirstMediaOfAnEmptyCategoryStartsAtZero(): void
     {
         $medias = $this->createFactory()->createFromUploads(new GalleryCategory()->setSlug('voyages'), [$this->createUploadedFile()]);

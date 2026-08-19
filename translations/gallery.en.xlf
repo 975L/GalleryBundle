@@ -14,6 +14,14 @@
                 <source>action.delete_permanently</source>
                 <target>Delete permanently</target>
             </trans-unit>
+            <trans-unit id="GeDA.v_">
+                <source>action.download_highres</source>
+                <target>Download high resolution</target>
+            </trans-unit>
+            <trans-unit id="_KYuKvZ">
+                <source>action.download_originals</source>
+                <target>Download originals</target>
+            </trans-unit>
             <trans-unit id="DYrEVzQ">
                 <source>action.export_selection</source>
                 <target>Export selection</target>
@@ -258,6 +266,10 @@
                 <source>label.gallery_category</source>
                 <target>Category</target>
             </trans-unit>
+            <trans-unit id="ERw4UJk">
+                <source>label.gallery_category_delete</source>
+                <target>Delete this gallery</target>
+            </trans-unit>
             <trans-unit id="l789a03">
                 <source>label.gallery_cover</source>
                 <target>Cover</target>
@@ -357,6 +369,18 @@
             <trans-unit id="RQABxuW">
                 <source>label.gallery_medias_deleted_permanently</source>
                 <target>Medias permanently deleted (%count%)</target>
+            </trans-unit>
+            <trans-unit id="ktR2r9c">
+                <source>label.gallery_medias_download_empty</source>
+                <target>No file to download for this selection: the originals were not kept at upload, or the files are no longer on the server</target>
+            </trans-unit>
+            <trans-unit id="7BWtrCD">
+                <source>label.gallery_medias_download_failed</source>
+                <target>The archive could not be written on the server: try again, and tell the administrator if it happens again</target>
+            </trans-unit>
+            <trans-unit id="elSpSsF">
+                <source>label.gallery_medias_download_too_large</source>
+                <target>This selection weighs %size% MB, past the %limit% MB an archive can carry: select fewer photographs</target>
             </trans-unit>
             <trans-unit id="ZKKrfjg">
                 <source>label.gallery_medias_layout_failed</source>
@@ -605,6 +629,10 @@
             <trans-unit id="IJ3OllR">
                 <source>label.info_gallery_category</source>
                 <target>Media categories, they are the site's gallery. "Uncategorized" is a fallback and can't be deleted. Create, edit or delete a category, reorder their display position and add media to them.</target>
+            </trans-unit>
+            <trans-unit id="FyUiQ4f">
+                <source>label.info_gallery_category_delete</source>
+                <target>Moves the gallery to the trash: it leaves the site straight away, but its photographs and their files stay untouched and you can restore it from the galleries trash</target>
             </trans-unit>
             <trans-unit id="MN07kow">
                 <source>label.info_gallery_category_medias</source>
