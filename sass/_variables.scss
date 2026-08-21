@@ -58,6 +58,11 @@
     --gallery-category-description-rule-gap: 1.5rem;
     --gallery-category-description-rule-color: var(--c975l-color-gallery-category-description-rule, color-mix(in srgb, var(--text) 25%, var(--background)));
 
+    /* The caption an admin wrote under a media - full text colour and full size, it is read where the credits below are only glanced at */
+    --gallery-media-description-font-size: 1.05rem;
+    --gallery-media-description-line-height: 1.7;
+    --gallery-media-description-color: var(--c975l-color-gallery-media-description, var(--text));
+
     /* The credits and reserved rights said under a media - toward the background like the breadcrumb, a mention rather than a caption */
     --gallery-credits-font-size: 0.9rem;
     --gallery-credits-gap: 1em;

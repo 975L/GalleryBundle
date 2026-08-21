@@ -263,4 +263,19 @@ class GalleryCategoryTest extends TestCase
         $this->assertSame(0, $first->getPosition());
         $this->assertSame(1, $second->getPosition());
     }
+
+    // A category carrying no payload reads as an empty one rather than as null, so a template never has to ask twice
+    public function testGetDataValueReadsOneFieldOfTheSitesOwnPayload(): void
+    {
+        $category = new GalleryCategory();
+
+        $this->assertSame([], $category->getData());
+        $this->assertNull($category->getDataValue('sponsor'));
+        $this->assertSame('none', $category->getDataValue('sponsor', 'none'));
+
+        $category->setData(['sponsor' => 'Lolant']);
+
+        $this->assertSame('Lolant', $category->getDataValue('sponsor'));
+        $this->assertSame('none', $category->getDataValue('absent', 'none'));
+    }
 }

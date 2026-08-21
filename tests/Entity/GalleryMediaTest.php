@@ -302,4 +302,19 @@ class GalleryMediaTest extends TestCase
             }
         }
     }
+
+    // A media carrying no payload reads as an empty one rather than as null, so a template never has to ask twice
+    public function testGetDataValueReadsOneFieldOfTheSitesOwnPayload(): void
+    {
+        $media = new GalleryMedia();
+
+        $this->assertSame([], $media->getData());
+        $this->assertNull($media->getDataValue('photographer'));
+        $this->assertSame('none', $media->getDataValue('photographer', 'none'));
+
+        $media->setData(['photographer' => 'Laurent']);
+
+        $this->assertSame('Laurent', $media->getDataValue('photographer'));
+        $this->assertSame('none', $media->getDataValue('absent', 'none'));
+    }
 }

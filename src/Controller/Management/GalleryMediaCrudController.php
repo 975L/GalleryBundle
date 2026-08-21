@@ -13,6 +13,8 @@ namespace c975L\GalleryBundle\Controller\Management;
 use c975L\ConfigBundle\Service\ConfigServiceInterface;
 use c975L\GalleryBundle\Entity\GalleryCategory;
 use c975L\GalleryBundle\Entity\GalleryMedia;
+use c975L\GalleryBundle\Field\GalleryDataField;
+use c975L\GalleryBundle\Service\GalleryCustomizationRegistry;
 use c975L\GalleryBundle\Service\GalleryMediaSlugger;
 use c975L\GalleryBundle\Service\GalleryUrlRedirector;
 use c975L\GalleryBundle\Service\UploadLimits;
@@ -32,6 +34,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\ChoiceField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\Field;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IntegerField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\SlugField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\TextareaField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\UrlField;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGeneratorInterface;
@@ -58,6 +61,7 @@ class GalleryMediaCrudController extends AbstractCrudController
         private readonly GalleryUrlRedirector $urlRedirector,
         private readonly ConfigServiceInterface $configService,
         private readonly UploadLimits $uploadLimits,
+        private readonly GalleryCustomizationRegistry $customizationRegistry,
     ) {
     }
 
@@ -204,6 +208,22 @@ class GalleryMediaCrudController extends AbstractCrudController
         parent::deleteEntity($entityManager, $entityInstance);
     }
 
+    // What this site adds to a media and no other site has, rendered from the form type it declares - a site declaring none gets no field at all (see c975L\GalleryBundle\Contract\GalleryCustomizationProviderInterface)
+    /** @return list<GalleryDataField> */
+    private function dataFields(): array
+    {
+        $formType = $this->customizationRegistry->getMediaDataFormType();
+
+        if (null === $formType) {
+            return [];
+        }
+
+        return [
+            GalleryDataField::new('data', t('label.data', [], 'gallery'))
+                ->setFormType($formType),
+        ];
+    }
+
     #[\Override]
     public function configureFields(string $pageName): iterable
     {
@@ -278,8 +298,17 @@ class GalleryMediaCrudController extends AbstractCrudController
                 ->setHelp(t('label.gallery_media_slug_help', [], 'gallery'))
                 ->setUnlockConfirmationMessage(t('confirm.media_slug_change', [], 'gallery')),
 
+            // The caption shown under the media on its own page, as long as it needs to be - hidden from the grid, where a paragraph per row would bury the thumbnails it exists to show
+            TextareaField::new('description')
+                ->setLabel(t('label.description', [], 'gallery'))
+                ->setHelp(t('label.gallery_media_description_help', [], 'gallery'))
+                ->setRequired(false)
+                ->hideOnIndex(),
+
             TextField::new('credits')
                 ->setLabel(t('label.credits', [], 'gallery')),
+
+            ...$this->dataFields(),
 
             // A video entry keeps its uploaded image above - it is what the grid shows, and what a self-hosted player uses as its poster; the two fields below only decide what the detail page opens on (see GalleryMedia::isVideo())
             // One field where there used to be a type and an id: an admin pastes the address bar of the page they were watching the video on, and the platform reads itself off it (see GalleryMedia::setExternalUrl). Nothing to extract by hand, and no pair of fields left to contradict each other

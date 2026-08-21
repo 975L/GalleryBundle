@@ -1,5 +1,23 @@
 # UPGRADE
 
+## v1.10.0
+
+### The caption and the site's own fields add columns
+
+`GalleryMedia` gains a `description` column, the caption read under a photograph on its page, and both
+`GalleryMedia` and `GalleryCategory` gain a `data` one, holding the fields a site adds of its own (see
+[fields of your own](README.md#fields-of-your-own)). An app already running this bundle generates and plays
+its migration after updating it, otherwise the galleries fail on an unknown column:
+
+```bash
+php bin/console make:migration
+php bin/console doctrine:migrations:migrate
+```
+
+Nothing else to do: the three columns are nullable and nothing writes them but an admin, so every gallery
+and every media already online stays exactly as it is — without a caption, rendering none, and with no
+field of its own until the site declares a `GalleryCustomizationProviderInterface`.
+
 ## v1.9.0
 
 ### The likes add a table

@@ -73,6 +73,8 @@ class GalleryExportProvider implements ExportProviderInterface
             'title' => $category->getTitle(),
             'summarySocialNetwork' => $category->getSummarySocialNetwork(),
             'position' => $category->getPosition(),
+            // Same as a media's below: what the site adds to a gallery of its own travels with it
+            'data' => $category->getData(),
             'uncategorized' => $category->isUncategorized(),
             // The gallery of the last additions carries its flag too, so a site restoring its content gets it back rather than an empty category nobody remembers what it was for
             'automatic' => $category->isAutomatic(),
@@ -100,6 +102,9 @@ class GalleryExportProvider implements ExportProviderInterface
             'title' => $media->getTitle(),
             // Exported so a round-trip leaves the public urls where they were, the import honouring it when it is still free (see GalleryMediaSlugger)
             'slug' => $media->getSlug(),
+            'description' => $media->getDescription(),
+            // What the site adds to a media of its own (see GalleryCustomizationProviderInterface), carried whole - the archive holds the payload without having to know its shape
+            'data' => $media->getData(),
             'credits' => $media->getCredits(),
             'rightsReserved' => $media->isRightsReserved(),
             // Same as the category's: a media in the trash travels as one, files included, so nothing is lost and nothing is republished behind the admin's back

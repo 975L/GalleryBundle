@@ -42,6 +42,7 @@ class GalleryExportProviderTest extends TestCase
             'title' => 'Voyages',
             'summarySocialNetwork' => '<div>Nos voyages</div>',
             'position' => 0,
+            'data' => [],
             'uncategorized' => false,
             'automatic' => false,
             'isDeleted' => false,
@@ -60,7 +61,7 @@ class GalleryExportProviderTest extends TestCase
         file_put_contents($projectDir . '/public/uploads/p2.jpg', 'bytes-2');
 
         $category = new GalleryCategory()->setSlug('voyages')->setTitle('Voyages')->setPosition(0);
-        $media1 = new GalleryMedia()->setFilename('uploads/p1.jpg')->setTitle('Media 1')->setSlug('media-1')->setPosition(0);
+        $media1 = new GalleryMedia()->setFilename('uploads/p1.jpg')->setTitle('Media 1')->setSlug('media-1')->setDescription('Le port au petit matin')->setData(['photographer' => 'Laurent'])->setPosition(0);
         $media2 = new GalleryMedia()->setFilename('uploads/p2.jpg')->setTitle('Media 2')->setSlug('media-2')->setPosition(1);
         $category->addMedia($media1);
         $category->addMedia($media2);
@@ -80,6 +81,12 @@ class GalleryExportProviderTest extends TestCase
         $this->assertSame('media-1', $item['medias'][0]['slug']);
         // And the name of the file itself, so the images answer at the very same urls too
         $this->assertSame('uploads/p1.jpg', $item['medias'][0]['filename']);
+        // The caption is exported alongside them, a photograph losing on the way out what says what it shows being the one thing an archive cannot rebuild
+        $this->assertSame('Le port au petit matin', $item['medias'][0]['description']);
+        $this->assertNull($item['medias'][1]['description']);
+        // And what the site added of its own, carried whole without the archive knowing its shape
+        $this->assertSame(['photographer' => 'Laurent'], $item['medias'][0]['data']);
+        $this->assertSame([], $item['medias'][1]['data']);
 
         $this->assertCount(2, $data['files']);
         $files = array_values($data['files']);

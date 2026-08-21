@@ -78,6 +78,8 @@ class GalleryImportProvider implements ImportProviderInterface
                 ->setSummarySocialNetwork($item['summarySocialNetwork'] ?? $item['description'] ?? null)
                 ->setPosition($item['position'] ?? 0)
                 ->setUncategorized($item['uncategorized'] ?? false)
+                // What the site added to this gallery of its own, put back whole - an archive predating it, or one from a site declaring no fields, importing a gallery carrying none
+                ->setData($item['data'] ?? null)
                 ->setAutomatic($takesAutomatic)
                 // Optional like the rest, an archive predating the trash importing as a category that is not in it - which is what such an archive describes
                 ->setIsDeleted($item['isDeleted'] ?? false)
@@ -225,6 +227,8 @@ class GalleryImportProvider implements ImportProviderInterface
         // "alt" is what an archive exported before the title/slug rework carries, read as a fallback rather than importing medias with no name at all
         $media = new GalleryMedia()
             ->setTitle($mediaData['title'] ?? $mediaData['alt'] ?? null)
+            ->setDescription($mediaData['description'] ?? null)
+            ->setData($mediaData['data'] ?? null)
             ->setCredits($mediaData['credits'] ?? null)
             ->setRightsReserved($mediaData['rightsReserved'] ?? false)
             // The type is derived from the url rather than imported alongside it (see GalleryMedia::setExternalUrl), so an archive can never carry the two out of step

@@ -261,6 +261,17 @@
     right: var(--gallery-nav-offset);
 }
 
+// The caption, between the media and its credits - the same measure as the media above it, so a sentence never runs wider than the photo it describes
+.gallery-media-description {
+    margin: 1em auto 0;
+    max-width: var(--gallery-media-max-width);
+    font-size: var(--gallery-media-description-font-size);
+    line-height: var(--gallery-media-description-line-height);
+    color: var(--gallery-media-description-color);
+    text-align: center;
+    text-wrap: balance;
+}
+
 // The credits line, under the media rather than over it - a flex row so the credits and the reserved rights sit apart on one line, and wrap onto two on a narrow screen instead of running into each other
 .gallery-media-credits {
     display: flex;

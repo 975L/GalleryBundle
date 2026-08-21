@@ -52,6 +52,11 @@ class GalleryCategory implements HasBlocksInterface, TrashableInterface, \String
     #[ORM\Column]
     private int $position = 0;
 
+    // The fields this site adds to a gallery and no other site has, held as one JSON payload rather than a column each - same reasoning as UiBundle's Block::$data: what a single site needs is then a form type it declares (see GalleryCustomizationProviderInterface::getCategoryDataFormType()), no schema migration for every app running this bundle. Anything the database itself has to filter, sort or join on stays a real column
+    /** @var array<string, mixed>|null */
+    #[ORM\Column(type: Types::JSON, nullable: true)]
+    private ?array $data = null;
+
     #[ORM\ManyToOne(targetEntity: GalleryMedia::class)]
     #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
     private ?GalleryMedia $coverMedia = null;
@@ -146,6 +151,26 @@ class GalleryCategory implements HasBlocksInterface, TrashableInterface, \String
         $this->position = $position ?? 0;
 
         return $this;
+    }
+
+    /** @return array<string, mixed> */
+    public function getData(): array
+    {
+        return $this->data ?? [];
+    }
+
+    /** @param array<string, mixed>|null $data */
+    public function setData(?array $data): static
+    {
+        $this->data = $data;
+
+        return $this;
+    }
+
+    // One field of what this site adds, read by name so a template never spells out the payload's shape
+    public function getDataValue(string $key, mixed $default = null): mixed
+    {
+        return $this->getData()[$key] ?? $default;
     }
 
     public function getCoverMedia(): ?GalleryMedia

@@ -3,6 +3,16 @@
         "date": "2026-08-21",
         "description": [
             {
+                "en": "A photograph can now be captioned: the Description field of a media holds the sentence read under it on its page — where it was taken, who is in it, what there is to see. A media without one shows none, and the caption is also what a share of that page says",
+                "fr": "Une photographie peut désormais être légendée : le champ Description d'un média porte la phrase lue sous elle sur sa page — où elle a été prise, qui s'y trouve, ce qu'il y a à voir. Un média sans légende n'en affiche aucune, et la légende est aussi ce qu'un partage de la page annonce",
+                "es": "Una fotografía puede ahora llevar pie de foto: el campo Descripción de un medio contiene la frase que se lee debajo en su página — dónde se tomó, quién aparece, qué hay que ver. Un medio sin pie no muestra ninguno, y el pie es también lo que anuncia una publicación de esa página"
+            },
+            {
+                "en": "A gallery and a photograph can now carry fields your site alone needs, next to the ones this bundle ships — a developer declares their form once and they appear on the edit screens, with nothing to change in the database afterwards",
+                "fr": "Une galerie et une photographie peuvent désormais porter des champs propres à votre seul site, à côté de ceux livrés par le bundle — un développeur déclare leur formulaire une fois et ils apparaissent sur les écrans d'édition, sans rien changer en base ensuite",
+                "es": "Una galería y una fotografía pueden ahora llevar campos propios de su sitio, junto a los que trae el bundle — un desarrollador declara su formulario una vez y aparecen en las pantallas de edición, sin cambiar nada en la base de datos después"
+            },
+            {
                 "en": "Three new guided projects join the dashboard panel: putting a gallery aside and bringing it back from the trash, getting your photograph files back as a single archive, and the Latest additions gallery — what it is and why nobody arranges it",
                 "fr": "Trois nouveaux projets guidés rejoignent le panneau du tableau de bord : mettre une galerie de côté puis la ressortir de la corbeille, récupérer les fichiers de vos photographies en une seule archive, et la galerie Derniers ajouts — ce qu'elle est et pourquoi personne ne la range",
                 "es": "Tres nuevos proyectos guiados se suman al panel del tablero: apartar una galería y volver a sacarla de la papelera, recuperar los archivos de sus fotografías en un único archivo comprimido, y la galería Últimas incorporaciones — qué es y por qué nadie la ordena"

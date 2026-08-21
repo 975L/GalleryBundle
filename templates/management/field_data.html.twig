@@ -1,0 +1,12 @@
+{# What the site's own fields hold, read-only - the form is what edits them (see c975L\GalleryBundle\Field\GalleryDataField) #}
+{% for key, value in field.value|default({}) %}
+    {# The payload holds whatever the site's own form put there: an array is printed as json rather than run into an array-to-string conversion, and a boolean as a word rather than as 1 or as nothing at all #}
+    {% if value is iterable %}
+        {% set printed = value|json_encode %}
+    {% elseif value is same as(true) or value is same as(false) %}
+        {% set printed = value ? 'true' : 'false' %}
+    {% else %}
+        {% set printed = value %}
+    {% endif %}
+    <div><strong>{{ key }}</strong> : {{ printed }}</div>
+{% endfor %}

@@ -6,7 +6,11 @@ services:
 
     c975L\GalleryBundle\:
         resource: '../src/'
-        exclude: '../src/Entity'
+        exclude: '../src/{Contract,Entity,Field}'
+
+    c975L\GalleryBundle\Service\GalleryCustomizationRegistry:
+        arguments:
+            $providers: !tagged_iterator gallery.customization_provider
 
     # One class, two registries: the public pages' controllers and the EasyAdmin-only ones
     c975L\GalleryBundle\Service\ScriptProvider:

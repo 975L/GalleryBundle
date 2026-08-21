@@ -294,6 +294,14 @@
                 <source>label.credits</source>
                 <target>Créditos</target>
             </trans-unit>
+            <trans-unit id="aIZFxNx">
+                <source>label.data</source>
+                <target>Campos propios del sitio</target>
+            </trans-unit>
+            <trans-unit id="Zb4xuOb">
+                <source>label.description</source>
+                <target>Descripción</target>
+            </trans-unit>
             <trans-unit id="DmcAvc0">
                 <source>label.file</source>
                 <target>Archivo</target>
@@ -385,6 +393,10 @@
             <trans-unit id="HdrTU43">
                 <source>label.gallery_media</source>
                 <target>Medio</target>
+            </trans-unit>
+            <trans-unit id="etPVw0k">
+                <source>label.gallery_media_description_help</source>
+                <target>El pie de foto que se lee bajo el medio en su página — déjelo vacío si no hay nada que decir</target>
             </trans-unit>
             <trans-unit id="HEqsH6R">
                 <source>label.gallery_media_slug_help</source>

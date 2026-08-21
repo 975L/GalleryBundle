@@ -118,7 +118,7 @@ class GalleryImportProviderTest extends TestCase
             'uncategorized' => false,
             'coverMediaIndex' => 1,
             'medias' => [
-                ['title' => 'Media 1', 'slug' => 'media-1', 'position' => 0, 'file' => 'files/p1.jpg'],
+                ['title' => 'Media 1', 'slug' => 'media-1', 'description' => 'Le port au petit matin', 'data' => ['photographer' => 'Laurent'], 'position' => 0, 'file' => 'files/p1.jpg'],
                 ['title' => 'Media 2', 'slug' => 'media-2', 'position' => 1, 'file' => 'files/p2.jpg'],
             ],
         ]], $filesDir);
@@ -144,6 +144,12 @@ class GalleryImportProviderTest extends TestCase
         $this->assertFalse($medias[1]->getFile()->isRemoveReplacedFile());
         // The exported slug is put back as it was, so the imported medias answer at the very urls the archive came from
         $this->assertSame(['media-1', 'media-2'], array_map(static fn (GalleryMedia $media): ?string => $media->getSlug(), $medias));
+        // The caption travels with the media, and a media exported before there was one imports without one rather than with an empty string
+        $this->assertSame('Le port au petit matin', $medias[0]->getDescription());
+        $this->assertNull($medias[1]->getDescription());
+        // The site's own fields make the same trip, a media exported without any importing with an empty payload rather than with null
+        $this->assertSame(['photographer' => 'Laurent'], $medias[0]->getData());
+        $this->assertSame([], $medias[1]->getData());
 
         unlink($filesDir . '/files/p1.jpg');
         unlink($filesDir . '/files/p2.jpg');

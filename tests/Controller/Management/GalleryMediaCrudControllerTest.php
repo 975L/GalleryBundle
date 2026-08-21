@@ -13,10 +13,12 @@ namespace c975L\GalleryBundle\Tests\Controller\Management;
 use c975L\ConfigBundle\Entity\Redirect;
 use c975L\ConfigBundle\Repository\RedirectRepository;
 use c975L\ConfigBundle\Service\ConfigServiceInterface;
+use c975L\GalleryBundle\Contract\GalleryCustomizationProviderInterface;
 use c975L\GalleryBundle\Controller\Management\GalleryCategoryCrudController;
 use c975L\GalleryBundle\Controller\Management\GalleryMediaCrudController;
 use c975L\GalleryBundle\Entity\GalleryCategory;
 use c975L\GalleryBundle\Entity\GalleryMedia;
+use c975L\GalleryBundle\Service\GalleryCustomizationRegistry;
 use c975L\GalleryBundle\Service\GalleryMediaSlugger;
 use c975L\GalleryBundle\Service\GalleryUrlRedirector;
 use c975L\GalleryBundle\Service\UploadLimits;
@@ -39,6 +41,8 @@ use PHPUnit\Framework\TestCase;
 use Symfony\Component\DependencyInjection\Container;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Component\Form\Extension\Core\Type\TextareaType;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Form\FormEvents;
@@ -56,6 +60,7 @@ class GalleryMediaCrudControllerTest extends TestCase
     private function createController(
         ?AdminUrlGeneratorInterface $adminUrlGenerator = null,
         ?RedirectRepository $redirectRepository = null,
+        ?GalleryCustomizationRegistry $customizationRegistry = null,
     ): GalleryMediaCrudController {
         $translator = $this->createStub(TranslatorInterface::class);
         $translator->method('trans')->willReturnArgument(0);
@@ -68,6 +73,7 @@ class GalleryMediaCrudControllerTest extends TestCase
             $this->createConfigService(),
             // Fixed ceilings rather than the machine's own php.ini, so the video field's limit is the same on every runner
             new UploadLimits('20', '64M', '128M'),
+            $customizationRegistry ?? new GalleryCustomizationRegistry([]),
         );
     }
 
@@ -276,6 +282,19 @@ class GalleryMediaCrudControllerTest extends TestCase
         $this->assertSame('gallery', $confirmation->getDomain());
     }
 
+    // Free text and as long as it needs to be, but never in the grid: a paragraph per row would bury the thumbnails that listing exists to show
+    public function testConfigureFieldsGivesTheCaptionATextareaKeptOutOfTheGrid(): void
+    {
+        $descriptionField = $this->findField($this->createController()->configureFields(Crud::PAGE_EDIT), 'description');
+
+        $this->assertNotNull($descriptionField);
+        $this->assertSame(TextareaType::class, $descriptionField->getFormType());
+        $this->assertFalse($descriptionField->getFormTypeOptions()['required']);
+        $this->assertTrue($descriptionField->isDisplayedOn(Crud::PAGE_EDIT));
+
+        $this->assertFalse($descriptionField->isDisplayedOn(Crud::PAGE_INDEX));
+    }
+
     // Nothing about the watermark is stored on the media, so the edit screen asks the pair again - a replaced file being an upload of its own, and the only file this answer can reach
     // Unmapped, both of them: they answer for the file, and the media has no property for either one to be written to
     public function testConfigureFieldsAsksTheWatermarkAgainOnTheEditForm(): void
@@ -373,6 +392,35 @@ class GalleryMediaCrudControllerTest extends TestCase
         $dql = $queryBuilderCallable($queryBuilder)->getDQL();
         $this->assertStringContainsString('entity.automatic = false', $dql);
         $this->assertStringContainsString('entity.isDeleted = false', $dql);
+    }
+
+    // The ordinary case: a site declaring no fields of its own gets no field at all on the screen, which is what makes this cost such an app nothing
+    public function testConfigureFieldsAddsNoDataFieldWhenTheSiteDeclaresNone(): void
+    {
+        $this->assertNull($this->findField($this->createController()->configureFields(Crud::PAGE_EDIT), 'data'));
+    }
+
+    // And a site declaring one gets it rendered from the very form type it returned, kept out of the grid like the rest of the payload
+    public function testConfigureFieldsRendersTheFormTheSiteDeclaresForAMedia(): void
+    {
+        $registry = new GalleryCustomizationRegistry([$this->createCustomizationProvider(TextType::class)]);
+
+        $data = $this->findField($this->createController(customizationRegistry: $registry)->configureFields(Crud::PAGE_EDIT), 'data');
+
+        $this->assertNotNull($data);
+        $this->assertSame(TextType::class, $data->getFormType());
+        $this->assertSame('@c975LGallery/management/field_data.html.twig', $data->getTemplatePath());
+        $this->assertFalse($data->isDisplayedOn(Crud::PAGE_INDEX));
+    }
+
+    // Only the media side is read here, a category's own form being the other controller's business
+    private function createCustomizationProvider(?string $mediaFormType): GalleryCustomizationProviderInterface
+    {
+        $provider = $this->createStub(GalleryCustomizationProviderInterface::class);
+        $provider->method('getCategoryDataFormType')->willReturn(null);
+        $provider->method('getMediaDataFormType')->willReturn($mediaFormType);
+
+        return $provider;
     }
 
     private function findField(iterable $fields, string $property): ?FieldDto

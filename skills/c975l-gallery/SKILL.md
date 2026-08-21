@@ -1,6 +1,6 @@
 ---
 name: c975l-gallery
-description: "Use this skill when working with photo galleries in a Symfony application built on the c975L ecosystem with c975l/gallery-bundle. Covers categories and medias, the admin-renamable url prefix, the two-step trash, batch upload and the three image derivatives, videos and embeds, the two gallery blocks, theming, and every extension point the bundle offers. Triggers on: GalleryCategory, GalleryMedia, gallery-route-prefix, gallery_index, gallery_category, gallery_media, gallery_categories, gallery_medias, c975l:gallery:rebuild-thumbnails, c975l:gallery:fill-slugs, photo gallery, thumbnail, lightbox, batch upload, upload progress, passe-partout, trash, restore, delete permanently, 410 Gone, download highres, download originals, GalleryMediaArchiver, files-gallery, health check, automatic gallery, latest additions, GalleryLatestProvider, findOrCreateAutomatic, findLatest, gallery-latest-days, gallery-latest-max, gallery-rating, likes, like a photo, heart, rating, findVisibleByCategories, setLoadedMedias."
+description: "Use this skill when working with photo galleries in a Symfony application built on the c975L ecosystem with c975l/gallery-bundle. Covers categories and medias, the admin-renamable url prefix, the two-step trash, batch upload and the three image derivatives, videos and embeds, the two gallery blocks, theming, and every extension point the bundle offers. Triggers on: GalleryCategory, GalleryMedia, gallery-route-prefix, gallery_index, gallery_category, gallery_media, gallery_categories, gallery_medias, c975l:gallery:rebuild-thumbnails, c975l:gallery:fill-slugs, photo gallery, thumbnail, lightbox, batch upload, upload progress, passe-partout, trash, restore, delete permanently, 410 Gone, download highres, download originals, GalleryMediaArchiver, files-gallery, health check, automatic gallery, latest additions, GalleryLatestProvider, findOrCreateAutomatic, findLatest, gallery-latest-days, gallery-latest-max, gallery-rating, likes, like a photo, heart, rating, findVisibleByCategories, setLoadedMedias, media caption, media description, GalleryCustomizationProviderInterface, gallery.customization_provider, GalleryDataField, getDataValue."
 ---
 
 # c975L GalleryBundle
@@ -10,7 +10,7 @@ description: "Use this skill when working with photo galleries in a Symfony appl
 **Package:** `c975l/gallery-bundle` · **Namespace:** `c975L\GalleryBundle\` · **Twig namespace:** `@c975LGallery` · **Translation domain:** `gallery`
 
 **Key source paths** (relative to the package root):
-`src/Controller/GalleryController.php`, `src/Entity/`, `src/Repository/`, `src/Routing/GalleryRoutePrefix.php`, `src/Service/`, `src/Twig/Extension/`, `src/Management/`, `src/Form/Block/`, `templates/gallery/`, `templates/components/Gallery/`, `templates/blocks/`, `config/configs.json`, `config/services.yaml`
+`src/Controller/GalleryController.php`, `src/Contract/`, `src/Entity/`, `src/Field/`, `src/Repository/`, `src/Routing/GalleryRoutePrefix.php`, `src/Service/`, `src/Twig/Extension/`, `src/Management/`, `src/Form/Block/`, `templates/gallery/`, `templates/components/Gallery/`, `templates/blocks/`, `config/configs.json`, `config/services.yaml`
 
 **Related documentation:** this package's `README.md` is the exhaustive reference — every section named below is an anchor in it. The ecosystem's own rules (database-backed configuration, blocks, media library, management contributions) live in `c975l/core-bundle`.
 
@@ -50,8 +50,14 @@ top-level unit, and each holds its `GalleryMedia`.
   `uncategorized` (the lazily-created catch-all), `automatic` (the gallery of the last additions, see
   below), `medias`. Implements `HasBlocksInterface` (its own editorial heading) and
   `TrashableInterface`.
+- A site adds fields of its own to a category or a media by implementing
+  `GalleryCustomizationProviderInterface` (`getCategoryDataFormType()`, `getMediaDataFormType()`),
+  collected on sight of the interface through `gallery.customization_provider` — nothing to tag. They
+  live in the `data` JSON column of each, are rendered by `GalleryDataField` on the edit screen, read
+  back with `getDataValue()`, and travel through the export/import. Declaring nothing means no field.
 - `GalleryMedia` — belongs to one category, keyed publicly by `slug` which is **unique within its
-  category only**. Carries `title`, `credits`, `rightsReserved`, `position`, `mediaType`
+  category only**. Carries `title`, `data` (the site's own fields, see below), `description` (the caption printed under the photograph and reused
+  as the page's description metas when set), `credits`, `rightsReserved`, `position`, `mediaType`
   (`image` / a platform name / `embed`, always derived, never set), `externalUrl`, an optional
   uploaded video file, and the Vich fields. Implements `TrashableInterface`,
   `VichMultiSizeImageInterface`, `VichMediaNamableInterface`, `VichOriginalKeepableInterface`,
@@ -316,6 +322,11 @@ deletions, held at `site-role-admin` (see *Deleting takes two steps*).
   `--text` / `--background` / `--font-family-body`, so it looks like the site it is installed on.
 - **Blocks on a category** — `GalleryCategory` implements `HasBlocksInterface`; render them with
   `<twig:c975LUi:Blocks:Blocks blocks="{{ category.blocks }}"/>`.
+- **Fields of the site's own** — implement `GalleryCustomizationProviderInterface` and return a form
+  type from `getCategoryDataFormType()` / `getMediaDataFormType()`. Nothing to tag: the interface is
+  collected through `gallery.customization_provider`, read by `GalleryCustomizationRegistry` (first
+  provider answering wins) and rendered by `GalleryDataField` on the edit screen. The values land in
+  the `data` JSON column, read back with `getDataValue()`.
 - **Repositories** — `GalleryCategoryRepository::findAllOrdered()`, `findOneBySlug()`,
   `countVisible()`, `findOrCreateUncategorized()`, `findOrCreateAutomatic()` (both suffixing a slug
   already taken); `GalleryMediaRepository::findByCategory()`, `findOneBySlugInCategory()`,
@@ -345,6 +356,9 @@ What the bundle already contributes to the dashboard, so you do not have to: `Me
 - **Do not read an automatic category's `medias` relation** — it is empty by definition. Ask
   `GalleryLatestProvider`, or go through `getMediasCount()` / `getCoverOrRandomMedia()`, which already
   do. And do not create a second one, nor turn one of the site's own galleries into it.
+- **Do not put in `data`** anything the database has to filter, sort or join on, nor anything every
+  gallery wants — the first stays a real column, the second belongs to the bundle (a caption did, hence
+  `GalleryMedia::$description`).
 - **Do not query a media by slug alone** — a slug is unique only within its category.
 - **Do not list categories or medias with `findAll()` / `findBy()`.** Those see the trash; use
   `findAllOrdered()` and `GalleryMediaRepository::findByCategory()`, which do not.

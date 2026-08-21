@@ -10,6 +10,8 @@
 
 namespace c975L\GalleryBundle;
 
+use c975L\ConfigBundle\DependencyInjection\Compiler\TaggedInterfacePass;
+use c975L\GalleryBundle\Contract\GalleryCustomizationProviderInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 use Symfony\Component\HttpKernel\Bundle\AbstractBundle;
@@ -31,6 +33,14 @@ class c975LGalleryBundle extends AbstractBundle
                 ],
             ],
         ]);
+    }
+
+    // Collects what each site declares about its own galleries, so GalleryCustomizationRegistry reads them all without the app having to tag its provider by hand
+    public function build(ContainerBuilder $container): void
+    {
+        parent::build($container);
+
+        $container->addCompilerPass(new TaggedInterfacePass(GalleryCustomizationProviderInterface::class, 'gallery.customization_provider'));
     }
 
     #[\Override]

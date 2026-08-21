@@ -1,5 +1,24 @@
 # ChangeLog
 
+## v1.10.0
+
+A photograph says what it shows
+
+- `GalleryMedia` gains a `description` column, the caption read under it on its page (21/08/2026) [Needs db update]
+- The media edit form carries the caption as a textarea, hidden from the grid (21/08/2026)
+- The media page prints the caption between the photograph and its credits (21/08/2026)
+- The caption fills the page's meta description and `og:description`, the composed sentence staying the fallback (21/08/2026)
+- The caption travels with its media through the export/import (21/08/2026)
+- Added `--gallery-media-description-font-size`, `-line-height` and `-color`, offered commented in the scaffolded `themes/gallery.css` (21/08/2026)
+- `GalleryCategory` and `GalleryMedia` gain a `data` column, holding the fields a site adds of its own (21/08/2026) [Needs db update]
+- Added `GalleryCustomizationProviderInterface`, its registry and the `gallery.customization_provider` compiler pass (21/08/2026)
+- Added `GalleryDataField`, rendering the declared form on the edit screens (21/08/2026)
+- A site declaring no fields of its own gets no field at all (21/08/2026)
+- The site's own fields travel through the export/import whole (21/08/2026)
+- The README documents both, UPGRADE the migration they ask for (21/08/2026)
+- The detail screen prints a nested payload as json and a boolean as a word (21/08/2026)
+- Added `GalleryMediaDescriptionTest`, `GalleryCustomizationRegistryTest`, `GalleryDataFieldTemplateTest` and cases to six existing test classes (21/08/2026)
+
 ## v1.9.0
 
 A visitor likes a photo without an account

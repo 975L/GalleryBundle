@@ -19,6 +19,7 @@ use c975L\UiBundle\Contract\VichOriginalKeepableInterface;
 use c975L\UiBundle\Contract\VichWatermarkableInterface;
 use c975L\UiBundle\Entity\Trait\TrashableTrait;
 use c975L\UiBundle\Video\VideoPlatform;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -117,6 +118,10 @@ class GalleryMedia implements TrashableInterface, VichMultiSizeImageInterface, V
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $title = null;
 
+    // The caption a photograph carries under it, free text and as long as it needs to be - the title names the media in a grid, this one says what there is to say about it. Nothing writes it but an admin, and a media without one renders no caption at all
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $description = null;
+
     // Posed once, when the media is created, and never recomputed from the title afterwards: it is a public url, and a title is retouched precisely because the first one was a placeholder - having the url follow it made every such correction cost a redirect, and made naming the batch right the first time a problem it never had to be. Only an admin editing the slug field itself moves it now, and that one is recorded as a redirect (see GalleryMediaCrudController::updateEntity)
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $slug = null;
@@ -130,6 +135,11 @@ class GalleryMedia implements TrashableInterface, VichMultiSizeImageInterface, V
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $credits = null;
+
+    // The fields this site adds to a media and no other site has, held as one JSON payload rather than a column each - same reasoning as UiBundle's Block::$data: what a single site needs is then a form type it declares (see GalleryCustomizationProviderInterface::getMediaDataFormType()), no schema migration for every app running this bundle. Anything the database itself has to filter, sort or join on stays a real column
+    /** @var array<string, mixed>|null */
+    #[ORM\Column(type: Types::JSON, nullable: true)]
+    private ?array $data = null;
 
     // Not an admin's choice but a reading of the url below, posed by setExternalUrl() alone - one of UiBundle's declared platforms, "embed" for a player nobody declared, "image" for an entry carrying no url at all
     #[ORM\Column(length: 20, options: ['default' => self::MEDIA_TYPE_IMAGE])]
@@ -261,6 +271,38 @@ class GalleryMedia implements TrashableInterface, VichMultiSizeImageInterface, V
         $this->title = $title;
 
         return $this;
+    }
+
+    public function getDescription(): ?string
+    {
+        return $this->description;
+    }
+
+    public function setDescription(?string $description): self
+    {
+        $this->description = $description;
+
+        return $this;
+    }
+
+    /** @return array<string, mixed> */
+    public function getData(): array
+    {
+        return $this->data ?? [];
+    }
+
+    /** @param array<string, mixed>|null $data */
+    public function setData(?array $data): static
+    {
+        $this->data = $data;
+
+        return $this;
+    }
+
+    // One field of what this site adds, read by name so a template never spells out the payload's shape
+    public function getDataValue(string $key, mixed $default = null): mixed
+    {
+        return $this->getData()[$key] ?? $default;
     }
 
     public function getSlug(): ?string

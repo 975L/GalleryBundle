@@ -15,12 +15,14 @@ use c975L\ConfigBundle\Service\ConfigServiceInterface;
 use c975L\ConfigBundle\Service\Export\ContentExporter;
 use c975L\GalleryBundle\Entity\GalleryCategory;
 use c975L\GalleryBundle\Entity\GalleryMedia;
+use c975L\GalleryBundle\Field\GalleryDataField;
 use c975L\GalleryBundle\Management\GalleryBlockOwnerResolver;
 use c975L\GalleryBundle\Management\GalleryExportProvider;
 use c975L\GalleryBundle\Management\GalleryImportProvider;
 use c975L\GalleryBundle\Model\GalleryMediaBatch;
 use c975L\GalleryBundle\Repository\GalleryCategoryRepository;
 use c975L\GalleryBundle\Repository\GalleryMediaRepository;
+use c975L\GalleryBundle\Service\GalleryCustomizationRegistry;
 use c975L\GalleryBundle\Service\GalleryLatestProvider;
 use c975L\GalleryBundle\Service\GalleryMediaArchiver;
 use c975L\GalleryBundle\Service\GalleryMediaFactory;
@@ -113,6 +115,7 @@ class GalleryCategoryCrudController extends AbstractCrudController
         private readonly CsrfTokenManagerInterface $csrfTokenManager,
         private readonly GalleryMediaArchiver $galleryMediaArchiver,
         private readonly GalleryLatestProvider $latestProvider,
+        private readonly GalleryCustomizationRegistry $customizationRegistry,
     ) {
     }
 
@@ -558,6 +561,22 @@ class GalleryCategoryCrudController extends AbstractCrudController
         $this->urlRedirector->record($entityManager, $oldUrl . '/*', $newUrl);
     }
 
+    // What this site adds to a gallery and no other site has, rendered from the form type it declares - a site declaring none gets no field at all (see c975L\GalleryBundle\Contract\GalleryCustomizationProviderInterface)
+    /** @return list<GalleryDataField> */
+    private function dataFields(): array
+    {
+        $formType = $this->customizationRegistry->getCategoryDataFormType();
+
+        if (null === $formType) {
+            return [];
+        }
+
+        return [
+            GalleryDataField::new('data', t('label.data', [], 'gallery'))
+                ->setFormType($formType),
+        ];
+    }
+
     #[\Override]
     public function configureFields(string $pageName): iterable
     {
@@ -607,6 +626,8 @@ class GalleryCategoryCrudController extends AbstractCrudController
             IntegerField::new('position')
                 ->setLabel(t('label.position', [], 'gallery'))
                 ->hideOnIndex(),
+
+            ...$this->dataFields(),
 
             // The same batch as the upload screen's, offered at creation time so a category can be filled in one go (see createNewFormBuilder for where the files become medias, and GalleryMediaBatchUploadType for the screen that adds them to a category that already exists)
             // Unmapped: a category has no files of its own, and the medias they become are built from them afterwards

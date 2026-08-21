@@ -14,12 +14,14 @@ use c975L\ConfigBundle\Entity\Redirect;
 use c975L\ConfigBundle\Repository\RedirectRepository;
 use c975L\ConfigBundle\Service\ConfigServiceInterface;
 use c975L\ConfigBundle\Service\Export\ContentExporter;
+use c975L\GalleryBundle\Contract\GalleryCustomizationProviderInterface;
 use c975L\GalleryBundle\Controller\Management\GalleryCategoryCrudController;
 use c975L\GalleryBundle\Entity\GalleryCategory;
 use c975L\GalleryBundle\Entity\GalleryMedia;
 use c975L\GalleryBundle\Management\GalleryExportProvider;
 use c975L\GalleryBundle\Repository\GalleryCategoryRepository;
 use c975L\GalleryBundle\Repository\GalleryMediaRepository;
+use c975L\GalleryBundle\Service\GalleryCustomizationRegistry;
 use c975L\GalleryBundle\Service\GalleryLatestProvider;
 use c975L\GalleryBundle\Service\GalleryMediaArchiver;
 use c975L\GalleryBundle\Service\GalleryMediaFactory;
@@ -52,6 +54,7 @@ use PHPUnit\Framework\TestCase;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\DependencyInjection\Container;
 use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Form\FormEvents;
@@ -154,6 +157,7 @@ class GalleryCategoryCrudControllerTest extends TestCase
         ?GalleryMediaRepository $galleryMediaRepository = null,
         ?GalleryMediaArchiver $galleryMediaArchiver = null,
         ?GalleryLatestProvider $latestProvider = null,
+        ?GalleryCustomizationRegistry $customizationRegistry = null,
     ): GalleryCategoryCrudController {
         $translator = $this->createStub(TranslatorInterface::class);
         $translator->method('trans')->willReturnArgument(0);
@@ -178,6 +182,7 @@ class GalleryCategoryCrudControllerTest extends TestCase
             $this->createCsrfTokenManager(true),
             $galleryMediaArchiver ?? new GalleryMediaArchiver(sys_get_temp_dir()),
             $latestProvider ?? $this->createStub(GalleryLatestProvider::class),
+            $customizationRegistry ?? new GalleryCustomizationRegistry([]),
         );
     }
 
@@ -1864,6 +1869,35 @@ class GalleryCategoryCrudControllerTest extends TestCase
         $help = $slug?->getHelp();
         $this->assertInstanceOf(TranslatableMessage::class, $help);
         $this->assertSame('label.slug_help', $help->getMessage());
+    }
+
+    // The ordinary case: a site declaring no fields of its own gets no field at all on the screen, which is what makes this cost such an app nothing
+    public function testConfigureFieldsAddsNoDataFieldWhenTheSiteDeclaresNone(): void
+    {
+        $this->assertNull($this->findFieldDto($this->createController()->configureFields(Crud::PAGE_EDIT), 'data'));
+    }
+
+    // And a site declaring one gets it rendered from the very form type it returned, kept out of the grid like the rest of the payload
+    public function testConfigureFieldsRendersTheFormTheSiteDeclaresForACategory(): void
+    {
+        $registry = new GalleryCustomizationRegistry([$this->createCustomizationProvider(TextType::class)]);
+
+        $data = $this->findFieldDto($this->createController(customizationRegistry: $registry)->configureFields(Crud::PAGE_EDIT), 'data');
+
+        $this->assertNotNull($data);
+        $this->assertSame(TextType::class, $data->getFormType());
+        $this->assertSame('@c975LGallery/management/field_data.html.twig', $data->getTemplatePath());
+        $this->assertFalse($data->isDisplayedOn(Crud::PAGE_INDEX));
+    }
+
+    // Only the category side is read here, a media's own form being the other controller's business
+    private function createCustomizationProvider(?string $categoryFormType): GalleryCustomizationProviderInterface
+    {
+        $provider = $this->createStub(GalleryCustomizationProviderInterface::class);
+        $provider->method('getCategoryDataFormType')->willReturn($categoryFormType);
+        $provider->method('getMediaDataFormType')->willReturn(null);
+
+        return $provider;
     }
 
     private function findFieldDto(iterable $fields, string $property): ?FieldDto

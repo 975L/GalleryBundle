@@ -22,7 +22,7 @@ See it in action at [bundles.975l.com/pages/gallery-bundle](https://bundles.975l
 ## Contents
 
 - **Setup** — [requirements](#requirements) · [installation](#installation) · [configuration](#load-the-configuration) · [routes](#enable-routes) · [assets](#install-assets) · [theme](#install-the-theme)
-- **Using it** — [public routes](#public-routes) · [linking from a menu](#linking-a-gallery-from-a-menu) · [the automatic gallery](#the-automatic-gallery) · [renaming a category](#renaming-a-category) · [deleting a gallery](#deleting-a-gallery) · [uploading a batch](#uploading-a-batch) · [renaming a media](#renaming-a-media) · [browsing and the lightbox](#browsing-and-the-lightbox) · [editing from the public pages](#editing-from-the-public-pages) · [blocks](#blocks-defined-by-this-bundle) · [category summary](#a-categorys-summary) · [share image](#the-image-a-shared-page-carries) · [category headings](#composing-a-categorys-heading) · [theme tokens](#theme) · [videos](#videos) · [trashing a selection](#trashing-a-selection-of-medias) · [credits / rights on a selection](#applying-credits-or-rights-to-a-selection) · [downloading a selection](#downloading-a-selections-files) · [export / import categories](#export--import-categories) · [sitemap and health check](#sitemap-and-health-check) · [describing the gallery index](#describing-the-gallery-index) · [backup](#backup) · [what's new](#whats-new) · [guided projects](#guided-projects)
+- **Using it** — [public routes](#public-routes) · [linking from a menu](#linking-a-gallery-from-a-menu) · [the automatic gallery](#the-automatic-gallery) · [renaming a category](#renaming-a-category) · [deleting a gallery](#deleting-a-gallery) · [uploading a batch](#uploading-a-batch) · [renaming a media](#renaming-a-media) · [a media's caption](#a-medias-caption) · [fields of your own](#fields-of-your-own) · [browsing and the lightbox](#browsing-and-the-lightbox) · [editing from the public pages](#editing-from-the-public-pages) · [blocks](#blocks-defined-by-this-bundle) · [category summary](#a-categorys-summary) · [share image](#the-image-a-shared-page-carries) · [category headings](#composing-a-categorys-heading) · [theme tokens](#theme) · [videos](#videos) · [trashing a selection](#trashing-a-selection-of-medias) · [credits / rights on a selection](#applying-credits-or-rights-to-a-selection) · [downloading a selection](#downloading-a-selections-files) · [export / import categories](#export--import-categories) · [sitemap and health check](#sitemap-and-health-check) · [describing the gallery index](#describing-the-gallery-index) · [backup](#backup) · [what's new](#whats-new) · [guided projects](#guided-projects)
 - **Operating** — [likes on a photo](#likes-on-a-photo) · [bringing an existing gallery in](#bringing-an-existing-gallery-in) · [upload ceilings](#upload-ceilings) · [AI agent skills](#ai-agent-skills)
 
 ## Features
@@ -430,6 +430,63 @@ Renaming would mean moving three files (medium, thumbnail, high resolution) and 
 place in an image index, for a signal the `alt` text already carries. Re-uploading the file names it after
 the current slug.
 
+### A media's caption
+
+Under the title sits a **description**: the caption read under the photograph on its own page, free text
+and as long as it needs to be. Nothing composes it and nothing fills it in — a media without one renders no
+caption at all, which is what most of a batch is. It is hidden from the grid of the back office, where a
+paragraph per row would bury the thumbnails that list exists to show.
+
+Where the **title** names the media in a grid and doubles as its `alt` text, the caption says what there is
+to say about it: where it was taken, who is in it, what the visitor is looking at. That is also why it is
+the page's own meta description and `og:description` when there is one — nobody summarises a photograph
+better than whoever filed it, and the composed sentence (see [the image a shared page
+carries](#the-image-a-shared-page-carries)) is only the fallback for a media carrying no caption.
+
+It travels with its media through the export/import, an archive predating it importing medias without one.
+Three theme tokens size and color it (`--gallery-media-description-font-size`, `-line-height`, `-color`) —
+full text color and full size on purpose, it is read where the credits under it are only glanced at.
+
+### Fields of your own
+
+A gallery and a media each carry a `data` payload — one nullable JSON column, not a column per field —
+holding whatever a single site records that no other one does. The same move `Block::$data` and
+`Book::$data` make, and for the same reason: what one site needs never costs a schema migration to every
+app running this bundle.
+
+A site declares them by implementing `GalleryCustomizationProviderInterface` — two methods, each returning
+a plain form type or `null`:
+
+```php
+class GalleryCustomizationProvider implements GalleryCustomizationProviderInterface
+{
+    public function getCategoryDataFormType(): ?string
+    {
+        return null;
+    }
+
+    public function getMediaDataFormType(): ?string
+    {
+        return MediaDataType::class;
+    }
+}
+```
+
+Nothing to tag and nothing to declare in `services.yaml`: the provider is collected on sight of the
+interface (`gallery.customization_provider`). The form is rendered as one field on the edit screen, under
+the bundle's own, and a site declaring nothing gets **no field at all** — which is why this costs an app
+that wants none exactly nothing. The payload travels through the export/import whole, without the archive
+knowing its shape.
+
+Read it back with `getDataValue()`, so a template never spells the payload out:
+
+```twig
+{{ media.getDataValue('photographer') }}
+```
+
+**What does not belong there**: anything the database has to filter, sort or join on, and anything every
+gallery wants. A caption is the second case — hence `description`, a column of its own.
+
 ### Browsing and the lightbox
 
 A visitor browses one resolution only, the stored (medium) file: the index, the grids and the media page
@@ -552,9 +609,10 @@ filter both layouts apply, so the summary is handed over as typed.
 It travels with its category through the export/import, an archive predating it importing as a category
 without one, and one exported before the rename read under its old `description` key.
 
-The two pages next to it fill the same variable their own way: a **media** composes it from the site name,
-its category, its own title and its credits — a photo carries no summary of its own, and these four are
-what situates one. The **index** of the gallery has no entity behind it at all, so it takes the summary an
+The two pages next to it fill the same variable their own way: a **media** uses its own caption when an
+admin wrote one (see [a media's caption](#a-medias-caption)), and composes it from the site name, its
+category, its own title and its credits when none was — those four being what situates a photo nobody
+described. The **index** of the gallery has no entity behind it at all, so it takes the summary an
 admin wrote for its path in ConfigBundle's `UrlMetadata`, without a line of code here (see
 [describing the gallery index](#describing-the-gallery-index)).
 
