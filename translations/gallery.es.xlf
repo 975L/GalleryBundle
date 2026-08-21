@@ -78,6 +78,10 @@
                 <source>description.guided_project_gallery_creation</source>
                 <target>Una galería es una categoría de medios: nómbrela, deposite en ella sus fotos, y ya está en línea.</target>
             </trans-unit>
+            <trans-unit id="Izavvs0">
+                <source>description.guided_project_gallery_latest</source>
+                <target>Una galería no contiene ninguna foto propia: reúne lo que las demás acaban de recibir.</target>
+            </trans-unit>
             <trans-unit id="TPdR3Kw">
                 <source>description.guided_project_gallery_media_detail</source>
                 <target>Leyenda, créditos, y el vídeo sobre el que un medio puede abrirse.</target>
@@ -85,6 +89,14 @@
             <trans-unit id="3RfmhpD">
                 <source>description.guided_project_gallery_medias_arrangement</source>
                 <target>Ordene los medios, elija el que representa la galería, y modifique varios a la vez.</target>
+            </trans-unit>
+            <trans-unit id="u_SEkIG">
+                <source>description.guided_project_gallery_medias_recovery</source>
+                <target>El sitio devuelve los originales en un solo archivo comprimido, y guarda una papelera propia para las fotos.</target>
+            </trans-unit>
+            <trans-unit id="Q1mOGK1">
+                <source>description.guided_project_gallery_trash</source>
+                <target>Eliminar una galería solo la retira del sitio: todo lo que contiene espera en la papelera.</target>
             </trans-unit>
             <trans-unit id="nkC0lr6">
                 <source>description.guided_step_gallery_creation_done</source>
@@ -109,6 +121,26 @@
             <trans-unit id="t_seNrA">
                 <source>description.guided_step_gallery_creation_title_root</source>
                 <target>Cada medio del lote toma este nombre, numerado - cada uno se retoca después, uno por uno.</target>
+            </trans-unit>
+            <trans-unit id="1fHHRyd">
+                <source>description.guided_step_gallery_latest_days</source>
+                <target>Los medios añadidos estos últimos días, con todas las galerías juntas, y cada miniatura nombra la galería a la que pertenece realmente.</target>
+            </trans-unit>
+            <trans-unit id="P9hoDgj">
+                <source>description.guided_step_gallery_latest_done</source>
+                <target>Dos ajustes del grupo galería lo deciden: el número de días que abarca, y cuántas fotos muestra como máximo. Si la ventana no recoge nada, recurre al último día con alguna incorporación.</target>
+            </trans-unit>
+            <trans-unit id="RNNygZc">
+                <source>description.guided_step_gallery_latest_edit</source>
+                <target>No ofrece envío, ni reordenación, ni portada: no tiene nada propio que organizar.</target>
+            </trans-unit>
+            <trans-unit id="ojYj7qU">
+                <source>description.guided_step_gallery_latest_open</source>
+                <target>«Últimas incorporaciones» está entre ellas, escrita por el sitio la primera vez que se listan las galerías: es una galería como las demás, que se puede renombrar y desplazar.</target>
+            </trans-unit>
+            <trans-unit id="i4vmOwe">
+                <source>description.guided_step_gallery_latest_selection</source>
+                <target>Los créditos, los derechos, la descarga y el envío a la papelera actúan sobre las fotos marcadas allí donde están: así se acredita de una vez todo un día de envíos.</target>
             </trans-unit>
             <trans-unit id="LiQHB9j">
                 <source>description.guided_step_gallery_media_detail_credits</source>
@@ -152,11 +184,11 @@
             </trans-unit>
             <trans-unit id="_25nV6p">
                 <source>description.guided_step_gallery_medias_arrangement_open</source>
-                <target>La galería que quiere organizar es una de ellas.</target>
+                <target>La galería que quiere organizar es una de ellas, pero no «Últimas incorporaciones», que no contiene ninguna foto propia y no organiza nada.</target>
             </trans-unit>
             <trans-unit id="Otdae53">
                 <source>description.guided_step_gallery_medias_arrangement_selection</source>
-                <target>Marque los medios, luego escriba los mismos créditos en todos, márquelos como derechos reservados, o elimínelos de una vez.</target>
+                <target>Marque los medios, luego escriba los mismos créditos en todos, márquelos como derechos reservados, descárguelos en alta resolución o como originales, o muévalos a la papelera de una vez.</target>
             </trans-unit>
             <trans-unit id="9EDpagA">
                 <source>description.guided_step_gallery_medias_arrangement_sort</source>
@@ -165,6 +197,46 @@
             <trans-unit id="xFlSzIS">
                 <source>description.guided_step_gallery_medias_arrangement_upload</source>
                 <target>Un lote a la vez, siempre desde la galería que los contiene - un medio nunca se crea por sí solo.</target>
+            </trans-unit>
+            <trans-unit id="sKZxCZg">
+                <source>description.guided_step_gallery_medias_recovery_download</source>
+                <target>Un zip para la selección: la alta resolución que guarda el sitio, o los originales tal como se enviaron si la galería se configuró para conservarlos. Una selección que supere 1 GB se rechaza, indicando su tamaño.</target>
+            </trans-unit>
+            <trans-unit id="mWPss93">
+                <source>description.guided_step_gallery_medias_recovery_edit</source>
+                <target>Sus medios están listados bajo su formulario.</target>
+            </trans-unit>
+            <trans-unit id="8T.dVX5">
+                <source>description.guided_step_gallery_medias_recovery_open</source>
+                <target>Los archivos se recuperan desde la galería que los contiene.</target>
+            </trans-unit>
+            <trans-unit id="6.GSoYt">
+                <source>description.guided_step_gallery_medias_recovery_select</source>
+                <target>Toda la galería de una vez, o solo las pocas fotos que busca.</target>
+            </trans-unit>
+            <trans-unit id="l38qUVs">
+                <source>description.guided_step_gallery_medias_recovery_trash</source>
+                <target>Cada galería lleva la suya, bajo su formulario en cuanto se pone una foto en ella: se ofrecen las mismas descargas, y «Restaurar» devuelve las fotos a la galería, detrás de las demás.</target>
+            </trans-unit>
+            <trans-unit id="vZywfgl">
+                <source>description.guided_step_gallery_trash_delete</source>
+                <target>El botón pide confirmación y luego mueve la galería a la papelera: sus medios, sus archivos y su dirección se conservan, y solo su página responde a partir de entonces que ya no existe.</target>
+            </trans-unit>
+            <trans-unit id="Pkkkoh1">
+                <source>description.guided_step_gallery_trash_done</source>
+                <target>Tirar una galería definitivamente es el otro botón de la papelera, reservado al administrador: es el único que retira los archivos del servidor.</target>
+            </trans-unit>
+            <trans-unit id="KaOuqrH">
+                <source>description.guided_step_gallery_trash_open</source>
+                <target>Las que el sitio muestra en este momento.</target>
+            </trans-unit>
+            <trans-unit id="Mu398NM">
+                <source>description.guided_step_gallery_trash_restore</source>
+                <target>Regresa a su sitio, con sus medios y su posición, y su dirección vuelve a responder.</target>
+            </trans-unit>
+            <trans-unit id="DHPb38w">
+                <source>description.guided_step_gallery_trash_switch</source>
+                <target>El botón situado encima de la lista alterna entre las galerías en línea y las apartadas: la misma pantalla, mostrando la otra cara.</target>
             </trans-unit>
             <trans-unit id="ZSCwjpo">
                 <source>flash.gallery_category_deleted_permanently</source>
@@ -534,6 +606,10 @@
                 <source>label.guided_project_gallery_creation</source>
                 <target>Crear una galería y llenarla</target>
             </trans-unit>
+            <trans-unit id="bquVmv7">
+                <source>label.guided_project_gallery_latest</source>
+                <target>La galería de las últimas incorporaciones</target>
+            </trans-unit>
             <trans-unit id="vUEEKrm">
                 <source>label.guided_project_gallery_media_detail</source>
                 <target>Retocar un medio</target>
@@ -541,6 +617,14 @@
             <trans-unit id="5Kw6l6b">
                 <source>label.guided_project_gallery_medias_arrangement</source>
                 <target>Organizar una galería</target>
+            </trans-unit>
+            <trans-unit id="jo6ewZB">
+                <source>label.guided_project_gallery_medias_recovery</source>
+                <target>Recuperar los archivos de las fotos</target>
+            </trans-unit>
+            <trans-unit id="zZGX7f.">
+                <source>label.guided_project_gallery_trash</source>
+                <target>Apartar una galería y recuperarla</target>
             </trans-unit>
             <trans-unit id="XVdjXZ2">
                 <source>label.guided_step_gallery_creation_done</source>
@@ -569,6 +653,26 @@
             <trans-unit id="0hrdUQX">
                 <source>label.guided_step_gallery_creation_title_root</source>
                 <target>Nombre el lote</target>
+            </trans-unit>
+            <trans-unit id="d18B8wI">
+                <source>label.guided_step_gallery_latest_days</source>
+                <target>Un encabezado por día</target>
+            </trans-unit>
+            <trans-unit id="fAKxDtZ">
+                <source>label.guided_step_gallery_latest_done</source>
+                <target>Hasta dónde se remonta</target>
+            </trans-unit>
+            <trans-unit id="ZnFu1z7">
+                <source>label.guided_step_gallery_latest_edit</source>
+                <target>Ábrala</target>
+            </trans-unit>
+            <trans-unit id="GAdFc1E">
+                <source>label.guided_step_gallery_latest_open</source>
+                <target>Abra sus galerías</target>
+            </trans-unit>
+            <trans-unit id="f.iiB8l">
+                <source>label.guided_step_gallery_latest_selection</source>
+                <target>Trabaje sobre una sesión de envío</target>
             </trans-unit>
             <trans-unit id="9HSb61v">
                 <source>label.guided_step_gallery_media_detail_credits</source>
@@ -630,9 +734,49 @@
                 <source>label.guided_step_gallery_medias_arrangement_upload</source>
                 <target>Añada medios</target>
             </trans-unit>
+            <trans-unit id="mCeDa1s">
+                <source>label.guided_step_gallery_medias_recovery_download</source>
+                <target>Descárguelas</target>
+            </trans-unit>
+            <trans-unit id="2TezmzH">
+                <source>label.guided_step_gallery_medias_recovery_edit</source>
+                <target>Abra la galería</target>
+            </trans-unit>
+            <trans-unit id="jY7KCuO">
+                <source>label.guided_step_gallery_medias_recovery_open</source>
+                <target>Abra sus galerías</target>
+            </trans-unit>
+            <trans-unit id="j3oITjX">
+                <source>label.guided_step_gallery_medias_recovery_select</source>
+                <target>Marque lo que quiera</target>
+            </trans-unit>
+            <trans-unit id="YCBsgHX">
+                <source>label.guided_step_gallery_medias_recovery_trash</source>
+                <target>Las fotos también tienen papelera</target>
+            </trans-unit>
+            <trans-unit id="van4.w.">
+                <source>label.guided_step_gallery_trash_delete</source>
+                <target>Retire una del sitio</target>
+            </trans-unit>
+            <trans-unit id="eknZGH_">
+                <source>label.guided_step_gallery_trash_done</source>
+                <target>Nada se pierde con un clic</target>
+            </trans-unit>
+            <trans-unit id="KwKB63W">
+                <source>label.guided_step_gallery_trash_open</source>
+                <target>Abra sus galerías</target>
+            </trans-unit>
+            <trans-unit id="rqg.OV9">
+                <source>label.guided_step_gallery_trash_restore</source>
+                <target>Vuelva a ponerla en línea</target>
+            </trans-unit>
+            <trans-unit id="Jx.swox">
+                <source>label.guided_step_gallery_trash_switch</source>
+                <target>Abra la papelera</target>
+            </trans-unit>
             <trans-unit id="IJ3OllR">
                 <source>label.info_gallery_category</source>
-                <target>Categorías de los medios, ellas son la galería del sitio. "Sin clasificar" es de reserva y no se puede eliminar. Cree, modifique o elimine una categoría, reordene su posición de visualización y añádale medios.</target>
+                <target>Categorías de los medios, ellas son la galería del sitio. "Sin clasificar" es de reserva y no se puede eliminar. Cree o modifique una categoría, reordene su posición de visualización y añádale medios. Mover una galería a la papelera solo la retira del sitio: el botón situado encima de la lista muestra lo que allí espera, y la devuelve.</target>
             </trans-unit>
             <trans-unit id="FyUiQ4f">
                 <source>label.info_gallery_category_delete</source>

@@ -69,6 +69,11 @@ class GalleryCategory implements HasBlocksInterface, TrashableInterface, \String
     /** @var list<GalleryMedia> */
     private array $automaticMedias = [];
 
+    // Not a column either: the visible medias read in bulk for a category that has no cover, so a listing draws every tile from one query instead of initializing the lazy relation below category by category (see GalleryCategoryRepository::findAllOrdered)
+    // Null means "nobody handed anything over", which is not the same as an empty list: a category preloaded and found empty has no media at all, and must not go back to the database to be told so again
+    /** @var ?list<GalleryMedia> */
+    private ?array $loadedMedias = null;
+
     #[ORM\OneToMany(mappedBy: 'category', targetEntity: GalleryMedia::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
     #[ORM\OrderBy(['position' => 'ASC'])]
     private Collection $medias;
@@ -188,6 +193,15 @@ class GalleryCategory implements HasBlocksInterface, TrashableInterface, \String
         return $this;
     }
 
+    // Posed by GalleryCategoryRepository alone, on the categories it read the medias of - the list is the whole visible one, so the count read next to a tile stays the count the grid shows
+    /** @param list<GalleryMedia> $medias */
+    public function setLoadedMedias(array $medias): self
+    {
+        $this->loadedMedias = $medias;
+
+        return $this;
+    }
+
     /** @return Collection<int, GalleryMedia> */
     public function getMedias(): Collection
     {
@@ -224,6 +238,11 @@ class GalleryCategory implements HasBlocksInterface, TrashableInterface, \String
         // Handed over rather than held: the relation of an automatic gallery is empty by definition, and reading it would leave its tile blank and its count at zero
         if ($this->automatic) {
             return $this->automaticMedias;
+        }
+
+        // Read in bulk with the listing this category came from, the relation then never being touched at all
+        if (null !== $this->loadedMedias) {
+            return $this->loadedMedias;
         }
 
         return array_values(array_filter(

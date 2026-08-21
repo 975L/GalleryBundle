@@ -135,6 +135,60 @@ class GalleryCategoryRepositoryTest extends TestCase
 
         $this->assertSame('non-classe-2', $repository->findOrCreateUncategorized()->getSlug());
     }
+
+    // The six callers are spread over services that know nothing of each other, and a page carrying a gallery block under a menu pointing at a category went through the very same query once for each of them
+    public function testFindAllOrderedReadsTheDatabaseOnceForTheWholeRequest(): void
+    {
+        $repository = new GalleryCategoryRepositoryOrderedFixture([new GalleryCategory()]);
+
+        $first = $repository->findAllOrdered();
+
+        $this->assertSame($first, $repository->findAllOrdered());
+        $this->assertSame(1, $repository->reads);
+    }
+
+    // A listing that found nothing is still a listing that ran: asking again would read an empty table once per caller
+    public function testFindAllOrderedRemembersThatItFoundNothing(): void
+    {
+        $repository = new GalleryCategoryRepositoryOrderedFixture([]);
+
+        $repository->findAllOrdered();
+        $repository->findAllOrdered();
+
+        $this->assertSame(1, $repository->reads);
+    }
+
+    // Dropped between two messages of a worker, where the same repository serves requests minutes apart - a category added meanwhile would otherwise stay out of the list for as long as the process lives
+    public function testResetSendsTheNextCallBackToTheDatabase(): void
+    {
+        $repository = new GalleryCategoryRepositoryOrderedFixture([new GalleryCategory()]);
+
+        $repository->findAllOrdered();
+        $repository->reset();
+        $repository->findAllOrdered();
+
+        $this->assertSame(2, $repository->reads);
+    }
+}
+
+// orderedCategories() reads the table through Doctrine's own QueryBuilder, which has no in-memory equivalent to stub without a real EntityManager - counted here instead, parent constructor never invoked, so findAllOrdered()'s memoization and reset() are exercised for real
+class GalleryCategoryRepositoryOrderedFixture extends GalleryCategoryRepository
+{
+    public int $reads = 0;
+
+    /** @param list<GalleryCategory> $categories */
+    public function __construct(private readonly array $categories)
+    {
+    }
+
+    /** @return list<GalleryCategory> */
+    #[\Override]
+    protected function orderedCategories(): array
+    {
+        ++$this->reads;
+
+        return $this->categories;
+    }
 }
 
 // findOneBy() is resolved by Doctrine's real EntityRepository internals - overriding it directly (a real, non-magic, declared method here) plus getEntityManager() instead, parent constructor never invoked, mirrors ConfigRepositoryFindOneBySlugFixture in ConfigBundle/SiteBundle. GalleryCategoryRepository's own $translator (used by the inherited, un-overridden findOrCreateUncategorized()) is private to that class and typed non-nullable - reflection initializes it directly since the skipped constructor never gets the chance to

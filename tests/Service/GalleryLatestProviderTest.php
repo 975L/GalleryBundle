@@ -21,19 +21,91 @@ use PHPUnit\Framework\TestCase;
 class GalleryLatestProviderTest extends TestCase
 {
     /** @param array<string, mixed> $configs */
-    private function createProvider(array $configs = [], array $medias = [], ?GalleryCategoryRepository $categoryRepository = null): GalleryLatestProvider
+    private function createProvider(array $configs = [], array $medias = [], ?GalleryCategoryRepository $categoryRepository = null, ?GalleryMediaRepository $mediaRepository = null): GalleryLatestProvider
     {
         $configService = $this->createStub(ConfigServiceInterface::class);
         $configService->method('get')->willReturnCallback(static fn (string $slug): mixed => $configs[$slug] ?? null);
 
-        $mediaRepository = $this->createStub(GalleryMediaRepository::class);
-        $mediaRepository->method('findLatest')->willReturn($medias);
+        if (null === $mediaRepository) {
+            $mediaRepository = $this->createStub(GalleryMediaRepository::class);
+            $mediaRepository->method('findLatest')->willReturn($medias);
+        }
 
         return new GalleryLatestProvider(
             $configService,
             $categoryRepository ?? $this->createStub(GalleryCategoryRepository::class),
             $mediaRepository,
         );
+    }
+
+    // Every listed category draws its tile and prints its count from the same collection, and reading it category by category is a query each on the very page that lists them all
+    public function testPrepareReadsTheMediasOfEveryListedCategoryInOneQuery(): void
+    {
+        $withoutCover = $this->category(1);
+        $withCover = $this->category(2)->setCoverMedia(new GalleryMedia());
+        $media = new GalleryMedia();
+
+        $mediaRepository = $this->createMock(GalleryMediaRepository::class);
+        $mediaRepository->method('findLatest')->willReturn([]);
+        $mediaRepository->expects($this->once())
+            ->method('findVisibleByCategories')
+            ->with([$withoutCover, $withCover])
+            ->willReturn([1 => [$media]])
+        ;
+
+        $categoryRepository = $this->createStub(GalleryCategoryRepository::class);
+        $categoryRepository->method('findOrCreateAutomatic')->willReturn(new GalleryCategory()->setAutomatic(true)->setIsDeleted(true));
+
+        $this->createProvider(categoryRepository: $categoryRepository, mediaRepository: $mediaRepository)
+            ->prepare([$withoutCover, $withCover])
+        ;
+
+        $this->assertSame($media, $withoutCover->getCoverOrRandomMedia());
+        $this->assertSame(1, $withoutCover->getMediasCount());
+        $this->assertSame(0, $withCover->getMediasCount());
+    }
+
+    // A cover an admin put in the trash is no cover: the category falls back on its medias, so it needs the list just as much as one that never had a cover at all
+    public function testPrepareAlsoReadsTheMediasOfACategoryWhoseCoverIsTrashed(): void
+    {
+        $trashedCover = new GalleryMedia();
+        $trashedCover->setIsDeleted(true);
+        $category = $this->category(1)->setCoverMedia($trashedCover);
+        $other = $this->category(2);
+
+        $mediaRepository = $this->createMock(GalleryMediaRepository::class);
+        $mediaRepository->method('findLatest')->willReturn([]);
+        $mediaRepository->expects($this->once())->method('findVisibleByCategories')->with([$category, $other])->willReturn([]);
+
+        $categoryRepository = $this->createStub(GalleryCategoryRepository::class);
+        $categoryRepository->method('findOrCreateAutomatic')->willReturn(new GalleryCategory()->setAutomatic(true)->setIsDeleted(true));
+
+        $this->createProvider(categoryRepository: $categoryRepository, mediaRepository: $mediaRepository)->prepare([$category, $other]);
+
+        $this->assertNull($category->getCoverOrRandomMedia());
+    }
+
+    // The block showing one gallery goes through prepare() too: reading it ahead saves no query at all, the lazy relation running exactly the one this would
+    public function testPrepareAsksNothingAheadForASingleCategory(): void
+    {
+        $category = $this->category(1);
+
+        $mediaRepository = $this->createMock(GalleryMediaRepository::class);
+        $mediaRepository->method('findLatest')->willReturn([]);
+        $mediaRepository->expects($this->never())->method('findVisibleByCategories');
+
+        $categoryRepository = $this->createStub(GalleryCategoryRepository::class);
+        $categoryRepository->method('findOrCreateAutomatic')->willReturn(new GalleryCategory()->setAutomatic(true)->setIsDeleted(true));
+
+        $this->createProvider(categoryRepository: $categoryRepository, mediaRepository: $mediaRepository)->prepare([$category]);
+    }
+
+    private function category(int $id): GalleryCategory
+    {
+        $category = new GalleryCategory();
+        new \ReflectionProperty(GalleryCategory::class, 'id')->setValue($category, $id);
+
+        return $category;
     }
 
     // A site that never opened the two entries gets the shipped rhythm rather than an empty gallery
@@ -124,6 +196,28 @@ class GalleryLatestProviderTest extends TestCase
 
         $this->assertSame(2, $automatic->getMediasCount());
         $this->assertSame(0, $normal->getMediasCount());
+    }
+
+    // The back-office rows show a thumbnail and a media count, both read from the relation - one query per row without this
+    public function testHydrateReadsTheMediasOfTheRowsItIsHandedInOneQuery(): void
+    {
+        $automatic = new GalleryCategory()->setAutomatic(true);
+        $first = $this->category(1);
+        $second = $this->category(2);
+        $media = new GalleryMedia();
+
+        $mediaRepository = $this->createMock(GalleryMediaRepository::class);
+        $mediaRepository->method('findLatest')->willReturn([]);
+        $mediaRepository->expects($this->once())
+            ->method('findVisibleByCategories')
+            ->with([$first, $second])
+            ->willReturn([2 => [$media]])
+        ;
+
+        $this->createProvider(mediaRepository: $mediaRepository)->hydrate([$automatic, $first, $second]);
+
+        $this->assertSame(0, $first->getMediasCount());
+        $this->assertSame($media, $second->getCoverOrRandomMedia());
     }
 
     // Nobody creates the gallery of the last additions: it is written the first time it is asked for, and read back every time after

@@ -14,6 +14,10 @@
                 <source>description.gallery_latest_max</source>
                 <target>Maximum number of medias the automatic gallery shows, 200 by default. It guards the day a whole library came in at once - a migration, an import - which would otherwise fill the page with thousands of thumbnails. Past it, only the most recent ones are shown. Empty or 0, 200 is applied.</target>
             </trans-unit>
+            <trans-unit id="wn2FpRV">
+                <source>description.gallery_rating</source>
+                <target>Shows a heart under a photo, which visitors click to say they like it. One gesture, no score: the page says how many people liked it</target>
+            </trans-unit>
             <trans-unit id="a033O9O">
                 <source>description.gallery_route_prefix</source>
                 <target>First segment of the gallery's public urls, e.g. "gallery" for /gallery/my-category. A change applies straight away, but the previous urls then return a not found page: set up a redirect if they were indexed. Left empty, the "gallery" prefix applies.</target>
@@ -73,6 +77,10 @@
             <trans-unit id="paiRW9j">
                 <source>label.gallery_latest_max</source>
                 <target>Automatic gallery: maximum number of medias</target>
+            </trans-unit>
+            <trans-unit id="oYheJD4">
+                <source>label.gallery_rating</source>
+                <target>Likes on medias</target>
             </trans-unit>
             <trans-unit id="lbaVu72">
                 <source>label.gallery_route_prefix</source>

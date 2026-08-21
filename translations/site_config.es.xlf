@@ -14,6 +14,10 @@
                 <source>description.gallery_latest_max</source>
                 <target>Número máximo de medios que muestra la galería automática, 200 por defecto. Protege el día en que entró toda una fototeca de una vez - una migración, una importación - que si no llenaría la página con miles de miniaturas. Más allá, solo se muestran los más recientes. Vacío o 0, se aplica 200.</target>
             </trans-unit>
+            <trans-unit id="wn2FpRV">
+                <source>description.gallery_rating</source>
+                <target>Muestra un corazón bajo una foto, que los visitantes pulsan para decir que les gusta. Un solo gesto, sin valoración: la página indica cuántas personas la han marcado</target>
+            </trans-unit>
             <trans-unit id="a033O9O">
                 <source>description.gallery_route_prefix</source>
                 <target>Primer segmento de las URL públicas de la galería, p. ej. "gallery" para /gallery/mi-categoria. El cambio es inmediato, pero las URL anteriores devuelven una página no encontrada: prevea una redirección si estaban indexadas. Vacío, se aplica el prefijo "gallery".</target>
@@ -73,6 +77,10 @@
             <trans-unit id="paiRW9j">
                 <source>label.gallery_latest_max</source>
                 <target>Galería automática: número máximo de medios</target>
+            </trans-unit>
+            <trans-unit id="oYheJD4">
+                <source>label.gallery_rating</source>
+                <target>Me gusta en los medios</target>
             </trans-unit>
             <trans-unit id="lbaVu72">
                 <source>label.gallery_route_prefix</source>

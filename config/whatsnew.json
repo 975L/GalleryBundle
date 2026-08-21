@@ -1,5 +1,25 @@
 [
     {
+        "date": "2026-08-21",
+        "description": [
+            {
+                "en": "Three new guided projects join the dashboard panel: putting a gallery aside and bringing it back from the trash, getting your photograph files back as a single archive, and the Latest additions gallery — what it is and why nobody arranges it",
+                "fr": "Trois nouveaux projets guidés rejoignent le panneau du tableau de bord : mettre une galerie de côté puis la ressortir de la corbeille, récupérer les fichiers de vos photographies en une seule archive, et la galerie Derniers ajouts — ce qu'elle est et pourquoi personne ne la range",
+                "es": "Tres nuevos proyectos guiados se suman al panel del tablero: apartar una galería y volver a sacarla de la papelera, recuperar los archivos de sus fotografías en un único archivo comprimido, y la galería Últimas incorporaciones — qué es y por qué nadie la ordena"
+            }
+        ]
+    },
+    {
+        "date": "2026-08-20",
+        "description": [
+            {
+                "en": "Your visitors can now say they like a photo, without having to create an account: a heart appears under it, and the line beneath says how many people liked it. Clicking it again takes the like back. It is on out of the box, and the \"Likes on medias\" setting turns it off",
+                "fr": "Vos visiteurs peuvent désormais dire qu'ils aiment une photo, sans avoir à créer de compte : un cœur apparaît en dessous, et la ligne qui suit indique combien de personnes l'ont aimée. Recliquer dessus retire le j'aime. C'est actif d'emblée, et le réglage « J'aime sur les médias » le désactive",
+                "es": "Sus visitantes pueden ahora decir que les gusta una foto, sin tener que crear una cuenta: aparece un corazón debajo, y la línea siguiente indica cuántas personas la han marcado. Volver a pulsarlo retira el me gusta. Está activo de entrada, y el ajuste «Me gusta en los medios» lo desactiva"
+            }
+        ]
+    },
+    {
         "date": "2026-08-19",
         "description": [
             {

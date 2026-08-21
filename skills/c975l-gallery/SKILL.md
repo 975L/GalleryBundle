@@ -1,6 +1,6 @@
 ---
 name: c975l-gallery
-description: "Use this skill when working with photo galleries in a Symfony application built on the c975L ecosystem with c975l/gallery-bundle. Covers categories and medias, the admin-renamable url prefix, the two-step trash, batch upload and the three image derivatives, videos and embeds, the two gallery blocks, theming, and every extension point the bundle offers. Triggers on: GalleryCategory, GalleryMedia, gallery-route-prefix, gallery_index, gallery_category, gallery_media, gallery_categories, gallery_medias, c975l:gallery:rebuild-thumbnails, c975l:gallery:fill-slugs, photo gallery, thumbnail, lightbox, batch upload, upload progress, passe-partout, trash, restore, delete permanently, 410 Gone, download highres, download originals, GalleryMediaArchiver, files-gallery, health check, automatic gallery, latest additions, GalleryLatestProvider, findOrCreateAutomatic, findLatest, gallery-latest-days, gallery-latest-max."
+description: "Use this skill when working with photo galleries in a Symfony application built on the c975L ecosystem with c975l/gallery-bundle. Covers categories and medias, the admin-renamable url prefix, the two-step trash, batch upload and the three image derivatives, videos and embeds, the two gallery blocks, theming, and every extension point the bundle offers. Triggers on: GalleryCategory, GalleryMedia, gallery-route-prefix, gallery_index, gallery_category, gallery_media, gallery_categories, gallery_medias, c975l:gallery:rebuild-thumbnails, c975l:gallery:fill-slugs, photo gallery, thumbnail, lightbox, batch upload, upload progress, passe-partout, trash, restore, delete permanently, 410 Gone, download highres, download originals, GalleryMediaArchiver, files-gallery, health check, automatic gallery, latest additions, GalleryLatestProvider, findOrCreateAutomatic, findLatest, gallery-latest-days, gallery-latest-max, gallery-rating, likes, like a photo, heart, rating, findVisibleByCategories, setLoadedMedias."
 ---
 
 # c975L GalleryBundle
@@ -79,6 +79,11 @@ simply never reached.
   `getCoverOrRandomMedia()`. `findOneBySlug()` and `findOneBySlugInCategory()` are deliberately
   unfiltered, the front-office needing the row in hand to answer 410.
 - The export/import carries the flag both ways: a category archived out of the trash comes back to it.
+- **The likes go with the permanent deletion, never with the trash.** A rating names its owner
+  (`gallery_media` + id) rather than relating to it, so no foreign key cascades it: `deletePermanently()`,
+  `deleteMediasPermanently()` and `GalleryImportProvider::import()` (which replaces a category's whole
+  collection) each call `RatingRepository::deleteForOwners()` themselves, once for the whole set and only
+  after the flush that actually removed the rows. A trashed media keeps its likes — it can come back.
 
 ## Public routes and the renamable prefix
 
@@ -130,6 +135,10 @@ index on `created_at` is what keeps that read off a full scan.
   holding its medias. For a caller reading the list itself (the public index, the categories block).
 - `hydrate(iterable $categories)` — hands the automatic one its list, the others left alone. For a
   caller holding entities it did not read (the back-office listing, whose rows EasyAdmin paginates).
+- Both also hand **every other listed category** the medias its tile and its media count read, in one
+  `GalleryMediaRepository::findVisibleByCategories()` query for the whole list, posed through
+  `GalleryCategory::setLoadedMedias()` — the relation is lazy, so a listing otherwise reads it category by
+  category. A list of one is left alone, the lazy relation running the one query this would.
 - `getMedias()`, `getMediasByDay()`, `findPreviousAndNext($media)`, `ensureCategory()`.
 
 `GalleryCategory::getMediasCount()` and `getCoverOrRandomMedia()` read that handed list rather than the
@@ -248,6 +257,22 @@ grids show, so one category holds photos and videos alike.
 - CSP: UiBundle exposes every declared origin as `%c975l_ui.video.embed_origins%`, for `frame-src`,
   `child-src` and any `Permissions-Policy` naming `fullscreen`.
 
+## Likes on a photo
+
+`gallery-rating`, on out of the box, prints UiBundle's rating widget under the media page's photo, asked
+for one icon and one only:
+
+```twig
+<twig:c975LUi:Rating:Rating ownerType="gallery_media" ownerId="{{ media.id }}" scale="1" icon="heart"/>
+```
+
+A photo is liked or it is not, so there is no average to print — the line under it says how many people
+liked it, and clicking the heart again takes the like back. `scale` and `icon` are stated here rather than
+left to the site's own `ui-rating-icon` / `ui-rating-scale`, which serve the scales elsewhere. No login is
+asked for: an authenticated visitor is keyed on their account, anyone else on a token their own browser
+mints. The `rating` table comes with `c975l/core-bundle` `^1.13.1` — an app updating to it generates and
+plays a migration, or every media page fails on an unknown table. See UiBundle's *Visitor ratings*.
+
 ## Configuration
 
 Everything is in the database, declared in `config/configs.json`, group **gallery**, edited in
@@ -258,6 +283,7 @@ EasyAdmin — **never in `.env`, `parameters:` or a Configuration/TreeBuilder cl
 | --- | --- | --- |
 | `gallery-route-prefix` | text | the first url segment (empty falls back to `gallery`) |
 | `gallery-thumbnail-whole` | bool | grid tiles `contain` instead of `cover` |
+| `gallery-rating` | bool | the heart under a photo, on out of the box (see *Likes on a photo*) |
 | `gallery-latest-days` | int | how many days back the automatic gallery reaches (empty or 0 falls back to 7) |
 | `gallery-latest-max` | int | how many medias it stops at (empty or 0 falls back to 200) |
 | `gallery-style` | choice `light`/`dark` | the ground a photo is shown against; empty keeps the site's own colors |
@@ -293,8 +319,11 @@ deletions, held at `site-role-admin` (see *Deleting takes two steps*).
 - **Repositories** — `GalleryCategoryRepository::findAllOrdered()`, `findOneBySlug()`,
   `countVisible()`, `findOrCreateUncategorized()`, `findOrCreateAutomatic()` (both suffixing a slug
   already taken); `GalleryMediaRepository::findByCategory()`, `findOneBySlugInCategory()`,
-  `findPreviousAndNext()`, `findLatest()` (what the automatic gallery shows), `findWithFilename()`
+  `findPreviousAndNext()`, `findLatest()` (what the automatic gallery shows), `findVisibleByCategories()`
+  (the same list for several categories at once, grouped by category id), `findWithFilename()`
   (the rows naming a file, for the files health check).
+  `findAllOrdered()` is memoized for the request (`ResetInterface`), its six callers knowing nothing of
+  each other.
 
 What the bundle already contributes to the dashboard, so you do not have to: `MenuProvider`,
 `LinkableRouteProvider` (the index and each category offered as a SiteBundle menu target),
@@ -319,6 +348,8 @@ What the bundle already contributes to the dashboard, so you do not have to: `Me
 - **Do not query a media by slug alone** — a slug is unique only within its category.
 - **Do not list categories or medias with `findAll()` / `findBy()`.** Those see the trash; use
   `findAllOrdered()` and `GalleryMediaRepository::findByCategory()`, which do not.
+- **Do not remove a media row without dropping its ratings.** Nothing cascades them; go through
+  `RatingRepository::deleteForOwners('gallery_media', $ids)` after the flush (see *Deleting takes two steps*).
 - **Do not call `remove()` on a category or a media**, and do not write a soft-delete flag of your own.
   Flag it through `TrashableInterface`; the permanent deletion is the back office's own action.
 - **Do not add a video platform here.** Declare it in `c975L\UiBundle\Video\VideoPlatform`.

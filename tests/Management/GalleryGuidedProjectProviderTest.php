@@ -40,13 +40,16 @@ class GalleryGuidedProjectProviderTest extends TestCase
         return new GalleryGuidedProjectProvider($this->createAdminUrlGenerator($controllers), $configService);
     }
 
-    // Continues the sequence after ConfigBundle (10-30), SiteBundle (50-80), UiBundle (90-110) and SocialBundle (120-130)
+    // Continues the sequence after ConfigBundle (10-40), SiteBundle (50-80), UiBundle (90-110) and SocialBundle (120-130)
     public function testGetGuidedProjectsContinuesTheOrderSequence(): void
     {
         $projects = $this->createProvider()->getGuidedProjects();
 
-        $this->assertSame(['gallery-creation', 'gallery-medias-arrangement', 'gallery-media-detail'], array_column($projects, 'slug'));
-        $this->assertSame([140, 150, 160], array_column($projects, 'order'));
+        $this->assertSame(
+            ['gallery-creation', 'gallery-medias-arrangement', 'gallery-media-detail', 'gallery-trash', 'gallery-medias-recovery', 'gallery-latest'],
+            array_column($projects, 'slug')
+        );
+        $this->assertSame([140, 150, 160, 170, 180, 190], array_column($projects, 'order'));
     }
 
     public function testEverySlugIsPrefixedWithTheBundleName(): void
@@ -105,7 +108,7 @@ class GalleryGuidedProjectProviderTest extends TestCase
         $this->createProvider($controllers)->getGuidedProjects();
 
         $this->assertSame(
-            ['GalleryCategoryCrudController', 'GalleryCategoryCrudController', 'GalleryCategoryCrudController'],
+            array_fill(0, 6, 'GalleryCategoryCrudController'),
             array_map(static fn (string $fqcn): string => basename(str_replace('\\', '/', $fqcn)), $controllers)
         );
     }
@@ -128,6 +131,20 @@ class GalleryGuidedProjectProviderTest extends TestCase
         foreach ($saveSteps as $step) {
             $this->assertSame('.action-saveAndReturn', $step['highlight']);
         }
+    }
+
+    // Every action a step points at is one the editor role opens - the permanent deletion sits at the admin's, so a step highlighting it would show nothing to the very users the parcours is offered to (see GalleryCategoryCrudController::configureActions)
+    public function testNoStepHighlightsAnActionHeldAboveTheEditorRole(): void
+    {
+        $highlights = [];
+
+        foreach ($this->createProvider()->getGuidedProjects() as $project) {
+            foreach ($project['steps'] as $step) {
+                $highlights[] = $step['highlight'] ?? '';
+            }
+        }
+
+        $this->assertNotContains('.action-deletePermanently', $highlights);
     }
 
     // A marker renamed in the template would leave its step highlighting nothing at all, the panel going on showing itself

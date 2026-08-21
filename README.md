@@ -23,10 +23,11 @@ See it in action at [bundles.975l.com/pages/gallery-bundle](https://bundles.975l
 
 - **Setup** — [requirements](#requirements) · [installation](#installation) · [configuration](#load-the-configuration) · [routes](#enable-routes) · [assets](#install-assets) · [theme](#install-the-theme)
 - **Using it** — [public routes](#public-routes) · [linking from a menu](#linking-a-gallery-from-a-menu) · [the automatic gallery](#the-automatic-gallery) · [renaming a category](#renaming-a-category) · [deleting a gallery](#deleting-a-gallery) · [uploading a batch](#uploading-a-batch) · [renaming a media](#renaming-a-media) · [browsing and the lightbox](#browsing-and-the-lightbox) · [editing from the public pages](#editing-from-the-public-pages) · [blocks](#blocks-defined-by-this-bundle) · [category summary](#a-categorys-summary) · [share image](#the-image-a-shared-page-carries) · [category headings](#composing-a-categorys-heading) · [theme tokens](#theme) · [videos](#videos) · [trashing a selection](#trashing-a-selection-of-medias) · [credits / rights on a selection](#applying-credits-or-rights-to-a-selection) · [downloading a selection](#downloading-a-selections-files) · [export / import categories](#export--import-categories) · [sitemap and health check](#sitemap-and-health-check) · [describing the gallery index](#describing-the-gallery-index) · [backup](#backup) · [what's new](#whats-new) · [guided projects](#guided-projects)
-- **Operating** — [bringing an existing gallery in](#bringing-an-existing-gallery-in) · [upload ceilings](#upload-ceilings) · [AI agent skills](#ai-agent-skills)
+- **Operating** — [likes on a photo](#likes-on-a-photo) · [bringing an existing gallery in](#bringing-an-existing-gallery-in) · [upload ceilings](#upload-ceilings) · [AI agent skills](#ai-agent-skills)
 
 ## Features
 
+- A heart under a photo, behind one setting: visitors like it without an account, and the page says how many did (see [likes on a photo](#likes-on-a-photo)).
 - `GalleryCategory` → `GalleryMedia`: the category is the top-level unit, a site's galleries being its categories - no container above them.
 - Bulk upload: pick every file at once from the category they belong to, with a title root, credits and rights-reserved applied to the whole batch, retouched one media at a time afterwards. The same batch is offered on the category creation form, so a category is created with its medias in one go. Optionally, the untouched originals are kept outside the document root (see [uploading a batch](#uploading-a-batch)). The screen counts the megabytes as they leave and then says the files are being processed, a batch being minutes of waiting.
 - Three derivatives generated automatically per uploaded image (thumbnail / medium / highres), all three holding the whole photo, via UiBundle's `VichImageResizeListener` and the `VichMultiSizeImageInterface` contract - naming and resizing stay centralized in UiBundle, this bundle only declares the target sizes and how its grids frame them (see [Thumbnail framing](#thumbnail-framing)).
@@ -46,7 +47,7 @@ See it in action at [bundles.975l.com/pages/gallery-bundle](https://bundles.975l
 - The gallery index and each category offered as a SiteBundle menu target, so a navbar links straight to one of the site's galleries (see [linking a gallery from a menu](#linking-a-gallery-from-a-menu))
 - Categories can be exported/imported as a zip (heading blocks, medias and files bundled in), plugging into ConfigBundle's **Export sync (everything)** dashboard shortcut and **Import content** screen.
 - The two upload roots declared to the backup, via ConfigBundle's `BackupPathProviderInterface`, mirrored offsite rather than tarred (see [backup](#backup))
-- Three replayable guided projects contributed to the dashboard, via ConfigBundle's `GuidedProjectProviderInterface`, walking a gallery's creation, its medias' arrangement and a media's own screen (see [guided projects](#guided-projects))
+- Six replayable guided projects contributed to the dashboard, via ConfigBundle's `GuidedProjectProviderInterface`, walking a gallery's creation, its medias' arrangement, a media's own screen, the trash and the way back out of it, the files handed back as an archive, and the gallery of the latest additions (see [guided projects](#guided-projects))
 - A skill written for the coding agents of the sites installing this bundle, shipped in the package and read straight from `vendor/` (see [AI agent skills](#ai-agent-skills))
 
 ---
@@ -994,34 +995,55 @@ pages, not which class carries it — the ChangeLog is where the code's history 
 
 ### Guided projects
 
-`GalleryGuidedProjectProvider` (ConfigBundle's `GuidedProjectProviderInterface`) contributes three replayable
+`GalleryGuidedProjectProvider` (ConfigBundle's `GuidedProjectProviderInterface`) contributes six replayable
 exercises to the dashboard's "Guided projects" panel: **creating a gallery** with its first photographs in
 one go — the creation form carries the whole batch, which is the only screen doing both —, **arranging a
 gallery's medias** on its own edit screen, where the order, the cover and the batch edits all save as they
-go, and **filling in a media's own screen**, where a caption is written and a video attached. Nothing to
-register — the provider is picked up automatically.
+go, **filling in a media's own screen**, where a caption is written and a video attached, **putting a gallery
+aside and bringing it back**, which walks the trash and stops before the permanent deletion — held one role
+higher, so a step highlighting it would point at a button an editor never sees —, **getting the photo files
+back** as one archive, and **the gallery of the latest additions**, the one gallery arranged by nobody.
+Nothing to register — the provider is picked up automatically.
 
-Only the opening step of each carries an `url`, all three sending the user to the categories, the single
+Only the opening step of each carries an `url`, all six sending the user to the categories, the single
 sidebar entry of the whole feature. From there the panel walks that screen, highlighting the button or the
 field they are meant to use next — one they click themselves, which brings the panel back on that very step:
 
 | Pointed at | What it is |
 | --- | --- |
-| `.action-new`, `.action-edit`, `.action-saveAndReturn` | EasyAdmin builds an `action-<name>` class from the action's own name — `saveAndReturn`, not `save` |
+| `.action-new`, `.action-edit`, `.action-saveAndReturn`, `.action-delete`, `.action-trash`, `.action-restore` | EasyAdmin builds an `action-<name>` class from the action's own name — `saveAndReturn`, not `save` |
 | `#GalleryCategory_title`, `#GalleryCategory_titleRoot`, `#GalleryMedia_title`, `#GalleryMedia_credits`, `#GalleryMedia_externalUrl` | plain form fields, pointed at through their rendered id |
 | `#GalleryCategory_files` | the batch upload of the creation form |
-| `[data-gallery-upload-medias]`, `[data-gallery-cover-radio]`, `[data-gallery-media-sort-handle]`, `[data-gallery-media-selection-target="toggle"]` | markers carried by this bundle's own templates, the elements having no id of their own |
-| `.management-media-grid__item` | a thumbnail of the medias grid, opening the media it stands for |
+| `[data-gallery-upload-medias]`, `[data-gallery-cover-radio]`, `[data-gallery-media-sort-handle]`, `[data-gallery-media-selection-target="toggle"]`, `[data-gallery-download-medias]` | markers carried by this bundle's own templates, the elements having no id of their own |
+| `.management-media-grid`, `.management-media-grid__item` | the medias grid, and a thumbnail of it opening the media it stands for |
 
 An app overriding `templates/management/gallery_category_edit.html.twig` keeps those `data-` attributes, or
 the steps resting on them point at nothing — they are read as selectors, not as behaviour.
 
-All three are gated by `site-role-editor`, the same ConfigBundle entry the gallery's management screens sit
-behind: an admin without it is never offered a parcours ending on an access-denied page. Their `order` (140,
-150, 160) continues the ecosystem's sequence, after ConfigBundle (10-40), SiteBundle (50-80), UiBundle
+All six are gated by `site-role-editor`, the same ConfigBundle entry the gallery's management screens sit
+behind: an admin without it is never offered a parcours ending on an access-denied page. Their `order` (140
+to 190) continues the ecosystem's sequence, after ConfigBundle (10-40), SiteBundle (50-80), UiBundle
 (90-110) and SocialBundle (120-130). Nothing is derived from the site's own data, so a project is worth
 following on a site already full of galleries, and worth replaying once done (see ConfigBundle's README,
 "Contributing guided projects from other bundles").
+
+---
+
+## Likes on a photo
+
+`gallery-rating`, on out of the box, puts a heart under the media page's photo, next to its credits. It is
+UiBundle's rating widget asked for one icon and one only (`scale="1" icon="heart"`): a photo is liked or it is
+not, so there is no average to print — the line under it says how many people liked it, and clicking the heart
+again takes the like back. Both are stated by this bundle rather than left to the site's own `ui-rating-icon` /
+`ui-rating-scale`, which serve the scales elsewhere.
+
+No login is asked for and no cookie banner is owed: an authenticated visitor is keyed on their account, anyone
+else on a token their own browser mints on the click. See UiBundle's **Visitor ratings** section for the whole of
+it.
+
+Removing medias for good drops their likes — from the trash's own selection, from a category deleted with
+everything under it, and from the medias a reimport replaces alike — never when they are merely trashed, a
+photo coming back having to find its likes where it left them.
 
 ---
 

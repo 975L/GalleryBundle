@@ -16,6 +16,7 @@ use c975L\GalleryBundle\Entity\GalleryMedia;
 use c975L\GalleryBundle\Repository\GalleryCategoryRepository;
 use c975L\GalleryBundle\Service\GalleryMediaSlugger;
 use c975L\UiBundle\Management\BlockDataImporter;
+use c975L\UiBundle\Repository\RatingRepository;
 use c975L\UiBundle\Video\VideoPlatform;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
@@ -34,6 +35,7 @@ class GalleryImportProvider implements ImportProviderInterface
         private readonly GalleryCategoryRepository $categoryRepository,
         private readonly GalleryMediaSlugger $mediaSlugger,
         private readonly BlockDataImporter $blockDataImporter,
+        private readonly RatingRepository $ratingRepository,
         #[Autowire(param: 'kernel.project_dir')]
         private readonly string $projectDir,
     ) {
@@ -50,6 +52,9 @@ class GalleryImportProvider implements ImportProviderInterface
         $created = 0;
         $updated = 0;
         $archived = [];
+
+        // The ids of the medias this import replaces, read while they still have one: their likes hang off "gallery_media" + id rather than off a relation (see c975L\UiBundle\Entity\Rating), so the orphanRemoval below takes the rows and leaves the likes
+        $droppedMediaIds = [];
 
         // Read once, then carried through the loop: import() only flushes at the end, so asking the database inside it would have every item of the same archive see it still empty and keep the flag (see below)
         $automatic = $this->categoryRepository->findOneBy(['automatic' => true]);
@@ -83,6 +88,9 @@ class GalleryImportProvider implements ImportProviderInterface
 
             // Existing Medias have no natural key to match the imported ones against, so the whole collection is replaced - orphanRemoval on GalleryCategory::$medias deletes the orphaned rows on flush
             foreach ($category->getMedias()->toArray() as $existingMedia) {
+                if (null !== $existingMedia->getId()) {
+                    $droppedMediaIds[] = $existingMedia->getId();
+                }
                 $category->removeMedia($existingMedia);
             }
 
@@ -114,6 +122,9 @@ class GalleryImportProvider implements ImportProviderInterface
         }
 
         $this->em->flush();
+
+        // Only once the replaced medias have actually gone, and in one query for the whole import: a flush that fails leaves them in place, likes and all
+        $this->ratingRepository->deleteForOwners('gallery_media', $droppedMediaIds);
 
         if (null !== $filesDir) {
             $this->restoreArchivedFiles($archived, $filesDir);

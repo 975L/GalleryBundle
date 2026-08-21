@@ -13,18 +13,23 @@ namespace c975L\GalleryBundle\Repository;
 use c975L\GalleryBundle\Entity\GalleryCategory;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use Symfony\Contracts\Service\ResetInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
  * @extends ServiceEntityRepository<GalleryCategory>
  */
-class GalleryCategoryRepository extends ServiceEntityRepository
+class GalleryCategoryRepository extends ServiceEntityRepository implements ResetInterface
 {
     private const string UNCATEGORIZED_SLUG = 'non-classe';
 
     // The url of the gallery of the last additions, posed once at creation and an admin's to rename afterwards - a rename records its redirect like any other category's (see GalleryCategoryCrudController::updateEntity)
     // English, as everything this bundle names itself: it is a value shipped by a package, where the title next to it is translated because it is read by whoever visits the site
     private const string AUTOMATIC_SLUG = 'latest';
+
+    // The ordered list, read once per request - see findAllOrdered()
+    /** @var ?list<GalleryCategory> */
+    private ?array $ordered = null;
 
     public function __construct(
         ManagerRegistry $registry,
@@ -41,8 +46,20 @@ class GalleryCategoryRepository extends ServiceEntityRepository
 
     // What the front-office index and the blocks list, in the order the admin arranged them. coverMedia is joined rather than left lazy: every caller renders the category's thumbnail from it (see components/Gallery/Category.html.twig), so each category would otherwise initialize its proxy with a query of its own - one per category on a page listing them all
     // The trash filter sits here rather than at each of the six callers (index, blocks, block form, sitemap, link picker, showcase): they all want the same thing, and one of them forgetting it would put a trashed category back on the site
+    // Memoized for the request: the six callers are spread over services that know nothing of each other (the blocks extension, the menu link provider, the sitemap...), and a page carrying a gallery block under a menu pointing at a category went through the very same query once for each of them
     /** @return list<GalleryCategory> */
     public function findAllOrdered(): array
+    {
+        if (null !== $this->ordered) {
+            return $this->ordered;
+        }
+
+        return $this->ordered = $this->orderedCategories();
+    }
+
+    // The read itself, apart from the memoization above so a test exercises one without going through the other (same shape as GalleryMediaRepository::latestMedias)
+    /** @return list<GalleryCategory> */
+    protected function orderedCategories(): array
     {
         return $this->createQueryBuilder('c')
             ->leftJoin('c.coverMedia', 'm')
@@ -52,6 +69,12 @@ class GalleryCategoryRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult()
         ;
+    }
+
+    // Dropped between two messages of a worker, where the same repository serves requests minutes apart - a category added meanwhile would otherwise stay out of the list for as long as the process lives
+    public function reset(): void
+    {
+        $this->ordered = null;
     }
 
     // What the breadcrumb counts next to its home label - findAllOrdered()'s own count, without reading the rows, so the trash never shows up in "79 galeries"

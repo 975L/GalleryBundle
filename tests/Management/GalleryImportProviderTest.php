@@ -20,6 +20,7 @@ use c975L\UiBundle\Entity\Block;
 use c975L\UiBundle\Management\BlockDataExporter;
 use c975L\UiBundle\Management\BlockDataImporter;
 use c975L\UiBundle\Registry\FormBlockDependencyRegistry;
+use c975L\UiBundle\Repository\RatingRepository;
 use c975L\UiBundle\Video\VideoPlatform;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\TestCase;
@@ -78,13 +79,14 @@ class GalleryImportProviderTest extends TestCase
         rmdir($dir);
     }
 
-    private function createProvider(EntityManagerInterface $em, ?GalleryCategory $existingCategory = null, ?string $projectDir = null, ?GalleryCategory $automaticCategory = null): GalleryImportProvider
+    private function createProvider(EntityManagerInterface $em, ?GalleryCategory $existingCategory = null, ?string $projectDir = null, ?GalleryCategory $automaticCategory = null, ?RatingRepository $ratingRepository = null): GalleryImportProvider
     {
         return new GalleryImportProvider(
             $em,
             $this->createCategoryRepository($existingCategory, $automaticCategory),
             new GalleryMediaSlugger(new AsciiSlugger()),
             new BlockDataImporter($em, $this->createStub(FormBlockDependencyRegistry::class)),
+            $ratingRepository ?? $this->createStub(RatingRepository::class),
             $projectDir ?? sys_get_temp_dir(),
         );
     }
@@ -310,6 +312,33 @@ class GalleryImportProviderTest extends TestCase
         unlink($filesDir . '/files/new.jpg');
         rmdir($filesDir . '/files');
         rmdir($filesDir);
+    }
+
+    // The replaced medias are gone for good, orphanRemoval deleting their rows: their likes hang off "gallery_media" + id and nothing cascades them, so a media reimported under that very id would read someone else's
+    public function testImportDropsTheLikesOfTheMediasItReplaces(): void
+    {
+        $oldMedia = new GalleryMedia()->setTitle('Old')->setSlug('old');
+        new \ReflectionProperty(GalleryMedia::class, 'id')->setValue($oldMedia, 7);
+        $existingCategory = new GalleryCategory()->setSlug('voyages')->setTitle('Voyages');
+        $existingCategory->addMedia($oldMedia);
+
+        $dropped = [];
+        $ratingRepository = $this->createStub(RatingRepository::class);
+        $ratingRepository->method('deleteForOwners')->willReturnCallback(function (string $ownerType, array $ownerIds) use (&$dropped): int {
+            $dropped[] = [$ownerType, $ownerIds];
+
+            return 0;
+        });
+
+        $provider = $this->createProvider($this->createStub(EntityManagerInterface::class), $existingCategory, ratingRepository: $ratingRepository);
+
+        $provider->import([[
+            'slug' => 'voyages',
+            'title' => 'Voyages',
+            'medias' => [['title' => 'New', 'position' => 0]],
+        ]]);
+
+        $this->assertSame([['gallery_media', [7]]], $dropped);
     }
 
     // The exported lead-in is rebuilt, and the one already there replaced - Blocks have no natural key to match the imported ones against

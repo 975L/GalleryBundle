@@ -32,6 +32,44 @@ class GalleryMediaRepository extends ServiceEntityRepository
         return $this->findBy(['category' => $category, 'isDeleted' => false], ['position' => 'ASC']);
     }
 
+    // The same list for several categories at once, grouped by category id - what GalleryCategoryRepository hands to the categories left without a cover, so a page listing them costs one query rather than one per category
+    /**
+     * @param list<GalleryCategory> $categories
+     *
+     * @return array<int, list<GalleryMedia>>
+     */
+    public function findVisibleByCategories(array $categories): array
+    {
+        if ([] === $categories) {
+            return [];
+        }
+
+        $grouped = [];
+        foreach ($this->visibleMediasOf($categories) as $media) {
+            $grouped[(int) $media->getCategory()?->getId()][] = $media;
+        }
+
+        return $grouped;
+    }
+
+    // The read itself, apart from the grouping above so a test exercises one without going through the other (same shape as latestMedias() below)
+    /**
+     * @param list<GalleryCategory> $categories
+     *
+     * @return list<GalleryMedia>
+     */
+    protected function visibleMediasOf(array $categories): array
+    {
+        return $this->createQueryBuilder('m')
+            ->andWhere('m.category IN (:categories)')
+            ->andWhere('m.isDeleted = false')
+            ->setParameter('categories', $categories)
+            ->orderBy('m.position', 'ASC')
+            ->getQuery()
+            ->getResult()
+        ;
+    }
+
     // Rows naming a file, for the check that then looks for each one on disk (see GalleryFilesHealthCheckProvider) - a media can name two, its image and its self-hosted video
     // The trash is left out: a media an admin took off the site is served nowhere, and its files are its category's to keep or to drop, never a defect to report
     /** @return GalleryMedia[] */

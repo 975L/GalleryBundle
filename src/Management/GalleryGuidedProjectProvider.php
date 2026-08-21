@@ -31,6 +31,9 @@ class GalleryGuidedProjectProvider implements GuidedProjectProviderInterface
             $this->galleryCreationProject(),
             $this->mediasArrangementProject(),
             $this->mediaDetailProject(),
+            $this->trashProject(),
+            $this->mediasRecoveryProject(),
+            $this->latestGalleryProject(),
         ];
     }
 
@@ -179,6 +182,123 @@ class GalleryGuidedProjectProvider implements GuidedProjectProviderInterface
                 [
                     'label' => 'label.guided_step_gallery_media_detail_done',
                     'description' => 'description.guided_step_gallery_media_detail_done',
+                ],
+            ],
+        ];
+    }
+
+    // Nothing is lost in one click any more: a gallery put aside stays whole, and the way back is on the same screen - the parcours stops before the permanent deletion, which is held one role higher and would highlight a button an editor never sees
+    private function trashProject(): array
+    {
+        return [
+            'slug' => 'gallery-trash',
+            'label' => 'label.guided_project_gallery_trash',
+            'description' => 'description.guided_project_gallery_trash',
+            'translation_domain' => 'gallery',
+            'order' => 170,
+            'role' => $this->roleNeeded(),
+            'steps' => [
+                [
+                    'label' => 'label.guided_step_gallery_trash_open',
+                    'description' => 'description.guided_step_gallery_trash_open',
+                    'url' => $this->indexUrl(),
+                ],
+                [
+                    'label' => 'label.guided_step_gallery_trash_delete',
+                    'description' => 'description.guided_step_gallery_trash_delete',
+                    'highlight' => '.action-delete',
+                ],
+                [
+                    'label' => 'label.guided_step_gallery_trash_switch',
+                    'description' => 'description.guided_step_gallery_trash_switch',
+                    'highlight' => '.action-trash',
+                ],
+                [
+                    'label' => 'label.guided_step_gallery_trash_restore',
+                    'description' => 'description.guided_step_gallery_trash_restore',
+                    'highlight' => '.action-restore',
+                ],
+                [
+                    'label' => 'label.guided_step_gallery_trash_done',
+                    'description' => 'description.guided_step_gallery_trash_done',
+                ],
+            ],
+        ];
+    }
+
+    // The files themselves come back out of the site, as one archive - the photos' own trash is told rather than walked, its way in only showing once something has been put there
+    private function mediasRecoveryProject(): array
+    {
+        return [
+            'slug' => 'gallery-medias-recovery',
+            'label' => 'label.guided_project_gallery_medias_recovery',
+            'description' => 'description.guided_project_gallery_medias_recovery',
+            'translation_domain' => 'gallery',
+            'order' => 180,
+            'role' => $this->roleNeeded(),
+            'steps' => [
+                [
+                    'label' => 'label.guided_step_gallery_medias_recovery_open',
+                    'description' => 'description.guided_step_gallery_medias_recovery_open',
+                    'url' => $this->indexUrl(),
+                ],
+                [
+                    'label' => 'label.guided_step_gallery_medias_recovery_edit',
+                    'description' => 'description.guided_step_gallery_medias_recovery_edit',
+                    'highlight' => '.action-edit',
+                ],
+                [
+                    'label' => 'label.guided_step_gallery_medias_recovery_select',
+                    'description' => 'description.guided_step_gallery_medias_recovery_select',
+                    'highlight' => '[data-gallery-media-selection-target="toggle"]',
+                ],
+                [
+                    'label' => 'label.guided_step_gallery_medias_recovery_download',
+                    'description' => 'description.guided_step_gallery_medias_recovery_download',
+                    'highlight' => '[data-gallery-download-medias]',
+                ],
+                [
+                    'label' => 'label.guided_step_gallery_medias_recovery_trash',
+                    'description' => 'description.guided_step_gallery_medias_recovery_trash',
+                ],
+            ],
+        ];
+    }
+
+    // The one gallery holding no photo of its own: it is arranged by nobody, so the arrangement parcours stays away from it and this one says what it is instead
+    private function latestGalleryProject(): array
+    {
+        return [
+            'slug' => 'gallery-latest',
+            'label' => 'label.guided_project_gallery_latest',
+            'description' => 'description.guided_project_gallery_latest',
+            'translation_domain' => 'gallery',
+            'order' => 190,
+            'role' => $this->roleNeeded(),
+            'steps' => [
+                [
+                    'label' => 'label.guided_step_gallery_latest_open',
+                    'description' => 'description.guided_step_gallery_latest_open',
+                    'url' => $this->indexUrl(),
+                ],
+                [
+                    'label' => 'label.guided_step_gallery_latest_edit',
+                    'description' => 'description.guided_step_gallery_latest_edit',
+                    'highlight' => '.action-edit',
+                ],
+                [
+                    'label' => 'label.guided_step_gallery_latest_days',
+                    'description' => 'description.guided_step_gallery_latest_days',
+                    'highlight' => '.management-media-grid',
+                ],
+                [
+                    'label' => 'label.guided_step_gallery_latest_selection',
+                    'description' => 'description.guided_step_gallery_latest_selection',
+                    'highlight' => '[data-gallery-media-selection-target="toggle"]',
+                ],
+                [
+                    'label' => 'label.guided_step_gallery_latest_done',
+                    'description' => 'description.guided_step_gallery_latest_done',
                 ],
             ],
         ];

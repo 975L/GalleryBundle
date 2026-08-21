@@ -157,6 +157,53 @@ class GalleryMediaRepositoryTest extends TestCase
         $this->assertSame([], $repository->findLatest(7, 0));
     }
 
+    // One read for the whole listing, handed back under the id of the category each media belongs to - a caller then poses each list on its own category without going back to the database
+    public function testFindVisibleByCategoriesGroupsTheMediasUnderTheirCategory(): void
+    {
+        $first = $this->createCategory(1);
+        $second = $this->createCategory(2);
+        $one = $this->createMediaOf($first);
+        $two = $this->createMediaOf($first);
+        $three = $this->createMediaOf($second);
+
+        $grouped = new GalleryMediaRepositoryVisibleFixture([$one, $two, $three])->findVisibleByCategories([$first, $second]);
+
+        $this->assertSame([1 => [$one, $two], 2 => [$three]], $grouped);
+    }
+
+    // A category the read brought nothing back for is simply absent, the caller reading it as the empty list it is
+    public function testFindVisibleByCategoriesLeavesOutACategoryWithoutASingleMedia(): void
+    {
+        $first = $this->createCategory(1);
+        $second = $this->createCategory(2);
+
+        $grouped = new GalleryMediaRepositoryVisibleFixture([$this->createMediaOf($first)])->findVisibleByCategories([$first, $second]);
+
+        $this->assertSame([1], array_keys($grouped));
+    }
+
+    // Nothing to read for nobody: the IN clause would be handed an empty set, which no database answers the same way
+    public function testFindVisibleByCategoriesAsksNothingForAnEmptyList(): void
+    {
+        $repository = new GalleryMediaRepositoryVisibleFixture([]);
+
+        $this->assertSame([], $repository->findVisibleByCategories([]));
+        $this->assertSame(0, $repository->reads);
+    }
+
+    private function createCategory(int $id): GalleryCategory
+    {
+        $category = new GalleryCategory();
+        new \ReflectionProperty(GalleryCategory::class, 'id')->setValue($category, $id);
+
+        return $category;
+    }
+
+    private function createMediaOf(GalleryCategory $category): GalleryMedia
+    {
+        return new GalleryMedia()->setCategory($category);
+    }
+
     // Relative to the day the test runs on, the window findLatest() opens being counted from today
     private function createMediaAddedOn(string $date): GalleryMedia
     {
@@ -164,6 +211,26 @@ class GalleryMediaRepositoryTest extends TestCase
         new \ReflectionProperty(GalleryMedia::class, 'createdAt')->setValue($media, new \DateTimeImmutable($date));
 
         return $media;
+    }
+}
+
+// visibleMediasOf() reads the table through Doctrine's own QueryBuilder, which has no in-memory equivalent to stub without a real EntityManager - the rows are handed over here instead, parent constructor never invoked, so findVisibleByCategories()' own grouping is exercised for real
+class GalleryMediaRepositoryVisibleFixture extends GalleryMediaRepository
+{
+    public int $reads = 0;
+
+    /** @param list<GalleryMedia> $medias */
+    public function __construct(private readonly array $medias)
+    {
+    }
+
+    /** @return list<GalleryMedia> */
+    #[\Override]
+    protected function visibleMediasOf(array $categories): array
+    {
+        ++$this->reads;
+
+        return $this->medias;
     }
 }
 

@@ -78,6 +78,10 @@
                 <source>description.guided_project_gallery_creation</source>
                 <target>A gallery is a category of media: name it, drop your photographs on it, and it is online.</target>
             </trans-unit>
+            <trans-unit id="Izavvs0">
+                <source>description.guided_project_gallery_latest</source>
+                <target>One gallery holds no photo of its own: it gathers what the others have just received.</target>
+            </trans-unit>
             <trans-unit id="TPdR3Kw">
                 <source>description.guided_project_gallery_media_detail</source>
                 <target>Caption, credits, and the video a media can open on.</target>
@@ -85,6 +89,14 @@
             <trans-unit id="3RfmhpD">
                 <source>description.guided_project_gallery_medias_arrangement</source>
                 <target>Order the media, choose the one representing the gallery, and edit several of them at once.</target>
+            </trans-unit>
+            <trans-unit id="u_SEkIG">
+                <source>description.guided_project_gallery_medias_recovery</source>
+                <target>The site hands the originals back as one archive, and keeps a trash of its own for the photos.</target>
+            </trans-unit>
+            <trans-unit id="Q1mOGK1">
+                <source>description.guided_project_gallery_trash</source>
+                <target>Deleting a gallery only takes it off the site: everything it holds waits in the trash.</target>
             </trans-unit>
             <trans-unit id="nkC0lr6">
                 <source>description.guided_step_gallery_creation_done</source>
@@ -109,6 +121,26 @@
             <trans-unit id="t_seNrA">
                 <source>description.guided_step_gallery_creation_title_root</source>
                 <target>Every media of the batch takes this name, numbered - each one is retouched afterwards, one by one.</target>
+            </trans-unit>
+            <trans-unit id="1fHHRyd">
+                <source>description.guided_step_gallery_latest_days</source>
+                <target>The media added over the last days, all galleries taken together, and each thumbnail names the gallery it really belongs to.</target>
+            </trans-unit>
+            <trans-unit id="P9hoDgj">
+                <source>description.guided_step_gallery_latest_done</source>
+                <target>Two settings of the gallery group decide it: the number of days it goes back, and how many photos it shows at most. When the window catches nothing, it falls back on the last day carrying an addition.</target>
+            </trans-unit>
+            <trans-unit id="RNNygZc">
+                <source>description.guided_step_gallery_latest_edit</source>
+                <target>It offers no upload, no reordering and no cover: it holds nothing of its own to arrange.</target>
+            </trans-unit>
+            <trans-unit id="ojYj7qU">
+                <source>description.guided_step_gallery_latest_open</source>
+                <target>"Latest additions" is among them, written by the site the first time the galleries are listed - it is a gallery like the others, which can be renamed and moved.</target>
+            </trans-unit>
+            <trans-unit id="i4vmOwe">
+                <source>description.guided_step_gallery_latest_selection</source>
+                <target>Credits, rights, download and move to trash act on the checked photos where they actually sit - which is how a whole day's upload is credited in one go.</target>
             </trans-unit>
             <trans-unit id="LiQHB9j">
                 <source>description.guided_step_gallery_media_detail_credits</source>
@@ -152,11 +184,11 @@
             </trans-unit>
             <trans-unit id="_25nV6p">
                 <source>description.guided_step_gallery_medias_arrangement_open</source>
-                <target>The gallery to arrange is one of these.</target>
+                <target>The gallery to arrange is one of these - not "Latest additions", which holds no photo of its own and arranges nothing.</target>
             </trans-unit>
             <trans-unit id="Otdae53">
                 <source>description.guided_step_gallery_medias_arrangement_selection</source>
-                <target>Check the media, then write the same credits on all of them, mark them as rights reserved, or delete them in one go.</target>
+                <target>Check the media, then write the same credits on all of them, mark them as rights reserved, download them in high resolution or as originals, or move them to the trash in one go.</target>
             </trans-unit>
             <trans-unit id="9EDpagA">
                 <source>description.guided_step_gallery_medias_arrangement_sort</source>
@@ -165,6 +197,46 @@
             <trans-unit id="xFlSzIS">
                 <source>description.guided_step_gallery_medias_arrangement_upload</source>
                 <target>A batch at a time, always from the gallery holding them - a media is never created on its own.</target>
+            </trans-unit>
+            <trans-unit id="sKZxCZg">
+                <source>description.guided_step_gallery_medias_recovery_download</source>
+                <target>One zip for the selection: the high resolution kept by the site, or the originals as they were uploaded when the gallery was told to keep them. A selection past 1 GB is refused, its size stated.</target>
+            </trans-unit>
+            <trans-unit id="mWPss93">
+                <source>description.guided_step_gallery_medias_recovery_edit</source>
+                <target>Its media are listed under its form.</target>
+            </trans-unit>
+            <trans-unit id="8T.dVX5">
+                <source>description.guided_step_gallery_medias_recovery_open</source>
+                <target>The files are handed back from the gallery holding them.</target>
+            </trans-unit>
+            <trans-unit id="6.GSoYt">
+                <source>description.guided_step_gallery_medias_recovery_select</source>
+                <target>The whole gallery at once, or the few photos you are after.</target>
+            </trans-unit>
+            <trans-unit id="l38qUVs">
+                <source>description.guided_step_gallery_medias_recovery_trash</source>
+                <target>Each gallery carries its own, under its form as soon as a photo is put there: the same downloads are offered, and "Restore" hands the photos back to the gallery at the end of it.</target>
+            </trans-unit>
+            <trans-unit id="vZywfgl">
+                <source>description.guided_step_gallery_trash_delete</source>
+                <target>The button asks first, then moves the gallery to the trash: its media, its files and its address are all kept, and only its own page answers "gone" from then on.</target>
+            </trans-unit>
+            <trans-unit id="Pkkkoh1">
+                <source>description.guided_step_gallery_trash_done</source>
+                <target>Dropping a gallery for good is the other button of the trash, held at the administrator: it is the only one that removes the files from the server.</target>
+            </trans-unit>
+            <trans-unit id="KaOuqrH">
+                <source>description.guided_step_gallery_trash_open</source>
+                <target>The galleries the site is showing right now.</target>
+            </trans-unit>
+            <trans-unit id="Mu398NM">
+                <source>description.guided_step_gallery_trash_restore</source>
+                <target>It comes back where it was, with its media and its position, and its address starts answering again.</target>
+            </trans-unit>
+            <trans-unit id="DHPb38w">
+                <source>description.guided_step_gallery_trash_switch</source>
+                <target>The button above the list switches between the galleries online and the ones set aside - the same screen, showing the other side.</target>
             </trans-unit>
             <trans-unit id="ZSCwjpo">
                 <source>flash.gallery_category_deleted_permanently</source>
@@ -534,6 +606,10 @@
                 <source>label.guided_project_gallery_creation</source>
                 <target>Create a gallery and fill it</target>
             </trans-unit>
+            <trans-unit id="bquVmv7">
+                <source>label.guided_project_gallery_latest</source>
+                <target>The gallery of the latest additions</target>
+            </trans-unit>
             <trans-unit id="vUEEKrm">
                 <source>label.guided_project_gallery_media_detail</source>
                 <target>Retouch a media</target>
@@ -541,6 +617,14 @@
             <trans-unit id="5Kw6l6b">
                 <source>label.guided_project_gallery_medias_arrangement</source>
                 <target>Arrange a gallery</target>
+            </trans-unit>
+            <trans-unit id="jo6ewZB">
+                <source>label.guided_project_gallery_medias_recovery</source>
+                <target>Get the photo files back</target>
+            </trans-unit>
+            <trans-unit id="zZGX7f.">
+                <source>label.guided_project_gallery_trash</source>
+                <target>Put a gallery aside and bring it back</target>
             </trans-unit>
             <trans-unit id="XVdjXZ2">
                 <source>label.guided_step_gallery_creation_done</source>
@@ -569,6 +653,26 @@
             <trans-unit id="0hrdUQX">
                 <source>label.guided_step_gallery_creation_title_root</source>
                 <target>Name the batch</target>
+            </trans-unit>
+            <trans-unit id="d18B8wI">
+                <source>label.guided_step_gallery_latest_days</source>
+                <target>One heading per day</target>
+            </trans-unit>
+            <trans-unit id="fAKxDtZ">
+                <source>label.guided_step_gallery_latest_done</source>
+                <target>How far back it looks</target>
+            </trans-unit>
+            <trans-unit id="ZnFu1z7">
+                <source>label.guided_step_gallery_latest_edit</source>
+                <target>Open it</target>
+            </trans-unit>
+            <trans-unit id="GAdFc1E">
+                <source>label.guided_step_gallery_latest_open</source>
+                <target>Open your galleries</target>
+            </trans-unit>
+            <trans-unit id="f.iiB8l">
+                <source>label.guided_step_gallery_latest_selection</source>
+                <target>Work on an upload session</target>
             </trans-unit>
             <trans-unit id="9HSb61v">
                 <source>label.guided_step_gallery_media_detail_credits</source>
@@ -630,9 +734,49 @@
                 <source>label.guided_step_gallery_medias_arrangement_upload</source>
                 <target>Add media</target>
             </trans-unit>
+            <trans-unit id="mCeDa1s">
+                <source>label.guided_step_gallery_medias_recovery_download</source>
+                <target>Download them</target>
+            </trans-unit>
+            <trans-unit id="2TezmzH">
+                <source>label.guided_step_gallery_medias_recovery_edit</source>
+                <target>Open the gallery</target>
+            </trans-unit>
+            <trans-unit id="jY7KCuO">
+                <source>label.guided_step_gallery_medias_recovery_open</source>
+                <target>Open your galleries</target>
+            </trans-unit>
+            <trans-unit id="j3oITjX">
+                <source>label.guided_step_gallery_medias_recovery_select</source>
+                <target>Check what you want</target>
+            </trans-unit>
+            <trans-unit id="YCBsgHX">
+                <source>label.guided_step_gallery_medias_recovery_trash</source>
+                <target>The photos have a trash too</target>
+            </trans-unit>
+            <trans-unit id="van4.w.">
+                <source>label.guided_step_gallery_trash_delete</source>
+                <target>Take one off the site</target>
+            </trans-unit>
+            <trans-unit id="eknZGH_">
+                <source>label.guided_step_gallery_trash_done</source>
+                <target>Nothing is lost in one click</target>
+            </trans-unit>
+            <trans-unit id="KwKB63W">
+                <source>label.guided_step_gallery_trash_open</source>
+                <target>Open your galleries</target>
+            </trans-unit>
+            <trans-unit id="rqg.OV9">
+                <source>label.guided_step_gallery_trash_restore</source>
+                <target>Put it back online</target>
+            </trans-unit>
+            <trans-unit id="Jx.swox">
+                <source>label.guided_step_gallery_trash_switch</source>
+                <target>Open the trash</target>
+            </trans-unit>
             <trans-unit id="IJ3OllR">
                 <source>label.info_gallery_category</source>
-                <target>Media categories, they are the site's gallery. "Uncategorized" is a fallback and can't be deleted. Create, edit or delete a category, reorder their display position and add media to them.</target>
+                <target>Media categories, they are the site's gallery. "Uncategorized" is a fallback and can't be deleted. Create or edit a category, reorder their display position and add media to them. Moving one to the trash only takes it off the site: the button above the list shows what is waiting there, and puts it back.</target>
             </trans-unit>
             <trans-unit id="FyUiQ4f">
                 <source>label.info_gallery_category_delete</source>

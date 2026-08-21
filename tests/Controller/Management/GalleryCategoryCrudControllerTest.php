@@ -29,6 +29,7 @@ use c975L\GalleryBundle\Service\UploadLimits;
 use c975L\UiBundle\Contract\VichWatermarkableInterface;
 use c975L\UiBundle\Form\TrixEditorType;
 use c975L\UiBundle\Management\BlockDataExporter;
+use c975L\UiBundle\Repository\RatingRepository;
 use c975L\UiBundle\Service\BlockMoveRowAttrBuilder;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Mapping\ClassMetadata;
@@ -471,9 +472,51 @@ class GalleryCategoryCrudControllerTest extends TestCase
             'request_stack' => $this->createRequestStackWithSession(),
         ]));
 
-        $controller->deleteMediasPermanently($this->createAdminContext($category), $this->createDeleteMediasRequest([7, 9, 999]), $entityManager);
+        $controller->deleteMediasPermanently($this->createAdminContext($category), $this->createDeleteMediasRequest([7, 9, 999]), $entityManager, $this->createRatingRepository());
 
         $this->assertSame([7, 9], $removed);
+    }
+
+    // A like hangs off "gallery_media" + id rather than off a relation (see c975L\UiBundle\Entity\Rating), so nothing cascades it: the medias dropped for good take theirs with them, and only those
+    public function testDeleteMediasPermanentlyDropsTheLikesOfTheMediasItRemoves(): void
+    {
+        $category = $this->createCategoryWithTrashedMedias(7, 8, 9);
+
+        $controller = $this->createController();
+        $controller->setContainer($this->createContainer([
+            'security.authorization_checker' => $this->createAuthorizationChecker(true),
+            'security.csrf.token_manager' => $this->createCsrfTokenManager(true),
+            'request_stack' => $this->createRequestStackWithSession(),
+        ]));
+
+        $controller->deleteMediasPermanently($this->createAdminContext($category), $this->createDeleteMediasRequest([7, 9]), $this->createStub(EntityManagerInterface::class), $this->createRatingRepository());
+
+        $this->assertSame(['gallery_media#7', 'gallery_media#9'], $this->ratingsDeletedFor);
+        $this->assertSame(1, $this->ratingsDeleteCalls);
+    }
+
+    // The likes are dropped by a query of their own, which no transaction takes back: a flush that fails leaves the medias in place, and they must still have theirs
+    public function testDeleteMediasPermanentlyKeepsTheLikesWhenTheFlushFails(): void
+    {
+        $category = $this->createCategoryWithTrashedMedias(7, 9);
+
+        $entityManager = $this->createStub(EntityManagerInterface::class);
+        $entityManager->method('flush')->willThrowException(new \RuntimeException('flush failed'));
+
+        $controller = $this->createController();
+        $controller->setContainer($this->createContainer([
+            'security.authorization_checker' => $this->createAuthorizationChecker(true),
+            'security.csrf.token_manager' => $this->createCsrfTokenManager(true),
+            'request_stack' => $this->createRequestStackWithSession(),
+        ]));
+
+        try {
+            $controller->deleteMediasPermanently($this->createAdminContext($category), $this->createDeleteMediasRequest([7, 9]), $entityManager, $this->createRatingRepository());
+            $this->fail('The failing flush should have surfaced');
+        } catch (\RuntimeException) {
+        }
+
+        $this->assertSame([], $this->ratingsDeletedFor);
     }
 
     // The normal grid and the trash share one token, so the selection is kept to the medias of the screen the action belongs to - a post forged from the normal grid would otherwise skip the trash the two-step deletion is built on
@@ -491,7 +534,7 @@ class GalleryCategoryCrudControllerTest extends TestCase
             'request_stack' => $this->createRequestStackWithSession(),
         ]));
 
-        $controller->deleteMediasPermanently($this->createAdminContext($category), $this->createDeleteMediasRequest([7, 8]), $entityManager);
+        $controller->deleteMediasPermanently($this->createAdminContext($category), $this->createDeleteMediasRequest([7, 8]), $entityManager, $this->createRatingRepository());
     }
 
     // The mirror of the check above: a media still showing in the grid is not something the trash screen puts back
@@ -589,7 +632,7 @@ class GalleryCategoryCrudControllerTest extends TestCase
             'router' => $this->createRouter(),
         ]));
 
-        $controller->deleteMediasPermanently($this->createAdminContext($category), $this->createDeleteMediasRequest([7]), $entityManager);
+        $controller->deleteMediasPermanently($this->createAdminContext($category), $this->createDeleteMediasRequest([7]), $entityManager, $this->createRatingRepository());
 
         $redirects = array_values(array_filter($persisted, static fn (object $entity): bool => $entity instanceof Redirect));
         $this->assertCount(1, $redirects);
@@ -2025,7 +2068,7 @@ class GalleryCategoryCrudControllerTest extends TestCase
             'request_stack' => $this->createRequestStackWithSession(),
         ]));
 
-        $controller->deletePermanently($this->createAdminContext($category), new Request(['token' => 'token']), $entityManager);
+        $controller->deletePermanently($this->createAdminContext($category), new Request(['token' => 'token']), $entityManager, $this->createRatingRepository());
 
         $redirects = array_values(array_filter($persisted, static fn (object $entity): bool => $entity instanceof Redirect));
         $this->assertSame(['/gallery/voyages', '/gallery/voyages/*'], array_map(static fn (Redirect $redirect): ?string => $redirect->getFromPath(), $redirects));
@@ -2033,6 +2076,24 @@ class GalleryCategoryCrudControllerTest extends TestCase
         $this->assertTrue($redirects[0]->isGone());
         $this->assertTrue($redirects[1]->isGone());
         $this->assertSame([$category], $removed);
+    }
+
+    // The medias go with the category's own cascade, and their likes hang off nothing that cascades: they are dropped here or they are left behind for good
+    public function testDeletePermanentlyDropsTheLikesOfEveryMediaItTakesWithIt(): void
+    {
+        $category = $this->createCategoryWithMedias(7, 8);
+
+        $controller = $this->createController(redirectRepository: $this->createRedirectRepository());
+        $controller->setContainer($this->createContainer([
+            'router' => $this->createRouter(),
+            'security.authorization_checker' => $this->createAuthorizationChecker(true),
+            'security.csrf.token_manager' => $this->createCsrfTokenManager(true),
+            'request_stack' => $this->createRequestStackWithSession(),
+        ]));
+
+        $controller->deletePermanently($this->createAdminContext($category), new Request(['token' => 'token']), $this->createStub(EntityManagerInterface::class), $this->createRatingRepository());
+
+        $this->assertSame(['gallery_media#7', 'gallery_media#8'], $this->ratingsDeletedFor);
     }
 
     // Only the admin role drops a gallery for good, the rest of the screens sitting at the editor's
@@ -2049,6 +2110,7 @@ class GalleryCategoryCrudControllerTest extends TestCase
             $this->createAdminContext(new GalleryCategory()->setTitle('Voyages')->setSlug('voyages')),
             new Request(['token' => 'token']),
             $this->createStub(EntityManagerInterface::class),
+            $this->createRatingRepository(),
         );
     }
 
@@ -2069,7 +2131,7 @@ class GalleryCategoryCrudControllerTest extends TestCase
             'security.csrf.token_manager' => $this->createCsrfTokenManager(false),
         ]));
 
-        $controller->deletePermanently($this->createAdminContext($category), new Request(), $entityManager);
+        $controller->deletePermanently($this->createAdminContext($category), new Request(), $entityManager, $this->createRatingRepository());
     }
 
     // --- restore -----------------------------------------------------------------------------------------
@@ -2167,6 +2229,31 @@ class GalleryCategoryCrudControllerTest extends TestCase
     {
         $repository = $this->createStub(RedirectRepository::class);
         $repository->method('findOneByFromPath')->willReturnCallback(static fn (string $fromPath): ?Redirect => $byFromPath[$fromPath] ?? null);
+
+        return $repository;
+    }
+
+    // The likes of the medias whose ratings were dropped, as "type#id" - filled by createRatingRepository()
+    /** @var list<string> */
+    private array $ratingsDeletedFor = [];
+
+    // How many queries dropped them: a gallery of two thousand photos is one, not two thousand
+    private int $ratingsDeleteCalls = 0;
+
+    private function createRatingRepository(): RatingRepository
+    {
+        $repository = $this->createStub(RatingRepository::class);
+        $repository
+            ->method('deleteForOwners')
+            ->willReturnCallback(function (string $ownerType, array $ownerIds): int {
+                ++$this->ratingsDeleteCalls;
+                foreach ($ownerIds as $ownerId) {
+                    $this->ratingsDeletedFor[] = $ownerType . '#' . $ownerId;
+                }
+
+                return 0;
+            })
+        ;
 
         return $repository;
     }

@@ -17,7 +17,6 @@ use c975L\GalleryBundle\Management\GalleryGuidedProjectProvider;
 use c975L\GalleryBundle\Management\LinkableRouteProvider;
 use c975L\GalleryBundle\Management\MenuProvider;
 use c975L\GalleryBundle\Repository\GalleryCategoryRepository;
-use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGeneratorInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 // Every CRUD controller and route this bundle's management providers name, checked against what its controllers actually declare - see ConfigBundle's ManagementTargetsTestCase
@@ -28,7 +27,8 @@ class ManagementTargetsTest extends ManagementTargetsTestCase
         return [
             new MenuProvider(),
             new LinkableRouteProvider($this->categoryRepository(), $this->createStub(TranslatorInterface::class)),
-            new GalleryGuidedProjectProvider($this->createStub(AdminUrlGeneratorInterface::class), $this->createStub(ConfigServiceInterface::class)),
+            // The socle's own recorder rather than a bare stub, so the controller each parcours opens on is read back and checked (see ManagementTargetsTestCase)
+            new GalleryGuidedProjectProvider($this->adminUrlGenerator(), $this->createStub(ConfigServiceInterface::class)),
         ];
     }
 

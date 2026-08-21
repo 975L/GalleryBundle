@@ -31,6 +31,7 @@ use c975L\UiBundle\Entity\Block;
 use c975L\UiBundle\Form\BlockType;
 use c975L\UiBundle\Form\TrixEditorType;
 use c975L\UiBundle\Form\Util\CollectionReconciler;
+use c975L\UiBundle\Repository\RatingRepository;
 use c975L\UiBundle\Service\BlockMoveRowAttrBuilder;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -364,7 +365,7 @@ class GalleryCategoryCrudController extends AbstractCrudController
 
     // Removes the category for good, with its medias, its heading blocks and every file of the set - the cascade and GalleryMediaDerivativeCleanupListener only ever run from here
     #[AdminRoute('/{entityId}/delete-permanently')]
-    public function deletePermanently(AdminContext $context, Request $request, EntityManagerInterface $entityManager): Response
+    public function deletePermanently(AdminContext $context, Request $request, EntityManagerInterface $entityManager, RatingRepository $ratingRepository): Response
     {
         $this->denyAccessUnlessGranted((string) $this->configService->get('site-role-admin'));
 
@@ -379,8 +380,14 @@ class GalleryCategoryCrudController extends AbstractCrudController
             $this->urlRedirector->recordGoneTree($entityManager, $this->generateUrl('gallery_category', ['category' => $category->getSlug()]));
         }
 
+        // The visitors' likes, which hang off "gallery_media" + id rather than off a relation (see c975L\UiBundle\Entity\Rating): the medias go with the cascade below, and nothing would take their likes with them
+        $mediaIds = $this->mediaIds($category->getMedias());
+
         $entityManager->remove($category);
         $entityManager->flush();
+
+        // Only once the medias have actually gone: a flush that fails leaves them in place, and they must find their likes where they left them
+        $this->dropRatings($ratingRepository, $mediaIds);
 
         $this->addFlash('success', $this->translator->trans('flash.gallery_category_deleted_permanently', [], 'gallery'));
 
@@ -802,6 +809,7 @@ class GalleryCategoryCrudController extends AbstractCrudController
 
     // Moves the medias checked under the category's edit form (see gallery_category_edit.html.twig) to the trash - the media CRUD only ever handles one at a time, which is a screen per media for a batch an admin wants off the grid in one go
     // Only medias of the category the url carries are ever touched, whatever ids are posted, and none of their files is touched at all - they wait in the trash view of this very screen, which restores them or drops them for good
+    // Their likes stay where they are, this action taking no RatingRepository at all: the trash is reversible, and a photo coming back has to find them (see dropRatings, which only deletePermanently and deleteMediasPermanently reach)
     #[AdminRoute('/{entityId}/delete-medias', options: ['methods' => ['POST']])]
     public function deleteMedias(AdminContext $context, Request $request, EntityManagerInterface $entityManager): Response
     {
@@ -880,7 +888,7 @@ class GalleryCategoryCrudController extends AbstractCrudController
 
     // Drops the checked medias for good, files included - the only path in this bundle that removes a media, GalleryMediaDerivativeCleanupListener running off the remove() below. Held at the admin role, the rest of the gallery sitting at the editor's
     #[AdminRoute('/{entityId}/delete-medias-permanently', options: ['methods' => ['POST']])]
-    public function deleteMediasPermanently(AdminContext $context, Request $request, EntityManagerInterface $entityManager): Response
+    public function deleteMediasPermanently(AdminContext $context, Request $request, EntityManagerInterface $entityManager, RatingRepository $ratingRepository): Response
     {
         $this->denyAccessUnlessGranted((string) $this->configService->get('site-role-admin'));
 
@@ -903,13 +911,50 @@ class GalleryCategoryCrudController extends AbstractCrudController
 
             $entityManager->remove($media);
         }
+
+        // Read before the flush, which nulls the identifier of everything it deletes, and only here: a media sitting in the trash can still come back, and it has to find its likes where it left them
+        $mediaIds = $this->mediaIds($medias);
+
         $entityManager->flush();
+
+        // Only once the medias have actually gone: a flush that fails leaves them in place, likes and all
+        $this->dropRatings($ratingRepository, $mediaIds);
 
         if (!$medias->isEmpty()) {
             $this->addFlash('success', $this->translator->trans('label.gallery_medias_deleted_permanently', ['%count%' => $medias->count()], 'gallery'));
         }
 
         return $this->redirect($url);
+    }
+
+    /**
+     * The ids of the medias about to be removed for good - read while they still have one, the flush nulling the identifier of what it deletes.
+     *
+     * @param iterable<GalleryMedia> $medias
+     *
+     * @return int[]
+     */
+    private function mediaIds(iterable $medias): array
+    {
+        $ids = [];
+        foreach ($medias as $media) {
+            if (null !== $media->getId()) {
+                $ids[] = $media->getId();
+            }
+        }
+
+        return $ids;
+    }
+
+    /**
+     * Drops the likes of medias removed for good - the one thing a deletion leaves behind, a rating naming its owner (see c975L\UiBundle\Entity\Rating) rather than relating to it, so no foreign key cascades it.
+     * One query for the whole set, a gallery of two thousand photos being deleted in one go.
+     *
+     * @param int[] $mediaIds
+     */
+    private function dropRatings(RatingRepository $ratingRepository, array $mediaIds): void
+    {
+        $ratingRepository->deleteForOwners('gallery_media', $mediaIds);
     }
 
     // The category the posted selection belongs to, and the screen to return to - the three selection actions share it rather than each rebuilding the same two things

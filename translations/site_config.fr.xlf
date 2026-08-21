@@ -14,6 +14,10 @@
                 <source>description.gallery_latest_max</source>
                 <target>Nombre maximal de médias affichés par la galerie automatique, 200 par défaut. Il protège la journée où toute une photothèque est entrée d'un coup - reprise, import - qui remplirait sinon la page de milliers de vignettes. Au-delà, seuls les plus récents sont montrés. Vide ou 0, 200 est appliqué.</target>
             </trans-unit>
+            <trans-unit id="wn2FpRV">
+                <source>description.gallery_rating</source>
+                <target>Affiche un cœur sous une photo, que les visiteurs cliquent pour dire qu'ils l'aiment. Un seul geste, pas de note : la page indique combien de personnes l'ont aimée</target>
+            </trans-unit>
             <trans-unit id="a033O9O">
                 <source>description.gallery_route_prefix</source>
                 <target>Premier segment des URL publiques de la galerie, ex. "gallery" pour /gallery/ma-categorie. La modification est immédiate, mais les anciennes URL renvoient une page introuvable : prévoyez une redirection si elles sont indexées. Vide, le préfixe "gallery" est appliqué.</target>
@@ -73,6 +77,10 @@
             <trans-unit id="paiRW9j">
                 <source>label.gallery_latest_max</source>
                 <target>Galerie automatique : nombre maximal de médias</target>
+            </trans-unit>
+            <trans-unit id="oYheJD4">
+                <source>label.gallery_rating</source>
+                <target>J'aime sur les médias</target>
             </trans-unit>
             <trans-unit id="lbaVu72">
                 <source>label.gallery_route_prefix</source>

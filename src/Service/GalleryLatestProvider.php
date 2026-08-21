@@ -105,6 +105,9 @@ class GalleryLatestProvider implements ResetInterface
     /** @param list<GalleryCategory> $categories @return list<GalleryCategory> */
     public function prepare(array $categories): array
     {
+        // First thing done, and on the whole list handed over: the automatic gallery below has its own list, but every other category still has a tile to draw - including on a site whose automatic gallery sits in the trash, which returns early
+        $this->handCoverCandidates($categories);
+
         $automatic = array_find($categories, static fn (GalleryCategory $category): bool => $category->isAutomatic());
 
         if (null === $automatic) {
@@ -124,15 +127,42 @@ class GalleryLatestProvider implements ResetInterface
         return $categories;
     }
 
+    // Hands the categories the medias their tile is drawn from, in one query for all of them: the relation is lazy, so a page listing the galleries read it category by category, one query each
+    // Every listed category is a candidate, cover or not: the tile falls back on the medias when the cover is missing or trashed (see GalleryCategory::getCoverOrRandomMedia), and the media count printed next to it reads that same collection whatever the cover
+    // Done here rather than in the repository, which the sitemap and the menu link picker also read: neither of them draws a tile, and neither has to pay for the medias of every gallery of the site
+    /** @param list<GalleryCategory> $categories */
+    private function handCoverCandidates(array $categories): void
+    {
+        $candidates = array_values(array_filter(
+            $categories,
+            static fn (GalleryCategory $category): bool => !$category->isAutomatic()
+        ));
+
+        // A single category saves nothing - the lazy relation reads it in the one query this would run anyway, and a block showing one gallery has no reason to read the medias of all the others
+        if (count($candidates) < 2) {
+            return;
+        }
+
+        $medias = $this->galleryMediaRepository->findVisibleByCategories($candidates);
+        foreach ($candidates as $category) {
+            $category->setLoadedMedias($medias[(int) $category->getId()] ?? []);
+        }
+    }
+
     // Hands the automatic category the list it shows, the others being left alone - for the callers holding entities they did not read themselves (the back-office listing, whose rows EasyAdmin paginates)
     /** @param iterable<GalleryCategory> $categories */
     public function hydrate(iterable $categories): void
     {
+        $listed = [];
         foreach ($categories as $category) {
             if ($category->isAutomatic()) {
                 $category->setAutomaticMedias($this->getMedias());
             }
+            $listed[] = $category;
         }
+
+        // The rows of that listing show a thumbnail and a media count, both read from the relation - one query per row without this
+        $this->handCoverCandidates($listed);
     }
 
     // The list only ever describes the request being rendered - dropped between two of them so a worker runtime (FrankenPHP, RoadRunner...) doesn't serve the next one the medias of the previous. The category goes with it, an entity being no more reusable across requests than the list is

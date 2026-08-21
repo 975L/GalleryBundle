@@ -1,5 +1,29 @@
 # ChangeLog
 
+## v1.9.0
+
+A visitor likes a photo without an account
+
+- Added `gallery-rating` to the **gallery** configuration group, on out of the box (20/08/2026)
+- The media page prints UiBundle's rating widget under the photo, one heart and no average (20/08/2026)
+- Requires `c975l/core-bundle` in `^1.13.1`, which brings the `rating` table (20/08/2026) [Needs db update]
+- Deleting a category for good, and dropping trashed medias for good, drop their likes (20/08/2026)
+- The trash leaves the likes alone, a photo coming back finding them where it left them (20/08/2026)
+- Reimporting a category drops the likes of the medias it replaces (21/08/2026)
+- The likes are dropped once the flush has removed the medias, in one query for the whole set (21/08/2026)
+- `GalleryLatestProvider::prepare()` and `hydrate()` read the medias of every listed category in one query (19/08/2026)
+- A block showing a single gallery reads nothing ahead (21/08/2026)
+- Added `GalleryMediaRepository::findVisibleByCategories()` and `GalleryCategory::setLoadedMedias()` (19/08/2026)
+- `GalleryCategoryRepository::findAllOrdered()` is memoized for the request (19/08/2026)
+- Added the `gallery-trash`, `gallery-medias-recovery` and `gallery-latest` guided projects (21/08/2026)
+- No step of a parcours highlights the permanent deletion, held above the editor role (21/08/2026)
+- Added `data-gallery-download-medias` to the downloads of a category's edit screen (21/08/2026)
+- `ManagementTargetsTest` reads back the controller each parcours opens on (21/08/2026)
+- The README documents the likes and the six guided projects, UPGRADE the `rating` migration (21/08/2026)
+- The shipped skill names `gallery-rating`, the likes dropped on deletion and the preloading (21/08/2026)
+- The query of `findAllOrdered()` and of `findVisibleByCategories()` sits in a protected method of its own (21/08/2026)
+- Added `GalleryMediaLikeTest` and cases to seven existing test classes (21/08/2026)
+
 ## v1.8.0
 
 A gallery gathers the latest additions of all the others

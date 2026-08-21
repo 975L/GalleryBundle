@@ -1,5 +1,22 @@
 # UPGRADE
 
+## v1.9.0
+
+### The likes add a table
+
+The heart under a photo (see `gallery-rating`) reads UiBundle's `rating` table, brought by
+`c975l/core-bundle` in `^1.13.1`. It is on out of the box, so an app already running this bundle
+generates and plays its migration after updating it, otherwise every media page fails on an unknown
+table:
+
+```bash
+php bin/console make:migration
+php bin/console doctrine:migrations:migrate
+```
+
+Nothing else to do: the setting is added to the **gallery** group on the next configuration import,
+and turning it off there takes the heart back off the page.
+
 ## v1.8.0
 
 ### The automatic gallery adds a column and an index

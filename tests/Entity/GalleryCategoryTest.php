@@ -213,6 +213,43 @@ class GalleryCategoryTest extends TestCase
         $this->assertSame(0, $category->getMediasCount());
     }
 
+    // The medias read in bulk with the listing the category came from: the relation is never touched at all, so the tile and the count both come from the handed list
+    public function testACategoryHandedItsMediasReadsThemRatherThanItsRelation(): void
+    {
+        $category = new GalleryCategory();
+        $category->addMedia(new GalleryMedia());
+        $handed = new GalleryMedia();
+
+        $category->setLoadedMedias([$handed]);
+
+        $this->assertSame(1, $category->getMediasCount());
+        $this->assertSame($handed, $category->getCoverOrRandomMedia());
+    }
+
+    // An empty handed list is not "nobody handed anything over": a category preloaded and found empty must not go back to the relation to be told so again
+    public function testACategoryHandedAnEmptyListDoesNotFallBackOnItsRelation(): void
+    {
+        $category = new GalleryCategory();
+        $category->addMedia(new GalleryMedia());
+
+        $category->setLoadedMedias([]);
+
+        $this->assertSame(0, $category->getMediasCount());
+        $this->assertNull($category->getCoverOrRandomMedia());
+    }
+
+    // The automatic gallery holds no media of its own: what it is handed as the last additions comes first, whatever a listing preloaded for its tile
+    public function testAnAutomaticCategoryPrefersItsOwnListOverAPreloadedOne(): void
+    {
+        $newest = new GalleryMedia();
+        $category = new GalleryCategory()->setAutomatic(true);
+        $category->setLoadedMedias([new GalleryMedia(), new GalleryMedia()]);
+        $category->setAutomaticMedias([$newest]);
+
+        $this->assertSame(1, $category->getMediasCount());
+        $this->assertSame($newest, $category->getCoverOrRandomMedia());
+    }
+
     // BlockRelocator renumbers what's left after a block has been moved out
     public function testReorderBlocksRenumbersFromZero(): void
     {
