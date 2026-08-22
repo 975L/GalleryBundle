@@ -56,7 +56,7 @@ See it in action at [bundles.975l.com/pages/gallery-bundle](https://bundles.975l
 
 - PHP >= 8.4
 - Symfony ^8.0
-- [c975L/CoreBundle](https://github.com/975L/CoreBundle) — ConfigBundle and UiBundle ship as the single `c975l/core-bundle` package, so requiring this bundle pulls both (Vich naming/resizing, EasyAdmin form-theme conventions, stylesheet registry, page layout fallback, menu provider, scaffold, sitemap and health checks)
+- [c975L/CoreBundle](https://github.com/975L/CoreBundle) in `^1.14.0` — ConfigBundle and UiBundle ship as the single `c975l/core-bundle` package, so requiring this bundle pulls both (Vich naming/resizing, EasyAdmin form-theme conventions, stylesheet registry, page layout fallback, menu provider, scaffold, sitemap and health checks). `^1.14.0` is what reads the role a menu entry states, without which the gallery's own sidebar entry falls back on the admin bar and an editor never sees it
 - Doctrine ORM
 - EasyAdmin
 - VichUploader Bundle
@@ -445,7 +445,9 @@ carries](#the-image-a-shared-page-carries)) is only the fallback for a media car
 
 It travels with its media through the export/import, an archive predating it importing medias without one.
 Three theme tokens size and color it (`--gallery-media-description-font-size`, `-line-height`, `-color`) —
-full text color and full size on purpose, it is read where the credits under it are only glanced at.
+full text color and full size on purpose, it is read where the credits under it are only glanced at. Four
+more frame it as a **card** under the media (`--gallery-media-description-padding`, `-background`,
+`-radius`, `-shadow`), taking the site's own surface, radius and shadow rather than a look of its own.
 
 ### Fields of your own
 
@@ -674,8 +676,9 @@ the **theme** config group, and the gallery reads them through UiBundle's own `-
 `--black` / `--background` / `--font-family-body`, so a gallery looks like the site it is installed on
 with no CSS to write. What the file offers is the gallery's own shapes — thumbnail size and grid gap, the
 measure of the media page, the width of the passe-partout, the arrows, the lightbox, the video badge, the
-category description and one aspect ratio per declared platform (plus the default an undeclared one is
-framed in, and the width a portrait player is capped at).
+category description, the card a caption is read in and one aspect ratio per declared platform (plus the
+default an undeclared one is framed in, the width a portrait player is capped at and the height a video of
+the site's own is).
 
 A photo shows against a **ground of its own**, darker than the rest of a site usually wants to be. That is
 what the **gallery-style** config (kind `choice`) is for: `light` (near-white page) or `dark` (near-black
@@ -775,6 +778,15 @@ ogg), played by the browser itself with the still the entry already carries as i
 party, nothing to consent to, no CSP origin to allow, and a video that outlives whatever a platform
 decides. What it costs is the storage and the bandwidth, which is why it stands next to the embeds
 rather than replacing them.
+
+A self-hosted video is the one player whose real shape the browser reads off the file itself, so it is
+left to dictate it rather than framed in a ratio — and **capped by the viewport's height**
+(`--gallery-video-self-hosted-max-height`, 70vh), a portrait file otherwise running past the fold on any
+screen. The cap is laid on the height and the width follows, which is what a `<video>` does on its own:
+nothing here knows the file's ratio, where a framed player takes its cap as a width
+(`--gallery-video-portrait-max-width`) precisely because its platform's shape is declared. The player is
+then shrunk to what it comes out as, so its own border frames it and the previous/next arrows stay
+against it instead of stranded in the margin.
 
 A media carrying both plays **its own copy**: the file that outlives the platform is the one to play, and
 the url stays there to fall back on if the file is ever removed. The ceiling is php's own
@@ -1064,8 +1076,10 @@ back** as one archive, and **the gallery of the latest additions**, the one gall
 Nothing to register — the provider is picked up automatically.
 
 Only the opening step of each carries an `url`, all six sending the user to the categories, the single
-sidebar entry of the whole feature. From there the panel walks that screen, highlighting the button or the
-field they are meant to use next — one they click themselves, which brings the panel back on that very step:
+sidebar entry of the whole feature — which states `site-role-editor` itself, the bar its own screen sits
+at, rather than taking the admin default every entry used to be given. From there the panel walks that
+screen, highlighting the button or the field they are meant to use next — one they click themselves, which
+brings the panel back on that very step:
 
 | Pointed at | What it is |
 | --- | --- |

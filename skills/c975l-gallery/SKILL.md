@@ -1,6 +1,6 @@
 ---
 name: c975l-gallery
-description: "Use this skill when working with photo galleries in a Symfony application built on the c975L ecosystem with c975l/gallery-bundle. Covers categories and medias, the admin-renamable url prefix, the two-step trash, batch upload and the three image derivatives, videos and embeds, the two gallery blocks, theming, and every extension point the bundle offers. Triggers on: GalleryCategory, GalleryMedia, gallery-route-prefix, gallery_index, gallery_category, gallery_media, gallery_categories, gallery_medias, c975l:gallery:rebuild-thumbnails, c975l:gallery:fill-slugs, photo gallery, thumbnail, lightbox, batch upload, upload progress, passe-partout, trash, restore, delete permanently, 410 Gone, download highres, download originals, GalleryMediaArchiver, files-gallery, health check, automatic gallery, latest additions, GalleryLatestProvider, findOrCreateAutomatic, findLatest, gallery-latest-days, gallery-latest-max, gallery-rating, likes, like a photo, heart, rating, findVisibleByCategories, setLoadedMedias, media caption, media description, GalleryCustomizationProviderInterface, gallery.customization_provider, GalleryDataField, getDataValue."
+description: "Use this skill when working with photo galleries in a Symfony application built on the c975L ecosystem with c975l/gallery-bundle. Covers categories and medias, the admin-renamable url prefix, the two-step trash, batch upload and the three image derivatives, videos and embeds, the two gallery blocks, theming, and every extension point the bundle offers. Triggers on: GalleryCategory, GalleryMedia, gallery-route-prefix, gallery_index, gallery_category, gallery_media, gallery_categories, gallery_medias, c975l:gallery:rebuild-thumbnails, c975l:gallery:fill-slugs, photo gallery, thumbnail, lightbox, batch upload, upload progress, passe-partout, trash, restore, delete permanently, 410 Gone, download highres, download originals, GalleryMediaArchiver, files-gallery, health check, automatic gallery, latest additions, GalleryLatestProvider, findOrCreateAutomatic, findLatest, gallery-latest-days, gallery-latest-max, gallery-rating, likes, like a photo, heart, rating, findVisibleByCategories, setLoadedMedias, media caption, media description, GalleryCustomizationProviderInterface, gallery.customization_provider, GalleryDataField, getDataValue, gallery-video-self-hosted-max-height, self-hosted video, portrait video."
 ---
 
 # c975L GalleryBundle
@@ -257,7 +257,10 @@ grids show, so one category holds photos and videos alike.
   deliberately **no "paste your embed code" field** — third-party HTML in the database is an XSS and a
   CSP hole.
 - A media can also carry an **uploaded video file** (mp4, webm, ogg), played by the browser with the
-  still as its poster. A media carrying both plays its own copy.
+  still as its poster. A media carrying both plays its own copy. It is the one player whose shape
+  nothing declares — the browser reads it off the file — so it is capped by
+  `--gallery-video-self-hosted-max-height` (70vh), a height where a framed player's cap
+  (`--gallery-video-portrait-max-width`) is a width.
 - Players render through `<twig:c975LUi:Video:Iframe>`, created client-side only once the visitor has
   accepted the cookie banner.
 - CSP: UiBundle exposes every declared origin as `%c975l_ui.video.embed_origins%`, for `frame-src`,
@@ -309,7 +312,9 @@ A `theme-` slug is compiled into a `--c975l-color-gallery-*` custom property by 
 expression that follows a light or a dark gallery rather than a fixed color.
 
 The gallery back office sits behind ConfigBundle's `site-role-editor` setting, except the two permanent
-deletions, held at `site-role-admin` (see *Deleting takes two steps*).
+deletions, held at `site-role-admin` (see *Deleting takes two steps*). The sidebar entry states that same
+bar (`MenuProvider`, `'role'` key), so an editor reaches the galleries instead of seeing no entry at all —
+read by `c975l/core-bundle` `^1.14.0` and up, earlier ones giving every entry the admin bar.
 
 ## Extending and overriding
 

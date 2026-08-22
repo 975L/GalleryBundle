@@ -25,7 +25,7 @@ class ManagementTargetsTest extends ManagementTargetsTestCase
     protected function managementProviders(): iterable
     {
         return [
-            new MenuProvider(),
+            new MenuProvider($this->createStub(ConfigServiceInterface::class)),
             new LinkableRouteProvider($this->categoryRepository(), $this->createStub(TranslatorInterface::class)),
             // The socle's own recorder rather than a bare stub, so the controller each parcours opens on is read back and checked (see ManagementTargetsTestCase)
             new GalleryGuidedProjectProvider($this->adminUrlGenerator(), $this->createStub(ConfigServiceInterface::class)),

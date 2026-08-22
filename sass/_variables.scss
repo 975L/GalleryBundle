@@ -63,6 +63,15 @@
     --gallery-media-description-line-height: 1.7;
     --gallery-media-description-color: var(--c975l-color-gallery-media-description, var(--text));
 
+    /* The card the caption is read in, under the media - the site's own surface, radius and shadow, so a gallery's caption is framed like every other panel of the site rather than in a look of its own */
+    --gallery-media-description-padding: 1em 1.25em;
+    --gallery-media-description-background: var(--surface-alt);
+    --gallery-media-description-radius: var(--radius-panel);
+    --gallery-media-description-shadow: var(--block-shadow-medium);
+
+    /* What parts the score from the credits above it - a vote is asked for, not read with them */
+    --gallery-rating-margin-top: 1.5em;
+
     /* The credits and reserved rights said under a media - toward the background like the breadcrumb, a mention rather than a caption */
     --gallery-credits-font-size: 0.9rem;
     --gallery-credits-gap: 1em;
@@ -81,4 +90,7 @@
 
     /* What a portrait player is capped at. Written as a width although the viewport's height is what it really answers to, because a width is the only side an aspect-ratio box takes: fix its height too and both sides become definite, at which point the ratio is simply dropped and the player stretches. So the cap is the width producing the height wanted - 9/16 of it for a 9/16 player */
     --gallery-video-portrait-max-width: calc(70vh * 9 / 16);
+
+    /* The same cap for the site's own video file, stated as the height it really is: a real <video> is not an aspect-ratio box but a replaced element, so bounding one side is enough for the browser to keep the other in the file's own ratio - which is also the only way to cap a video whose shape nothing on the page knows in advance */
+    --gallery-video-self-hosted-max-height: 70vh;
 }

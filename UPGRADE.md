@@ -1,5 +1,17 @@
 # UPGRADE
 
+## v1.10.1
+
+### The sidebar entry needs CoreBundle `^1.14.0`
+
+The **Galleries** entry now states the role its own screen sits at (`site-role-editor`) instead of taking
+the admin bar every entry used to be given, so a plain editor is shown the way to the galleries they can
+already open. Only `c975l/core-bundle` `^1.14.0` reads that role — the requirement is raised accordingly
+and `composer update` brings it in, with CoreBundle's own `UPGRADE.md` for whatever that version asks of
+the app. On an older one the key is simply ignored and the entry keeps the admin bar, as before.
+
+No migration, no configuration change: the setting already exists and nothing is written.
+
 ## v1.10.0
 
 ### The caption and the site's own fields add columns

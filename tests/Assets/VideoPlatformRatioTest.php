@@ -55,6 +55,27 @@ class VideoPlatformRatioTest extends TestCase
         $this->assertMatchesRegularExpression('/\.gallery-video\s*\{[^}]*aspect-ratio:\s*var\(--gallery-video-ratio-default\)/s', $this->read(self::STYLESHEET));
     }
 
+    // A video of the site's own is the one player carrying no declared shape - the browser reads it off the file, so what has to be guarded is the cap keeping a portrait one inside the viewport, and the fact that it is spelled as a height where a framed player's is spelled as a width
+    public function testAVideoOfTheSitesOwnIsCappedByTheViewportHeight(): void
+    {
+        $this->assertMatchesRegularExpression('/--gallery-video-self-hosted-max-height:\s*70vh;/', $this->read(self::VARIABLES));
+        $this->assertMatchesRegularExpression('/\.gallery-video--video video\s*\{[^}]*max-height:\s*var\(--gallery-video-self-hosted-max-height\)/s', $this->read(self::STYLESHEET));
+        $this->assertStringContainsString(
+            '--gallery-video-self-hosted-max-height:',
+            $this->read(self::THEME),
+            sprintf('"%s" never offers "--gallery-video-self-hosted-max-height", so a site cannot take it over.', self::THEME)
+        );
+    }
+
+    // The cap alone would leave a portrait player centred in a box the width of a landscape one, its own border framing empty space and the previous/next arrows stranded in the margin - only the player and its container shrinking to what the browser reads off the file brings them back against it
+    public function testTheSelfHostedPlayerIsShrunkToTheFilesOwnShape(): void
+    {
+        $stylesheet = $this->read(self::STYLESHEET);
+
+        $this->assertMatchesRegularExpression('/\.gallery-video--video\s*\{[^}]*width:\s*fit-content/s', $stylesheet);
+        $this->assertMatchesRegularExpression('/\.gallery-media-container:has\(\.gallery-video--video\)\s*\{[^}]*width:\s*fit-content/s', $stylesheet);
+    }
+
     // Every token this bundle ships is offered to the app commented out, or a site can't take it over (see the README's Theme section)
     public function testTheScaffoldThemeOffersEveryRatioToken(): void
     {

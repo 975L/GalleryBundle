@@ -62,6 +62,15 @@
     /* --gallery-media-description-line-height: 1.7; */
     /* --gallery-media-description-color: var(--c975l-color-gallery-media-description, var(--text)); */
 
+    /* The card the caption is read in, under the media - the site's own surface, radius and shadow, so a gallery's caption is framed like every other panel of the site */
+    /* --gallery-media-description-padding: 1em 1.25em; */
+    /* --gallery-media-description-background: var(--surface-alt); */
+    /* --gallery-media-description-radius: var(--radius-panel); */
+    /* --gallery-media-description-shadow: var(--block-shadow-medium); */
+
+    /* What parts the score from the credits above it - a vote is asked for, not read with them */
+    /* --gallery-rating-margin-top: 1.5em; */
+
     /* The credits and reserved rights said under a media - toward the background like the breadcrumb, a mention rather than a caption */
     /* --gallery-credits-font-size: 0.9rem; */
     /* --gallery-credits-gap: 1em; */
@@ -80,4 +89,7 @@
 
     /* How tall a portrait player is allowed to get, written as the width producing that height (9/16 of it) - an aspect-ratio box only takes a width, fixing its height too drops the ratio */
     /* --gallery-video-portrait-max-width: calc(70vh * 9 / 16); */
+
+    /* The same for a video file of the site's own, written as the height it really is - a <video> keeps its own ratio once one side is capped, which is also the only way to cap a shape nothing knows in advance */
+    /* --gallery-video-self-hosted-max-height: 70vh; */
 }

@@ -11,11 +11,17 @@
 namespace c975L\GalleryBundle\Management;
 
 use c975L\ConfigBundle\Management\MenuProviderInterface;
+use c975L\ConfigBundle\Service\ConfigServiceInterface;
 use c975L\GalleryBundle\Controller\Management\GalleryCategoryCrudController;
 
 // One entry for the whole feature: it opens the categories, which are the site's galleries, each holding its own medias and videos (see GalleryCategoryCrudController) - the media CRUD edits one media at a time and has nothing to list on its own
 class MenuProvider implements MenuProviderInterface
 {
+    public function __construct(
+        private readonly ConfigServiceInterface $configService,
+    ) {
+    }
+
     public function getMenuSection(): array
     {
         return [
@@ -34,6 +40,8 @@ class MenuProvider implements MenuProviderInterface
                 'icon' => 'fas fa-images',
                 // The very text the categories screen opens on (see gallery_category_index.html.twig), reused as-is for the onboarding tour rather than written again for it
                 'description' => 'label.info_gallery_category',
+                // The bar GalleryCategoryCrudController sets on its own index (see its roleNeeded()) - a gallery is content like any other
+                'role' => $this->configService->get('site-role-editor'),
             ],
         ];
     }

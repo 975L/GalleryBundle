@@ -263,8 +263,13 @@
 
 // The caption, between the media and its credits - the same measure as the media above it, so a sentence never runs wider than the photo it describes
 .gallery-media-description {
+    box-sizing: border-box;
     margin: 1em auto 0;
     max-width: var(--gallery-media-max-width);
+    padding: var(--gallery-media-description-padding);
+    background: var(--gallery-media-description-background);
+    border-radius: var(--gallery-media-description-radius);
+    box-shadow: var(--gallery-media-description-shadow);
     font-size: var(--gallery-media-description-font-size);
     line-height: var(--gallery-media-description-line-height);
     color: var(--gallery-media-description-color);
@@ -282,6 +287,12 @@
     max-width: var(--gallery-media-max-width);
     font-size: var(--gallery-credits-font-size);
     color: var(--gallery-credits-color);
+}
+
+// The score under the media, centred like every other line the page states. It has to be said here because a rating is a flex row of its own (see UiBundle's .rating-vote): text-align has no hold on it, and it would otherwise start at the left edge of a page whose title, breadcrumb, caption and credits are all centred - the same rule BookBundle states for its own hero
+.gallery-page .rating-vote {
+    justify-content: center;
+    margin-top: var(--gallery-rating-margin-top);
 }
 
 // The high resolution, over the page rather than on a page of its own. A native <dialog>, so the backdrop, the escape key and the focus trap are the browser's own - the rules below only undo the frame a dialog is drawn with, a media needing none
@@ -345,19 +356,25 @@
 }
 
 // A self-hosted video is the one player whose real shape the browser learns on its own, off the file's own metadata - so it is left to dictate it, where a framed player has none to read and has to be given the shape its platform serves. The still it carries as a poster fills the box in the meantime, which is what keeps the page from jumping once the metadata lands
+// Shrunk to whatever that shape comes out as, rather than held at the container's full measure: a portrait file capped by the height below is then framed by its own border instead of sitting in the middle of a box the width of a landscape one
 .gallery-video--video {
     aspect-ratio: auto;
+    width: fit-content;
+    max-width: 100%;
+    margin: 0 auto;
 }
 
 .gallery-video--video .video-figure {
     margin: 0;
 }
 
+// Capped by the viewport's height, which a portrait file - a phone's own, an animation made for a feed - runs past on any screen without it. The cap is laid on the height and the width left to follow, the one thing a replaced element does on its own: nothing here knows the file's ratio, so a cap spelled as a width (the way a framed player takes it, see --gallery-video-portrait-max-width) has nothing to compute it from
 .gallery-video--video video {
     display: block;
-    width: 100%;
+    width: auto;
     max-width: 100%;
     height: auto;
+    max-height: var(--gallery-video-self-hosted-max-height);
     margin: 0;
     border: 0;
     border-radius: 0;
@@ -385,4 +402,9 @@
 // The arrows are positioned against the container, not against the player - so a player narrower than the container leaves them stranded out in the margin, pointing at nothing. The container takes the same cap and the pair goes back to framing the video itself
 .gallery-media-container:has(.gallery-video--tiktok) {
     max-width: min(var(--gallery-media-max-width), var(--gallery-video-portrait-max-width));
+}
+
+// Same reason for a video of the site's own, whose width is only known once the browser has read the file: the container is shrunk to what the player comes out as rather than given a cap of its own, and the arrows come back against it
+.gallery-media-container:has(.gallery-video--video) {
+    width: fit-content;
 }

@@ -1,5 +1,21 @@
 # ChangeLog
 
+## v1.10.1
+
+A self-hosted video stays inside the screen it plays on
+
+- A video of the site's own is capped by the viewport's height (22/08/2026)
+- Added `--gallery-video-self-hosted-max-height` (70vh), offered commented in the scaffolded `themes/gallery.css` (22/08/2026)
+- The player is shrunk to the shape the browser reads off the file, its border framing it and the arrows staying against it (22/08/2026)
+- The caption is read in a card of the site's own surface, radius and shadow (22/08/2026)
+- Added `--gallery-media-description-padding`, `-background`, `-radius` and `-shadow`, offered commented in the scaffolded `themes/gallery.css` (22/08/2026)
+- The score under a media is centred like every other line of the page (22/08/2026)
+- Added `--gallery-rating-margin-top` (22/08/2026)
+- The sidebar entry states `site-role-editor`, the bar its own screen sits at (22/08/2026)
+- Requires `c975l/core-bundle` in `^1.14.0`, which reads the role a menu entry states (22/08/2026)
+- The README and the `c975l-gallery` skill carry the cap, the caption card and the entry's role, UPGRADE the socle it asks for (22/08/2026)
+- Added cases to `GalleryStyleTest`, `VideoPlatformRatioTest` and `MenuProviderTest` (22/08/2026)
+
 ## v1.10.0
 
 A photograph says what it shows

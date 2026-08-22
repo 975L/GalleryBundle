@@ -1,5 +1,25 @@
 [
     {
+        "date": "2026-08-22",
+        "description": [
+            {
+                "en": "A video you upload yourself no longer runs past the bottom of the screen: it is held within the height of the window, whatever its shape, and the previous/next arrows stay right beside it",
+                "fr": "Une vidéo que vous déposez vous-même ne déborde plus du bas de l'écran : elle tient dans la hauteur de la fenêtre, quelle que soit sa forme, et les flèches précédent/suivant restent juste à côté d'elle",
+                "es": "Un vídeo que usted mismo sube ya no se sale por debajo de la pantalla: se mantiene dentro de la altura de la ventana, sea cual sea su forma, y las flechas anterior/siguiente permanecen justo a su lado"
+            },
+            {
+                "en": "The caption under a photograph is now read in a card, like the other panels of your site, and the likes count is centred under the photo instead of sitting at the left edge",
+                "fr": "La légende sous une photographie se lit désormais dans une carte, comme les autres panneaux de votre site, et le compte des j'aime est centré sous la photo au lieu de rester collé au bord gauche",
+                "es": "El pie bajo una fotografía se lee ahora en una tarjeta, como los demás paneles de su sitio, y el recuento de me gusta se centra bajo la foto en vez de quedar pegado al borde izquierdo"
+            },
+            {
+                "en": "The Galleries entry now appears in the sidebar of anyone holding the site editor role, who could open the screen but was not shown the way to it",
+                "fr": "L'entrée Galeries apparaît désormais dans le menu latéral de toute personne ayant le rôle d'éditeur du site, qui pouvait ouvrir l'écran sans qu'on lui en indique le chemin",
+                "es": "La entrada Galerías aparece ahora en el menú lateral de quien tenga el rol de editor del sitio, que podía abrir la pantalla sin que se le indicara el camino"
+            }
+        ]
+    },
+    {
         "date": "2026-08-21",
         "description": [
             {

@@ -60,6 +60,32 @@ class GalleryStyleTest extends TestCase
         }
     }
 
+    // A rating is a flex row of its own (UiBundle's .rating-vote), so the centring a gallery page states in text has no hold on it - without this rule the score sits at the left edge of a page whose every other line is centred, and nothing at runtime says so
+    public function testTheScoreIsCentredOnTheGalleryPages(): void
+    {
+        $this->assertMatchesRegularExpression(
+            '/\.gallery-page \.rating-vote\s*\{[^}]*justify-content:\s*center/s',
+            $this->compiledStylesheet(),
+            'The stylesheet no longer centres the rating on a gallery page, so the score reads at the left edge under a centred media.'
+        );
+    }
+
+    // The caption is framed like every other panel of the site rather than in a look of its own, which only holds while the rule really reads the site's surface, radius and shadow through the four card tokens
+    public function testTheCaptionIsFramedAsACard(): void
+    {
+        preg_match('/\.gallery-media-description\s*\{([^}]*)\}/', $this->compiledStylesheet(), $matches);
+
+        $this->assertNotEmpty($matches, 'No block was read for ".gallery-media-description", this test no longer checks anything.');
+
+        foreach (['padding', 'background', 'border-radius', 'box-shadow'] as $property) {
+            $this->assertMatchesRegularExpression(
+                sprintf('/%s:\s*var\(--gallery-media-description-/', preg_quote($property, '/')),
+                $matches[1],
+                sprintf('".gallery-media-description" no longer sets its "%s" from a token, so the caption is read outside the card a site can retune.', $property)
+            );
+        }
+    }
+
     /**
      * @return array<int, string>
      */
