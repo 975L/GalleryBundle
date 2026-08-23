@@ -16,7 +16,7 @@ use c975L\GalleryBundle\Controller\Management\GalleryCategoryCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGeneratorInterface;
 
-// This bundle's guided projects, continuing the order sequence after ConfigBundle (10-40), SiteBundle (50-80), UiBundle (90-110) and SocialBundle (130-137). Only the opening step of each carries an url: from there the parcours walks the screen the user has been sent to, highlighting the button or the field they are meant to use next - one they click themselves, which brings the panel back on that very step (see ConfigBundle's assets/js/guided-project.js)
+// This bundle's guided projects, running the 5000 block GuidedProjectProviderInterface reserves them - the same docblock stating every other bundle's, so a range is read there rather than recopied here. Only the opening step of each carries an url: from there the parcours walks the screen the user has been sent to, highlighting the button or the field they are meant to use next - one they click themselves, which brings the panel back on that very step (see ConfigBundle's assets/js/guided-project.js)
 class GalleryGuidedProjectProvider implements GuidedProjectProviderInterface
 {
     public function __construct(
@@ -45,7 +45,7 @@ class GalleryGuidedProjectProvider implements GuidedProjectProviderInterface
             'label' => 'label.guided_project_gallery_creation',
             'description' => 'description.guided_project_gallery_creation',
             'translation_domain' => 'gallery',
-            'order' => 140,
+            'order' => 5010,
             'role' => $this->roleNeeded(),
             'steps' => [
                 [
@@ -93,7 +93,7 @@ class GalleryGuidedProjectProvider implements GuidedProjectProviderInterface
             'label' => 'label.guided_project_gallery_medias_arrangement',
             'description' => 'description.guided_project_gallery_medias_arrangement',
             'translation_domain' => 'gallery',
-            'order' => 150,
+            'order' => 5020,
             'role' => $this->roleNeeded(),
             'steps' => [
                 [
@@ -142,7 +142,7 @@ class GalleryGuidedProjectProvider implements GuidedProjectProviderInterface
             'label' => 'label.guided_project_gallery_media_detail',
             'description' => 'description.guided_project_gallery_media_detail',
             'translation_domain' => 'gallery',
-            'order' => 160,
+            'order' => 5030,
             'role' => $this->roleNeeded(),
             'steps' => [
                 [
@@ -195,7 +195,7 @@ class GalleryGuidedProjectProvider implements GuidedProjectProviderInterface
             'label' => 'label.guided_project_gallery_trash',
             'description' => 'description.guided_project_gallery_trash',
             'translation_domain' => 'gallery',
-            'order' => 170,
+            'order' => 5040,
             'role' => $this->roleNeeded(),
             'steps' => [
                 [
@@ -234,7 +234,7 @@ class GalleryGuidedProjectProvider implements GuidedProjectProviderInterface
             'label' => 'label.guided_project_gallery_medias_recovery',
             'description' => 'description.guided_project_gallery_medias_recovery',
             'translation_domain' => 'gallery',
-            'order' => 180,
+            'order' => 5050,
             'role' => $this->roleNeeded(),
             'steps' => [
                 [
@@ -273,7 +273,7 @@ class GalleryGuidedProjectProvider implements GuidedProjectProviderInterface
             'label' => 'label.guided_project_gallery_latest',
             'description' => 'description.guided_project_gallery_latest',
             'translation_domain' => 'gallery',
-            'order' => 190,
+            'order' => 5060,
             'role' => $this->roleNeeded(),
             'steps' => [
                 [

@@ -1,5 +1,13 @@
 # ChangeLog
 
+## v1.10.3
+
+The guided projects move into the block reserved to this bundle
+
+- The guided projects are renumbered to 5010-5060, the block reserved to this bundle (23/08/2026)
+- The range is read from `GuidedProjectProviderInterface`'s docblock rather than recopied here (23/08/2026)
+- The README reads the new numbering (23/08/2026)
+
 ## v1.10.2
 
 The guided projects name the range SocialBundle actually uses

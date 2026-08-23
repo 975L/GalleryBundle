@@ -40,7 +40,7 @@ class GalleryGuidedProjectProviderTest extends TestCase
         return new GalleryGuidedProjectProvider($this->createAdminUrlGenerator($controllers), $configService);
     }
 
-    // Continues the sequence after ConfigBundle (10-40), SiteBundle (50-80), UiBundle (90-110) and SocialBundle (130-137)
+    // The 5000 block GuidedProjectProviderInterface reserves this bundle, at the step of 10 it states
     public function testGetGuidedProjectsContinuesTheOrderSequence(): void
     {
         $projects = $this->createProvider()->getGuidedProjects();
@@ -49,7 +49,7 @@ class GalleryGuidedProjectProviderTest extends TestCase
             ['gallery-creation', 'gallery-medias-arrangement', 'gallery-media-detail', 'gallery-trash', 'gallery-medias-recovery', 'gallery-latest'],
             array_column($projects, 'slug')
         );
-        $this->assertSame([140, 150, 160, 170, 180, 190], array_column($projects, 'order'));
+        $this->assertSame([5010, 5020, 5030, 5040, 5050, 5060], array_column($projects, 'order'));
     }
 
     public function testEverySlugIsPrefixedWithTheBundleName(): void
