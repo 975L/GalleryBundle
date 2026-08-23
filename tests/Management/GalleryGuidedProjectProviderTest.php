@@ -40,7 +40,7 @@ class GalleryGuidedProjectProviderTest extends TestCase
         return new GalleryGuidedProjectProvider($this->createAdminUrlGenerator($controllers), $configService);
     }
 
-    // Continues the sequence after ConfigBundle (10-40), SiteBundle (50-80), UiBundle (90-110) and SocialBundle (120-130)
+    // Continues the sequence after ConfigBundle (10-40), SiteBundle (50-80), UiBundle (90-110) and SocialBundle (130-137)
     public function testGetGuidedProjectsContinuesTheOrderSequence(): void
     {
         $projects = $this->createProvider()->getGuidedProjects();

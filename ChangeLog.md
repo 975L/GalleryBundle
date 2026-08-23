@@ -1,5 +1,12 @@
 # ChangeLog
 
+## v1.10.2
+
+The guided projects name the range SocialBundle actually uses
+
+- The order sequence quoted by the guided projects reads SocialBundle at 130-137 (23/08/2026)
+- The README reads the same range (23/08/2026)
+
 ## v1.10.1
 
 A self-hosted video stays inside the screen it plays on

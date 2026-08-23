@@ -1095,7 +1095,7 @@ the steps resting on them point at nothing — they are read as selectors, not a
 All six are gated by `site-role-editor`, the same ConfigBundle entry the gallery's management screens sit
 behind: an admin without it is never offered a parcours ending on an access-denied page. Their `order` (140
 to 190) continues the ecosystem's sequence, after ConfigBundle (10-40), SiteBundle (50-80), UiBundle
-(90-110) and SocialBundle (120-130). Nothing is derived from the site's own data, so a project is worth
+(90-110) and SocialBundle (130-137). Nothing is derived from the site's own data, so a project is worth
 following on a site already full of galleries, and worth replaying once done (see ConfigBundle's README,
 "Contributing guided projects from other bundles").
 

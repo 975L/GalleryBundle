@@ -16,7 +16,7 @@ use c975L\GalleryBundle\Controller\Management\GalleryCategoryCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGeneratorInterface;
 
-// This bundle's guided projects, continuing the order sequence after ConfigBundle (10-40), SiteBundle (50-80), UiBundle (90-110) and SocialBundle (120-130). Only the opening step of each carries an url: from there the parcours walks the screen the user has been sent to, highlighting the button or the field they are meant to use next - one they click themselves, which brings the panel back on that very step (see ConfigBundle's assets/js/guided-project.js)
+// This bundle's guided projects, continuing the order sequence after ConfigBundle (10-40), SiteBundle (50-80), UiBundle (90-110) and SocialBundle (130-137). Only the opening step of each carries an url: from there the parcours walks the screen the user has been sent to, highlighting the button or the field they are meant to use next - one they click themselves, which brings the panel back on that very step (see ConfigBundle's assets/js/guided-project.js)
 class GalleryGuidedProjectProvider implements GuidedProjectProviderInterface
 {
     public function __construct(
