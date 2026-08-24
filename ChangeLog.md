@@ -1,5 +1,12 @@
 # ChangeLog
 
+## v1.10.4
+
+The showcase categories carry the keys the components read
+
+- The stand-in category is built once, holding `coverOrRandomMedia`, `mediasCount` and `automatic` (24/08/2026)
+- Each media of the medias showcase names the category filing it (24/08/2026)
+
 ## v1.10.3
 
 The guided projects move into the block reserved to this bundle
