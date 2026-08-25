@@ -1,5 +1,18 @@
 # ChangeLog
 
+## v1.10.5
+
+The tooling is CoreBundle's
+
+- `eslint.config.mjs` aligned on CoreBundle's, five browser globals more (25/08/2026)
+- `.codacy.yaml` and `.stylelintrc.json` aligned on CoreBundle's (25/08/2026)
+- Added `.markdownlint.json` (25/08/2026)
+- `.gitattributes` keeps it out of the dist archive (25/08/2026)
+- Rector caches in `.rector.cache` inside the repository (25/08/2026)
+- `composer rector` drops `--clear-cache` (25/08/2026)
+- `.rector.cache` is gitignored (25/08/2026)
+- `bin/ci.sh` aligned on CoreBundle's, leaving that cache out of the copy (25/08/2026)
+
 ## v1.10.4
 
 The showcase categories carry the keys the components read
