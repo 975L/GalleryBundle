@@ -46,10 +46,10 @@ class GalleryGuidedProjectProviderTest extends TestCase
         $projects = $this->createProvider()->getGuidedProjects();
 
         $this->assertSame(
-            ['gallery-creation', 'gallery-medias-arrangement', 'gallery-media-detail', 'gallery-trash', 'gallery-medias-recovery', 'gallery-latest'],
+            ['gallery-creation', 'gallery-medias-arrangement', 'gallery-medias-move', 'gallery-media-detail', 'gallery-trash', 'gallery-medias-recovery', 'gallery-latest'],
             array_column($projects, 'slug')
         );
-        $this->assertSame([5010, 5020, 5030, 5040, 5050, 5060], array_column($projects, 'order'));
+        $this->assertSame([5010, 5020, 5025, 5030, 5040, 5050, 5060], array_column($projects, 'order'));
     }
 
     public function testEverySlugIsPrefixedWithTheBundleName(): void
@@ -108,7 +108,7 @@ class GalleryGuidedProjectProviderTest extends TestCase
         $this->createProvider($controllers)->getGuidedProjects();
 
         $this->assertSame(
-            array_fill(0, 6, 'GalleryCategoryCrudController'),
+            array_fill(0, 7, 'GalleryCategoryCrudController'),
             array_map(static fn (string $fqcn): string => basename(str_replace('\\', '/', $fqcn)), $controllers)
         );
     }

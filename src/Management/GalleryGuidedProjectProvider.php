@@ -30,6 +30,7 @@ class GalleryGuidedProjectProvider implements GuidedProjectProviderInterface
         return [
             $this->galleryCreationProject(),
             $this->mediasArrangementProject(),
+            $this->mediasMoveProject(),
             $this->mediaDetailProject(),
             $this->trashProject(),
             $this->mediasRecoveryProject(),
@@ -134,6 +135,56 @@ class GalleryGuidedProjectProvider implements GuidedProjectProviderInterface
         ];
     }
 
+    // A gallery filled too fast is sorted out afterwards: the selection leaves for another gallery with its files, and the toolbar carrying it only shows once a second gallery exists to receive them
+    private function mediasMoveProject(): array
+    {
+        return [
+            'slug' => 'gallery-medias-move',
+            'label' => 'label.guided_project_gallery_medias_move',
+            'description' => 'description.guided_project_gallery_medias_move',
+            'translation_domain' => 'gallery',
+            'order' => 5025,
+            'role' => $this->roleNeeded(),
+            'steps' => [
+                [
+                    'label' => 'label.guided_step_gallery_medias_move_open',
+                    'description' => 'description.guided_step_gallery_medias_move_open',
+                    'url' => $this->indexUrl(),
+                ],
+                [
+                    'label' => 'label.guided_step_gallery_medias_move_edit',
+                    'description' => 'description.guided_step_gallery_medias_move_edit',
+                    'highlight' => '.action-edit',
+                ],
+                [
+                    'label' => 'label.guided_step_gallery_medias_move_select',
+                    'description' => 'description.guided_step_gallery_medias_move_select',
+                    'highlight' => '[data-gallery-media-selection-target="toggle"]',
+                ],
+                // The group is the only stable hook the toolbar offers, its three controls being reached from it (see gallery_category_edit.html.twig)
+                [
+                    'label' => 'label.guided_step_gallery_medias_move_target',
+                    'description' => 'description.guided_step_gallery_medias_move_target',
+                    'highlight' => '[data-gallery-move-medias] select',
+                ],
+                [
+                    'label' => 'label.guided_step_gallery_medias_move_title_root',
+                    'description' => 'description.guided_step_gallery_medias_move_title_root',
+                    'highlight' => '[data-gallery-move-medias] input',
+                ],
+                [
+                    'label' => 'label.guided_step_gallery_medias_move_move',
+                    'description' => 'description.guided_step_gallery_medias_move_move',
+                    'highlight' => '[data-gallery-move-medias] button',
+                ],
+                [
+                    'label' => 'label.guided_step_gallery_medias_move_done',
+                    'description' => 'description.guided_step_gallery_medias_move_done',
+                ],
+            ],
+        ];
+    }
+
     // A media has one screen of its own, reached from the gallery holding it - it is where a caption is written and where a video is attached
     private function mediaDetailProject(): array
     {
@@ -159,6 +210,12 @@ class GalleryGuidedProjectProvider implements GuidedProjectProviderInterface
                     'label' => 'label.guided_step_gallery_media_detail_thumbnail',
                     'description' => 'description.guided_step_gallery_media_detail_thumbnail',
                     'highlight' => '.management-media-grid__item',
+                ],
+                // The second way a media changes gallery, the selection of the categories screen being the first (see gallery-medias-move above and GalleryMediaCrudController::updateEntity)
+                [
+                    'label' => 'label.guided_step_gallery_media_detail_category',
+                    'description' => 'description.guided_step_gallery_media_detail_category',
+                    'highlight' => '#GalleryMedia_category',
                 ],
                 [
                     'label' => 'label.guided_step_gallery_media_detail_title',

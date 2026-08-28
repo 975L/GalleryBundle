@@ -19,6 +19,7 @@ use c975L\GalleryBundle\Controller\Management\GalleryMediaCrudController;
 use c975L\GalleryBundle\Entity\GalleryCategory;
 use c975L\GalleryBundle\Entity\GalleryMedia;
 use c975L\GalleryBundle\Service\GalleryCustomizationRegistry;
+use c975L\GalleryBundle\Service\GalleryMediaMover;
 use c975L\GalleryBundle\Service\GalleryMediaSlugger;
 use c975L\GalleryBundle\Service\GalleryUrlRedirector;
 use c975L\GalleryBundle\Service\UploadLimits;
@@ -48,6 +49,7 @@ use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Form\FormEvents;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\String\Slugger\AsciiSlugger;
 use Symfony\Component\Translation\TranslatableMessage;
@@ -69,11 +71,28 @@ class GalleryMediaCrudControllerTest extends TestCase
             $adminUrlGenerator ?? $this->createAdminUrlGenerator(),
             $translator,
             new GalleryMediaSlugger(new AsciiSlugger()),
+            $this->createMediaMover($redirectRepository ?? $this->createRedirectRepository()),
             new GalleryUrlRedirector($redirectRepository ?? $this->createRedirectRepository()),
             $this->createConfigService(),
             // Fixed ceilings rather than the machine's own php.ini, so the video field's limit is the same on every runner
             new UploadLimits('20', '64M', '128M'),
             $customizationRegistry ?? new GalleryCustomizationRegistry([]),
+        );
+    }
+
+    // What the category field of this form hands the move to - the slug and the redirect are settled by the controller itself, the mover carrying the files and the ranks (see GalleryMediaMover)
+    private function createMediaMover(RedirectRepository $redirectRepository): GalleryMediaMover
+    {
+        $urlGenerator = $this->createStub(UrlGeneratorInterface::class);
+        $urlGenerator->method('generate')->willReturnCallback(
+            static fn (string $route, array $parameters = []): string => '/gallery/' . ($parameters['category'] ?? '') . '/' . ($parameters['slug'] ?? '')
+        );
+
+        return new GalleryMediaMover(
+            new GalleryMediaSlugger(new AsciiSlugger()),
+            new GalleryUrlRedirector($redirectRepository),
+            $urlGenerator,
+            sys_get_temp_dir(),
         );
     }
 
@@ -536,6 +555,28 @@ class GalleryMediaCrudControllerTest extends TestCase
         $this->assertCount(1, $redirects);
         $this->assertSame('/gallery/voyages/mont-blanc', $redirects[0]->getFromPath());
         $this->assertSame('/gallery/portraits/mont-blanc', $redirects[0]->getToUrl());
+    }
+
+    // The files of a media moved by this very form follow it into the gallery it now belongs to - the same move the category screen's selection makes (see GalleryMediaMover), which this used to leave undone
+    public function testUpdateEntityHasTheFilesFollowAMediaMovedToAnotherCategory(): void
+    {
+        $oldCategory = new GalleryCategory()->setSlug('voitures');
+        $newCategory = new GalleryCategory()->setSlug('volvo');
+        $media = new GalleryMedia()
+            ->setTitle('Volvo 240')
+            ->setSlug('volvo-240')
+            ->setFilename('medias/gallery/voitures/volvo-240-abc123.webp')
+        ;
+        $media->setOriginalFilename('medias/gallery/voitures/volvo-240-abc123-original.jpg');
+        $newCategory->addMedia($media);
+
+        $persisted = [];
+        $entityManager = $this->createEntityManager(['title' => 'Volvo 240', 'slug' => 'volvo-240', 'category' => $oldCategory, 'position' => 0], $persisted);
+
+        $this->createControllerWithRouter()->updateEntity($entityManager, $media);
+
+        $this->assertSame('medias/gallery/volvo/volvo-240-abc123.webp', $media->getFilename());
+        $this->assertSame('medias/gallery/volvo/volvo-240-abc123-original.jpg', $media->getOriginalFilename());
     }
 
     // A slug typed onto one a sibling already answers at is suffixed rather than stealing it

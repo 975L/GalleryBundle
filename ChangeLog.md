@@ -1,5 +1,25 @@
 # ChangeLog
 
+## v1.11.0
+
+A media changes gallery with its files
+
+- `GalleryMediaMover` moves a selection into another gallery (28/08/2026)
+- The medias toolbar carries the gallery to move to and an optional title root (28/08/2026)
+- The stored file, its two derivatives, the kept original and the video follow the media (28/08/2026)
+- The old media page is left redirecting to the new one (28/08/2026)
+- A slug the arrival gallery already holds is suffixed (28/08/2026)
+- The medias arrive after what the gallery already holds (28/08/2026)
+- The gap they leave behind is closed (28/08/2026)
+- The cover of the gallery left behind is released (28/08/2026)
+- The title root renumbers the titles from where the arrival gallery leaves off (28/08/2026)
+- The selection is moved in the order the grid shows it (28/08/2026)
+- The media's own edit form goes through the same move, files included (28/08/2026)
+- `GalleryCategory::getNextMediaPosition()` replaces `GalleryMediaFactory`'s own numbering (28/08/2026)
+- Enter in a toolbar text box reaches the button of its own group (28/08/2026)
+- A guided project walks through moving a selection (28/08/2026)
+- The banner's text is outlined, the card no longer carrying webfonts (28/08/2026)
+
 ## v1.10.5
 
 The tooling is CoreBundle's

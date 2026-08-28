@@ -30,6 +30,16 @@ export default class extends Controller {
         }
     }
 
+    // Enter in one of the toolbar's text boxes reaches the button of its own group, never the form's first submit: the credits box and the title root of the move sit side by side, and a browser's implicit submission would apply whichever button comes first
+    submitOwn(event) {
+        event.preventDefault();
+
+        const submit = event.currentTarget.closest("div")?.querySelector("button[type='submit']");
+        if (submit && !submit.disabled) {
+            submit.click();
+        }
+    }
+
     toggleAll() {
         for (const checkbox of this.checkboxTargets) {
             checkbox.checked = this.toggleTarget.checked;

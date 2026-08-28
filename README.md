@@ -22,7 +22,7 @@ See it in action at [bundles.975l.com/pages/gallery-bundle](https://bundles.975l
 ## Contents
 
 - **Setup** — [requirements](#requirements) · [installation](#installation) · [configuration](#load-the-configuration) · [routes](#enable-routes) · [assets](#install-assets) · [theme](#install-the-theme)
-- **Using it** — [public routes](#public-routes) · [linking from a menu](#linking-a-gallery-from-a-menu) · [the automatic gallery](#the-automatic-gallery) · [renaming a category](#renaming-a-category) · [deleting a gallery](#deleting-a-gallery) · [uploading a batch](#uploading-a-batch) · [renaming a media](#renaming-a-media) · [a media's caption](#a-medias-caption) · [fields of your own](#fields-of-your-own) · [browsing and the lightbox](#browsing-and-the-lightbox) · [editing from the public pages](#editing-from-the-public-pages) · [blocks](#blocks-defined-by-this-bundle) · [category summary](#a-categorys-summary) · [share image](#the-image-a-shared-page-carries) · [category headings](#composing-a-categorys-heading) · [theme tokens](#theme) · [videos](#videos) · [trashing a selection](#trashing-a-selection-of-medias) · [credits / rights on a selection](#applying-credits-or-rights-to-a-selection) · [downloading a selection](#downloading-a-selections-files) · [export / import categories](#export--import-categories) · [sitemap and health check](#sitemap-and-health-check) · [describing the gallery index](#describing-the-gallery-index) · [backup](#backup) · [what's new](#whats-new) · [guided projects](#guided-projects)
+- **Using it** — [public routes](#public-routes) · [linking from a menu](#linking-a-gallery-from-a-menu) · [the automatic gallery](#the-automatic-gallery) · [renaming a category](#renaming-a-category) · [deleting a gallery](#deleting-a-gallery) · [uploading a batch](#uploading-a-batch) · [renaming a media](#renaming-a-media) · [a media's caption](#a-medias-caption) · [fields of your own](#fields-of-your-own) · [browsing and the lightbox](#browsing-and-the-lightbox) · [editing from the public pages](#editing-from-the-public-pages) · [blocks](#blocks-defined-by-this-bundle) · [category summary](#a-categorys-summary) · [share image](#the-image-a-shared-page-carries) · [category headings](#composing-a-categorys-heading) · [theme tokens](#theme) · [videos](#videos) · [trashing a selection](#trashing-a-selection-of-medias) · [credits / rights on a selection](#applying-credits-or-rights-to-a-selection) · [moving a selection](#moving-a-selection-to-another-gallery) · [downloading a selection](#downloading-a-selections-files) · [export / import categories](#export--import-categories) · [sitemap and health check](#sitemap-and-health-check) · [describing the gallery index](#describing-the-gallery-index) · [backup](#backup) · [what's new](#whats-new) · [guided projects](#guided-projects)
 - **Operating** — [likes on a photo](#likes-on-a-photo) · [bringing an existing gallery in](#bringing-an-existing-gallery-in) · [upload ceilings](#upload-ceilings) · [AI agent skills](#ai-agent-skills)
 
 ## Features
@@ -32,7 +32,7 @@ See it in action at [bundles.975l.com/pages/gallery-bundle](https://bundles.975l
 - Bulk upload: pick every file at once from the category they belong to, with a title root, credits and rights-reserved applied to the whole batch, retouched one media at a time afterwards. The same batch is offered on the category creation form, so a category is created with its medias in one go. Optionally, the untouched originals are kept outside the document root (see [uploading a batch](#uploading-a-batch)). The screen counts the megabytes as they leave and then says the files are being processed, a batch being minutes of waiting.
 - Three derivatives generated automatically per uploaded image (thumbnail / medium / highres), all three holding the whole photo, via UiBundle's `VichImageResizeListener` and the `VichMultiSizeImageInterface` contract - naming and resizing stay centralized in UiBundle, this bundle only declares the target sizes and how its grids frame them (see [Thumbnail framing](#thumbnail-framing)).
 - One EasyAdmin menu entry ("Gallery", opening the categories, with their media count); a category's medias are listed under its own edit form, each thumbnail opening the media it stands for, and medias are added from the category itself.
-- Each media in that list carries a checkbox, so a selection of them goes to the trash in one go instead of one edit screen at a time (see [trashing a selection](#trashing-a-selection-of-medias)), or given the same credits and rights at once (see [credits / rights on a selection](#applying-credits-or-rights-to-a-selection)), or their files handed back as one zip (see [downloading a selection](#downloading-a-selections-files)).
+- Each media in that list carries a checkbox, so a selection of them goes to the trash in one go instead of one edit screen at a time (see [trashing a selection](#trashing-a-selection-of-medias)), or given the same credits and rights at once (see [credits / rights on a selection](#applying-credits-or-rights-to-a-selection)), or moved into another gallery with everything they carry (see [moving a selection](#moving-a-selection-to-another-gallery)), or their files handed back as one zip (see [downloading a selection](#downloading-a-selections-files)).
 - A catch-all "Non classé" category is created lazily so an imported media always has one, even without a real one to attach it to.
 - One category of the site can be turned into **the gallery of the last additions**: it holds no media of its own and shows what every other category received on its last days of upload, whatever gallery each photo landed in - as a public page, as a block, and as a back-office screen where a whole upload session is credited, downloaded or trashed in one go (see [the automatic gallery](#the-automatic-gallery)).
 - A public front-office viewer (index → category → media), browsed entirely in the stored (medium) resolution, with circular previous/next navigation whose neighbouring images are preloaded in the background so switching medias never shows a blank image while it loads. The high resolution opens in a lightbox over the image, fetched only when the visitor asks for it (see [browsing and the lightbox](#browsing-and-the-lightbox)).
@@ -428,7 +428,9 @@ title, which is the one remaining way to regenerate one.
 `UiMediaNamer`), so a file and the page pointing at it read the same — but a later rename does not move it.
 Renaming would mean moving three files (medium, thumbnail, high resolution) and costing the old urls their
 place in an image index, for a signal the `alt` text already carries. Re-uploading the file names it after
-the current slug.
+the current slug. The **directory** above that name is another matter: it is the gallery the media belongs
+to, so it does follow a media moved to another one (see
+[moving a selection](#moving-a-selection-to-another-gallery)) — the name itself still never changes.
 
 ### A media's caption
 
@@ -860,6 +862,39 @@ button pressed names (a submit button posts its own name/value alone, the other 
 with it unread). The value is applied as the toolbar shows it: an empty credits box clears the credits, an
 unchecked box takes the rights back off — which is the only way to blank either on a whole selection.
 
+### Moving a selection to another gallery
+
+The same toolbar carries a **gallery picker**, an optional **title root** box and a **Move selection**
+button, posting to `GalleryCategoryCrudController::moveMedias()`. The photographs of "Voitures" that turn
+out to be Volvos are checked and filed into "Volvo" in one go, instead of one edit screen at a time.
+
+Everything the medias carry follows them, `GalleryMediaMover` being the single place both ways of moving a
+media go through — this selection, and the category field of a media's own edit form:
+
+- **The files.** The stored file, its `-thumb` and `-highres` siblings, the kept original under `private/`
+  and the media's own video move into `medias/gallery/{arrival gallery}/`. Only the directory moves: the
+  name itself carries the slug the media had at upload and never changes (see
+  [renaming a media](#renaming-a-media)), so the moved files answer at new urls but keep their names.
+- **The media page.** Its old url is left redirecting permanently to the new one, the gallery's slug being
+  the segment above the media's. A slug the arrival gallery already holds is suffixed (`-2`), a slug only
+  being unique within its own gallery.
+- **The ranks.** The medias arrive after what the gallery already holds, and the gap they leave behind is
+  closed — where a media put in the trash keeps its rank so it can come back to it. A cover pointing at a
+  media that has left is released.
+- **The titles**, when a title root is given: `Volvo 1`, `Volvo 2`… numbered from where the arrival gallery
+  leaves off, exactly as a batch upload numbers its own (see [uploading a batch](#uploading-a-batch)).
+  Left empty, the medias keep the titles they had. Retitling costs nothing here, a slug never following a
+  title in this bundle.
+
+The files are only touched once the flush has gone through, so a save that fails leaves every one of them
+where the rows still point at it. The arrival gallery is checked server-side, whatever the form posted: the
+automatic gallery holds no media of its own and one in the trash shows none, so neither can receive a
+selection. Like the rest of the screen the action sits at `site-role-editor`.
+
+The picker is offered on the **automatic gallery**'s screen too, where the gallery each photo is really
+filed under is the one renumbered — the last additions being exactly where a photo landed in the wrong
+gallery is noticed.
+
 ### Downloading a selection's files
 
 Two more buttons on that toolbar hand the files themselves back, as one zip:
@@ -1065,17 +1100,18 @@ pages, not which class carries it — the ChangeLog is where the code's history 
 
 ### Guided projects
 
-`GalleryGuidedProjectProvider` (ConfigBundle's `GuidedProjectProviderInterface`) contributes six replayable
+`GalleryGuidedProjectProvider` (ConfigBundle's `GuidedProjectProviderInterface`) contributes seven replayable
 exercises to the dashboard's "Guided projects" panel: **creating a gallery** with its first photographs in
 one go — the creation form carries the whole batch, which is the only screen doing both —, **arranging a
 gallery's medias** on its own edit screen, where the order, the cover and the batch edits all save as they
-go, **filling in a media's own screen**, where a caption is written and a video attached, **putting a gallery
-aside and bringing it back**, which walks the trash and stops before the permanent deletion — held one role
-higher, so a step highlighting it would point at a button an editor never sees —, **getting the photo files
-back** as one archive, and **the gallery of the latest additions**, the one gallery arranged by nobody.
-Nothing to register — the provider is picked up automatically.
+go, **moving photos to another gallery**, where a selection leaves with its files and its old pages keep
+answering, **filling in a media's own screen**, where a caption is written and a video attached, **putting a
+gallery aside and bringing it back**, which walks the trash and stops before the permanent deletion — held
+one role higher, so a step highlighting it would point at a button an editor never sees —, **getting the
+photo files back** as one archive, and **the gallery of the latest additions**, the one gallery arranged by
+nobody. Nothing to register — the provider is picked up automatically.
 
-Only the opening step of each carries an `url`, all six sending the user to the categories, the single
+Only the opening step of each carries an `url`, all seven sending the user to the categories, the single
 sidebar entry of the whole feature — which states `site-role-editor` itself, the bar its own screen sits
 at, rather than taking the admin default every entry used to be given. From there the panel walks that
 screen, highlighting the button or the field they are meant to use next — one they click themselves, which
@@ -1084,9 +1120,10 @@ brings the panel back on that very step:
 | Pointed at | What it is |
 | --- | --- |
 | `.action-new`, `.action-edit`, `.action-saveAndReturn`, `.action-delete`, `.action-trash`, `.action-restore` | EasyAdmin builds an `action-<name>` class from the action's own name — `saveAndReturn`, not `save` |
-| `#GalleryCategory_title`, `#GalleryCategory_titleRoot`, `#GalleryMedia_title`, `#GalleryMedia_credits`, `#GalleryMedia_externalUrl` | plain form fields, pointed at through their rendered id |
+| `#GalleryCategory_title`, `#GalleryCategory_titleRoot`, `#GalleryMedia_title`, `#GalleryMedia_category`, `#GalleryMedia_credits`, `#GalleryMedia_externalUrl` | plain form fields, pointed at through their rendered id |
 | `#GalleryCategory_files` | the batch upload of the creation form |
 | `[data-gallery-upload-medias]`, `[data-gallery-cover-radio]`, `[data-gallery-media-sort-handle]`, `[data-gallery-media-selection-target="toggle"]`, `[data-gallery-download-medias]` | markers carried by this bundle's own templates, the elements having no id of their own |
+| `[data-gallery-move-medias] select`, `[data-gallery-move-medias] input`, `[data-gallery-move-medias] button` | the move group of the medias toolbar, its three controls reached from the marker it carries |
 | `.management-media-grid`, `.management-media-grid__item` | the medias grid, and a thumbnail of it opening the media it stands for |
 
 An app overriding `templates/management/gallery_category_edit.html.twig` keeps those `data-` attributes, or

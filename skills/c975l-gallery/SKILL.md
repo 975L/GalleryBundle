@@ -1,6 +1,6 @@
 ---
 name: c975l-gallery
-description: "Use this skill when working with photo galleries in a Symfony application built on the c975L ecosystem with c975l/gallery-bundle. Covers categories and medias, the admin-renamable url prefix, the two-step trash, batch upload and the three image derivatives, videos and embeds, the two gallery blocks, theming, and every extension point the bundle offers. Triggers on: GalleryCategory, GalleryMedia, gallery-route-prefix, gallery_index, gallery_category, gallery_media, gallery_categories, gallery_medias, c975l:gallery:rebuild-thumbnails, c975l:gallery:fill-slugs, photo gallery, thumbnail, lightbox, batch upload, upload progress, passe-partout, trash, restore, delete permanently, 410 Gone, download highres, download originals, GalleryMediaArchiver, files-gallery, health check, automatic gallery, latest additions, GalleryLatestProvider, findOrCreateAutomatic, findLatest, gallery-latest-days, gallery-latest-max, gallery-rating, likes, like a photo, heart, rating, findVisibleByCategories, setLoadedMedias, media caption, media description, GalleryCustomizationProviderInterface, gallery.customization_provider, GalleryDataField, getDataValue, gallery-video-self-hosted-max-height, self-hosted video, portrait video."
+description: "Use this skill when working with photo galleries in a Symfony application built on the c975L ecosystem with c975l/gallery-bundle. Covers categories and medias, the admin-renamable url prefix, the two-step trash, batch upload and the three image derivatives, videos and embeds, the two gallery blocks, theming, and every extension point the bundle offers. Triggers on: GalleryCategory, GalleryMedia, gallery-route-prefix, gallery_index, gallery_category, gallery_media, gallery_categories, gallery_medias, c975l:gallery:rebuild-thumbnails, c975l:gallery:fill-slugs, photo gallery, thumbnail, lightbox, batch upload, upload progress, passe-partout, trash, restore, delete permanently, 410 Gone, download highres, download originals, GalleryMediaArchiver, move medias, move selection, GalleryMediaMover, moveMedias, files-gallery, health check, automatic gallery, latest additions, GalleryLatestProvider, findOrCreateAutomatic, findLatest, gallery-latest-days, gallery-latest-max, gallery-rating, likes, like a photo, heart, rating, findVisibleByCategories, setLoadedMedias, media caption, media description, GalleryCustomizationProviderInterface, gallery.customization_provider, GalleryDataField, getDataValue, gallery-video-self-hosted-max-height, self-hosted video, portrait video."
 ---
 
 # c975L GalleryBundle
@@ -221,6 +221,19 @@ Entries are named after each media's slug and stored rather than deflated, a sel
 gives a message rather than an empty archive. **Do not write a file download of your own** for a
 gallery's medias, and do not expose the original directory over http.
 
+`Service\GalleryMediaMover` is the single place a media changes gallery, both ways going through it:
+the **Move selection** button of the same toolbar (`GalleryCategoryCrudController::moveMedias()`) and
+the category field of a media's own edit form (`GalleryMediaCrudController::updateEntity()`). It moves
+the stored file, its `-thumb`/`-highres` siblings, the kept original and the media's own video into
+`medias/gallery/{arrival gallery}/`, leaves the old media page redirecting to the new one, suffixes a
+slug the arrival gallery already holds, appends the medias to its ranks while closing the gap behind
+them, releases a cover pointing at a media that has left, and renumbers the titles when a title root is
+given. **Only the directory moves** — the filename itself carries the slug the media had at upload and
+never changes. The files are renamed in `postFlush` so a failed save leaves them where the rows still
+point at them; the media is deliberately **left in the gallery's own collection**, that relation being
+`orphanRemoval` and removing it there deleting the very row being moved. **Do not reassign
+`GalleryMedia::$category` by hand** — the files would stay behind in the gallery the media left.
+
 Both downloads are offered in the medias trash as well, and are the one selection action that does not
 filter on `isDeleted` - the state is what keeps a selection posted from the grid away from the permanent
 deletion, where reading a file is the same act either way. The category's own **Move to trash** is
@@ -338,7 +351,7 @@ read by `c975l/core-bundle` `^1.14.0` and up, earlier ones giving every entry th
   `findPreviousAndNext()`, `findLatest()` (what the automatic gallery shows), `findVisibleByCategories()`
   (the same list for several categories at once, grouped by category id), `findWithFilename()`
   (the rows naming a file, for the files health check).
-  `findAllOrdered()` is memoized for the request (`ResetInterface`), its six callers knowing nothing of
+  `findAllOrdered()` is memoized for the request (`ResetInterface`), its callers knowing nothing of
   each other.
 
 What the bundle already contributes to the dashboard, so you do not have to: `MenuProvider`,

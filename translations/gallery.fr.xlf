@@ -30,6 +30,10 @@
                 <source>action.move</source>
                 <target>Déplacer</target>
             </trans-unit>
+            <trans-unit id="FN9Jswr">
+                <source>action.move_selection</source>
+                <target>Déplacer la sélection</target>
+            </trans-unit>
             <trans-unit id="vUjYe27">
                 <source>action.move_to_trash</source>
                 <target>Mettre à la corbeille</target>
@@ -90,6 +94,10 @@
                 <source>description.guided_project_gallery_medias_arrangement</source>
                 <target>Ordonnez les médias, choisissez celui qui représente la galerie, et modifiez-en plusieurs à la fois.</target>
             </trans-unit>
+            <trans-unit id="vQRhJrI">
+                <source>description.guided_project_gallery_medias_move</source>
+                <target>Une sélection part vers une autre galerie avec ses fichiers, ses pages redirigeant vers son nouvel emplacement.</target>
+            </trans-unit>
             <trans-unit id="u_SEkIG">
                 <source>description.guided_project_gallery_medias_recovery</source>
                 <target>Le site rend les originaux en une archive, et garde une corbeille propre aux photos.</target>
@@ -141,6 +149,10 @@
             <trans-unit id="i4vmOwe">
                 <source>description.guided_step_gallery_latest_selection</source>
                 <target>Les crédits, les droits, le téléchargement et la mise à la corbeille agissent sur les photos cochées là où elles se trouvent - c'est ainsi qu'une journée entière d'envois se crédite en une fois.</target>
+            </trans-unit>
+            <trans-unit id="iqexrio">
+                <source>description.guided_step_gallery_media_detail_category</source>
+                <target>La changer ici déplace cette seule photo, ses fichiers la suivant - toute une sélection se déplace depuis l'écran de la galerie (« Déplacer des photos vers une autre galerie »).</target>
             </trans-unit>
             <trans-unit id="LiQHB9j">
                 <source>description.guided_step_gallery_media_detail_credits</source>
@@ -197,6 +209,34 @@
             <trans-unit id="xFlSzIS">
                 <source>description.guided_step_gallery_medias_arrangement_upload</source>
                 <target>Un lot à la fois, toujours depuis la galerie qui les porte - un média ne se crée jamais tout seul.</target>
+            </trans-unit>
+            <trans-unit id="XpV1MRl">
+                <source>description.guided_step_gallery_medias_move_done</source>
+                <target>L'ancienne page de chaque photo redirige vers sa nouvelle adresse, la galerie quittée referme le trou dans son ordre, et sa couverture est libérée si c'était l'une d'elles.</target>
+            </trans-unit>
+            <trans-unit id="gkDlB1Y">
+                <source>description.guided_step_gallery_medias_move_edit</source>
+                <target>Ses médias sont listés sous son formulaire, et le déplacement se fait de là.</target>
+            </trans-unit>
+            <trans-unit id="wkTaZ1H">
+                <source>description.guided_step_gallery_medias_move_move</source>
+                <target>Les fichiers suivent dans le dossier propre à la galerie d'arrivée, et les photos se rangent à la suite de ce qu'elle porte déjà.</target>
+            </trans-unit>
+            <trans-unit id="pF5groX">
+                <source>description.guided_step_gallery_medias_move_open</source>
+                <target>Partez de la galerie qui porte les photos à déplacer, pas de celle qui les reçoit.</target>
+            </trans-unit>
+            <trans-unit id="W8tdTHK">
+                <source>description.guided_step_gallery_medias_move_select</source>
+                <target>Quelques photos ou toute la galerie - elles sont déplacées dans l'ordre où la grille les montre.</target>
+            </trans-unit>
+            <trans-unit id="mI._Udd">
+                <source>description.guided_step_gallery_medias_move_target</source>
+                <target>Toute galerie portant ses propres photos est proposée, sauf celle que vous regardez et « Derniers ajouts », qui n'en porte aucune.</target>
+            </trans-unit>
+            <trans-unit id="t06hhSP">
+                <source>description.guided_step_gallery_medias_move_title_root</source>
+                <target>Laissée vide, les photos gardent les titres qu'elles avaient ; remplie, elles sont numérotées à partir de là où la galerie d'arrivée s'arrête - « Voitures 12 » devenant « Volvo 3 ».</target>
             </trans-unit>
             <trans-unit id="sKZxCZg">
                 <source>description.guided_step_gallery_medias_recovery_download</source>
@@ -474,6 +514,14 @@
                 <source>label.gallery_medias_layout_failed</source>
                 <target>L'ordre et la couverture n'ont pas pu être enregistrés</target>
             </trans-unit>
+            <trans-unit id="CEn_FM8">
+                <source>label.gallery_medias_move_refused</source>
+                <target>La galerie d'arrivée ne peut pas recevoir de médias, rien n'a été déplacé.</target>
+            </trans-unit>
+            <trans-unit id="y6cD5vx">
+                <source>label.gallery_medias_moved</source>
+                <target>Médias déplacés vers %category% (%count%)</target>
+            </trans-unit>
             <trans-unit id="N1MazvR">
                 <source>label.gallery_medias_restored</source>
                 <target>Médias restaurés (%count%)</target>
@@ -630,6 +678,10 @@
                 <source>label.guided_project_gallery_medias_arrangement</source>
                 <target>Organiser une galerie</target>
             </trans-unit>
+            <trans-unit id="wB2voWt">
+                <source>label.guided_project_gallery_medias_move</source>
+                <target>Déplacer des photos vers une autre galerie</target>
+            </trans-unit>
             <trans-unit id="jo6ewZB">
                 <source>label.guided_project_gallery_medias_recovery</source>
                 <target>Récupérer les fichiers des photos</target>
@@ -685,6 +737,10 @@
             <trans-unit id="f.iiB8l">
                 <source>label.guided_step_gallery_latest_selection</source>
                 <target>Travaillez sur une séance d'envoi</target>
+            </trans-unit>
+            <trans-unit id="XHZrQIt">
+                <source>label.guided_step_gallery_media_detail_category</source>
+                <target>Sa galerie</target>
             </trans-unit>
             <trans-unit id="9HSb61v">
                 <source>label.guided_step_gallery_media_detail_credits</source>
@@ -745,6 +801,34 @@
             <trans-unit id="66ermhL">
                 <source>label.guided_step_gallery_medias_arrangement_upload</source>
                 <target>Ajoutez des médias</target>
+            </trans-unit>
+            <trans-unit id="fe.h6V5">
+                <source>label.guided_step_gallery_medias_move_done</source>
+                <target>Rien ne se perd en chemin</target>
+            </trans-unit>
+            <trans-unit id="7IPBecj">
+                <source>label.guided_step_gallery_medias_move_edit</source>
+                <target>Ouvrez la galerie</target>
+            </trans-unit>
+            <trans-unit id="92tGQLV">
+                <source>label.guided_step_gallery_medias_move_move</source>
+                <target>Déplacez la sélection</target>
+            </trans-unit>
+            <trans-unit id="y2ZU7gV">
+                <source>label.guided_step_gallery_medias_move_open</source>
+                <target>Ouvrez vos galeries</target>
+            </trans-unit>
+            <trans-unit id="8uZzDnF">
+                <source>label.guided_step_gallery_medias_move_select</source>
+                <target>Cochez ce qui part</target>
+            </trans-unit>
+            <trans-unit id="6YEgcdO">
+                <source>label.guided_step_gallery_medias_move_target</source>
+                <target>Choisissez la galerie d'arrivée</target>
+            </trans-unit>
+            <trans-unit id="QRh.b5j">
+                <source>label.guided_step_gallery_medias_move_title_root</source>
+                <target>Renommez-les, ou non</target>
             </trans-unit>
             <trans-unit id="mCeDa1s">
                 <source>label.guided_step_gallery_medias_recovery_download</source>

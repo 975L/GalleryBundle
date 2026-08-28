@@ -1,5 +1,20 @@
 [
     {
+        "date": "2026-08-28",
+        "description": [
+            {
+                "en": "Photographs filed in the wrong gallery are moved into the right one in a single go: tick them, pick the arrival gallery and move them - their files travel with them, their old pages keep answering, and both galleries renumber themselves",
+                "fr": "Les photographies rangées dans la mauvaise galerie se déplacent vers la bonne en une seule fois : vous les cochez, choisissez la galerie d'arrivée et les déplacez — leurs fichiers voyagent avec elles, leurs anciennes pages continuent de répondre, et les deux galeries se renumérotent",
+                "es": "Las fotografías archivadas en la galería equivocada se mueven a la correcta de una sola vez: las marca, elige la galería de destino y las mueve — sus archivos viajan con ellas, sus páginas antiguas siguen respondiendo y ambas galerías se renumeran"
+            },
+            {
+                "en": "A common title can be given to the medias being moved, numbered from where the arrival gallery leaves off - \"Voitures 12\" becomes \"Volvo 3\" without a single address changing",
+                "fr": "Un titre commun peut être donné aux médias déplacés, numéroté à la suite de ce que contient déjà la galerie d'arrivée — « Voitures 12 » devient « Volvo 3 » sans qu'une seule adresse ne change",
+                "es": "Se puede dar un título común a los medios movidos, numerado a continuación de lo que ya contiene la galería de destino: «Coches 12» pasa a ser «Volvo 3» sin que cambie ni una dirección"
+            }
+        ]
+    },
+    {
         "date": "2026-08-22",
         "description": [
             {

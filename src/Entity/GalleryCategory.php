@@ -276,6 +276,19 @@ class GalleryCategory implements HasBlocksInterface, TrashableInterface, \String
         ));
     }
 
+    // Where the next media of this gallery lands: after everything it already holds, so neither a batch upload (see GalleryMediaFactory) nor a move (see GalleryMediaMover) ever reorders the medias that were there before it
+    // The trash is left out, exactly as the grid's own renumbering leaves it out (see GalleryCategoryCrudController::saveMediasLayout): a media an admin took off the site still holds the rank it had, and counting it would start the next batch past a rank nothing occupies - the very gap emptying the trash was meant to close
+    public function getNextMediaPosition(): int
+    {
+        $positions = $this->medias
+            ->filter(static fn (GalleryMedia $media): bool => !$media->isDeleted())
+            ->map(static fn (GalleryMedia $media): int => $media->getPosition())
+            ->toArray()
+        ;
+
+        return [] === $positions ? 0 : max($positions) + 1;
+    }
+
     public function addMedia(GalleryMedia $media): self
     {
         if (!$this->medias->contains($media)) {

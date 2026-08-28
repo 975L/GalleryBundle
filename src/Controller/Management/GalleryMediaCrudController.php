@@ -15,6 +15,7 @@ use c975L\GalleryBundle\Entity\GalleryCategory;
 use c975L\GalleryBundle\Entity\GalleryMedia;
 use c975L\GalleryBundle\Field\GalleryDataField;
 use c975L\GalleryBundle\Service\GalleryCustomizationRegistry;
+use c975L\GalleryBundle\Service\GalleryMediaMover;
 use c975L\GalleryBundle\Service\GalleryMediaSlugger;
 use c975L\GalleryBundle\Service\GalleryUrlRedirector;
 use c975L\GalleryBundle\Service\UploadLimits;
@@ -58,6 +59,7 @@ class GalleryMediaCrudController extends AbstractCrudController
         private readonly AdminUrlGeneratorInterface $adminUrlGenerator,
         private readonly TranslatorInterface $translator,
         private readonly GalleryMediaSlugger $mediaSlugger,
+        private readonly GalleryMediaMover $mediaMover,
         private readonly GalleryUrlRedirector $urlRedirector,
         private readonly ConfigServiceInterface $configService,
         private readonly UploadLimits $uploadLimits,
@@ -153,7 +155,7 @@ class GalleryMediaCrudController extends AbstractCrudController
         return $formBuilder;
     }
 
-    // Updated media - a media's public url moves when its slug is edited, and when it is moved to another category, the category's own slug being the segment above it
+    // Updated media - a media's public url moves when its slug is edited, and when it is moved to another gallery, the gallery's own slug being the segment above it, its files following it there
     #[\Override]
     public function updateEntity(EntityManagerInterface $entityManager, object $entityInstance): void
     {
@@ -164,6 +166,15 @@ class GalleryMediaCrudController extends AbstractCrudController
             $this->mediaSlugger->assign($entityInstance, $entityInstance->getSlug());
 
             $this->redirectUrlChange($entityManager, $original, $entityInstance);
+
+            // The category field of this very form is the second way a media changes gallery, the selection of the category screen being the first (see GalleryCategoryCrudController::moveMedias) - the slug and the redirect are settled just above, so what is left to follow is the files and the ranks of the two galleries
+            // The rank an admin typed on this form is honoured rather than overwritten: they arranged the media themselves, where an untouched one simply lands after what the arrival gallery already holds
+            $source = $original['category'] ?? null;
+            $this->mediaMover->follow(
+                $entityInstance,
+                $source instanceof GalleryCategory ? $source : null,
+                ($original['position'] ?? null) !== $entityInstance->getPosition(),
+            );
         }
 
         parent::updateEntity($entityManager, $entityInstance);

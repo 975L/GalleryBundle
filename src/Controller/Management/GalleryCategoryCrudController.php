@@ -26,6 +26,7 @@ use c975L\GalleryBundle\Service\GalleryCustomizationRegistry;
 use c975L\GalleryBundle\Service\GalleryLatestProvider;
 use c975L\GalleryBundle\Service\GalleryMediaArchiver;
 use c975L\GalleryBundle\Service\GalleryMediaFactory;
+use c975L\GalleryBundle\Service\GalleryMediaMover;
 use c975L\GalleryBundle\Service\GalleryUrlRedirector;
 use c975L\GalleryBundle\Service\UploadLimits;
 use c975L\UiBundle\Contract\VichWatermarkableInterface;
@@ -107,6 +108,7 @@ class GalleryCategoryCrudController extends AbstractCrudController
         private readonly AdminContextProviderInterface $adminContextProvider,
         private readonly BlockMoveRowAttrBuilder $blockMoveRowAttrBuilder,
         private readonly GalleryMediaFactory $galleryMediaFactory,
+        private readonly GalleryMediaMover $galleryMediaMover,
         private readonly UploadLimits $uploadLimits,
         private readonly GalleryUrlRedirector $urlRedirector,
         private readonly ConfigServiceInterface $configService,
@@ -792,6 +794,12 @@ class GalleryCategoryCrudController extends AbstractCrudController
 
             $responseParameters->set('medias', $medias);
 
+            // The galleries the medias toolbar offers to move a selection into - the same list the media's own edit form offers (see moveTarget), minus the one being looked at, which is where they already are
+            $responseParameters->set('move_targets', array_values(array_filter(
+                $this->galleryCategoryRepository->findAllOrdered(),
+                static fn (GalleryCategory $target): bool => !$target->isAutomatic() && $target !== $category
+            )));
+
             // Built off the list the screen shows rather than off the category's own collection: on the automatic gallery the medias are other categories' - each is edited from here and comes back here once saved, the category the url carries being where the media CRUD sends the admin back to
             foreach ($medias as $media) {
                 $mediaEditUrls[$media->getId()] = $this->adminUrlGenerator
@@ -1040,6 +1048,50 @@ class GalleryCategoryCrudController extends AbstractCrudController
         }
 
         return $this->redirect($url);
+    }
+
+    // Moves the checked medias into another gallery, everything they carry following them (see GalleryMediaMover): the files into the directory that gallery is stored under, the old media pages into redirects, and the ranks of both galleries closing behind and opening in front
+    // The title root is optional and works exactly as the upload screen's: left empty the medias keep the titles they had, filled they are renumbered from where the arrival gallery leaves off - "Voitures 12" becoming "Volvo 3" without a single url moving, a slug never following a title in this bundle
+    // Only medias of the category the url carries are ever touched, whatever ids are posted, exactly as deleteMedias() does - the gallery each of them actually belongs to being the one renumbered, so the automatic gallery files a photo into the right place from the list of the last additions
+    #[AdminRoute('/{entityId}/move-medias', options: ['methods' => ['POST']])]
+    public function moveMedias(AdminContext $context, Request $request, EntityManagerInterface $entityManager): Response
+    {
+        $this->denyAccessUnlessGranted($this->roleNeeded());
+
+        [$category, $url] = $this->mediaSelectionContext($context);
+
+        if (!$this->isCsrfTokenValid(self::DELETE_MEDIAS_CSRF_TOKEN, $request->request->getString('_token'))) {
+            return $this->redirect($url);
+        }
+
+        // Checked again here rather than trusted from the select: the posted id is a request like any other, and a gallery holding no media of its own would take photographs out of every grid at once
+        $target = $this->moveTarget($request->request->getInt('targetCategory'));
+        if (null === $target) {
+            $this->addFlash('danger', $this->translator->trans('label.gallery_medias_move_refused', [], 'gallery'));
+
+            return $this->redirect($url);
+        }
+
+        $medias = $this->selectedMedias($category, $request, deleted: false);
+        $moved = $this->galleryMediaMover->move($entityManager, $medias, $target, $request->request->getString('titleRoot'));
+        $entityManager->flush();
+
+        if ($moved > 0) {
+            $this->addFlash('success', $this->translator->trans('label.gallery_medias_moved', [
+                '%count%' => $moved,
+                '%category%' => (string) $target->getTitle(),
+            ], 'gallery'));
+        }
+
+        return $this->redirect($url);
+    }
+
+    // The gallery a selection may be moved into: one that actually holds medias of its own, and not one in the trash - the very filter the media's own edit form offers on its category field (see GalleryMediaCrudController::configureFields), a media moved to either would disappear from every grid
+    private function moveTarget(int $id): ?GalleryCategory
+    {
+        $target = $id > 0 ? $this->galleryCategoryRepository->find($id) : null;
+
+        return $target instanceof GalleryCategory && !$target->isAutomatic() && !$target->isDeleted() ? $target : null;
     }
 
     // Hands the files of the checked medias back as one zip - their high resolution version, or the untouched originals kept at upload, the button pressed naming which (see GalleryMediaArchiver)

@@ -25,6 +25,7 @@ use c975L\GalleryBundle\Service\GalleryCustomizationRegistry;
 use c975L\GalleryBundle\Service\GalleryLatestProvider;
 use c975L\GalleryBundle\Service\GalleryMediaArchiver;
 use c975L\GalleryBundle\Service\GalleryMediaFactory;
+use c975L\GalleryBundle\Service\GalleryMediaMover;
 use c975L\GalleryBundle\Service\GalleryMediaSlugger;
 use c975L\GalleryBundle\Service\GalleryUrlRedirector;
 use c975L\GalleryBundle\Service\UploadLimits;
@@ -174,6 +175,12 @@ class GalleryCategoryCrudControllerTest extends TestCase
             $this->createStub(AdminContextProviderInterface::class),
             $this->createStub(BlockMoveRowAttrBuilder::class),
             new GalleryMediaFactory(new GalleryMediaSlugger(new AsciiSlugger())),
+            new GalleryMediaMover(
+                new GalleryMediaSlugger(new AsciiSlugger()),
+                new GalleryUrlRedirector($redirectRepository ?? $this->createStub(RedirectRepository::class)),
+                $this->createUrlGenerator(),
+                sys_get_temp_dir(),
+            ),
             new UploadLimits(),
             new GalleryUrlRedirector($redirectRepository ?? $this->createStub(RedirectRepository::class)),
             $this->createConfigService(),
@@ -184,6 +191,17 @@ class GalleryCategoryCrudControllerTest extends TestCase
             $latestProvider ?? $this->createStub(GalleryLatestProvider::class),
             $customizationRegistry ?? new GalleryCustomizationRegistry([]),
         );
+    }
+
+    // The two urls of a moved media, built by the mover rather than by the controller (see GalleryMediaMover::mediaUrl)
+    private function createUrlGenerator(): UrlGeneratorInterface
+    {
+        $urlGenerator = $this->createStub(UrlGeneratorInterface::class);
+        $urlGenerator->method('generate')->willReturnCallback(
+            static fn (string $route, array $parameters = []): string => '/gallery/' . ($parameters['category'] ?? '') . '/' . ($parameters['slug'] ?? '')
+        );
+
+        return $urlGenerator;
     }
 
     // Every screen of this CRUD sits behind ConfigBundle's "site-role-editor" entry
@@ -870,6 +888,179 @@ class GalleryCategoryCrudControllerTest extends TestCase
         );
 
         $this->assertSame([], $requestStack->getSession()->getFlashBag()->all());
+    }
+
+    // --- moveMedias --------------------------------------------------------------------------------------
+
+    private function createMoveMediasRequest(array $mediaIds, int $targetCategory, string $titleRoot = '', string $token = 'valid'): Request
+    {
+        return new Request(request: [
+            '_token' => $token,
+            'targetCategory' => (string) $targetCategory,
+            'titleRoot' => $titleRoot,
+            'mediaIds' => array_map(strval(...), $mediaIds),
+        ]);
+    }
+
+    // The gallery a selection is moved into, read back off the repository by the id the form posted
+    private function createTargetRepository(?GalleryCategory $target): GalleryCategoryRepository
+    {
+        $repository = $this->createStub(GalleryCategoryRepository::class);
+        $repository->method('find')->willReturn($target);
+
+        return $repository;
+    }
+
+    public function testMoveMediasDeniesAccessBelowTheEditorRole(): void
+    {
+        $this->expectException(AccessDeniedException::class);
+
+        $controller = $this->createController();
+        $controller->setContainer($this->createContainer([
+            'security.authorization_checker' => $this->createAuthorizationChecker(false),
+        ]));
+
+        $controller->moveMedias($this->createAdminContext(), $this->createMoveMediasRequest([1], 3), $this->createStub(EntityManagerInterface::class));
+    }
+
+    public function testMoveMediasChangesNothingWhenCsrfTokenIsInvalid(): void
+    {
+        $category = $this->createCategoryWithMedias(7);
+        $target = new GalleryCategory()->setSlug('volvo')->setTitle('Volvo');
+
+        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $entityManager->expects($this->never())->method('flush');
+
+        $controller = $this->createController(galleryCategoryRepository: $this->createTargetRepository($target));
+        $controller->setContainer($this->createContainer([
+            'security.authorization_checker' => $this->createAuthorizationChecker(true),
+            'security.csrf.token_manager' => $this->createCsrfTokenManager(false),
+        ]));
+
+        $response = $controller->moveMedias(
+            $this->createAdminContext($category),
+            $this->createMoveMediasRequest([7], 3, token: 'invalid'),
+            $entityManager
+        );
+
+        $this->assertSame($category, $category->getMedias()->first()->getCategory());
+        $this->assertSame('/management/gallery-categories', $response->getTargetUrl());
+    }
+
+    // The posted id is a request like any other: a gallery holding no media of its own would take the photographs out of every grid at once
+    public function testMoveMediasRefusesTheAutomaticGallery(): void
+    {
+        $category = $this->createCategoryWithMedias(7);
+        $target = new GalleryCategory()->setSlug('latest')->setTitle('Derniers ajouts')->setAutomatic(true);
+
+        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $entityManager->expects($this->never())->method('flush');
+
+        $controller = $this->createController(galleryCategoryRepository: $this->createTargetRepository($target));
+        $controller->setContainer($this->createContainer([
+            'security.authorization_checker' => $this->createAuthorizationChecker(true),
+            'security.csrf.token_manager' => $this->createCsrfTokenManager(true),
+            'request_stack' => $this->createRequestStackWithSession(),
+        ]));
+
+        $response = $controller->moveMedias($this->createAdminContext($category), $this->createMoveMediasRequest([7], 3), $entityManager);
+
+        $this->assertSame($category, $category->getMedias()->first()->getCategory());
+        $this->assertSame('/management/gallery-categories', $response->getTargetUrl());
+    }
+
+    // A gallery in the trash shows none of what it holds, so a media moved to it would simply disappear
+    public function testMoveMediasRefusesAGalleryInTheTrash(): void
+    {
+        $category = $this->createCategoryWithMedias(7);
+        $target = new GalleryCategory()->setSlug('volvo')->setTitle('Volvo')->setIsDeleted(true);
+
+        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $entityManager->expects($this->never())->method('flush');
+
+        $controller = $this->createController(galleryCategoryRepository: $this->createTargetRepository($target));
+        $controller->setContainer($this->createContainer([
+            'security.authorization_checker' => $this->createAuthorizationChecker(true),
+            'security.csrf.token_manager' => $this->createCsrfTokenManager(true),
+            'request_stack' => $this->createRequestStackWithSession(),
+        ]));
+
+        $controller->moveMedias($this->createAdminContext($category), $this->createMoveMediasRequest([7], 3), $entityManager);
+
+        $this->assertSame($category, $category->getMedias()->first()->getCategory());
+    }
+
+    // Only the checked medias move, and only those of the category the url carries - an id from another one is posted here and must be ignored
+    public function testMoveMediasMovesTheCheckedMediasOnly(): void
+    {
+        $category = $this->createCategoryWithMedias(7, 8, 9);
+        $target = new GalleryCategory()->setSlug('volvo')->setTitle('Volvo');
+
+        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $entityManager->expects($this->once())->method('flush');
+
+        $controller = $this->createController(galleryCategoryRepository: $this->createTargetRepository($target));
+        $controller->setContainer($this->createContainer([
+            'security.authorization_checker' => $this->createAuthorizationChecker(true),
+            'security.csrf.token_manager' => $this->createCsrfTokenManager(true),
+            'request_stack' => $this->createRequestStackWithSession(),
+        ]));
+
+        $response = $controller->moveMedias(
+            $this->createAdminContext($category),
+            $this->createMoveMediasRequest([7, 9, 999], 3),
+            $entityManager
+        );
+
+        $categories = $category->getMedias()->map(static fn (GalleryMedia $media): ?string => $media->getCategory()?->getSlug())->toArray();
+        $this->assertSame(['volvo', 'voyages', 'volvo'], array_values($categories));
+        $this->assertSame('/management/gallery-categories', $response->getTargetUrl());
+    }
+
+    // The racine des titres renumbers them from where the arrival gallery leaves off, exactly as a batch upload numbers its own
+    public function testMoveMediasRenumbersTheTitlesUnderTheRootGiven(): void
+    {
+        $category = $this->createCategoryWithMedias(7, 8);
+        $target = new GalleryCategory()->setSlug('volvo')->setTitle('Volvo');
+
+        $controller = $this->createController(galleryCategoryRepository: $this->createTargetRepository($target));
+        $controller->setContainer($this->createContainer([
+            'security.authorization_checker' => $this->createAuthorizationChecker(true),
+            'security.csrf.token_manager' => $this->createCsrfTokenManager(true),
+            'request_stack' => $this->createRequestStackWithSession(),
+        ]));
+
+        $controller->moveMedias(
+            $this->createAdminContext($category),
+            $this->createMoveMediasRequest([7, 8], 3, 'Volvo'),
+            $this->createStub(EntityManagerInterface::class)
+        );
+
+        $titles = $category->getMedias()->map(static fn (GalleryMedia $media): ?string => $media->getTitle())->toArray();
+        $this->assertSame(['Volvo 1', 'Volvo 2'], array_values($titles));
+    }
+
+    public function testMoveMediasFlashesNothingWhenTheSelectionIsEmpty(): void
+    {
+        $category = $this->createCategoryWithMedias(7);
+        $target = new GalleryCategory()->setSlug('volvo')->setTitle('Volvo');
+
+        $requestStack = $this->createRequestStackWithSession();
+
+        $controller = $this->createController(galleryCategoryRepository: $this->createTargetRepository($target));
+        $controller->setContainer($this->createContainer([
+            'security.authorization_checker' => $this->createAuthorizationChecker(true),
+            'security.csrf.token_manager' => $this->createCsrfTokenManager(true),
+            'request_stack' => $requestStack,
+        ]));
+
+        $controller->moveMedias(
+            $this->createAdminContext($category),
+            $this->createMoveMediasRequest([999], 3),
+            $this->createStub(EntityManagerInterface::class)
+        );
+
+        $this->assertSame([], $requestStack->getCurrentRequest()->getSession()->getFlashBag()->peekAll());
     }
 
     // --- downloadMedias ----------------------------------------------------------------------------------

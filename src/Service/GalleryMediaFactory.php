@@ -31,7 +31,7 @@ class GalleryMediaFactory
     public function createFromUploads(GalleryCategory $category, iterable $files, ?GalleryMediaBatch $batch = null): array
     {
         $batch ??= new GalleryMediaBatch();
-        $position = $this->nextPosition($category);
+        $position = $category->getNextMediaPosition();
         $medias = [];
 
         foreach ($files as $file) {
@@ -116,18 +116,5 @@ class GalleryMediaFactory
     private function titleFromFilename(string $filename): string
     {
         return ucwords(str_replace(['_', '-'], ' ', pathinfo($filename, \PATHINFO_FILENAME)));
-    }
-
-    // Appended after whatever the category already holds, a batch never reordering the medias that were there before it
-    // The trash is left out, exactly as the grid's own renumbering leaves it out (see GalleryCategoryCrudController::saveMediasLayout): a media an admin took off the site still holds the position it had, and counting it would make the next batch start past a rank nothing occupies - the very gap emptying the trash was meant to close
-    private function nextPosition(GalleryCategory $category): int
-    {
-        $positions = $category->getMedias()
-            ->filter(static fn (GalleryMedia $media): bool => !$media->isDeleted())
-            ->map(static fn (GalleryMedia $media): int => $media->getPosition())
-            ->toArray()
-        ;
-
-        return [] === $positions ? 0 : max($positions) + 1;
     }
 }

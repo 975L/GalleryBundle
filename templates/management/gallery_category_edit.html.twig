@@ -163,9 +163,10 @@
                         name="credits"
                         class="form-control w-auto"
                         placeholder="{{ ('label.credits'|trans({}, 'gallery')) }}"
-                        aria-label="{{ ('label.credits'|trans({}, 'gallery')) }}">
+                        aria-label="{{ ('label.credits'|trans({}, 'gallery')) }}"
+                        data-action="keydown.enter->gallery-media-selection#submitOwn">
 
-                    {# Kept the form's first submit button, which is the one a keystroke on Enter in the box above triggers - the deletion further down must never be what that reaches #}
+                    {# Enter in the box above reaches this very button rather than the form's first one, the toolbar now holding a second text box (see gallery-media-selection#submitOwn) - the deletion further down must never be what a keystroke triggers #}
                     <button type="submit"
                         name="field"
                         value="credits"
@@ -197,6 +198,36 @@
                         <i class="fa fa-lock"></i> {{ ('action.apply_rights_reserved'|trans({}, 'gallery')) }}
                     </button>
                 </div>
+
+                {# Moves the checked medias into another gallery, their files following them there and the ranks of both galleries renumbered behind and in front (see GalleryCategoryCrudController::moveMedias) #}
+                {# The title root works exactly as the upload screen's: left empty the medias keep the titles they had, filled they are renumbered from where the arrival gallery leaves off - no public url moves either way, a slug never following a title in this bundle #}
+                {% if move_targets|default([])|length %}
+                {# The attribute is what a guided project points at, the group having no other stable hook (see GalleryGuidedProjectProvider) #}
+                <div class="d-flex flex-wrap gap-2 align-items-center" data-gallery-move-medias>
+                    <select name="targetCategory"
+                        class="form-select w-auto"
+                        aria-label="{{ ('action.move_selection'|trans({}, 'gallery')) }}">
+                        {% for target in move_targets %}
+                            <option value="{{ target.id }}">{{ target.title }}</option>
+                        {% endfor %}
+                    </select>
+
+                    <input type="text"
+                        name="titleRoot"
+                        class="form-control w-auto"
+                        placeholder="{{ ('label.gallery_title_root'|trans({}, 'gallery')) }}"
+                        aria-label="{{ ('label.gallery_title_root'|trans({}, 'gallery')) }}"
+                        data-action="keydown.enter->gallery-media-selection#submitOwn">
+
+                    <button type="submit"
+                        formaction="{{ ea_url().setAction('moveMedias') }}"
+                        class="btn btn-secondary"
+                        disabled
+                        data-gallery-media-selection-target="submit">
+                        <i class="fa fa-images"></i> {{ ('action.move_selection'|trans({}, 'gallery')) }}
+                    </button>
+                </div>
+                {% endif %}
 
                 {{ macros.download_buttons(ea_url().setAction('downloadMedias')) }}
 

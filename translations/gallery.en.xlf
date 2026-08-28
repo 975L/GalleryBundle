@@ -30,6 +30,10 @@
                 <source>action.move</source>
                 <target>Move</target>
             </trans-unit>
+            <trans-unit id="FN9Jswr">
+                <source>action.move_selection</source>
+                <target>Move selection</target>
+            </trans-unit>
             <trans-unit id="vUjYe27">
                 <source>action.move_to_trash</source>
                 <target>Move to trash</target>
@@ -90,6 +94,10 @@
                 <source>description.guided_project_gallery_medias_arrangement</source>
                 <target>Order the media, choose the one representing the gallery, and edit several of them at once.</target>
             </trans-unit>
+            <trans-unit id="vQRhJrI">
+                <source>description.guided_project_gallery_medias_move</source>
+                <target>A selection leaves for another gallery with its files, its pages redirecting to where it now sits.</target>
+            </trans-unit>
             <trans-unit id="u_SEkIG">
                 <source>description.guided_project_gallery_medias_recovery</source>
                 <target>The site hands the originals back as one archive, and keeps a trash of its own for the photos.</target>
@@ -141,6 +149,10 @@
             <trans-unit id="i4vmOwe">
                 <source>description.guided_step_gallery_latest_selection</source>
                 <target>Credits, rights, download and move to trash act on the checked photos where they actually sit - which is how a whole day's upload is credited in one go.</target>
+            </trans-unit>
+            <trans-unit id="iqexrio">
+                <source>description.guided_step_gallery_media_detail_category</source>
+                <target>Changing it here moves this one photo, its files following it - a whole selection is moved from the gallery screen instead ("Move photos to another gallery").</target>
             </trans-unit>
             <trans-unit id="LiQHB9j">
                 <source>description.guided_step_gallery_media_detail_credits</source>
@@ -197,6 +209,34 @@
             <trans-unit id="xFlSzIS">
                 <source>description.guided_step_gallery_medias_arrangement_upload</source>
                 <target>A batch at a time, always from the gallery holding them - a media is never created on its own.</target>
+            </trans-unit>
+            <trans-unit id="XpV1MRl">
+                <source>description.guided_step_gallery_medias_move_done</source>
+                <target>The old page of each photo redirects to its new address, the gallery left behind closes the gap in its order, and its cover is released if it was one of them.</target>
+            </trans-unit>
+            <trans-unit id="gkDlB1Y">
+                <source>description.guided_step_gallery_medias_move_edit</source>
+                <target>Its media are listed under its form, and the move is done from there.</target>
+            </trans-unit>
+            <trans-unit id="wkTaZ1H">
+                <source>description.guided_step_gallery_medias_move_move</source>
+                <target>The files follow into the arrival gallery's own directory, and the photos land after what it already holds.</target>
+            </trans-unit>
+            <trans-unit id="pF5groX">
+                <source>description.guided_step_gallery_medias_move_open</source>
+                <target>Start from the gallery holding the photos to move, not from the one receiving them.</target>
+            </trans-unit>
+            <trans-unit id="W8tdTHK">
+                <source>description.guided_step_gallery_medias_move_select</source>
+                <target>A few photos or the whole gallery - they are moved in the order the grid shows them.</target>
+            </trans-unit>
+            <trans-unit id="mI._Udd">
+                <source>description.guided_step_gallery_medias_move_target</source>
+                <target>Every gallery holding photos of its own is offered, except the one you are looking at and "Latest additions", which holds none.</target>
+            </trans-unit>
+            <trans-unit id="t06hhSP">
+                <source>description.guided_step_gallery_medias_move_title_root</source>
+                <target>Left empty the photos keep the titles they had; filled, they are numbered from where the arrival gallery leaves off - "Cars 12" becoming "Volvo 3".</target>
             </trans-unit>
             <trans-unit id="sKZxCZg">
                 <source>description.guided_step_gallery_medias_recovery_download</source>
@@ -474,6 +514,14 @@
                 <source>label.gallery_medias_layout_failed</source>
                 <target>The order and cover could not be saved</target>
             </trans-unit>
+            <trans-unit id="CEn_FM8">
+                <source>label.gallery_medias_move_refused</source>
+                <target>The destination gallery cannot receive medias, nothing was moved.</target>
+            </trans-unit>
+            <trans-unit id="y6cD5vx">
+                <source>label.gallery_medias_moved</source>
+                <target>Medias moved to %category% (%count%)</target>
+            </trans-unit>
             <trans-unit id="N1MazvR">
                 <source>label.gallery_medias_restored</source>
                 <target>Medias restored (%count%)</target>
@@ -630,6 +678,10 @@
                 <source>label.guided_project_gallery_medias_arrangement</source>
                 <target>Arrange a gallery</target>
             </trans-unit>
+            <trans-unit id="wB2voWt">
+                <source>label.guided_project_gallery_medias_move</source>
+                <target>Move photos to another gallery</target>
+            </trans-unit>
             <trans-unit id="jo6ewZB">
                 <source>label.guided_project_gallery_medias_recovery</source>
                 <target>Get the photo files back</target>
@@ -685,6 +737,10 @@
             <trans-unit id="f.iiB8l">
                 <source>label.guided_step_gallery_latest_selection</source>
                 <target>Work on an upload session</target>
+            </trans-unit>
+            <trans-unit id="XHZrQIt">
+                <source>label.guided_step_gallery_media_detail_category</source>
+                <target>Its gallery</target>
             </trans-unit>
             <trans-unit id="9HSb61v">
                 <source>label.guided_step_gallery_media_detail_credits</source>
@@ -745,6 +801,34 @@
             <trans-unit id="66ermhL">
                 <source>label.guided_step_gallery_medias_arrangement_upload</source>
                 <target>Add media</target>
+            </trans-unit>
+            <trans-unit id="fe.h6V5">
+                <source>label.guided_step_gallery_medias_move_done</source>
+                <target>Nothing is lost on the way</target>
+            </trans-unit>
+            <trans-unit id="7IPBecj">
+                <source>label.guided_step_gallery_medias_move_edit</source>
+                <target>Open the gallery</target>
+            </trans-unit>
+            <trans-unit id="92tGQLV">
+                <source>label.guided_step_gallery_medias_move_move</source>
+                <target>Move the selection</target>
+            </trans-unit>
+            <trans-unit id="y2ZU7gV">
+                <source>label.guided_step_gallery_medias_move_open</source>
+                <target>Open your galleries</target>
+            </trans-unit>
+            <trans-unit id="8uZzDnF">
+                <source>label.guided_step_gallery_medias_move_select</source>
+                <target>Check what leaves</target>
+            </trans-unit>
+            <trans-unit id="6YEgcdO">
+                <source>label.guided_step_gallery_medias_move_target</source>
+                <target>Choose the arrival gallery</target>
+            </trans-unit>
+            <trans-unit id="QRh.b5j">
+                <source>label.guided_step_gallery_medias_move_title_root</source>
+                <target>Rename them, or not</target>
             </trans-unit>
             <trans-unit id="mCeDa1s">
                 <source>label.guided_step_gallery_medias_recovery_download</source>
