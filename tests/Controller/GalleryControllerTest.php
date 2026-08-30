@@ -15,7 +15,7 @@ use c975L\GalleryBundle\Entity\GalleryCategory;
 use c975L\GalleryBundle\Entity\GalleryMedia;
 use c975L\GalleryBundle\Repository\GalleryCategoryRepository;
 use c975L\GalleryBundle\Repository\GalleryMediaRepository;
-use c975L\GalleryBundle\Service\GalleryLatestProvider;
+use c975L\GalleryBundle\Service\GalleryAutomaticProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\DependencyInjection\Container;
 use Symfony\Component\HttpFoundation\Request;
@@ -30,12 +30,12 @@ class GalleryControllerTest extends TestCase
     private function createController(
         ?GalleryCategoryRepository $categoryRepository = null,
         ?GalleryMediaRepository $mediaRepository = null,
-        ?GalleryLatestProvider $latestProvider = null,
+        ?GalleryAutomaticProvider $automaticProvider = null,
     ): GalleryController {
         $controller = new GalleryController(
             $categoryRepository ?? $this->createStub(GalleryCategoryRepository::class),
             $mediaRepository ?? $this->createStub(GalleryMediaRepository::class),
-            $latestProvider ?? $this->createLatestProvider(),
+            $automaticProvider ?? $this->createAutomaticProvider(),
         );
 
         $twig = $this->createStub(Environment::class);
@@ -48,14 +48,14 @@ class GalleryControllerTest extends TestCase
         return $controller;
     }
 
-    // The index is handed back the list it read, the gallery of the last additions being already in it here
-    private function createLatestProvider(array $medias = []): GalleryLatestProvider
+    // The index is handed back the list it read, the automatic galleries being already in it here
+    private function createAutomaticProvider(array $medias = []): GalleryAutomaticProvider
     {
-        $latestProvider = $this->createStub(GalleryLatestProvider::class);
-        $latestProvider->method('prepare')->willReturnArgument(0);
-        $latestProvider->method('getMedias')->willReturn($medias);
+        $automaticProvider = $this->createStub(GalleryAutomaticProvider::class);
+        $automaticProvider->method('prepare')->willReturnArgument(0);
+        $automaticProvider->method('getMedias')->willReturn($medias);
 
-        return $latestProvider;
+        return $automaticProvider;
     }
 
     public function testIndexRendersEveryCategory(): void
@@ -90,7 +90,7 @@ class GalleryControllerTest extends TestCase
         $controller = new GalleryController(
             $categoryRepository,
             $this->createStub(GalleryMediaRepository::class),
-            $this->createLatestProvider(),
+            $this->createAutomaticProvider(),
         );
         $container = new Container();
         $container->set('twig', $twig);
@@ -121,7 +121,7 @@ class GalleryControllerTest extends TestCase
         $controller = new GalleryController(
             $categoryRepository,
             $this->createStub(GalleryMediaRepository::class),
-            $this->createLatestProvider(),
+            $this->createAutomaticProvider(),
         );
         $container = new Container();
         $container->set('twig', $twig);
@@ -140,8 +140,7 @@ class GalleryControllerTest extends TestCase
         $categoryRepository = $this->createMock(GalleryCategoryRepository::class);
         $categoryRepository->expects($this->once())->method('findOneBySlug')->with('voyages')->willReturn($category);
         $categoryRepository->method('countVisible')->willReturn(4);
-        $mediaRepository = $this->createMock(GalleryMediaRepository::class);
-        $mediaRepository->expects($this->once())->method('findByCategory')->with($category)->willReturn($medias);
+        $mediaRepository = $this->createStub(GalleryMediaRepository::class);
 
         $twig = $this->createStub(Environment::class);
         $capturedParameters = null;
@@ -153,7 +152,8 @@ class GalleryControllerTest extends TestCase
             }
         );
 
-        $controller = new GalleryController($categoryRepository, $mediaRepository, $this->createLatestProvider());
+        // An ordinary gallery's medias come from the coordinator too, which reads them off the category itself (see GalleryAutomaticProvider::getMedias)
+        $controller = new GalleryController($categoryRepository, $mediaRepository, $this->createAutomaticProvider($medias));
         $container = new Container();
         $container->set('twig', $twig);
         $controller->setContainer($container);
@@ -169,7 +169,7 @@ class GalleryControllerTest extends TestCase
     // The automatic gallery is served by this very route and this very template: only its list comes from the last days of additions instead of from a relation it has none of
     public function testCategoryOfTheAutomaticGalleryRendersTheLatestMedias(): void
     {
-        $category = new GalleryCategory()->setSlug('latest')->setAutomatic(true);
+        $category = new GalleryCategory()->setSlug('latest')->setAutomaticKind(GalleryCategory::AUTOMATIC_LATEST);
         $latest = [new GalleryMedia(), new GalleryMedia()];
 
         $categoryRepository = $this->createStub(GalleryCategoryRepository::class);
@@ -177,7 +177,7 @@ class GalleryControllerTest extends TestCase
         $mediaRepository = $this->createMock(GalleryMediaRepository::class);
         $mediaRepository->expects($this->never())->method('findByCategory');
 
-        $latestProvider = $this->createLatestProvider($latest);
+        $automaticProvider = $this->createAutomaticProvider($latest);
 
         $twig = $this->createStub(Environment::class);
         $capturedParameters = null;
@@ -189,7 +189,7 @@ class GalleryControllerTest extends TestCase
             }
         );
 
-        $controller = new GalleryController($categoryRepository, $mediaRepository, $latestProvider);
+        $controller = new GalleryController($categoryRepository, $mediaRepository, $automaticProvider);
         $container = new Container();
         $container->set('twig', $twig);
         $controller->setContainer($container);
@@ -202,7 +202,7 @@ class GalleryControllerTest extends TestCase
     // Opened from the last additions, a photo is walked among them: the neighbours come from that list and the trail leads back to it, the url staying the media's own
     public function testMediaBrowsedFromTheLatestGalleryWalksItsList(): void
     {
-        $automatic = new GalleryCategory()->setSlug('latest')->setAutomatic(true);
+        $automatic = new GalleryCategory()->setSlug('latest')->setAutomaticKind(GalleryCategory::AUTOMATIC_LATEST);
         $category = new GalleryCategory()->setSlug('objets');
         $media = new GalleryMedia()->setSlug('objet-1')->setCategory($category);
         $neighbours = ['previous' => new GalleryMedia(), 'next' => new GalleryMedia()];
@@ -215,10 +215,10 @@ class GalleryControllerTest extends TestCase
         $mediaRepository->method('findOneBySlugInCategory')->willReturn($media);
         $mediaRepository->expects($this->never())->method('findPreviousAndNext');
 
-        $latestProvider = $this->createLatestProvider();
-        $latestProvider->method('findPreviousAndNext')->willReturn($neighbours);
+        $automaticProvider = $this->createAutomaticProvider();
+        $automaticProvider->method('findPreviousAndNext')->willReturn($neighbours);
 
-        $capturedParameters = $this->renderMedia($categoryRepository, $mediaRepository, $latestProvider, new Request(['from' => 'latest']));
+        $capturedParameters = $this->renderMedia($categoryRepository, $mediaRepository, $automaticProvider, new Request(['from' => 'latest']));
 
         $this->assertSame($neighbours, $capturedParameters['previousNext']);
         $this->assertSame($automatic, $capturedParameters['browsedFrom']);
@@ -228,7 +228,7 @@ class GalleryControllerTest extends TestCase
     // A media that has since left the last additions is browsed as its own category's, whatever the url says it was opened from
     public function testMediaFallsBackOnItsCategoryWhenItLeftTheLatestGallery(): void
     {
-        $automatic = new GalleryCategory()->setSlug('latest')->setAutomatic(true);
+        $automatic = new GalleryCategory()->setSlug('latest')->setAutomaticKind(GalleryCategory::AUTOMATIC_LATEST);
         $category = new GalleryCategory()->setSlug('objets');
         $media = new GalleryMedia()->setSlug('objet-1')->setCategory($category);
         $neighbours = ['previous' => new GalleryMedia(), 'next' => new GalleryMedia()];
@@ -241,10 +241,10 @@ class GalleryControllerTest extends TestCase
         $mediaRepository->method('findOneBySlugInCategory')->willReturn($media);
         $mediaRepository->method('findPreviousAndNext')->willReturn($neighbours);
 
-        $latestProvider = $this->createLatestProvider();
-        $latestProvider->method('findPreviousAndNext')->willReturn(null);
+        $automaticProvider = $this->createAutomaticProvider();
+        $automaticProvider->method('findPreviousAndNext')->willReturn(null);
 
-        $capturedParameters = $this->renderMedia($categoryRepository, $mediaRepository, $latestProvider, new Request(['from' => 'latest']));
+        $capturedParameters = $this->renderMedia($categoryRepository, $mediaRepository, $automaticProvider, new Request(['from' => 'latest']));
 
         $this->assertSame($neighbours, $capturedParameters['previousNext']);
         $this->assertNull($capturedParameters['browsedFrom']);
@@ -262,10 +262,33 @@ class GalleryControllerTest extends TestCase
         $mediaRepository->method('findOneBySlugInCategory')->willReturn($media);
         $mediaRepository->method('findPreviousAndNext')->willReturn(['previous' => $media, 'next' => $media]);
 
-        $latestProvider = $this->createMock(GalleryLatestProvider::class);
-        $latestProvider->expects($this->never())->method('findPreviousAndNext');
+        $automaticProvider = $this->createMock(GalleryAutomaticProvider::class);
+        $automaticProvider->expects($this->never())->method('findPreviousAndNext');
 
-        $capturedParameters = $this->renderMedia($categoryRepository, $mediaRepository, $latestProvider, new Request(['from' => 'objets']));
+        $capturedParameters = $this->renderMedia($categoryRepository, $mediaRepository, $automaticProvider, new Request(['from' => 'objets']));
+
+        $this->assertNull($capturedParameters['browsedFrom']);
+    }
+
+    // A "from" naming a masked automatic gallery is ignored the way a trashed one is: the breadcrumb would then walk the visitor through a gallery that answers 404
+    public function testMediaIgnoresAFromNamingAHiddenGallery(): void
+    {
+        $automatic = new GalleryCategory()->setSlug('latest')->setAutomaticKind(GalleryCategory::AUTOMATIC_LATEST)->setHidden(true);
+        $category = new GalleryCategory()->setSlug('objets');
+        $media = new GalleryMedia()->setSlug('objet-1')->setCategory($category);
+
+        $categoryRepository = $this->createStub(GalleryCategoryRepository::class);
+        $categoryRepository->method('findOneBySlug')->willReturnCallback(
+            static fn (string $slug): ?GalleryCategory => 'latest' === $slug ? $automatic : $category
+        );
+        $mediaRepository = $this->createStub(GalleryMediaRepository::class);
+        $mediaRepository->method('findOneBySlugInCategory')->willReturn($media);
+        $mediaRepository->method('findPreviousAndNext')->willReturn(['previous' => $media, 'next' => $media]);
+
+        $automaticProvider = $this->createMock(GalleryAutomaticProvider::class);
+        $automaticProvider->expects($this->never())->method('findPreviousAndNext');
+
+        $capturedParameters = $this->renderMedia($categoryRepository, $mediaRepository, $automaticProvider, new Request(['from' => 'latest']));
 
         $this->assertNull($capturedParameters['browsedFrom']);
     }
@@ -274,7 +297,7 @@ class GalleryControllerTest extends TestCase
     private function renderMedia(
         GalleryCategoryRepository $categoryRepository,
         GalleryMediaRepository $mediaRepository,
-        GalleryLatestProvider $latestProvider,
+        GalleryAutomaticProvider $automaticProvider,
         Request $request,
     ): array {
         $twig = $this->createStub(Environment::class);
@@ -287,7 +310,7 @@ class GalleryControllerTest extends TestCase
             }
         );
 
-        $controller = new GalleryController($categoryRepository, $mediaRepository, $latestProvider);
+        $controller = new GalleryController($categoryRepository, $mediaRepository, $automaticProvider);
         $container = new Container();
         $container->set('twig', $twig);
         $controller->setContainer($container);
@@ -321,6 +344,38 @@ class GalleryControllerTest extends TestCase
 
         $this->expectException(GoneHttpException::class);
         $controller->category('voyages');
+    }
+
+    // A masked gallery answers 404 and not 410, exactly as a masked media does: masking is reversible, where 410 tells a crawler the url is gone for good
+    public function testCategoryThrowsNotFoundWhenTheCategoryIsHidden(): void
+    {
+        $category = new GalleryCategory()->setSlug('voyages')->setHidden(true);
+
+        $categoryRepository = $this->createStub(GalleryCategoryRepository::class);
+        $categoryRepository->method('findOneBySlug')->willReturn($category);
+
+        $controller = $this->createController(categoryRepository: $categoryRepository);
+
+        $this->expectException(NotFoundHttpException::class);
+        $controller->category('voyages');
+    }
+
+    // The photographs of a masked gallery are off the site with it, their own page being resolved through their category's
+    public function testMediaThrowsNotFoundWhenItsCategoryIsHidden(): void
+    {
+        $category = new GalleryCategory()->setSlug('voyages')->setHidden(true);
+        $media = new GalleryMedia()->setSlug('col-du-galibier')->setCategory($category);
+
+        $categoryRepository = $this->createStub(GalleryCategoryRepository::class);
+        $categoryRepository->method('findOneBySlug')->willReturn($category);
+
+        $mediaRepository = $this->createStub(GalleryMediaRepository::class);
+        $mediaRepository->method('findOneBySlugInCategory')->willReturn($media);
+
+        $controller = $this->createController(categoryRepository: $categoryRepository, mediaRepository: $mediaRepository);
+
+        $this->expectException(NotFoundHttpException::class);
+        $controller->media('voyages', 'col-du-galibier', new Request());
     }
 
     // A media has a trash of its own, so it answers 410 under a category that is perfectly online
@@ -367,7 +422,7 @@ class GalleryControllerTest extends TestCase
             }
         );
 
-        $controller = new GalleryController($categoryRepository, $mediaRepository, $this->createLatestProvider());
+        $controller = new GalleryController($categoryRepository, $mediaRepository, $this->createAutomaticProvider());
         $container = new Container();
         $container->set('twig', $twig);
         $controller->setContainer($container);

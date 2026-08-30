@@ -6,6 +6,14 @@
                 <source>action.apply_credits</source>
                 <target>Apply credits</target>
             </trans-unit>
+            <trans-unit id="X0RKt8Y">
+                <source>action.apply_hidden</source>
+                <target>Apply hiding</target>
+            </trans-unit>
+            <trans-unit id="90hs43m">
+                <source>action.apply_printable</source>
+                <target>Apply print sale</target>
+            </trans-unit>
             <trans-unit id="gyW_3Ye">
                 <source>action.apply_rights_reserved</source>
                 <target>Apply rights reserved</target>
@@ -37,6 +45,14 @@
             <trans-unit id="vUjYe27">
                 <source>action.move_to_trash</source>
                 <target>Move to trash</target>
+            </trans-unit>
+            <trans-unit id="pyWTZUc">
+                <source>action.print_certificates</source>
+                <target>Certificates</target>
+            </trans-unit>
+            <trans-unit id="255He17">
+                <source>action.release_to_lab</source>
+                <target>Send to the lab</target>
             </trans-unit>
             <trans-unit id="KrzhzB_">
                 <source>action.restore</source>
@@ -232,7 +248,7 @@
             </trans-unit>
             <trans-unit id="mI._Udd">
                 <source>description.guided_step_gallery_medias_move_target</source>
-                <target>Every gallery holding photos of its own is offered, except the one you are looking at and "Latest additions", which holds none.</target>
+                <target>Every gallery holding photos of its own is offered, except the one you are looking at and "Latest additions", which holds none. The last entry creates one: its name is asked for right next to it.</target>
             </trans-unit>
             <trans-unit id="t06hhSP">
                 <source>description.guided_step_gallery_medias_move_title_root</source>
@@ -278,6 +294,34 @@
                 <source>description.guided_step_gallery_trash_switch</source>
                 <target>The button above the list switches between the galleries online and the ones set aside - the same screen, showing the other side.</target>
             </trans-unit>
+            <trans-unit id="0c4vHm8">
+                <source>email.edition_signature_intro</source>
+                <target>An art edition has just been paid for: %numbers%.</target>
+            </trans-unit>
+            <trans-unit id="_TvysP9">
+                <source>email.edition_signature_what_next</source>
+                <target>Print the certificates from the print orders screen, sign them, post them, then release the order to the lab.</target>
+            </trans-unit>
+            <trans-unit id="wDdLiQI">
+                <source>email.edition_sold_certificate</source>
+                <target>Its certificate of authenticity, signed and numbered by hand, reaches you separately by post.</target>
+            </trans-unit>
+            <trans-unit id="k0xm2FS">
+                <source>email.edition_sold_intro</source>
+                <target>Your print is number %numbers% of the edition.</target>
+            </trans-unit>
+            <trans-unit id="n9hHC1r">
+                <source>email.edition_sold_verify</source>
+                <target>Check the certificate</target>
+            </trans-unit>
+            <trans-unit id="CSUrULC">
+                <source>email.print_edition_signature_subject</source>
+                <target>An art print to sign</target>
+            </trans-unit>
+            <trans-unit id="M5CRf2l">
+                <source>email.print_edition_sold_subject</source>
+                <target>Your numbered print</target>
+            </trans-unit>
             <trans-unit id="ZSCwjpo">
                 <source>flash.gallery_category_deleted_permanently</source>
                 <target>Gallery permanently deleted</target>
@@ -285,6 +329,46 @@
             <trans-unit id="XcWUcOA">
                 <source>flash.gallery_category_restored</source>
                 <target>Gallery restored</target>
+            </trans-unit>
+            <trans-unit id="VT.tHCu">
+                <source>flash.print_test_mode_disabled</source>
+                <target>Prints test mode disabled</target>
+            </trans-unit>
+            <trans-unit id="nU1I8wY">
+                <source>flash.print_test_mode_enabled</source>
+                <target>Prints test mode enabled</target>
+            </trans-unit>
+            <trans-unit id="Xb8nkRY">
+                <source>help.gallery_category_hidden</source>
+                <target>The gallery stays in the back-office but leaves every public page - the index, the blocks, the menus, the sitemap - and its photographs leave the automatic galleries with it.</target>
+            </trans-unit>
+            <trans-unit id="qncHJ9S">
+                <source>help.gallery_media_edition_size</source>
+                <target>Left empty, the print is unlimited. A number opens a numbered edition and writes its register. Careful: once saved it can no longer be changed.</target>
+            </trans-unit>
+            <trans-unit id="DmyK2yX">
+                <source>help.gallery_media_hidden</source>
+                <target>The photograph stays in the back-office but leaves every public page. Better than deleting what is worth keeping and not worth showing.</target>
+            </trans-unit>
+            <trans-unit id="G2NQ1TB">
+                <source>help.gallery_media_printable</source>
+                <target>Offers this photograph for order. Which sizes depends on its original: those whose proportions and pixels it has.</target>
+            </trans-unit>
+            <trans-unit id="4cNQ8IL">
+                <source>help.print_format_dpi</source>
+                <target>300 for a print looked at closely. 200 is enough for a large one hung on a wall, and opens the sale to smaller files.</target>
+            </trans-unit>
+            <trans-unit id="aM5drLM">
+                <source>help.print_format_required_pixels</source>
+                <target>Long edge an original must reach to be offered at this size. Below it, the photograph is simply not offered that size.</target>
+            </trans-unit>
+            <trans-unit id="C6NG7RN">
+                <source>help.print_format_sku</source>
+                <target>The code the lab gives this product. The only column to rewrite if you change lab.</target>
+            </trans-unit>
+            <trans-unit id="ITATQ_W">
+                <source>help.print_format_slug</source>
+                <target>What an order already placed remembers this format by. Renaming it does not affect past sales, but avoid it once prints have been sold.</target>
             </trans-unit>
             <trans-unit id="xzaPeIL">
                 <source>label.block_category</source>
@@ -390,6 +474,10 @@
                 <source>label.gallery_category_delete</source>
                 <target>Delete this gallery</target>
             </trans-unit>
+            <trans-unit id="_gReEM4">
+                <source>label.gallery_category_hidden</source>
+                <target>Hidden</target>
+            </trans-unit>
             <trans-unit id="l789a03">
                 <source>label.gallery_cover</source>
                 <target>Cover</target>
@@ -405,6 +493,10 @@
             <trans-unit id="piIsfVu">
                 <source>label.gallery_credits</source>
                 <target>Credits: %credits%</target>
+            </trans-unit>
+            <trans-unit id="Wv_0._e">
+                <source>label.gallery_edition_frozen</source>
+                <target>The edition is already open: its size can no longer be changed.</target>
             </trans-unit>
             <trans-unit id="TdPUsM5">
                 <source>label.gallery_external_url</source>
@@ -437,6 +529,18 @@
             <trans-unit id="etPVw0k">
                 <source>label.gallery_media_description_help</source>
                 <target>The caption read under the media on its page — leave it empty when there is nothing to say</target>
+            </trans-unit>
+            <trans-unit id="9M0_OVl">
+                <source>label.gallery_media_edition_size</source>
+                <target>Edition size</target>
+            </trans-unit>
+            <trans-unit id="yrrXk1E">
+                <source>label.gallery_media_hidden</source>
+                <target>Hidden</target>
+            </trans-unit>
+            <trans-unit id="PIdz2k_">
+                <source>label.gallery_media_printable</source>
+                <target>Sold as a print</target>
             </trans-unit>
             <trans-unit id="HEqsH6R">
                 <source>label.gallery_media_slug_help</source>
@@ -516,7 +620,11 @@
             </trans-unit>
             <trans-unit id="CEn_FM8">
                 <source>label.gallery_medias_move_refused</source>
-                <target>The destination gallery cannot receive medias, nothing was moved.</target>
+                <target>No destination gallery chosen, nothing was moved.</target>
+            </trans-unit>
+            <trans-unit id="FEBjehK">
+                <source>label.gallery_medias_move_slug_taken</source>
+                <target>A gallery already uses the address "%slug%": choose another name.</target>
             </trans-unit>
             <trans-unit id="y6cD5vx">
                 <source>label.gallery_medias_moved</source>
@@ -538,6 +646,18 @@
                 <source>label.gallery_medias_uploaded</source>
                 <target>Media added</target>
             </trans-unit>
+            <trans-unit id="Cb_NgzE">
+                <source>label.gallery_move_target</source>
+                <target>Destination gallery…</target>
+            </trans-unit>
+            <trans-unit id="fF2Y9..">
+                <source>label.gallery_move_target_new</source>
+                <target>+ New gallery…</target>
+            </trans-unit>
+            <trans-unit id="kAVVnIM">
+                <source>label.gallery_move_target_new_title</source>
+                <target>Name of the new gallery</target>
+            </trans-unit>
             <trans-unit id="XXF8ySm">
                 <source>label.gallery_next_media</source>
                 <target>Next media</target>
@@ -550,9 +670,77 @@
                 <source>label.gallery_previous_media</source>
                 <target>Previous media</target>
             </trans-unit>
+            <trans-unit id="lDL3Sp_">
+                <source>label.gallery_printable_title</source>
+                <target>Art prints</target>
+            </trans-unit>
             <trans-unit id="_C7uCBW">
                 <source>label.gallery_rights_reserved</source>
                 <target>All rights reserved</target>
+            </trans-unit>
+            <trans-unit id="Zycpj2Z">
+                <source>label.gallery_sample_category_architecture</source>
+                <target>Architecture</target>
+            </trans-unit>
+            <trans-unit id="p2tuodK">
+                <source>label.gallery_sample_category_landscapes</source>
+                <target>Landscapes</target>
+            </trans-unit>
+            <trans-unit id="Rx1YdcW">
+                <source>label.gallery_sample_category_monochrome</source>
+                <target>Black and white</target>
+            </trans-unit>
+            <trans-unit id="ILddClr">
+                <source>label.gallery_sample_credits</source>
+                <target>AI-generated sample photograph</target>
+            </trans-unit>
+            <trans-unit id="2PI9Wm3">
+                <source>label.gallery_sample_media_arcade</source>
+                <target>Covered arcade</target>
+            </trans-unit>
+            <trans-unit id="OLdhz4f">
+                <source>label.gallery_sample_media_backlit</source>
+                <target>Backlit portrait</target>
+            </trans-unit>
+            <trans-unit id="hKrQ69g">
+                <source>label.gallery_sample_media_beeches</source>
+                <target>Beech forest</target>
+            </trans-unit>
+            <trans-unit id="3PeOvJu">
+                <source>label.gallery_sample_media_facade</source>
+                <target>Ochre facade</target>
+            </trans-unit>
+            <trans-unit id="ad_PGsJ">
+                <source>label.gallery_sample_media_frozen_lake</source>
+                <target>Frozen lake</target>
+            </trans-unit>
+            <trans-unit id="aq8N28J">
+                <source>label.gallery_sample_media_glass_roof</source>
+                <target>Glass roof</target>
+            </trans-unit>
+            <trans-unit id="dDmRs80">
+                <source>label.gallery_sample_media_potter</source>
+                <target>Potter's hands</target>
+            </trans-unit>
+            <trans-unit id="iPC3xK8">
+                <source>label.gallery_sample_media_quay</source>
+                <target>Empty quay</target>
+            </trans-unit>
+            <trans-unit id="SxdINes">
+                <source>label.gallery_sample_media_rain</source>
+                <target>Street in the rain</target>
+            </trans-unit>
+            <trans-unit id="msRBble">
+                <source>label.gallery_sample_media_ridges</source>
+                <target>Ridges at dawn</target>
+            </trans-unit>
+            <trans-unit id="YMGJ.AD">
+                <source>label.gallery_sample_media_staircase</source>
+                <target>Stone staircase</target>
+            </trans-unit>
+            <trans-unit id="ksGC1Qi">
+                <source>label.gallery_sample_media_storm</source>
+                <target>Storm over the valley</target>
             </trans-unit>
             <trans-unit id="0jFJ6cD">
                 <source>label.gallery_see_high_resolution</source>
@@ -569,14 +757,6 @@
             <trans-unit id="NBLgQGC">
                 <source>label.gallery_showcase_categories_description</source>
                 <target>The default gallery's categories, one thumbnail each.</target>
-            </trans-unit>
-            <trans-unit id="jO6npyN">
-                <source>label.gallery_showcase_category_title</source>
-                <target>Sample category %number%</target>
-            </trans-unit>
-            <trans-unit id="E.XyL4.">
-                <source>label.gallery_showcase_media_title</source>
-                <target>Sample media %number%</target>
             </trans-unit>
             <trans-unit id="nxfeIqD">
                 <source>label.gallery_showcase_medias</source>
@@ -910,9 +1090,185 @@
                 <source>label.info_gallery_watermark</source>
                 <target>Watermark: photos can be stamped with the site's signature as a batch of media is added, burnt into the pixels of every size generated. Both signatures (for light and dark backgrounds) are uploaded from Site graphics; the corner, width and margin are set in Configuration, group General (Watermark - Corner, Width, Margin).</target>
             </trans-unit>
+            <trans-unit id="AIfAjoT">
+                <source>label.info_print_formats</source>
+                <target>The sizes on sale, their prices and the lab's reference</target>
+            </trans-unit>
+            <trans-unit id="Jyd93RN">
+                <source>label.info_print_orders</source>
+                <target>The prints ordered, those the lab is printing and those waiting for your signature</target>
+            </trans-unit>
             <trans-unit id="Rfi.GLm">
                 <source>label.position</source>
                 <target>Position</target>
+            </trans-unit>
+            <trans-unit id="lyVtafg">
+                <source>label.print_certificate</source>
+                <target>Certificate of authenticity</target>
+            </trans-unit>
+            <trans-unit id="mY07tEY">
+                <source>label.print_certificate_sold_on</source>
+                <target>Acquired on %date%</target>
+            </trans-unit>
+            <trans-unit id="jKlEeP3">
+                <source>label.print_certificate_valid</source>
+                <target>This number is in the edition's register.</target>
+            </trans-unit>
+            <trans-unit id="US3MsoN">
+                <source>label.print_edition_not_enough</source>
+                <target>Only %count% copies of this edition are left.</target>
+            </trans-unit>
+            <trans-unit id="F52zAfc">
+                <source>label.print_edition_sold_out</source>
+                <target>The edition is sold out.</target>
+            </trans-unit>
+            <trans-unit id="_McNLGp">
+                <source>label.print_edition_sold_out_after_payment</source>
+                <target>The edition sold out during payment: this order has to be handled by hand.</target>
+            </trans-unit>
+            <trans-unit id="szhHswB">
+                <source>label.print_format</source>
+                <target>Print format</target>
+            </trans-unit>
+            <trans-unit id="Av6btlK">
+                <source>label.print_format_dpi</source>
+                <target>Resolution (dpi)</target>
+            </trans-unit>
+            <trans-unit id="bLkh9SI">
+                <source>label.print_format_height</source>
+                <target>Height (cm)</target>
+            </trans-unit>
+            <trans-unit id="mEVpkG2">
+                <source>label.print_format_label</source>
+                <target>Label</target>
+            </trans-unit>
+            <trans-unit id="v7W416N">
+                <source>label.print_format_position</source>
+                <target>Rank</target>
+            </trans-unit>
+            <trans-unit id="7grHlQq">
+                <source>label.print_format_price</source>
+                <target>Price</target>
+            </trans-unit>
+            <trans-unit id="5UUkyFc">
+                <source>label.print_format_published</source>
+                <target>On sale</target>
+            </trans-unit>
+            <trans-unit id="rQJL6UC">
+                <source>label.print_format_required_pixels</source>
+                <target>Pixels needed</target>
+            </trans-unit>
+            <trans-unit id="Z9yvUp.">
+                <source>label.print_format_sku</source>
+                <target>Lab reference</target>
+            </trans-unit>
+            <trans-unit id="bgVSshv">
+                <source>label.print_format_slug</source>
+                <target>Identifier</target>
+            </trans-unit>
+            <trans-unit id="XCmxjQf">
+                <source>label.print_format_unavailable</source>
+                <target>This size is no longer offered for this photograph.</target>
+            </trans-unit>
+            <trans-unit id="szsi9sl">
+                <source>label.print_format_vat</source>
+                <target>VAT (%)</target>
+            </trans-unit>
+            <trans-unit id="6Lc0Irt">
+                <source>label.print_format_width</source>
+                <target>Width (cm)</target>
+            </trans-unit>
+            <trans-unit id="CvpQfWC">
+                <source>label.print_formats</source>
+                <target>Print formats</target>
+            </trans-unit>
+            <trans-unit id="r92g8g6">
+                <source>label.print_from</source>
+                <target>From %price%</target>
+            </trans-unit>
+            <trans-unit id="m7Wj8CV">
+                <source>label.print_open_edition</source>
+                <target>Open edition</target>
+            </trans-unit>
+            <trans-unit id="WFil_U1">
+                <source>label.print_order</source>
+                <target>Order a print</target>
+            </trans-unit>
+            <trans-unit id="G7HeuYD">
+                <source>label.print_order_basket</source>
+                <target>Order</target>
+            </trans-unit>
+            <trans-unit id="Pn368R1">
+                <source>label.print_order_copies</source>
+                <target>Copies</target>
+            </trans-unit>
+            <trans-unit id="JEnPlX0">
+                <source>label.print_order_date</source>
+                <target>Date</target>
+            </trans-unit>
+            <trans-unit id="OBoYCOc">
+                <source>label.print_order_last_error</source>
+                <target>Last refusal</target>
+            </trans-unit>
+            <trans-unit id="Yts5SOD">
+                <source>label.print_order_no_certificate</source>
+                <target>This order holds no numbered copy.</target>
+            </trans-unit>
+            <trans-unit id="qlsMM.9">
+                <source>label.print_order_provider</source>
+                <target>Lab</target>
+            </trans-unit>
+            <trans-unit id=".316tjt">
+                <source>label.print_order_reference</source>
+                <target>Lab reference</target>
+            </trans-unit>
+            <trans-unit id="EKXMnK8">
+                <source>label.print_order_released</source>
+                <target>The order is on its way to the lab again.</target>
+            </trans-unit>
+            <trans-unit id="im.5FTV">
+                <source>label.print_order_sent_at</source>
+                <target>Sent on</target>
+            </trans-unit>
+            <trans-unit id="9w1kDsQ">
+                <source>label.print_order_shipped_at</source>
+                <target>Shipped on</target>
+            </trans-unit>
+            <trans-unit id="rYNTtHr">
+                <source>label.print_order_state</source>
+                <target>State</target>
+            </trans-unit>
+            <trans-unit id="VyMGZKs">
+                <source>label.print_orders</source>
+                <target>Print orders</target>
+            </trans-unit>
+            <trans-unit id="dZ.ivsQ">
+                <source>label.print_remaining</source>
+                <target>%count% of %total% left</target>
+            </trans-unit>
+            <trans-unit id="gtGKU6i">
+                <source>label.print_test_mode</source>
+                <target>Prints are in test mode: no order will actually be printed or shipped.</target>
+            </trans-unit>
+            <trans-unit id="kh.HNzi">
+                <source>label.print_test_mode_disable</source>
+                <target>Disable prints test mode</target>
+            </trans-unit>
+            <trans-unit id="1652ekz">
+                <source>label.print_test_mode_enable</source>
+                <target>Enable prints test mode</target>
+            </trans-unit>
+            <trans-unit id="Lh2qFEJ">
+                <source>label.print_unavailable</source>
+                <target>This print is no longer offered.</target>
+            </trans-unit>
+            <trans-unit id="uPsqmgW">
+                <source>label.qrcode</source>
+                <target>QR code</target>
+            </trans-unit>
+            <trans-unit id="EtxgfyH">
+                <source>label.qrcode_help</source>
+                <target>This gallery's QR code, to print on a card, a flyer or an exhibition label.</target>
             </trans-unit>
             <trans-unit id="uKaQklK">
                 <source>label.rights_reserved</source>

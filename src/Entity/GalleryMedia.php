@@ -155,6 +155,18 @@ class GalleryMedia implements TrashableInterface, VichMultiSizeImageInterface, V
     #[ORM\Column(options: ['default' => false])]
     private bool $rightsReserved = false;
 
+    // Withheld from every public page while staying whole in the back-office - the answer to a media that is worth keeping and not worth showing, which deleting it does not give. Deliberately not merged with printable below: "do not show this" and "this is for sale" are two questions, and one flag holding both would have to invent an answer for the pair that makes no sense
+    #[ORM\Column(options: ['default' => false])]
+    private bool $hidden = false;
+
+    // Offered as a print. Says nothing about how it is sold - what is on offer, at which size and at which price, is the print catalogue's business (see GalleryPrintFormat); this only says the photograph is one an admin chose to put on sale
+    #[ORM\Column(options: ['default' => false])]
+    private bool $printable = false;
+
+    // Size of the limited edition, null for an open one. Carried by the photograph and not by a format, the edition being announced as a number of prints "all sizes and mountings combined": a 30 sold as 30x45 is a 30 that can no longer be sold as 40x60. Once prints have been sold it is frozen - raising an announced edition is a forgery, and GalleryPrintCopy's rows are what proves the announcement was kept
+    #[ORM\Column(nullable: true)]
+    private ?int $editionSize = null;
+
     // Whether the site's signature is stamped into this media's derivatives, and in which corner. Not columns, same as keepOriginal above: the signature is laid by the pipeline that stores a file (see UiBundle's VichImageResizeListener), so the question is only ever asked when a file is being stored - by the batch that uploads it, and by the edit form when it is replaced (see GalleryMediaCrudController). Once stamped it lives in the derivatives' own pixels, and a rebuilt thumbnail carries it down with them (see GalleryThumbnailRebuilder), nothing being left for a stored flag to answer
     // A null corner takes the one set site-wide, so a gallery follows a change of mind about where signatures go
     private bool $watermark = false;
@@ -339,6 +351,48 @@ class GalleryMedia implements TrashableInterface, VichMultiSizeImageInterface, V
         $this->rightsReserved = $rightsReserved ?? false;
 
         return $this;
+    }
+
+    public function isHidden(): bool
+    {
+        return $this->hidden;
+    }
+
+    public function setHidden(?bool $hidden): self
+    {
+        $this->hidden = $hidden ?? false;
+
+        return $this;
+    }
+
+    public function isPrintable(): bool
+    {
+        return $this->printable;
+    }
+
+    public function setPrintable(?bool $printable): self
+    {
+        $this->printable = $printable ?? false;
+
+        return $this;
+    }
+
+    public function getEditionSize(): ?int
+    {
+        return $this->editionSize;
+    }
+
+    public function setEditionSize(?int $editionSize): self
+    {
+        $this->editionSize = $editionSize;
+
+        return $this;
+    }
+
+    // A photograph sold in a numbered edition rather than printed on demand without end - what tells the two checkout paths apart, the limited one having a register to reserve from and a certificate to issue
+    public function isLimitedEdition(): bool
+    {
+        return null !== $this->editionSize;
     }
 
     // Never set by hand: the type is what the media turned out to carry, so this list is only ever read - by the badge naming a video in the grid, and by whoever styles a player after its platform

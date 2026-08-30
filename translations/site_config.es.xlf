@@ -14,6 +14,30 @@
                 <source>description.gallery_latest_max</source>
                 <target>Número máximo de medios que muestra la galería automática, 200 por defecto. Protege el día en que entró toda una fototeca de una vez - una migración, una importación - que si no llenaría la página con miles de miniaturas. Más allá, solo se muestran los más recientes. Vacío o 0, se aplica 200.</target>
             </trans-unit>
+            <trans-unit id="bj8kKWN">
+                <source>description.gallery_print_api_key</source>
+                <target>Clave facilitada por el laboratorio, que autentica cada pedido enviado. No es necesaria con «manual». Rellenarla no abre la tienda: eso lo hace la casilla «Venta de copias».</target>
+            </trans-unit>
+            <trans-unit id="wHk0mCF">
+                <source>description.gallery_print_enabled</source>
+                <target>Abre la tienda de copias: el botón de pedido aparece bajo las fotografías marcadas como vendibles, y los pedidos pagados se envían al laboratorio. Mientras esté desmarcado, todo lo demás puede configurarse y probarse sin que nada se muestre al público.</target>
+            </trans-unit>
+            <trans-unit id="PqaY5vi">
+                <source>description.gallery_print_provider</source>
+                <target>Nombre del laboratorio que imprime: «prodigi» para la impresión bajo demanda, «manual» para cursar los pedidos usted mismo desde la administración. Un sitio con su propio controlador pone aquí el nombre de este.</target>
+            </trans-unit>
+            <trans-unit id="Pfdmed3">
+                <source>description.gallery_print_sandbox</source>
+                <target>Envía los pedidos al entorno de pruebas del laboratorio: se aceptan, no se imprime nada y no se cobra nada. Desmárquelo el día de la apertura y no antes; de lo contrario cada prueba es una copia real y pagada.</target>
+            </trans-unit>
+            <trans-unit id="0NknSLg">
+                <source>description.gallery_print_signature</source>
+                <target>Ruta, desde public/, de la imagen de firma aplicada a los archivos de impresión. Se compone de nuevo al tamaño de la copia y no se toma de la imagen web, que quedaría borrosa al ampliarse. Vacío, las copias salen sin firma.</target>
+            </trans-unit>
+            <trans-unit id="ju2r8iI">
+                <source>description.gallery_printable_max</source>
+                <target>Número máximo de fotos mostradas por la galería de impresiones, 200 por defecto. Reúne las fotos marcadas como en venta, sea cual sea su galería. Vacío o 0, se aplica 200.</target>
+            </trans-unit>
             <trans-unit id="wn2FpRV">
                 <source>description.gallery_rating</source>
                 <target>Muestra un corazón bajo una foto, que los visitantes pulsan para decir que les gusta. Un solo gesto, sin valoración: la página indica cuántas personas la han marcado</target>
@@ -77,6 +101,30 @@
             <trans-unit id="paiRW9j">
                 <source>label.gallery_latest_max</source>
                 <target>Galería automática: número máximo de medios</target>
+            </trans-unit>
+            <trans-unit id="xRNwvo0">
+                <source>label.gallery_print_api_key</source>
+                <target>Clave de API del laboratorio</target>
+            </trans-unit>
+            <trans-unit id="DPz9GXt">
+                <source>label.gallery_print_enabled</source>
+                <target>Venta de copias</target>
+            </trans-unit>
+            <trans-unit id="m_TvWtA">
+                <source>label.gallery_print_provider</source>
+                <target>Laboratorio</target>
+            </trans-unit>
+            <trans-unit id="yQRuFun">
+                <source>label.gallery_print_sandbox</source>
+                <target>Laboratorio en modo de prueba</target>
+            </trans-unit>
+            <trans-unit id="42wXpyI">
+                <source>label.gallery_print_signature</source>
+                <target>Firma de las copias</target>
+            </trans-unit>
+            <trans-unit id="vdLtZx.">
+                <source>label.gallery_printable_max</source>
+                <target>Galería de impresiones: número máximo de fotos</target>
             </trans-unit>
             <trans-unit id="oYheJD4">
                 <source>label.gallery_rating</source>

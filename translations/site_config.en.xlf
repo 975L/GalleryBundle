@@ -14,6 +14,30 @@
                 <source>description.gallery_latest_max</source>
                 <target>Maximum number of medias the automatic gallery shows, 200 by default. It guards the day a whole library came in at once - a migration, an import - which would otherwise fill the page with thousands of thumbnails. Past it, only the most recent ones are shown. Empty or 0, 200 is applied.</target>
             </trans-unit>
+            <trans-unit id="bj8kKWN">
+                <source>description.gallery_print_api_key</source>
+                <target>The key the lab issued, which authenticates every order sent. Not needed with "manual". Filling it in does not open the shop: the "Print sales" box is what does that.</target>
+            </trans-unit>
+            <trans-unit id="wHk0mCF">
+                <source>description.gallery_print_enabled</source>
+                <target>Opens the print shop: the order button appears under photographs marked as sellable, and paid orders go to the lab. While this is unchecked, everything else can be configured and tested without anything showing to visitors.</target>
+            </trans-unit>
+            <trans-unit id="PqaY5vi">
+                <source>description.gallery_print_provider</source>
+                <target>Name of the lab that prints - "prodigi" for print on demand, "manual" to place orders yourself from the back-office. A site running its own driver puts that driver's name here.</target>
+            </trans-unit>
+            <trans-unit id="Pfdmed3">
+                <source>description.gallery_print_sandbox</source>
+                <target>Sends orders to the lab's test environment: they are accepted, nothing is printed and nothing is charged. Uncheck it on opening day and not before - otherwise every trial is a real print, really paid for.</target>
+            </trans-unit>
+            <trans-unit id="0NknSLg">
+                <source>description.gallery_print_signature</source>
+                <target>Path, from public/, of the signature image laid on print files. It is composed again at print size rather than taken from the web image, which would be blurred once enlarged. Left empty, prints go out unsigned.</target>
+            </trans-unit>
+            <trans-unit id="ju2r8iI">
+                <source>description.gallery_printable_max</source>
+                <target>Maximum number of photographs shown by the prints gallery, 200 by default. It gathers the photographs flagged as for sale, whatever gallery they were filed in. Empty or 0, 200 is applied.</target>
+            </trans-unit>
             <trans-unit id="wn2FpRV">
                 <source>description.gallery_rating</source>
                 <target>Shows a heart under a photo, which visitors click to say they like it. One gesture, no score: the page says how many people liked it</target>
@@ -77,6 +101,30 @@
             <trans-unit id="paiRW9j">
                 <source>label.gallery_latest_max</source>
                 <target>Automatic gallery: maximum number of medias</target>
+            </trans-unit>
+            <trans-unit id="xRNwvo0">
+                <source>label.gallery_print_api_key</source>
+                <target>Lab api key</target>
+            </trans-unit>
+            <trans-unit id="DPz9GXt">
+                <source>label.gallery_print_enabled</source>
+                <target>Print sales</target>
+            </trans-unit>
+            <trans-unit id="m_TvWtA">
+                <source>label.gallery_print_provider</source>
+                <target>Lab</target>
+            </trans-unit>
+            <trans-unit id="yQRuFun">
+                <source>label.gallery_print_sandbox</source>
+                <target>Lab in test mode</target>
+            </trans-unit>
+            <trans-unit id="42wXpyI">
+                <source>label.gallery_print_signature</source>
+                <target>Print signature</target>
+            </trans-unit>
+            <trans-unit id="vdLtZx.">
+                <source>label.gallery_printable_max</source>
+                <target>Prints gallery: maximum number of photographs</target>
             </trans-unit>
             <trans-unit id="oYheJD4">
                 <source>label.gallery_rating</source>

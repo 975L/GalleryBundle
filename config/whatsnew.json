@@ -1,5 +1,40 @@
 [
     {
+        "date": "2026-08-30",
+        "description": [
+            {
+                "en": "Your photographs can now be sold as prints: you tick the ones you want to offer, set the sizes and their prices, and a visitor orders one from the photograph's own page - the lab prints it and posts it to them directly, nothing passing through you",
+                "fr": "Vos photographies peuvent désormais être vendues en tirage : vous cochez celles que vous voulez proposer, réglez les formats et leurs prix, et un visiteur en commande un depuis la page de la photographie — le laboratoire l'imprime et le lui expédie directement, sans que rien ne passe par vous",
+                "es": "Sus fotografías ya se pueden vender como copias: marca las que quiere ofrecer, define los formatos y sus precios, y un visitante encarga una desde la página de la propia fotografía — el laboratorio la imprime y se la envía directamente, sin que nada pase por usted"
+            },
+            {
+                "en": "A photograph can be offered as a limited edition: you announce how many prints exist, all sizes together, and the site keeps the register - each buyer gets their own number, the last copy cannot be sold twice, and a certificate of authenticity is drawn for you to sign, with a code anybody can scan to check the number is real",
+                "fr": "Une photographie peut être proposée en édition limitée : vous annoncez le nombre de tirages, tous formats confondus, et le site tient le registre — chaque acheteur reçoit son propre numéro, le dernier exemplaire ne peut pas être vendu deux fois, et un certificat d'authenticité est dessiné pour que vous le signiez, avec un code que n'importe qui peut scanner pour vérifier que le numéro existe bien",
+                "es": "Una fotografía puede ofrecerse como edición limitada: usted anuncia cuántas copias existen, todos los formatos juntos, y el sitio lleva el registro — cada comprador recibe su propio número, la última copia no se puede vender dos veces, y se genera un certificado de autenticidad para que lo firme, con un código que cualquiera puede escanear para comprobar que el número es real"
+            },
+            {
+                "en": "A whole gallery can be taken off the site without being deleted: it leaves the home page, the blocks, the menus and the site map, its photographs leave the automatic galleries with it, and everything stays in the back office ready to be shown again",
+                "fr": "Une galerie entière peut être retirée du site sans être supprimée : elle quitte l'accueil, les blocks, les menus et le plan du site, ses photographies quittent les galeries automatiques avec elle, et tout reste en back-office prêt à être remontré",
+                "es": "Una galería entera puede retirarse del sitio sin ser eliminada: sale de la portada, los bloques, los menús y el mapa del sitio, sus fotografías salen con ella de las galerías automáticas, y todo permanece en el back-office listo para volver a mostrarse"
+            },
+            {
+                "en": "A photograph can be hidden from every public page without being deleted, and hiding it or putting it on sale is done on a whole selection at once",
+                "fr": "Une photographie peut être retirée de toutes les pages publiques sans être supprimée, et la masquer ou la mettre en vente se fait sur une sélection entière d'un coup",
+                "es": "Una fotografía puede retirarse de todas las páginas públicas sin ser eliminada, y ocultarla o ponerla a la venta se hace sobre una selección entera de una vez"
+            },
+            {
+                "en": "A dashboard tile switches the print lab into test mode and back, so you can run a whole order through without anything being really printed, and a banner on the sale page says so while it is on",
+                "fr": "Une tuile du tableau de bord bascule le laboratoire d'impression en mode test et inversement, ce qui vous permet de dérouler une commande entière sans que rien ne soit réellement imprimé, un bandeau sur la page de vente le signalant tant qu'il est actif",
+                "es": "Una tarjeta del panel de control pone el laboratorio de impresión en modo de prueba y lo vuelve a quitar, de modo que puede seguir un pedido entero sin que se imprima nada de verdad, y un aviso en la página de venta lo indica mientras está activo"
+            },
+            {
+                "en": "Each gallery now has its own QR code on its edit screen, to print on a card, a flyer or an exhibition label",
+                "fr": "Chaque galerie dispose désormais de son propre QR code sur son écran d'édition, à imprimer sur une carte, un flyer ou le cartel d'une exposition",
+                "es": "Cada galería tiene ahora su propio código QR en su pantalla de edición, para imprimir en una tarjeta, un folleto o el cartel de una exposición"
+            }
+        ]
+    },
+    {
         "date": "2026-08-28",
         "description": [
             {
@@ -11,6 +46,11 @@
                 "en": "A common title can be given to the medias being moved, numbered from where the arrival gallery leaves off - \"Voitures 12\" becomes \"Volvo 3\" without a single address changing",
                 "fr": "Un titre commun peut être donné aux médias déplacés, numéroté à la suite de ce que contient déjà la galerie d'arrivée — « Voitures 12 » devient « Volvo 3 » sans qu'une seule adresse ne change",
                 "es": "Se puede dar un título común a los medios movidos, numerado a continuación de lo que ya contiene la galería de destino: «Coches 12» pasa a ser «Volvo 3» sin que cambie ni una dirección"
+            },
+            {
+                "en": "The arrival gallery is now chosen on purpose - the list opens on none, the button waits for you, and its last entry creates the gallery there and then under the name you type, so \"Volvo\" doesn't have to exist before its photographs are gathered",
+                "fr": "La galerie d'arrivée se choisit désormais expressément : la liste ne présélectionne rien, le bouton vous attend, et sa dernière entrée crée la galerie sur-le-champ sous le nom que vous saisissez — « Volvo » n'a plus besoin d'exister avant que ses photographies ne soient rassemblées",
+                "es": "La galería de destino se elige ahora expresamente: la lista no preselecciona nada, el botón le espera, y su última entrada crea la galería en el acto con el nombre que escriba, de modo que «Volvo» ya no tiene que existir antes de reunir sus fotografías"
             }
         ]
     },

@@ -10,6 +10,7 @@
 
 namespace c975L\GalleryBundle\Tests\Service;
 
+use c975L\GalleryBundle\Service\GallerySampleCatalog;
 use c975L\GalleryBundle\Service\GalleryShowcaseProvider;
 use c975L\UiBundle\Registry\PlaceholderMediaRegistry;
 use PHPUnit\Framework\TestCase;
@@ -52,8 +53,11 @@ class GalleryShowcaseProviderTest extends TestCase
         $this->assertArrayHasKey('@c975LGallery/components/Gallery/Medias.html.twig', $rendered);
         // Stand-ins are plain arrays, the components reading their attributes the same way as on a real entity
         $medias = $rendered['@c975LGallery/components/Gallery/Medias.html.twig']['medias'];
-        $this->assertCount(2, $medias);
+        // Four, the catalog's own count rather than the site's number of placeholders, which are rotated over them
+        $this->assertCount(4, $medias);
         $this->assertSame('medias/one.webp', $medias[0]['thumbnailFilename']);
+        $this->assertSame('medias/two.webp', $medias[1]['thumbnailFilename']);
+        $this->assertSame('medias/one.webp', $medias[2]['thumbnailFilename']);
         $this->assertFalse($medias[0]['video']);
     }
 
@@ -70,6 +74,6 @@ class GalleryShowcaseProviderTest extends TestCase
         $registry = $this->createStub(PlaceholderMediaRegistry::class);
         $registry->method('getImages')->willReturn($images);
 
-        return new GalleryShowcaseProvider($twig, $translator, $registry);
+        return new GalleryShowcaseProvider($twig, $translator, $registry, new GallerySampleCatalog());
     }
 }

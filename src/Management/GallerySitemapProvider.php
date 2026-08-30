@@ -68,7 +68,7 @@ class GallerySitemapProvider implements SitemapProviderInterface
     private function getCategoryUrls(string $urlRoot, GalleryCategory $category): array
     {
         $categoryUrl = $urlRoot . '/' . $this->routePrefix->get() . '/' . $category->getSlug();
-        $medias = $this->galleryMediaRepository->findByCategory($category);
+        $medias = $this->galleryMediaRepository->findVisibleByCategory($category);
 
         // GalleryCategory carries no date of its own, so the most recently touched media is what dates the category page - its content is exactly that list
         $urls = [[

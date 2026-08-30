@@ -6,11 +6,24 @@ services:
 
     c975L\GalleryBundle\:
         resource: '../src/'
-        exclude: '../src/{Contract,Entity,Field}'
+        exclude: '../src/{Contract,Entity,Exception,Field,Message,Model}'
+
+    # The one implementation of the print letters, so a site swapping it only has to redeclare this alias (see CrowdfundingBundle's own EmailServiceInterface for the same shape)
+    c975L\GalleryBundle\Service\GalleryPrintEmailInterface: '@c975L\GalleryBundle\Service\GalleryPrintEmail'
 
     c975L\GalleryBundle\Service\GalleryCustomizationRegistry:
         arguments:
             $providers: !tagged_iterator gallery.customization_provider
+
+    # The labs installed, whichever bundle or app declared them - TaggedInterfacePass tags every implementation, so a site adding its own printer has nothing to wire
+    c975L\GalleryBundle\Service\PrintFulfilmentRegistry:
+        arguments:
+            $drivers: !tagged_iterator gallery.print_fulfilment
+
+    # The automatic galleries installed, same shape - a site gathering its photographs on a rule of its own writes the class and has a gallery of it
+    c975L\GalleryBundle\Service\GalleryAutomaticProvider:
+        arguments:
+            $galleries: !tagged_iterator gallery.automatic_gallery
 
     # One class, two registries: the public pages' controllers and the EasyAdmin-only ones
     c975L\GalleryBundle\Service\ScriptProvider:

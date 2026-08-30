@@ -21,6 +21,7 @@ use c975L\GalleryBundle\Entity\GalleryMedia;
 use c975L\GalleryBundle\Management\GalleryExportProvider;
 use c975L\GalleryBundle\Repository\GalleryCategoryRepository;
 use c975L\GalleryBundle\Repository\GalleryMediaRepository;
+use c975L\GalleryBundle\Service\GalleryAutomaticProvider;
 use c975L\GalleryBundle\Service\GalleryCustomizationRegistry;
 use c975L\GalleryBundle\Service\GalleryLatestProvider;
 use c975L\GalleryBundle\Service\GalleryMediaArchiver;
@@ -157,6 +158,7 @@ class GalleryCategoryCrudControllerTest extends TestCase
         ?RequestStack $requestStack = null,
         ?GalleryMediaRepository $galleryMediaRepository = null,
         ?GalleryMediaArchiver $galleryMediaArchiver = null,
+        ?GalleryAutomaticProvider $automaticProvider = null,
         ?GalleryLatestProvider $latestProvider = null,
         ?GalleryCustomizationRegistry $customizationRegistry = null,
     ): GalleryCategoryCrudController {
@@ -188,6 +190,7 @@ class GalleryCategoryCrudControllerTest extends TestCase
             $galleryMediaRepository ?? $this->createStub(GalleryMediaRepository::class),
             $this->createCsrfTokenManager(true),
             $galleryMediaArchiver ?? new GalleryMediaArchiver(sys_get_temp_dir()),
+            $automaticProvider ?? $this->createStub(GalleryAutomaticProvider::class),
             $latestProvider ?? $this->createStub(GalleryLatestProvider::class),
             $customizationRegistry ?? new GalleryCustomizationRegistry([]),
         );
@@ -892,12 +895,14 @@ class GalleryCategoryCrudControllerTest extends TestCase
 
     // --- moveMedias --------------------------------------------------------------------------------------
 
-    private function createMoveMediasRequest(array $mediaIds, int $targetCategory, string $titleRoot = '', string $token = 'valid'): Request
+    // "targetCategory" carries an id, the empty value of the entry nothing is chosen on yet, or "new" - and then the gallery is created under the title the box next to it carries
+    private function createMoveMediasRequest(array $mediaIds, int | string $targetCategory, string $titleRoot = '', string $token = 'valid', string $newCategoryTitle = ''): Request
     {
         return new Request(request: [
             '_token' => $token,
             'targetCategory' => (string) $targetCategory,
             'titleRoot' => $titleRoot,
+            'newCategoryTitle' => $newCategoryTitle,
             'mediaIds' => array_map(strval(...), $mediaIds),
         ]);
     }
@@ -907,6 +912,17 @@ class GalleryCategoryCrudControllerTest extends TestCase
     {
         $repository = $this->createStub(GalleryCategoryRepository::class);
         $repository->method('find')->willReturn($target);
+
+        return $repository;
+    }
+
+    // What a gallery created on the spot is checked against: the slug it would take, and the galleries already arranged, its rank coming after the last of them
+    /** @param list<GalleryCategory> $ordered */
+    private function createCreationRepository(?GalleryCategory $taken = null, array $ordered = []): GalleryCategoryRepository
+    {
+        $repository = $this->createStub(GalleryCategoryRepository::class);
+        $repository->method('findOneBySlug')->willReturn($taken);
+        $repository->method('findAllOrdered')->willReturn($ordered);
 
         return $repository;
     }
@@ -951,7 +967,7 @@ class GalleryCategoryCrudControllerTest extends TestCase
     public function testMoveMediasRefusesTheAutomaticGallery(): void
     {
         $category = $this->createCategoryWithMedias(7);
-        $target = new GalleryCategory()->setSlug('latest')->setTitle('Derniers ajouts')->setAutomatic(true);
+        $target = new GalleryCategory()->setSlug('latest')->setTitle('Derniers ajouts')->setAutomaticKind(GalleryCategory::AUTOMATIC_LATEST);
 
         $entityManager = $this->createMock(EntityManagerInterface::class);
         $entityManager->expects($this->never())->method('flush');
@@ -1017,7 +1033,7 @@ class GalleryCategoryCrudControllerTest extends TestCase
         $this->assertSame('/management/gallery-categories', $response->getTargetUrl());
     }
 
-    // The racine des titres renumbers them from where the arrival gallery leaves off, exactly as a batch upload numbers its own
+    // The title root renumbers them from where the arrival gallery leaves off, exactly as a batch upload numbers its own
     public function testMoveMediasRenumbersTheTitlesUnderTheRootGiven(): void
     {
         $category = $this->createCategoryWithMedias(7, 8);
@@ -1061,6 +1077,152 @@ class GalleryCategoryCrudControllerTest extends TestCase
         );
 
         $this->assertSame([], $requestStack->getCurrentRequest()->getSession()->getFlashBag()->peekAll());
+    }
+
+    // Nothing is preselected in the select, so an empty value is the admin not having chosen yet - the very case that used to send a selection into whichever gallery stood first
+    public function testMoveMediasRefusesWhenNoDestinationIsChosen(): void
+    {
+        $category = $this->createCategoryWithMedias(7);
+
+        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $entityManager->expects($this->never())->method('flush');
+
+        $requestStack = $this->createRequestStackWithSession();
+
+        $controller = $this->createController(galleryCategoryRepository: $this->createTargetRepository(null));
+        $controller->setContainer($this->createContainer([
+            'security.authorization_checker' => $this->createAuthorizationChecker(true),
+            'security.csrf.token_manager' => $this->createCsrfTokenManager(true),
+            'request_stack' => $requestStack,
+        ]));
+
+        $controller->moveMedias($this->createAdminContext($category), $this->createMoveMediasRequest([7], ''), $entityManager);
+
+        $this->assertSame($category, $category->getMedias()->first()->getCategory());
+        $this->assertSame(
+            ['label.gallery_medias_move_refused'],
+            $requestStack->getCurrentRequest()->getSession()->getFlashBag()->peek('danger')
+        );
+    }
+
+    // The gallery created from the toolbar itself, so filing photographs somewhere new doesn't mean leaving the screen and losing the selection
+    public function testMoveMediasCreatesTheGalleryAskedForAndMovesIntoIt(): void
+    {
+        $category = $this->createCategoryWithMedias(7, 8);
+        $arranged = new GalleryCategory()->setSlug('voitures')->setTitle('Voitures')->setPosition(4);
+
+        $created = null;
+        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $entityManager->expects($this->once())->method('persist')->willReturnCallback(function (object $entity) use (&$created): void {
+            $created = $entity;
+        });
+        $entityManager->expects($this->once())->method('flush');
+
+        $controller = $this->createController(galleryCategoryRepository: $this->createCreationRepository(ordered: [$arranged]));
+        $controller->setContainer($this->createContainer([
+            'security.authorization_checker' => $this->createAuthorizationChecker(true),
+            'security.csrf.token_manager' => $this->createCsrfTokenManager(true),
+            'request_stack' => $this->createRequestStackWithSession(),
+            'router' => $this->createRouter(),
+        ]));
+
+        $controller->moveMedias(
+            $this->createAdminContext($category),
+            $this->createMoveMediasRequest([7, 8], 'new', newCategoryTitle: 'Calandres Volvo'),
+            $entityManager
+        );
+
+        $this->assertInstanceOf(GalleryCategory::class, $created);
+        $this->assertSame('calandres-volvo', $created->getSlug());
+        $this->assertSame('Calandres Volvo', $created->getTitle());
+
+        // After the galleries already arranged rather than at rank 0, where it would jump to the head of the index
+        $this->assertSame(5, $created->getPosition());
+
+        $categories = $category->getMedias()->map(static fn (GalleryMedia $media): ?string => $media->getCategory()?->getSlug())->toArray();
+        $this->assertSame(['calandres-volvo', 'calandres-volvo'], array_values($categories));
+    }
+
+    // A category's slug is its natural key, so a collision is refused rather than suffixed - exactly what the category form answers
+    public function testMoveMediasRefusesANameAnotherGalleryAlreadyCarries(): void
+    {
+        $category = $this->createCategoryWithMedias(7);
+        $taken = new GalleryCategory()->setSlug('calandres-volvo')->setTitle('Calandres Volvo');
+
+        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $entityManager->expects($this->never())->method('persist');
+        $entityManager->expects($this->never())->method('flush');
+
+        $requestStack = $this->createRequestStackWithSession();
+
+        $controller = $this->createController(galleryCategoryRepository: $this->createCreationRepository($taken));
+        $controller->setContainer($this->createContainer([
+            'security.authorization_checker' => $this->createAuthorizationChecker(true),
+            'security.csrf.token_manager' => $this->createCsrfTokenManager(true),
+            'request_stack' => $requestStack,
+        ]));
+
+        $controller->moveMedias(
+            $this->createAdminContext($category),
+            $this->createMoveMediasRequest([7], 'new', newCategoryTitle: 'Calandres Volvo'),
+            $entityManager
+        );
+
+        $this->assertSame($category, $category->getMedias()->first()->getCategory());
+        $this->assertSame(
+            ['label.gallery_medias_move_slug_taken'],
+            $requestStack->getCurrentRequest()->getSession()->getFlashBag()->peek('danger')
+        );
+    }
+
+    // A name made of nothing the slugger keeps names no gallery at all
+    public function testMoveMediasCreatesNothingWithoutAName(): void
+    {
+        $category = $this->createCategoryWithMedias(7);
+
+        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $entityManager->expects($this->never())->method('persist');
+        $entityManager->expects($this->never())->method('flush');
+
+        $controller = $this->createController(galleryCategoryRepository: $this->createCreationRepository());
+        $controller->setContainer($this->createContainer([
+            'security.authorization_checker' => $this->createAuthorizationChecker(true),
+            'security.csrf.token_manager' => $this->createCsrfTokenManager(true),
+            'request_stack' => $this->createRequestStackWithSession(),
+        ]));
+
+        $controller->moveMedias(
+            $this->createAdminContext($category),
+            $this->createMoveMediasRequest([7], 'new', newCategoryTitle: '  '),
+            $entityManager
+        );
+
+        $this->assertSame($category, $category->getMedias()->first()->getCategory());
+    }
+
+    // The selection is read before the arrival gallery is settled: creating one for a selection that turns out to be empty would leave an empty gallery behind
+    public function testMoveMediasCreatesNothingForAnEmptySelection(): void
+    {
+        $category = $this->createCategoryWithMedias(7);
+
+        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $entityManager->expects($this->never())->method('persist');
+        $entityManager->expects($this->never())->method('flush');
+
+        $controller = $this->createController(galleryCategoryRepository: $this->createCreationRepository());
+        $controller->setContainer($this->createContainer([
+            'security.authorization_checker' => $this->createAuthorizationChecker(true),
+            'security.csrf.token_manager' => $this->createCsrfTokenManager(true),
+            'request_stack' => $this->createRequestStackWithSession(),
+        ]));
+
+        $controller->moveMedias(
+            $this->createAdminContext($category),
+            $this->createMoveMediasRequest([999], 'new', newCategoryTitle: 'Calandres Volvo'),
+            $entityManager
+        );
+
+        $this->assertSame($category, $category->getMedias()->first()->getCategory());
     }
 
     // --- downloadMedias ----------------------------------------------------------------------------------
@@ -1787,7 +1949,7 @@ class GalleryCategoryCrudControllerTest extends TestCase
     // Its screen lists the last additions of the whole gallery, cut into the days they arrived on, and offers no upload: its medias belong to the categories that actually received them
     public function testTheAutomaticGalleryListsTheLatestMediasGroupedByDay(): void
     {
-        $category = new GalleryCategory()->setSlug('latest')->setAutomatic(true);
+        $category = new GalleryCategory()->setSlug('latest')->setAutomaticKind(GalleryCategory::AUTOMATIC_LATEST);
         new \ReflectionProperty(GalleryCategory::class, 'id')->setValue($category, 42);
         $media = new GalleryMedia();
         new \ReflectionProperty(GalleryMedia::class, 'id')->setValue($media, 7);
@@ -1798,7 +1960,7 @@ class GalleryCategoryCrudControllerTest extends TestCase
 
         $entityDto = new EntityDto(GalleryCategory::class, new ClassMetadata(GalleryCategory::class), null, $category);
 
-        $parameters = $this->createControllerWithRouter(latestProvider: $latestProvider)->configureResponseParameters(KeyValueStore::new([
+        $parameters = $this->createControllerWithRouter(latestProvider: $latestProvider, automaticProvider: $this->createAutomaticProvider([$media]))->configureResponseParameters(KeyValueStore::new([
             'pageName' => Crud::PAGE_EDIT,
             'entity' => $entityDto,
         ]));
@@ -1813,14 +1975,14 @@ class GalleryCategoryCrudControllerTest extends TestCase
     // The selection acts on the very list the screen listed, which the category holds none of - a media that has since left the last days of additions is simply dropped
     public function testTheAutomaticGalleryAppliesCreditsToTheMediasItShows(): void
     {
-        $category = new GalleryCategory()->setSlug('latest')->setAutomatic(true);
+        $category = new GalleryCategory()->setSlug('latest')->setAutomaticKind(GalleryCategory::AUTOMATIC_LATEST);
         $media = new GalleryMedia()->setTitle('Media 7');
         new \ReflectionProperty(GalleryMedia::class, 'id')->setValue($media, 7);
 
         $latestProvider = $this->createStub(GalleryLatestProvider::class);
         $latestProvider->method('getMedias')->willReturn([$media]);
 
-        $controller = $this->createController(latestProvider: $latestProvider);
+        $controller = $this->createController(automaticProvider: $this->createAutomaticProvider([$media]), latestProvider: $latestProvider);
         $controller->setContainer($this->createContainer([
             'security.authorization_checker' => $this->createAuthorizationChecker(true),
             'security.csrf.token_manager' => $this->createCsrfTokenManager(true),
@@ -1843,11 +2005,11 @@ class GalleryCategoryCrudControllerTest extends TestCase
         $media = $owner->getMedias()->first();
         $owner->setCoverMedia($media);
 
-        $automatic = new GalleryCategory()->setSlug('latest')->setAutomatic(true);
+        $automatic = new GalleryCategory()->setSlug('latest')->setAutomaticKind(GalleryCategory::AUTOMATIC_LATEST);
         $latestProvider = $this->createStub(GalleryLatestProvider::class);
         $latestProvider->method('getMedias')->willReturn([$media]);
 
-        $controller = $this->createController(latestProvider: $latestProvider);
+        $controller = $this->createController(automaticProvider: $this->createAutomaticProvider([$media]), latestProvider: $latestProvider);
         $controller->setContainer($this->createContainer([
             'security.authorization_checker' => $this->createAuthorizationChecker(true),
             'security.csrf.token_manager' => $this->createCsrfTokenManager(true),
@@ -2423,9 +2585,19 @@ class GalleryCategoryCrudControllerTest extends TestCase
         return $router;
     }
 
-    private function createControllerWithRouter(?RedirectRepository $redirectRepository = null, ?GalleryMediaRepository $galleryMediaRepository = null, ?GalleryLatestProvider $latestProvider = null): GalleryCategoryCrudController
+    // The lists an automatic gallery is handed, which the coordinator answers for whichever kind the category carries (see GalleryAutomaticProvider::getMedias)
+    /** @param list<GalleryMedia> $medias */
+    private function createAutomaticProvider(array $medias): GalleryAutomaticProvider
     {
-        $controller = $this->createController(redirectRepository: $redirectRepository, galleryMediaRepository: $galleryMediaRepository, latestProvider: $latestProvider);
+        $automaticProvider = $this->createStub(GalleryAutomaticProvider::class);
+        $automaticProvider->method('getMedias')->willReturn($medias);
+
+        return $automaticProvider;
+    }
+
+    private function createControllerWithRouter(?RedirectRepository $redirectRepository = null, ?GalleryMediaRepository $galleryMediaRepository = null, ?GalleryLatestProvider $latestProvider = null, ?GalleryAutomaticProvider $automaticProvider = null): GalleryCategoryCrudController
+    {
+        $controller = $this->createController(redirectRepository: $redirectRepository, galleryMediaRepository: $galleryMediaRepository, latestProvider: $latestProvider, automaticProvider: $automaticProvider);
         $controller->setContainer($this->createContainer(['router' => $this->createRouter()]));
 
         return $controller;

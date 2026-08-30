@@ -88,7 +88,7 @@ class GalleryCategoryRepositoryTest extends TestCase
         }));
         $entityManager->expects($this->once())->method('flush');
 
-        $category = new GalleryCategoryRepositoryFindOneByFixture(null, $entityManager, $this->createTranslator())->findOrCreateAutomatic();
+        $category = new GalleryCategoryRepositoryFindOneByFixture(null, $entityManager, $this->createTranslator())->findOrCreateAutomatic(GalleryCategory::AUTOMATIC_LATEST);
 
         $this->assertSame($persisted, $category);
         $this->assertSame('latest', $category->getSlug());
@@ -99,7 +99,7 @@ class GalleryCategoryRepositoryTest extends TestCase
     // Moving it to the trash is the only way an admin has of being rid of it, so it is left exactly where it was put - unlike the catch-all above, which an upload has to be able to land on
     public function testFindOrCreateAutomaticLeavesATrashedOneInTheTrash(): void
     {
-        $existing = new GalleryCategory()->setAutomatic(true);
+        $existing = new GalleryCategory()->setAutomaticKind(GalleryCategory::AUTOMATIC_LATEST);
         $existing->setIsDeleted(true);
 
         $entityManager = $this->createMock(EntityManagerInterface::class);
@@ -108,7 +108,7 @@ class GalleryCategoryRepositoryTest extends TestCase
 
         $repository = new GalleryCategoryRepositoryFindOneByFixture($existing, $entityManager, $this->createTranslator());
 
-        $this->assertSame($existing, $repository->findOrCreateAutomatic());
+        $this->assertSame($existing, $repository->findOrCreateAutomatic(GalleryCategory::AUTOMATIC_LATEST));
         $this->assertTrue($existing->isDeleted());
     }
 
@@ -121,7 +121,7 @@ class GalleryCategoryRepositoryTest extends TestCase
 
         $repository = new GalleryCategoryRepositoryFindOneByFixture(null, $entityManager, $this->createTranslator(), ['latest', 'latest-2']);
 
-        $this->assertSame('latest-3', $repository->findOrCreateAutomatic()->getSlug());
+        $this->assertSame('latest-3', $repository->findOrCreateAutomatic(GalleryCategory::AUTOMATIC_LATEST)->getSlug());
     }
 
     // Same slug, same constraint, same suffixing - and the catch-all is the one an upload lands on, so failing to create it would leave the medias nowhere to go

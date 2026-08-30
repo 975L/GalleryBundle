@@ -40,6 +40,7 @@
     /* --gallery-nav-shadow: 0 5px 10px 0 rgba(0, 0, 0, 0.5); */
 
     /* The breadcrumb opening every page of the viewer - toward the background rather than a flat grey, so it stays legible on a dark page too */
+    /* --gallery-breadcrumb-margin-block-start: 1.5rem; */
     /* --gallery-breadcrumb-font-size: 1.1rem; */
     /* --gallery-breadcrumb-color: var(--c975l-color-gallery-breadcrumb, color-mix(in srgb, var(--text) 60%, var(--background))); */
 
@@ -75,6 +76,9 @@
     /* --gallery-credits-font-size: 0.9rem; */
     /* --gallery-credits-gap: 1em; */
     /* --gallery-credits-color: var(--c975l-color-gallery-credits, color-mix(in srgb, var(--text) 60%, var(--background))); */
+
+    /* The line naming what the certificate page states, above the work's title - spaced out, a plate's lettering rather than a heading */
+    /* --gallery-certificate-label-letter-spacing: 0.1em; */
 
     /* The badge marking a grid entry that opens on a player instead of a still */
     /* --gallery-video-badge-background: var(--c975l-color-gallery-badge, rgba(0, 0, 0, 0.55)); */

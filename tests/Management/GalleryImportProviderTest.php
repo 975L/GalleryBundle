@@ -186,7 +186,7 @@ class GalleryImportProviderTest extends TestCase
             $persisted[] = $entity;
         });
 
-        $this->createProvider($em, automaticCategory: new GalleryCategory()->setAutomatic(true))->import([[
+        $this->createProvider($em, automaticCategory: new GalleryCategory()->setAutomaticKind(GalleryCategory::AUTOMATIC_LATEST))->import([[
             'slug' => 'latest',
             'title' => 'Derniers ajouts',
             'automatic' => true,
@@ -253,6 +253,55 @@ class GalleryImportProviderTest extends TestCase
         $this->assertFalse($categories[1]->isDeleted());
         $this->assertTrue($medias[0]->isDeleted());
         $this->assertFalse($medias[1]->isDeleted());
+    }
+
+    // Read back for the same reason they are exported (see GalleryExportProvider): a round-trip must not republish what was masked, nor put back on sale what was taken off it - and an archive predating the two keys imports as a media that is neither
+    public function testImportReadsTheMaskAndTheSaleFlagOfEachMedia(): void
+    {
+        $persisted = [];
+        $em = $this->createStub(EntityManagerInterface::class);
+        $em->method('persist')->willReturnCallback(static function (object $entity) use (&$persisted): void {
+            $persisted[] = $entity;
+        });
+
+        $this->createProvider($em)->import([[
+            'slug' => 'voyages',
+            'title' => 'Voyages',
+            'medias' => [
+                ['title' => 'Media 1', 'slug' => 'media-1', 'hidden' => true, 'printable' => false],
+                ['title' => 'Media 2', 'slug' => 'media-2', 'hidden' => false, 'printable' => true],
+                ['title' => 'Media 3', 'slug' => 'media-3'],
+            ],
+        ]]);
+
+        $medias = array_values(array_filter($persisted, static fn (object $entity): bool => $entity instanceof GalleryMedia));
+
+        $this->assertTrue($medias[0]->isHidden());
+        $this->assertFalse($medias[0]->isPrintable());
+        $this->assertFalse($medias[1]->isHidden());
+        $this->assertTrue($medias[1]->isPrintable());
+        $this->assertFalse($medias[2]->isHidden());
+        $this->assertFalse($medias[2]->isPrintable());
+    }
+
+    // The gallery's own mask is read back the same way, an archive predating the key importing as a gallery that is not masked
+    public function testImportReadsTheMaskOfTheCategory(): void
+    {
+        $persisted = [];
+        $em = $this->createStub(EntityManagerInterface::class);
+        $em->method('persist')->willReturnCallback(static function (object $entity) use (&$persisted): void {
+            $persisted[] = $entity;
+        });
+
+        $this->createProvider($em)->import([
+            ['slug' => 'voyages', 'title' => 'Voyages', 'hidden' => true],
+            ['slug' => 'objets', 'title' => 'Objets'],
+        ]);
+
+        $categories = array_values(array_filter($persisted, static fn (object $entity): bool => $entity instanceof GalleryCategory));
+
+        $this->assertTrue($categories[0]->isHidden());
+        $this->assertFalse($categories[1]->isHidden());
     }
 
     // An archive exported before the "photos" -> "medias" rename still imports its entries, rather than landing an empty category

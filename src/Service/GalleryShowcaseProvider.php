@@ -22,6 +22,7 @@ class GalleryShowcaseProvider implements GalleryShowcaseProviderInterface
         private readonly Environment $twig,
         private readonly TranslatorInterface $translator,
         private readonly PlaceholderMediaRegistry $placeholderMediaRegistry,
+        private readonly GallerySampleCatalog $catalog,
     ) {
     }
 
@@ -51,9 +52,8 @@ class GalleryShowcaseProvider implements GalleryShowcaseProviderInterface
     private function categoriesVariant(array $images): string
     {
         $categories = [];
-        foreach (array_slice($images, 0, 3) as $index => $image) {
-            $number = $index + 1;
-            $categories[] = $this->category($number, [$this->media($image, $number)]);
+        foreach (array_slice($this->catalog->getCategories(), 0, 3) as $index => $spec) {
+            $categories[] = $this->category($spec, [$this->media($spec['medias'][0], $images[$index % count($images)])]);
         }
 
         return $this->twig->render('@c975LGallery/components/Gallery/Categories.html.twig', [
@@ -63,13 +63,15 @@ class GalleryShowcaseProvider implements GalleryShowcaseProviderInterface
 
     private function mediasVariant(array $images): string
     {
+        $spec = $this->catalog->getCategories()[0];
+
         $medias = [];
-        foreach (array_slice($images, 0, 4) as $index => $image) {
-            $medias[] = $this->media($image, $index + 1);
+        foreach (array_slice($spec['medias'], 0, 4) as $index => $mediaSpec) {
+            $medias[] = $this->media($mediaSpec, $images[$index % count($images)]);
         }
 
         // Each media names the category filing it, the way a real one does - Medias.html.twig hands that one, not the grid's own, to the Media component building the photo's url
-        $category = $this->category(1, $medias);
+        $category = $this->category($spec, $medias);
         $medias = array_map(static fn (array $media): array => $media + ['category' => $category], $medias);
 
         return $this->twig->render('@c975LGallery/components/Gallery/Medias.html.twig', [
@@ -79,17 +81,18 @@ class GalleryShowcaseProvider implements GalleryShowcaseProviderInterface
         ]);
     }
 
-    // Every key Category.html.twig and Medias.html.twig read on a category: the cover falls back to a random media on a real entity (GalleryCategory::getCoverOrRandomMedia()), where a stand-in simply names its first one, and "automatic" stays false, the showcase standing for an ordinary gallery rather than the one gathering the latest additions
+    // Every key Category.html.twig and Medias.html.twig read on a category: the cover falls back to a random media on a real entity (GalleryCategory::getCoverOrRandomMedia()), where a stand-in simply names its first one, and "automatic" stays false, the showcase standing for an ordinary gallery rather than one of those gathering their medias
     /**
-     * @param list<array<string, mixed>> $medias
+     * @param array{slug: string, title: string, medias: list<array{slug: string, title: string}>} $spec
+     * @param list<array<string, mixed>>                                                           $medias
      *
      * @return array<string, mixed>
      */
-    private function category(int $number, array $medias): array
+    private function category(array $spec, array $medias): array
     {
         return [
-            'slug' => 'categorie-exemple-' . $number,
-            'title' => $this->translator->trans('label.gallery_showcase_category_title', ['%number%' => $number], 'gallery'),
+            'slug' => $spec['slug'],
+            'title' => $this->translator->trans($spec['title'], [], 'gallery'),
             'coverOrRandomMedia' => $medias[0] ?? null,
             'mediasCount' => count($medias),
             'automatic' => false,
@@ -97,13 +100,15 @@ class GalleryShowcaseProvider implements GalleryShowcaseProviderInterface
     }
 
     /**
+     * @param array{slug: string, title: string} $spec
+     *
      * @return array<string, mixed>
      */
-    private function media(string $image, int $number): array
+    private function media(array $spec, string $image): array
     {
         return [
-            'slug' => 'media-exemple-' . $number,
-            'title' => $this->translator->trans('label.gallery_showcase_media_title', ['%number%' => $number], 'gallery'),
+            'slug' => $spec['slug'],
+            'title' => $this->translator->trans($spec['title'], [], 'gallery'),
             // The placeholder image stands in for the thumbnail a real media derives from its stored file - the grids read that one alone, whichever way they frame it (see Media.html.twig)
             'thumbnailFilename' => $image,
             'video' => false,

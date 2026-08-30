@@ -33,6 +33,10 @@ class GalleryCategory implements HasBlocksInterface, TrashableInterface, \String
     // A category deleted from the back-office only lands here, its medias and their files untouched - what actually removes them is deletePermanently() (see GalleryCategoryCrudController), the only path left that reaches the cascade below
     use TrashableTrait;
 
+    // The kinds of automatic gallery, each answered by a provider of the same name (see GalleryAutomaticProvider). Stored strings and not an enum, so a site adding a kind of its own has nothing of this bundle's to extend
+    public const string AUTOMATIC_LATEST = 'latest';
+    public const string AUTOMATIC_PRINTABLE = 'printable';
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -52,6 +56,11 @@ class GalleryCategory implements HasBlocksInterface, TrashableInterface, \String
     #[ORM\Column]
     private int $position = 0;
 
+    // Withheld from every public page while staying whole in the back-office, exactly as GalleryMedia::$hidden withholds one photograph - a gallery being prepared, or one an admin takes down for a season, without emptying it nor trashing it
+    // What it drops out of is what findAllOrdered() answers (index, blocks, sitemap, menu links), plus the medias it holds, which leave the automatic galleries with it (see GalleryMediaRepository::latestMedias) - the back-office lists it like any other, its own edit screen being where it is filled and shown again
+    #[ORM\Column(options: ['default' => false])]
+    private bool $hidden = false;
+
     // The fields this site adds to a gallery and no other site has, held as one JSON payload rather than a column each - same reasoning as UiBundle's Block::$data: what a single site needs is then a form type it declares (see GalleryCustomizationProviderInterface::getCategoryDataFormType()), no schema migration for every app running this bundle. Anything the database itself has to filter, sort or join on stays a real column
     /** @var array<string, mixed>|null */
     #[ORM\Column(type: Types::JSON, nullable: true)]
@@ -65,10 +74,12 @@ class GalleryCategory implements HasBlocksInterface, TrashableInterface, \String
     #[ORM\Column(options: ['default' => false])]
     private bool $uncategorized = false;
 
-    // The gallery of the last additions: a category holding no media of its own, showing those the other categories received on their last days of upload (see GalleryLatestProvider). Flagged rather than matched by slug, exactly as the catch-all above, so it survives a rename - and written by GalleryCategoryRepository::findOrCreateAutomatic(), the import guarding against a second one (see GalleryImportProvider::import): the schema does not enforce it
+    // Which gallery a category holds instead of medias of its own, null for an ordinary one: the last additions (see GalleryLatestProvider), or the photographs on sale as prints (see GalleryPrintableProvider). Flagged rather than matched by slug, exactly as the catch-all above, so it survives a rename - and written by GalleryCategoryRepository::findOrCreateAutomatic(), the import guarding against a second one of a kind (see GalleryImportProvider::import): the schema does not enforce it
+    // A kind and not a flag because there is more than one of them, and because every screen still only ever asks whether the category is automatic - what it gathers is the provider's business
     // It is a real row rather than a category built on the fly, so it is arranged, described, given a heading, linked from a menu and declared in the sitemap like any other gallery, without a single screen having to learn a second kind of category
-    #[ORM\Column(options: ['default' => false])]
-    private bool $automatic = false;
+    // Wide enough for a kind a site names itself, the column being what the category is found back by: a value cut down on the way in would never match the lookup again, and a fresh category would be written at every render
+    #[ORM\Column(length: 50, nullable: true)]
+    private ?string $automaticKind = null;
 
     // Not a column: an automatic gallery's medias belong to other categories, so they are handed over at read time rather than held by the relation below - everything reading a category's medias (its index tile, its count, its og:image) then works on it without knowing which kind it has in hand
     /** @var list<GalleryMedia> */
@@ -185,6 +196,18 @@ class GalleryCategory implements HasBlocksInterface, TrashableInterface, \String
         return $this;
     }
 
+    public function isHidden(): bool
+    {
+        return $this->hidden;
+    }
+
+    public function setHidden(?bool $hidden): self
+    {
+        $this->hidden = $hidden ?? false;
+
+        return $this;
+    }
+
     public function isUncategorized(): bool
     {
         return $this->uncategorized;
@@ -199,17 +222,31 @@ class GalleryCategory implements HasBlocksInterface, TrashableInterface, \String
 
     public function isAutomatic(): bool
     {
-        return $this->automatic;
+        return null !== $this->automaticKind;
     }
 
-    public function setAutomatic(?bool $automatic): self
+    public function getAutomaticKind(): ?string
     {
-        $this->automatic = $automatic ?? false;
+        return $this->automaticKind;
+    }
+
+    // Any non-empty kind is kept, the bundle's two and a site's own alike (see AutomaticGalleryInterface): the kind is what the category is found back by, and one silently dropped had a fresh category written at every render
+    // A kind whose provider is gone stays stored and costs nothing - no provider answers it, so the gallery simply shows empty until an admin trashes it
+    public function setAutomaticKind(?string $automaticKind): self
+    {
+        $this->automaticKind = null !== $automaticKind && '' !== $automaticKind ? $automaticKind : null;
 
         return $this;
     }
 
-    // Posed by GalleryLatestProvider alone, on the automatic category and on no other - a category given a list it isn't meant to show would report a media count it doesn't display
+    // The kinds the bundle ships, which is not the list of what is accepted - a site tagging a gallery of its own adds one nothing here knows about
+    /** @return list<string> */
+    public static function automaticKinds(): array
+    {
+        return [self::AUTOMATIC_LATEST, self::AUTOMATIC_PRINTABLE];
+    }
+
+    // Posed by the automatic providers alone, on the category of their own kind and on no other - a category given a list it isn't meant to show would report a media count it doesn't display
     /** @param list<GalleryMedia> $medias */
     public function setAutomaticMedias(array $medias): self
     {
@@ -247,7 +284,7 @@ class GalleryCategory implements HasBlocksInterface, TrashableInterface, \String
         }
 
         // The automatic gallery shows its newest photo rather than one of them at random: its list is ordered by date of addition, and what it stands for is precisely what has just arrived
-        return $this->automatic ? $medias[0] : $medias[array_rand($medias)];
+        return $this->isAutomatic() ? $medias[0] : $medias[array_rand($medias)];
     }
 
     // What the back-office category listing shows instead of the medias themselves, the medias being managed from the category's own edit screen (see GalleryCategoryCrudController)
@@ -261,7 +298,7 @@ class GalleryCategory implements HasBlocksInterface, TrashableInterface, \String
     private function visibleMedias(): array
     {
         // Handed over rather than held: the relation of an automatic gallery is empty by definition, and reading it would leave its tile blank and its count at zero
-        if ($this->automatic) {
+        if ($this->isAutomatic()) {
             return $this->automaticMedias;
         }
 
@@ -270,9 +307,10 @@ class GalleryCategory implements HasBlocksInterface, TrashableInterface, \String
             return $this->loadedMedias;
         }
 
+        // Hidden left out as well as the trash, exactly as the bulk read above leaves it out (see GalleryMediaRepository::findVisibleByCategories) - the cover and the count this feeds are public, and the two paths have to answer the same list
         return array_values(array_filter(
             $this->medias->toArray(),
-            static fn (GalleryMedia $media): bool => !$media->isDeleted()
+            static fn (GalleryMedia $media): bool => !$media->isDeleted() && !$media->isHidden()
         ));
     }
 

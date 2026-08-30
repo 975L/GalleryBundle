@@ -1,0 +1,49 @@
+{% extends 'layout.html.twig' %}
+
+{# Where a numbered print is checked - the page the address printed on a certificate leads to (see CertificateController) #}
+{# States what the register holds and nothing else. Never who bought it: a certificate proves a print, it does not publish its owner #}
+{# The facts are read off the copy's frozen row, so this page and the signed sheet always say the same thing (see PrintCopySnapshot). The photograph itself is read live - it is shown so a holder recognises their print, and the current file is the right one for that #}
+{% trans_default_domain 'gallery' %}
+
+{% set title = 'label.print_certificate'|trans ~ ' - ' ~ copy.workTitle %}
+{% set summarySocialNetwork = 'label.print_certificate_valid'|trans %}
+
+{% block body %}
+    <div class="container my-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-7">
+                <p class="gallery-certificate-label text-uppercase small text-body-secondary mb-1">{{ 'label.print_certificate'|trans }}</p>
+
+                <h1 class="h3 mb-4">{{ copy.workTitle }}</h1>
+
+                {# The photograph may be gone for good, the register outliving it (see GalleryPrintCopy::$media): the certificate still reads whole, the page simply showing no image and naming the edition by the number alone #}
+                {% if media is not null and media.filename is not null %}
+                    <img src="{{ asset(media.filename) }}" alt="{{ copy.workTitle }}" class="img-fluid mb-4">
+                {% endif %}
+
+                <p class="display-6 mb-1">{{ copy.number }}{% if media is not null %}&thinsp;/&thinsp;{{ media.editionSize }}{% endif %}</p>
+
+                <p class="text-success mb-4">{{ 'label.print_certificate_valid'|trans }}</p>
+
+                <dl class="row mb-4">
+                    {% if copy.credits is not empty %}
+                        <dt class="col-sm-4">{{ 'label.credits'|trans }}</dt>
+                        <dd class="col-sm-8">{{ copy.credits }}</dd>
+                    {% endif %}
+
+                    <dt class="col-sm-4">{{ 'label.print_format'|trans }}</dt>
+                    <dd class="col-sm-8">{{ copy.formatLabel }}</dd>
+
+                    {% if copy.soldAt is not null %}
+                        <dt class="col-sm-4">{{ 'label.print_certificate_sold_on'|trans({'%date%': ''})|trim }}</dt>
+                        <dd class="col-sm-8">{{ copy.soldAt|date('d/m/Y') }}</dd>
+                    {% endif %}
+                </dl>
+
+                {% if media is not null and media.slug is not null and media.category is not null %}
+                    <a href="{{ path('gallery_media', {'category': media.category.slug, 'slug': media.slug}) }}">{{ media.title }}</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endblock %}

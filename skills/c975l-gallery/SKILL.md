@@ -1,6 +1,6 @@
 ---
 name: c975l-gallery
-description: "Use this skill when working with photo galleries in a Symfony application built on the c975L ecosystem with c975l/gallery-bundle. Covers categories and medias, the admin-renamable url prefix, the two-step trash, batch upload and the three image derivatives, videos and embeds, the two gallery blocks, theming, and every extension point the bundle offers. Triggers on: GalleryCategory, GalleryMedia, gallery-route-prefix, gallery_index, gallery_category, gallery_media, gallery_categories, gallery_medias, c975l:gallery:rebuild-thumbnails, c975l:gallery:fill-slugs, photo gallery, thumbnail, lightbox, batch upload, upload progress, passe-partout, trash, restore, delete permanently, 410 Gone, download highres, download originals, GalleryMediaArchiver, move medias, move selection, GalleryMediaMover, moveMedias, files-gallery, health check, automatic gallery, latest additions, GalleryLatestProvider, findOrCreateAutomatic, findLatest, gallery-latest-days, gallery-latest-max, gallery-rating, likes, like a photo, heart, rating, findVisibleByCategories, setLoadedMedias, media caption, media description, GalleryCustomizationProviderInterface, gallery.customization_provider, GalleryDataField, getDataValue, gallery-video-self-hosted-max-height, self-hosted video, portrait video."
+description: "Use this skill when working with photo galleries in a Symfony application built on the c975L ecosystem with c975l/gallery-bundle. Covers categories and medias, the admin-renamable url prefix, the two-step trash, batch upload and the three image derivatives, videos and embeds, the two gallery blocks, theming, and every extension point the bundle offers. Triggers on: GalleryCategory, GalleryMedia, gallery-route-prefix, gallery_index, gallery_category, gallery_media, gallery_categories, gallery_medias, c975l:gallery:rebuild-thumbnails, c975l:gallery:fill-slugs, photo gallery, thumbnail, lightbox, batch upload, upload progress, passe-partout, trash, restore, delete permanently, 410 Gone, download highres, download originals, GalleryMediaArchiver, move medias, move selection, GalleryMediaMover, moveMedias, files-gallery, health check, automatic gallery, latest additions, GalleryLatestProvider, findOrCreateAutomatic, findLatest, gallery-latest-days, gallery-latest-max, gallery-rating, likes, like a photo, heart, rating, findVisibleByCategories, setLoadedMedias, media caption, media description, GalleryCustomizationProviderInterface, gallery.customization_provider, GalleryDataField, getDataValue, gallery-video-self-hosted-max-height, self-hosted video, portrait video., GallerySampleCatalog, GalleryDemoFixtureProvider, DemoFixtureProviderInterface, demo gallery, ReplacingFile, hidden, hide a gallery, masking, sell prints, print shop, limited edition, editionSize, printable, certificate of authenticity, gallery_print_certificate, gallery_print_file, gallery-print-enabled, gallery-printable-max, gallery-print-provider, gallery-print-sandbox, gallery-print-signature, GalleryPrintFormat, GalleryPrintOrder, GalleryPrintCopy, PrintCopySnapshot, PrintFulfilmentInterface, ProdigiFulfilment, ManualFulfilment, gallery.print_fulfilment, AutomaticGalleryInterface, gallery.automatic_gallery, GalleryAutomaticProvider, GalleryPrintableProvider, automaticKind, qr code"
 ---
 
 # c975L GalleryBundle
@@ -10,7 +10,7 @@ description: "Use this skill when working with photo galleries in a Symfony appl
 **Package:** `c975l/gallery-bundle` · **Namespace:** `c975L\GalleryBundle\` · **Twig namespace:** `@c975LGallery` · **Translation domain:** `gallery`
 
 **Key source paths** (relative to the package root):
-`src/Controller/GalleryController.php`, `src/Contract/`, `src/Entity/`, `src/Field/`, `src/Repository/`, `src/Routing/GalleryRoutePrefix.php`, `src/Service/`, `src/Twig/Extension/`, `src/Management/`, `src/Form/Block/`, `templates/gallery/`, `templates/components/Gallery/`, `templates/blocks/`, `config/configs.json`, `config/services.yaml`
+`src/Controller/GalleryController.php`, `src/Contract/`, `src/Entity/`, `src/Field/`, `src/Model/`, `src/Repository/`, `src/Routing/GalleryRoutePrefix.php`, `src/Service/`, `src/Service/Fulfilment/`, `src/Twig/Extension/`, `src/Management/`, `src/Form/Block/`, `templates/gallery/`, `templates/print/`, `templates/components/Gallery/`, `templates/blocks/`, `config/configs.json`, `config/services.yaml`
 
 **Related documentation:** this package's `README.md` is the exhaustive reference — every section named below is an anchor in it. The ecosystem's own rules (database-backed configuration, blocks, media library, management contributions) live in `c975l/core-bundle`.
 
@@ -47,8 +47,9 @@ top-level unit, and each holds its `GalleryMedia`.
 
 - `GalleryCategory` — `slug` (the url segment), `title`, `summarySocialNetwork` (rich text, printed
   above the grid and reused as the page's description metas), `position`, `coverMedia`,
-  `uncategorized` (the lazily-created catch-all), `automatic` (the gallery of the last additions, see
-  below), `medias`. Implements `HasBlocksInterface` (its own editorial heading) and
+  `uncategorized` (the lazily-created catch-all), `automaticKind` (which automatic gallery it is, null
+  for an ordinary one, see below), `hidden` (kept out of every public page without being deleted, see
+  *Masking is not deleting*), `medias`. Implements `HasBlocksInterface` (its own editorial heading) and
   `TrashableInterface`.
 - A site adds fields of its own to a category or a media by implementing
   `GalleryCustomizationProviderInterface` (`getCategoryDataFormType()`, `getMediaDataFormType()`),
@@ -91,6 +92,26 @@ simply never reached.
   collection) each call `RatingRepository::deleteForOwners()` themselves, once for the whole set and only
   after the flush that actually removed the rows. A trashed media keeps its likes — it can come back.
 
+## Masking is not deleting
+
+Both `GalleryCategory` and `GalleryMedia` carry a `hidden` flag, the answer to what is worth keeping and
+not worth showing — a gallery being prepared, one taken down for a season, a photograph withheld.
+
+- A masked row stays whole in the back office: the category listing shows it with a switch saving on the
+  spot, and its own edit screen fills, arranges and trashes its medias as usual.
+- It answers **404**, never the trash's 410: masking is reversible, and nothing a change of mind would
+  have to take back should be told to a crawler. A masked category takes its medias' pages down with it,
+  those being resolved through their category (`GalleryController::resolveCategory()`).
+- `findAllOrdered()` and `countVisible()` drop it, which is what takes a masked gallery off the index,
+  out of the blocks, out of the sitemap and out of the menu targets — and off the back office's move
+  targets and block pickers with them, a public page must not be composed on a url answering 404.
+- Its photographs leave the automatic galleries too (`c.hidden = false` in `latestMedias()` and
+  `findPrintable()`) and are not sold as prints (`GalleryPrintService::isPrintable()`, the basket being
+  reached without ever going through the page that would have said so).
+- Masking a category marks none of its medias, exactly as trashing one marks none of them — so showing
+  it again gives back precisely what was showing before.
+- The export/import carries both flags: a gallery archived masked comes back masked.
+
 ## Public routes and the renamable prefix
 
 | Route name | Url | Renders |
@@ -98,6 +119,11 @@ simply never reached.
 | `gallery_index` | `/{prefix}` | one thumbnail per category |
 | `gallery_category` | `/{prefix}/{category}` | the category grid, photos and videos alike |
 | `gallery_media` | `/{prefix}/{category}/{slug}` | the medium-resolution photo, or the video player |
+| `gallery_print_certificate` | `/certificate/{certificate}` | the public check page of one numbered print |
+| `gallery_print_file` | `/gallery-print-file/{copy}` | the print file, fetched by the lab through a signed url |
+
+The last two sit **outside** the renamable prefix: one is printed on paper and has to outlive a rename,
+the other is never read by a visitor.
 
 The first segment is the `gallery-route-prefix` setting, renamed from the dashboard (`galerie`,
 `fotos`) with **no cache to clear**. A route path is compiled into the router cache, so the prefix
@@ -119,33 +145,46 @@ urls — declare a redirect in ConfigBundle's **Redirections** screen. Renaming 
 for you: `GalleryCategoryCrudController::updateEntity()` writes the permanent redirect, plus a
 wildcarded row for the medias underneath.
 
-## The gallery of the last additions
+## The automatic galleries
 
-A category flagged `automatic` **holds no media of its own**: it shows what every other category
-received over the last days of upload. It is written by
-`GalleryCategoryRepository::findOrCreateAutomatic()` the first time the galleries are listed (the
-back-office listing, the public index or a categories block, whichever comes first) and is a normal
+A category carrying an `automaticKind` **holds no media of its own**: it is handed a list at read time.
+There are two kinds out of the box — `GalleryCategory::AUTOMATIC_LATEST` (the last additions) and
+`AUTOMATIC_PRINTABLE` (the photographs on sale as prints, only on a site that sells them). A kind is
+written by `GalleryCategoryRepository::findOrCreateAutomatic()` the first time the galleries are listed
+(the back-office listing, the public index or a categories block, whichever comes first) and is a normal
 category from then on — renamed, described, given a heading, arranged, linked from a menu, declared in
-the sitemap. **Nobody creates it, and it is never an option ticked on one of the site's own galleries.**
+the sitemap. **Nobody creates one, and it is never an option ticked on one of the site's own galleries.**
 Moving it to the trash is how a site says it does not want it: unlike the catch-all, a trashed one is
 left exactly where it was put.
 
-`Service\GalleryLatestProvider` is the one place that answers what it holds — the front-office viewer,
-the blocks and the back-office screen all ask it, and it reads once per request (`ResetInterface`).
-Its list comes from `GalleryMediaRepository::findLatest($days, $max)`: a rolling window of calendar
-days, today included, falling back on the last day that carries an addition when the window catches
-nothing, so the gallery is never empty as long as the site holds a photo. The `gallery_media_created_at`
-index on `created_at` is what keeps that read off a full scan.
+**The plumbing is written once, the kinds only answer what they gather.** `Service\GalleryAutomaticProvider`
+is the one place every screen asks (`ResetInterface`, so it reads once per request); each kind is an
+`AutomaticGalleryInterface` — `getKind()`, `isAvailable()`, `getMedias()` — collected through
+`gallery.automatic_gallery`. `Service\GalleryLatestProvider` and `Service\GalleryPrintableProvider` are the
+two shipped. A kind answering `false` to `isAvailable()` never gets a row written, so a feature nobody
+turned on leaves nothing behind.
 
-- `prepare(array $categories)` — hands back the listed categories with the automatic one among them,
-  holding its medias. For a caller reading the list itself (the public index, the categories block).
-- `hydrate(iterable $categories)` — hands the automatic one its list, the others left alone. For a
+`GalleryLatestProvider`'s list comes from `GalleryMediaRepository::findLatest($days, $max)`: a rolling
+window of calendar days, today included, falling back on the last day that carries an addition when the
+window catches nothing, so the gallery is never empty as long as the site holds a photo. The
+`gallery_media_created_at` index on `created_at` is what keeps that read off a full scan.
+
+`GalleryAutomaticProvider`'s own API:
+
+- `getMedias(GalleryCategory $category)` — what that category's kind gathers.
+- `ensureCategory(string $kind)` / `ensureCategories()` — the rows written for the kinds available.
+- `findPreviousAndNext(GalleryMedia $media, GalleryCategory $category)` — the neighbours **within** the
+  automatic gallery being browsed, which are not the ones the media's own category files it next to.
+- `prepare(array $categories)` — hands back the listed categories with the automatic ones among them,
+  holding their medias. For a caller reading the list itself (the public index, the categories block).
+- `hydrate(iterable $categories)` — hands the automatic ones their lists, the others left alone. For a
   caller holding entities it did not read (the back-office listing, whose rows EasyAdmin paginates).
 - Both also hand **every other listed category** the medias its tile and its media count read, in one
   `GalleryMediaRepository::findVisibleByCategories()` query for the whole list, posed through
   `GalleryCategory::setLoadedMedias()` — the relation is lazy, so a listing otherwise reads it category by
   category. A list of one is left alone, the lazy relation running the one query this would.
-- `getMedias()`, `getMediasByDay()`, `findPreviousAndNext($media)`, `ensureCategory()`.
+`GalleryLatestProvider::getMediasByDay()` cuts that same list into the days its medias were added on —
+the back-office screen alone reads it, an upload session being what an admin credits or downloads in one go.
 
 `GalleryCategory::getMediasCount()` and `getCoverOrRandomMedia()` read that handed list rather than the
 relation, so a tile, a count and an `og:image` work without knowing which kind of category they hold —
@@ -228,8 +267,10 @@ the stored file, its `-thumb`/`-highres` siblings, the kept original and the med
 `medias/gallery/{arrival gallery}/`, leaves the old media page redirecting to the new one, suffixes a
 slug the arrival gallery already holds, appends the medias to its ranks while closing the gap behind
 them, releases a cover pointing at a media that has left, and renumbers the titles when a title root is
-given. **Only the directory moves** — the filename itself carries the slug the media had at upload and
-never changes. The files are renamed in `postFlush` so a failed save leaves them where the rows still
+given. The destination is chosen explicitly — nothing is preselected in that list, and its last entry
+creates the gallery on the spot under the name typed beside it (a slug already taken is refused, never
+suffixed, a category's slug being its natural key). **Only the directory moves** — the filename itself
+carries the slug the media had at upload and never changes. The files are renamed in `postFlush` so a failed save leaves them where the rows still
 point at them; the media is deliberately **left in the gallery's own collection**, that relation being
 `orphanRemoval` and removing it there deleting the very row being moved. **Do not reassign
 `GalleryMedia::$category` by hand** — the files would stay behind in the gallery the media left.
@@ -308,6 +349,12 @@ EasyAdmin — **never in `.env`, `parameters:` or a Configuration/TreeBuilder cl
 | `gallery-rating` | bool | the heart under a photo, on out of the box (see *Likes on a photo*) |
 | `gallery-latest-days` | int | how many days back the automatic gallery reaches (empty or 0 falls back to 7) |
 | `gallery-latest-max` | int | how many medias it stops at (empty or 0 falls back to 200) |
+| `gallery-printable-max` | int | how many photographs the prints gallery stops at (empty or 0 falls back to 200) |
+| `gallery-print-enabled` | bool | the print shop; off out of the box, and off it hides its two back-office screens and its tile (see *Selling prints*) |
+| `gallery-print-provider` | text | which lab fulfils the orders (`prodigi` out of the box, `manual` to fulfil them by hand) |
+| `gallery-print-api-key` | text, sensitive | the lab's api key |
+| `gallery-print-sandbox` | bool | the lab's test mode, on out of the box - toggled from the dashboard tile |
+| `gallery-print-signature` | text | the signature laid on print files, a path under `public/`; empty leaves prints unsigned |
 | `gallery-style` | choice `light`/`dark` | the ground a photo is shown against; empty keeps the site's own colors |
 | `gallery-frame` | choice `none`/`thin`/`wide` | the passe-partout around a displayed media |
 | `theme-color-gallery-frame` | text | passe-partout color |
@@ -329,6 +376,43 @@ deletions, held at `site-role-admin` (see *Deleting takes two steps*). The sideb
 bar (`MenuProvider`, `'role'` key), so an editor reaches the galleries instead of seeing no entry at all —
 read by `c975l/core-bundle` `^1.14.0` and up, earlier ones giving every entry the admin bar.
 
+## Selling prints
+
+Off unless `gallery-print-enabled` is on. Requires `c975l/payment-bundle`: a print is sold through the
+one basket, this bundle plugging in as a `BasketItemProviderInterface` of kind `gallery_print`.
+
+Three entities. `GalleryPrintFormat` is the catalogue — a size, its dpi, its price, and the **sku** the
+lab knows it by (distinct from the slug; only the sku is ever sent to a lab). `GalleryPrintOrder` is one
+consignment. `GalleryPrintCopy` is **the register**: one row per print.
+
+`GalleryMedia` carries `printable` (on offer), `hidden` (kept out of every public page without being
+deleted, filtered in the repository and 404 in the controller) and `editionSize` (null for an open
+edition). Announcing an edition writes its rows at once through `GalleryPrintCopyRepository::openEdition()`,
+and `GalleryMediaCrudController::settleEdition()` refuses every later change to the number — raising an
+announced edition is a forgery. Selling one claims the lowest free row with a single
+`UPDATE … WHERE order_id IS NULL`, so two checkouts on the last copy cannot both win.
+
+A format is only offered for a photograph whose original actually has the pixels and the proportions
+(±3 %, `GalleryPrintService::getOffers()`) — nothing is ever cropped to fit a size.
+
+Everything a certificate states is frozen onto the copy at the sale (`PrintCopySnapshot`: format, label,
+sku, price, title, credits, issuer). **Read nothing live when drawing a certificate** — the sheet is
+signed by hand and posted, so a retitled photograph or a renamed site must not contradict it. The
+certificate is a pdf carrying a qr code to its public page, `/certificate/{token}`, which sits outside
+the renamable gallery prefix because it is printed on paper.
+
+An open edition goes straight to the lab through Messenger. A limited one stops and waits: two e-mails
+go out (the buyer's numbers, and the admin's "sign this"), and the admin releases it from the orders
+screen.
+
+A lab is a `PrintFulfilmentInterface`; every implementation is tagged on sight by `TaggedInterfacePass`,
+so a site adding its own printer wires nothing. `ProdigiFulfilment` ships, `ManualFulfilment` throws on
+purpose so the order stays pending in the back office rather than claiming it was sent.
+
+The print file is composed from the untouched original, never from the web derivative, and the signature
+is restamped at print resolution (`GalleryPrintFileBuilder`). The lab fetches it through a `UriSigner`
+url expiring at seven days; an unsigned request gets 404, not 403.
+
 ## Extending and overriding
 
 - **Templates** — every one of them is overridable from `templates/bundles/c975LGalleryBundle/`,
@@ -345,6 +429,12 @@ read by `c975l/core-bundle` `^1.14.0` and up, earlier ones giving every entry th
   collected through `gallery.customization_provider`, read by `GalleryCustomizationRegistry` (first
   provider answering wins) and rendered by `GalleryDataField` on the edit screen. The values land in
   the `data` JSON column, read back with `getDataValue()`.
+- **An automatic gallery of the site's own** — implement `AutomaticGalleryInterface` (`getKind()`,
+  `isAvailable()`, `getMedias()`). Nothing to tag: `TaggedInterfacePass` collects every implementation
+  through `gallery.automatic_gallery`, and the category, its place on the index, its menu target and its
+  sitemap line follow from `GalleryAutomaticProvider` alone.
+- **A lab of the site's own** — implement `PrintFulfilmentInterface`, collected the same way through
+  `gallery.print_fulfilment` and picked by the `gallery-print-provider` setting.
 - **Repositories** — `GalleryCategoryRepository::findAllOrdered()`, `findOneBySlug()`,
   `countVisible()`, `findOrCreateUncategorized()`, `findOrCreateAutomatic()` (both suffixing a slug
   already taken); `GalleryMediaRepository::findByCategory()`, `findOneBySlugInCategory()`,
@@ -361,7 +451,26 @@ What the bundle already contributes to the dashboard, so you do not have to: `Me
 `GalleryExportProvider` /
 `GalleryImportProvider` (categories as a zip, files included), `GalleryBackupPathProvider`,
 `GalleryBlockOwnerResolver`, `GalleryGuidedProjectProvider`, `WhatsNewProvider`, `ImportmapProvider`,
-`Service\ScriptProvider`, `Service\StylesheetProvider`, `Service\GalleryShowcaseProvider`.
+`Service\ScriptProvider`, `Service\StylesheetProvider`, `Service\GalleryShowcaseProvider`,
+`GalleryShortcutProvider` (the tile toggling the lab's test mode), `GalleryDemoFixtureProvider`,
+`Service\GalleryPrintBasketItemProvider` (PaymentBundle's basket, kind `gallery_print`),
+`Email\GalleryEmailTemplateProvider`.
+
+## Seeding a demo gallery
+
+`GallerySampleCatalog` holds a made-up gallery once as plain data — three categories of four named
+photographs. `GalleryShowcaseProvider` builds the arrays the block showcase renders from it,
+`GalleryDemoFixtureProvider` (UiBundle's `DemoFixtureProviderInterface`) hands the lot over to whichever
+demo site loads it - this bundle ships no command that writes to a database. Enriching the catalog shows
+up in both, and everything a visitor reads is a key of the `gallery` domain.
+
+The photographs come from `PlaceholderMediaProviderInterface`, rotated over the catalog and taken as a
+temporary copy — an upload moves the file it is handed. A site declaring none is seeded with nothing at
+all: a gallery is its photographs. A media's slug is set before the flush, being half of where its file
+lands (see `GalleryMedia::getVichMediaPath()`).
+
+Only the categories are yielded, their medias following through the cascade so Vich takes their files
+and derivatives off the disk with them.
 
 ## Do not
 
@@ -372,12 +481,26 @@ What the bundle already contributes to the dashboard, so you do not have to: `Me
 - **Do not write an image resizer, a thumbnail command or a Vich naming rule.** Sizes are declared on
   the entity, the work belongs to UiBundle's `VichImageResizeListener`.
 - **Do not read an automatic category's `medias` relation** — it is empty by definition. Ask
-  `GalleryLatestProvider`, or go through `getMediasCount()` / `getCoverOrRandomMedia()`, which already
-  do. And do not create a second one, nor turn one of the site's own galleries into it.
+  `GalleryAutomaticProvider::getMedias($category)`, or go through `getMediasCount()` /
+  `getCoverOrRandomMedia()`, which already do. And do not create a second category of a kind, nor turn
+  one of the site's own galleries into one.
 - **Do not put in `data`** anything the database has to filter, sort or join on, nor anything every
   gallery wants — the first stays a real column, the second belongs to the bundle (a caption did, hence
   `GalleryMedia::$description`).
 - **Do not query a media by slug alone** — a slug is unique only within its category.
+- **Do not raise or lower an announced edition's size.** `settleEdition()` refuses it: the rows are
+  already written and a certificate already says "3 / 10". Open a new edition instead.
+- **Do not read a photograph, a format or the site's name when drawing a certificate.** Everything the
+  sheet states is frozen on the copy at the sale (`PrintCopySnapshot`) — a signed sheet cannot be allowed
+  to disagree with the page checking it.
+- **Do not claim a copy with a read-then-write.** `GalleryPrintCopyRepository::claimNumber()` is a single
+  conditional `UPDATE` precisely so two checkouts on the last copy cannot both win.
+- **Do not send the catalogue slug to a lab, nor the web derivative as a print file.** The frozen sku is
+  what a lab knows, and `GalleryPrintFileBuilder` composes from the untouched original.
+- **Do not hand VichUploader a plain `File`** when seeding a media — `UploadHandler::hasUploadedFile()`
+  ignores it in silence, writing the row with no file name and nothing on the disk. Hand it a
+  `ReplacingFile`.
+- **Do not have a fixture provider empty a table** — a demo site keeps its own content in those very tables.
 - **Do not list categories or medias with `findAll()` / `findBy()`.** Those see the trash; use
   `findAllOrdered()` and `GalleryMediaRepository::findByCategory()`, which do not.
 - **Do not remove a media row without dropping its ratings.** Nothing cascades them; go through

@@ -44,8 +44,9 @@ class GalleryExportProviderTest extends TestCase
             'position' => 0,
             'data' => [],
             'uncategorized' => false,
-            'automatic' => false,
+            'automaticKind' => null,
             'isDeleted' => false,
+            'hidden' => false,
             'coverMediaIndex' => null,
             'blocks' => [],
             'medias' => [],
@@ -98,6 +99,61 @@ class GalleryExportProviderTest extends TestCase
 
         unlink($projectDir . '/public/uploads/p1.jpg');
         unlink($projectDir . '/public/uploads/p2.jpg');
+        rmdir($projectDir . '/public/uploads');
+        rmdir($projectDir . '/public');
+        rmdir($projectDir);
+    }
+
+    // Kept off the public pages here, kept off them there: an archive that republished what an admin had masked would defeat what the trash flag beside it is for
+    public function testSerializeCarriesTheMaskAndTheSaleFlagOfEachMedia(): void
+    {
+        $projectDir = sys_get_temp_dir() . '/gallery_export_provider_test_' . bin2hex(random_bytes(4));
+        mkdir($projectDir . '/public/uploads', 0777, true);
+        file_put_contents($projectDir . '/public/uploads/p1.jpg', 'bytes-1');
+        file_put_contents($projectDir . '/public/uploads/p2.jpg', 'bytes-2');
+
+        $category = new GalleryCategory()->setSlug('voyages')->setTitle('Voyages');
+        $shown = new GalleryMedia()->setFilename('uploads/p1.jpg')->setTitle('Media 1')->setSlug('media-1')->setPrintable(true);
+        $masked = new GalleryMedia()->setFilename('uploads/p2.jpg')->setTitle('Media 2')->setSlug('media-2')->setHidden(true);
+        $category->addMedia($shown)->addMedia($masked);
+
+        $data = new GalleryExportProvider($this->createStub(GalleryCategoryRepository::class), new BlockDataExporter($projectDir), $projectDir)
+            ->serialize([$category]);
+
+        $medias = $data['items'][0]['medias'];
+        // A gallery shown here is shown there, its own mask travelling apart from its medias'
+        $this->assertFalse($data['items'][0]['hidden']);
+        $this->assertFalse($medias[0]['hidden']);
+        $this->assertTrue($medias[0]['printable']);
+        $this->assertTrue($medias[1]['hidden']);
+        $this->assertFalse($medias[1]['printable']);
+
+        unlink($projectDir . '/public/uploads/p1.jpg');
+        unlink($projectDir . '/public/uploads/p2.jpg');
+        rmdir($projectDir . '/public/uploads');
+        rmdir($projectDir . '/public');
+        rmdir($projectDir);
+    }
+
+    // A whole gallery taken off the site travels masked, so a sync mirrors the source rather than publishing what it had taken down
+    public function testSerializeCarriesTheMaskOfTheCategory(): void
+    {
+        $projectDir = sys_get_temp_dir() . '/gallery_export_provider_test_' . bin2hex(random_bytes(4));
+        mkdir($projectDir . '/public/uploads', 0777, true);
+        file_put_contents($projectDir . '/public/uploads/p1.jpg', 'bytes-1');
+
+        $category = new GalleryCategory()->setSlug('voyages')->setTitle('Voyages')->setHidden(true);
+        $category->addMedia(new GalleryMedia()->setFilename('uploads/p1.jpg')->setTitle('Media 1')->setSlug('media-1'));
+
+        $data = new GalleryExportProvider($this->createStub(GalleryCategoryRepository::class), new BlockDataExporter($projectDir), $projectDir)
+            ->serialize([$category]);
+
+        $item = $data['items'][0];
+        $this->assertTrue($item['hidden']);
+        // Masking a gallery marks none of its medias, exactly as trashing one marks none of them
+        $this->assertFalse($item['medias'][0]['hidden']);
+
+        unlink($projectDir . '/public/uploads/p1.jpg');
         rmdir($projectDir . '/public/uploads');
         rmdir($projectDir . '/public');
         rmdir($projectDir);

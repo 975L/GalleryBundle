@@ -22,6 +22,7 @@ use c975L\GalleryBundle\Management\GalleryImportProvider;
 use c975L\GalleryBundle\Model\GalleryMediaBatch;
 use c975L\GalleryBundle\Repository\GalleryCategoryRepository;
 use c975L\GalleryBundle\Repository\GalleryMediaRepository;
+use c975L\GalleryBundle\Service\GalleryAutomaticProvider;
 use c975L\GalleryBundle\Service\GalleryCustomizationRegistry;
 use c975L\GalleryBundle\Service\GalleryLatestProvider;
 use c975L\GalleryBundle\Service\GalleryMediaArchiver;
@@ -53,6 +54,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Dto\BatchActionDto;
 use EasyCorp\Bundle\EasyAdminBundle\Dto\EntityDto;
 use EasyCorp\Bundle\EasyAdminBundle\Dto\SearchDto;
+use EasyCorp\Bundle\EasyAdminBundle\Field\BooleanField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\CollectionField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\Field;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
@@ -61,6 +63,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\SlugField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextareaField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
+use Endroid\QrCode\Builder\Builder;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
@@ -96,7 +99,10 @@ class GalleryCategoryCrudController extends AbstractCrudController
     public const DELETE_PERMANENTLY_CSRF_TOKEN = 'gallery_category_delete_permanently';
 
     // The fields editMedias() applies to a whole selection at once, each named by the button posting it
-    public const EDITABLE_FIELDS = ['credits', 'rightsReserved'];
+    public const EDITABLE_FIELDS = ['credits', 'rightsReserved', 'hidden', 'printable'];
+
+    // The value the "new gallery" entry of the move select carries, told apart from an id by not being one (see moveTarget)
+    public const MOVE_TARGET_NEW = 'new';
 
     public function __construct(
         private readonly GalleryCategoryRepository $galleryCategoryRepository,
@@ -116,6 +122,7 @@ class GalleryCategoryCrudController extends AbstractCrudController
         private readonly GalleryMediaRepository $galleryMediaRepository,
         private readonly CsrfTokenManagerInterface $csrfTokenManager,
         private readonly GalleryMediaArchiver $galleryMediaArchiver,
+        private readonly GalleryAutomaticProvider $automaticProvider,
         private readonly GalleryLatestProvider $latestProvider,
         private readonly GalleryCustomizationRegistry $customizationRegistry,
     ) {
@@ -318,8 +325,8 @@ class GalleryCategoryCrudController extends AbstractCrudController
         FieldCollection $fields,
         FilterCollection $filters,
     ): QueryBuilder {
-        // The gallery of the last additions is written here, before the listing reads its rows, so an admin opening his galleries simply finds it among them - nobody creates it, and nothing else on this screen has to know it is special (see GalleryLatestProvider)
-        $this->latestProvider->ensureCategory();
+        // The automatic galleries are written here, before the listing reads its rows, so an admin opening his galleries simply finds them among the others - nobody creates them, and nothing else on this screen has to know they are special (see GalleryAutomaticProvider)
+        $this->automaticProvider->ensureCategories();
 
         return parent::createIndexQueryBuilder($searchDto, $entityDto, $fields, $filters)
             ->andWhere('entity.isDeleted = :isDeleted')
@@ -520,10 +527,7 @@ class GalleryCategoryCrudController extends AbstractCrudController
     public function persistEntity(EntityManagerInterface $entityManager, object $entityInstance): void
     {
         if ($entityInstance instanceof GalleryCategory && \is_string($entityInstance->getSlug())) {
-            $url = $this->generateUrl('gallery_category', ['category' => $entityInstance->getSlug()]);
-
-            $this->urlRedirector->release($entityManager, $url);
-            $this->urlRedirector->release($entityManager, $url . '/*');
+            $this->releaseCategoryUrl($entityManager, $entityInstance);
 
             foreach ($entityInstance->getMedias() as $media) {
                 if (\is_string($media->getSlug())) {
@@ -536,6 +540,16 @@ class GalleryCategoryCrudController extends AbstractCrudController
         }
 
         parent::persistEntity($entityManager, $entityInstance);
+    }
+
+    // The url a created category answers on, and the wildcard covering every media url below it - both freed of the "gone" row an earlier permanent deletion left there, ConfigBundle's RedirectSubscriber running before the router
+    // Shared with the gallery the move toolbar creates on the spot (see createMoveTarget), which never goes through persistEntity()
+    private function releaseCategoryUrl(EntityManagerInterface $entityManager, GalleryCategory $category): void
+    {
+        $url = $this->generateUrl('gallery_category', ['category' => $category->getSlug()]);
+
+        $this->urlRedirector->release($entityManager, $url);
+        $this->urlRedirector->release($entityManager, $url . '/*');
     }
 
     // Updated category - a rename moves its public url (see addSlugNormalizer), so the old one is redirected to the new one rather than left to 404 on every link and search result already pointing at it, exactly as SiteBundle's PageCrudController does for a page
@@ -628,6 +642,12 @@ class GalleryCategoryCrudController extends AbstractCrudController
             IntegerField::new('position')
                 ->setLabel(t('label.position', [], 'gallery'))
                 ->hideOnIndex(),
+
+            // Kept on the index, where EasyAdmin draws it as a switch saving on the spot: taking a gallery off the site is an answer to something happening now, and reading the listing is where an admin sees which ones are masked
+            // Offered at creation too, a gallery being filled long before it is shown - the medias uploaded into it are then public the day the switch is turned back, with nothing to go through one by one
+            BooleanField::new('hidden')
+                ->setLabel(t('label.gallery_category_hidden', [], 'gallery'))
+                ->setHelp(t('help.gallery_category_hidden', [], 'gallery')),
 
             ...$this->dataFields(),
 
@@ -746,7 +766,7 @@ class GalleryCategoryCrudController extends AbstractCrudController
             $responseParameters->set('upload_limits', $this->uploadLimits);
         }
 
-        // The listing draws each category's thumbnail and counts its medias, which the automatic one only has once it has been handed the list it shows (see GalleryLatestProvider)
+        // The listing draws each category's thumbnail and counts its medias, which an automatic one only has once it has been handed the list it shows (see GalleryAutomaticProvider)
         if (Crud::PAGE_INDEX === $responseParameters->get('pageName')) {
             $entities = $responseParameters->get('entities');
             $categories = [];
@@ -758,7 +778,7 @@ class GalleryCategoryCrudController extends AbstractCrudController
                     }
                 }
             }
-            $this->latestProvider->hydrate($categories);
+            $this->automaticProvider->hydrate($categories);
 
             return $responseParameters;
         }
@@ -777,8 +797,10 @@ class GalleryCategoryCrudController extends AbstractCrudController
             // The automatic gallery takes no upload, holds no trash and arranges nothing: its medias belong to other categories, which is where each of them is added, trashed and ordered
             if ($category->isAutomatic()) {
                 $responseParameters->set('medias_automatic', true);
-                // Cut into the days it was read as: what an admin credits or downloads in one go is an upload session, and a heading per day is what tells one from the next
-                $responseParameters->set('medias_by_day', $this->latestProvider->getMediasByDay());
+                // Cut into the days it was read as, for the gallery of the last additions alone: what an admin credits or downloads in one go is an upload session, and a heading per day is what tells one from the next. The prints are not an upload session, and are listed as one grid
+                $responseParameters->set('medias_by_day', GalleryCategory::AUTOMATIC_LATEST === $category->getAutomaticKind()
+                    ? $this->latestProvider->getMediasByDay()
+                    : []);
                 $responseParameters->set('medias_trash', false);
                 $responseParameters->set('medias_trash_count', 0);
             } else {
@@ -817,13 +839,13 @@ class GalleryCategoryCrudController extends AbstractCrudController
         return $responseParameters;
     }
 
-    // What a category's edit screen lists: the medias it holds, those of them in the trash, or the last additions of the whole gallery when it is the automatic one
+    // What a category's edit screen lists: the medias it holds, those of them in the trash, or the list it gathers when it is an automatic one
     // The grid is handed its list rather than reading category.medias itself, that collection holding the trash too - and the three selection actions read the very same list back, so what is acted on is always what was shown (see selectedMedias)
     /** @return list<GalleryMedia> */
     private function mediasShown(GalleryCategory $category): array
     {
         if ($category->isAutomatic()) {
-            return $this->latestProvider->getMedias();
+            return $this->automaticProvider->getMedias($category);
         }
 
         if ($this->isMediasTrash()) {
@@ -1031,15 +1053,16 @@ class GalleryCategoryCrudController extends AbstractCrudController
 
         // An empty credits box clears the credits rather than being ignored, as an unchecked box unsets the rights - the field is applied as the toolbar shows it, which is also the only way to blank it on a whole selection
         $credits = $request->request->getString('credits') ?: null;
-        $rightsReserved = $request->request->getBoolean('rightsReserved');
 
         $medias = $this->selectedMedias($category, $request);
         foreach ($medias as $media) {
-            if ('credits' === $field) {
-                $media->setCredits($credits);
-            } else {
-                $media->setRightsReserved($rightsReserved);
-            }
+            match ($field) {
+                'credits' => $media->setCredits($credits),
+                'rightsReserved' => $media->setRightsReserved($request->request->getBoolean('rightsReserved')),
+                'hidden' => $media->setHidden($request->request->getBoolean('hidden')),
+                // Marks a whole selection as sellable, which is how a hundred photographs are put on sale without opening each one - the sizes each is actually offered are worked out from its own file (see GalleryPrintService::getOffers)
+                default => $media->setPrintable($request->request->getBoolean('printable')),
+            };
         }
         $entityManager->flush();
 
@@ -1064,15 +1087,18 @@ class GalleryCategoryCrudController extends AbstractCrudController
             return $this->redirect($url);
         }
 
-        // Checked again here rather than trusted from the select: the posted id is a request like any other, and a gallery holding no media of its own would take photographs out of every grid at once
-        $target = $this->moveTarget($request->request->getInt('targetCategory'));
-        if (null === $target) {
-            $this->addFlash('danger', $this->translator->trans('label.gallery_medias_move_refused', [], 'gallery'));
-
+        // Read before the arrival gallery is settled: creating one on the spot for a selection that turns out to be empty would leave an empty gallery behind
+        $medias = $this->selectedMedias($category, $request, deleted: false);
+        if ($medias->isEmpty()) {
             return $this->redirect($url);
         }
 
-        $medias = $this->selectedMedias($category, $request, deleted: false);
+        // Checked again here rather than trusted from the select: the posted id is a request like any other, and a gallery holding no media of its own would take photographs out of every grid at once
+        $target = $this->moveTarget($entityManager, $request);
+        if (null === $target) {
+            return $this->redirect($url);
+        }
+
         $moved = $this->galleryMediaMover->move($entityManager, $medias, $target, $request->request->getString('titleRoot'));
         $entityManager->flush();
 
@@ -1086,12 +1112,64 @@ class GalleryCategoryCrudController extends AbstractCrudController
         return $this->redirect($url);
     }
 
-    // The gallery a selection may be moved into: one that actually holds medias of its own, and not one in the trash - the very filter the media's own edit form offers on its category field (see GalleryMediaCrudController::configureFields), a media moved to either would disappear from every grid
-    private function moveTarget(int $id): ?GalleryCategory
+    // The gallery a selection may be moved into: an existing one, or one created on the spot under the title the toolbar's box carries, the select's "new gallery" entry being what asks for it
+    // Nothing is preselected in that select, so an empty value is the admin not having chosen yet rather than a malformed request, and both meet the same refusal - the flash is raised here and by createMoveTarget(), so the caller has only the redirect left to do
+    private function moveTarget(EntityManagerInterface $entityManager, Request $request): ?GalleryCategory
+    {
+        $posted = $request->request->getString('targetCategory');
+        if (self::MOVE_TARGET_NEW === $posted) {
+            return $this->createMoveTarget($entityManager, $request->request->getString('newCategoryTitle'));
+        }
+
+        $target = $this->existingMoveTarget((int) $posted);
+        if (null === $target) {
+            $this->addFlash('danger', $this->translator->trans('label.gallery_medias_move_refused', [], 'gallery'));
+        }
+
+        return $target;
+    }
+
+    // One that actually holds medias of its own, and not one in the trash - the very filter the media's own edit form offers on its category field (see GalleryMediaCrudController::configureFields), a media moved to either would disappear from every grid
+    private function existingMoveTarget(int $id): ?GalleryCategory
     {
         $target = $id > 0 ? $this->galleryCategoryRepository->find($id) : null;
 
         return $target instanceof GalleryCategory && !$target->isAutomatic() && !$target->isDeleted() ? $target : null;
+    }
+
+    // The gallery created on the spot, so filing photographs somewhere new doesn't mean leaving the screen, creating a category and coming back to a selection that is gone
+    // The slug is built from the title exactly as the category form builds it (see addSlugNormalizer), and a collision is refused rather than suffixed: a category's slug is its natural key (see GalleryCategory), and the admin is told the name is taken
+    // Persisted here and left to the caller's own flush, which is the one that writes the moved medias too - a creation going through while the move fails would leave an empty gallery behind
+    private function createMoveTarget(EntityManagerInterface $entityManager, string $title): ?GalleryCategory
+    {
+        $title = trim($title);
+        $slug = '' === $title ? '' : strtolower($this->slugger->slug($title)->toString());
+        if ('' === $slug) {
+            $this->addFlash('danger', $this->translator->trans('label.gallery_medias_move_refused', [], 'gallery'));
+
+            return null;
+        }
+
+        if ($this->galleryCategoryRepository->findOneBySlug($slug) instanceof GalleryCategory) {
+            $this->addFlash('danger', $this->translator->trans('label.gallery_medias_move_slug_taken', ['%slug%' => $slug], 'gallery'));
+
+            return null;
+        }
+
+        // Placed after the galleries already arranged rather than at rank 0, where a gallery created from the toolbar would jump to the head of the index
+        $ordered = $this->galleryCategoryRepository->findAllOrdered();
+        $last = end($ordered);
+
+        $target = new GalleryCategory()
+            ->setSlug($slug)
+            ->setTitle($title)
+            ->setPosition($last instanceof GalleryCategory ? $last->getPosition() + 1 : 0)
+        ;
+
+        $this->releaseCategoryUrl($entityManager, $target);
+        $entityManager->persist($target);
+
+        return $target;
     }
 
     // Hands the files of the checked medias back as one zip - their high resolution version, or the untouched originals kept at upload, the button pressed naming which (see GalleryMediaArchiver)
@@ -1157,9 +1235,9 @@ class GalleryCategoryCrudController extends AbstractCrudController
     {
         $ids = array_map(static fn (mixed $id): int => \is_scalar($id) ? (int) $id : 0, $request->request->all('mediaIds'));
 
-        // The automatic gallery holds none of the medias it shows, so the selection is kept to the very list its screen listed - a media that has since left the last days of additions is simply dropped, exactly as an id belonging to another category is below
+        // An automatic gallery holds none of the medias it shows, so the selection is kept to the very list its screen listed - a media that has since left that list is simply dropped, exactly as an id belonging to another category is below
         $medias = $category->isAutomatic()
-            ? new ArrayCollection($this->latestProvider->getMedias())
+            ? new ArrayCollection($this->automaticProvider->getMedias($category))
             : $category->getMedias();
 
         return $medias->filter(static fn (GalleryMedia $media): bool => \in_array($media->getId(), $ids, true)
@@ -1206,6 +1284,29 @@ class GalleryCategoryCrudController extends AbstractCrudController
         $entityManager->flush();
 
         return new JsonResponse(['saved' => true]);
+    }
+
+    /**
+     * Draws the qr code of the gallery's public page, shown on its edit screen (see gallery_category_edit.html.twig).
+     *
+     * Same shape as the one SiteBundle draws for a page: generated on the fly rather than stored, a code being nothing
+     * but its url and a stored one being a file to regenerate the day the slug changes.
+     *
+     * Built on 'site-url' and not on the current request, which is the back-office's - what is printed on a flyer has to
+     * be the address the public reaches, not the one an admin happens to be logged into.
+     */
+    #[AdminRoute('/{entityId}/qrcode')]
+    public function qrcode(AdminContext $context): Response
+    {
+        $this->denyAccessUnlessGranted($this->roleNeeded());
+
+        $category = $context->getEntity()->getInstance();
+        $url = rtrim((string) $this->configService->get('site-url'), '/')
+            . $this->generateUrl('gallery_category', ['category' => $category->getSlug()]);
+
+        $result = new Builder()->build(data: $url, size: 250, margin: 10);
+
+        return new Response($result->getString(), Response::HTTP_OK, ['Content-Type' => $result->getMimeType()]);
     }
 
     // Exports the checked categories (with their gallery and medias, real files bundled in the archive) as a downloadable zip, meant to be re-uploaded elsewhere via ConfigBundle's ContentImportController (see GalleryImportProvider) - restricted to ROLE_ADMIN, see configureActions()

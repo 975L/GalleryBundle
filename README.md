@@ -22,8 +22,8 @@ See it in action at [bundles.975l.com/pages/gallery-bundle](https://bundles.975l
 ## Contents
 
 - **Setup** — [requirements](#requirements) · [installation](#installation) · [configuration](#load-the-configuration) · [routes](#enable-routes) · [assets](#install-assets) · [theme](#install-the-theme)
-- **Using it** — [public routes](#public-routes) · [linking from a menu](#linking-a-gallery-from-a-menu) · [the automatic gallery](#the-automatic-gallery) · [renaming a category](#renaming-a-category) · [deleting a gallery](#deleting-a-gallery) · [uploading a batch](#uploading-a-batch) · [renaming a media](#renaming-a-media) · [a media's caption](#a-medias-caption) · [fields of your own](#fields-of-your-own) · [browsing and the lightbox](#browsing-and-the-lightbox) · [editing from the public pages](#editing-from-the-public-pages) · [blocks](#blocks-defined-by-this-bundle) · [category summary](#a-categorys-summary) · [share image](#the-image-a-shared-page-carries) · [category headings](#composing-a-categorys-heading) · [theme tokens](#theme) · [videos](#videos) · [trashing a selection](#trashing-a-selection-of-medias) · [credits / rights on a selection](#applying-credits-or-rights-to-a-selection) · [moving a selection](#moving-a-selection-to-another-gallery) · [downloading a selection](#downloading-a-selections-files) · [export / import categories](#export--import-categories) · [sitemap and health check](#sitemap-and-health-check) · [describing the gallery index](#describing-the-gallery-index) · [backup](#backup) · [what's new](#whats-new) · [guided projects](#guided-projects)
-- **Operating** — [likes on a photo](#likes-on-a-photo) · [bringing an existing gallery in](#bringing-an-existing-gallery-in) · [upload ceilings](#upload-ceilings) · [AI agent skills](#ai-agent-skills)
+- **Using it** — [public routes](#public-routes) · [linking from a menu](#linking-a-gallery-from-a-menu) · [the automatic galleries](#the-automatic-galleries) · [renaming a category](#renaming-a-category) · [deleting a gallery](#deleting-a-gallery) · [masking a gallery](#masking-a-gallery) · [selling prints](#selling-prints) · [uploading a batch](#uploading-a-batch) · [renaming a media](#renaming-a-media) · [a media's caption](#a-medias-caption) · [fields of your own](#fields-of-your-own) · [browsing and the lightbox](#browsing-and-the-lightbox) · [editing from the public pages](#editing-from-the-public-pages) · [blocks](#blocks-defined-by-this-bundle) · [category summary](#a-categorys-summary) · [share image](#the-image-a-shared-page-carries) · [category headings](#composing-a-categorys-heading) · [theme tokens](#theme) · [videos](#videos) · [trashing a selection](#trashing-a-selection-of-medias) · [credits / rights on a selection](#applying-credits-or-rights-to-a-selection) · [moving a selection](#moving-a-selection-to-another-gallery) · [downloading a selection](#downloading-a-selections-files) · [export / import categories](#export--import-categories) · [sitemap and health check](#sitemap-and-health-check) · [describing the gallery index](#describing-the-gallery-index) · [backup](#backup) · [what's new](#whats-new) · [guided projects](#guided-projects)
+- **Operating** — [likes on a photo](#likes-on-a-photo) · [seeding a demo gallery](#seeding-a-demo-gallery) · [bringing an existing gallery in](#bringing-an-existing-gallery-in) · [upload ceilings](#upload-ceilings) · [AI agent skills](#ai-agent-skills)
 
 ## Features
 
@@ -34,7 +34,7 @@ See it in action at [bundles.975l.com/pages/gallery-bundle](https://bundles.975l
 - One EasyAdmin menu entry ("Gallery", opening the categories, with their media count); a category's medias are listed under its own edit form, each thumbnail opening the media it stands for, and medias are added from the category itself.
 - Each media in that list carries a checkbox, so a selection of them goes to the trash in one go instead of one edit screen at a time (see [trashing a selection](#trashing-a-selection-of-medias)), or given the same credits and rights at once (see [credits / rights on a selection](#applying-credits-or-rights-to-a-selection)), or moved into another gallery with everything they carry (see [moving a selection](#moving-a-selection-to-another-gallery)), or their files handed back as one zip (see [downloading a selection](#downloading-a-selections-files)).
 - A catch-all "Non classé" category is created lazily so an imported media always has one, even without a real one to attach it to.
-- One category of the site can be turned into **the gallery of the last additions**: it holds no media of its own and shows what every other category received on its last days of upload, whatever gallery each photo landed in - as a public page, as a block, and as a back-office screen where a whole upload session is credited, downloaded or trashed in one go (see [the automatic gallery](#the-automatic-gallery)).
+- One category of the site can be turned into **the gallery of the last additions**: it holds no media of its own and shows what every other category received on its last days of upload, whatever gallery each photo landed in - as a public page, as a block, and as a back-office screen where a whole upload session is credited, downloaded or trashed in one go (see [the automatic galleries](#the-automatic-galleries)).
 - A public front-office viewer (index → category → media), browsed entirely in the stored (medium) resolution, with circular previous/next navigation whose neighbouring images are preloaded in the background so switching medias never shows a blank image while it loads. The high resolution opens in a lightbox over the image, fetched only when the visitor asks for it (see [browsing and the lightbox](#browsing-and-the-lightbox)).
 - Two block kinds contributed to UiBundle, so a gallery can be shown on any page composed in the back office instead of only under its own routes (see [blocks](#blocks-defined-by-this-bundle)).
 - A category owns UiBundle blocks of its own, giving it an editorial heading above its grid (see [category headings](#composing-a-categorys-heading)).
@@ -48,6 +48,10 @@ See it in action at [bundles.975l.com/pages/gallery-bundle](https://bundles.975l
 - Categories can be exported/imported as a zip (heading blocks, medias and files bundled in), plugging into ConfigBundle's **Export sync (everything)** dashboard shortcut and **Import content** screen.
 - The two upload roots declared to the backup, via ConfigBundle's `BackupPathProviderInterface`, mirrored offsite rather than tarred (see [backup](#backup))
 - Six replayable guided projects contributed to the dashboard, via ConfigBundle's `GuidedProjectProviderInterface`, walking a gallery's creation, its medias' arrangement, a media's own screen, the trash and the way back out of it, the files handed back as an archive, and the gallery of the latest additions (see [guided projects](#guided-projects))
+- Photographs can be **sold as prints**, behind one setting: a catalogue of sizes and prices, an order plugged into PaymentBundle's basket, and a lab that prints and ships to the customer directly - nothing transiting through the shopkeeper. A photograph can be offered as a limited edition, the bundle holding the register so the last copy cannot be sold twice, and drawing the certificate of authenticity to sign, with a qr code to its public verification page.
+- A photograph can be **hidden** from every public page without being deleted, and hiding it or putting it on sale applies to a whole selection at once.
+- A whole gallery can be **hidden** the same way: it leaves the index, the blocks, the menus and the sitemap, its photographs leave the automatic galleries with it, and everything stays in the back office to be shown again (see [masking a gallery](#masking-a-gallery)).
+- Each gallery carries its own **QR code** on its edit screen, built on `site-url`, to print on a card, a flyer or an exhibition label.
 - A skill written for the coding agents of the sites installing this bundle, shipped in the package and read straight from `vendor/` (see [AI agent skills](#ai-agent-skills))
 
 ---
@@ -61,6 +65,8 @@ See it in action at [bundles.975l.com/pages/gallery-bundle](https://bundles.975l
 - EasyAdmin
 - VichUploader Bundle
 - `symfony/expression-language`, which the public routes' condition is evaluated with (see [public routes](#public-routes)) — pulled in by Composer
+- [c975L/PaymentBundle](https://github.com/975L/PaymentBundle) in `^6.2` — the one basket a print is bought through. Required rather than suggested so the print shop is there to be switched on, instead of being a feature nobody knows exists
+- `endroid/qr-code` in `^6` — the qr code of a certificate and of a gallery
 
 `GalleryMedia::$user` is typed against `c975L\ConfigBundle\Contract\UserInterface`: your `App\Entity\User` must implement it. The scaffolded `User` already does; an older one adds the `implements` itself, with no migration and no configuration change.
 
@@ -140,15 +146,17 @@ Copies `assets/styles/themes/gallery.css` into the app, where it is owned from t
 | `gallery_index` | `/gallery` | Gallery index, one thumbnail per category |
 | `gallery_category` | `/gallery/{category}` | Category grid, photos and videos alike |
 | `gallery_media` | `/gallery/{category}/{slug}` | Media: photo in medium resolution, or video embed |
+| `gallery_print_certificate` | `/certificate/{certificate}` | Public check page of one numbered print (see [selling prints](#selling-prints)) |
+| `gallery_print_file` | `/gallery-print-file/{copy}` | The print file, fetched by the lab through a signed url |
 
 The first segment is the **Gallery url prefix** setting (`gallery-route-prefix`, group **Gallery** in
 **Configuration**), so a site serves these routes in its own language — `galerie`, `fotos` — renamed from
 the dashboard, with no yaml and **no cache to clear**: the change applies on the very next request.
 
-A route path is compiled into the router's cache, so the prefix can't *be* the path: the three routes are
-declared as `/{gallery_prefix}/…`, carrying it as a route parameter instead, and each of the three
-routes carries a condition asking `Routing\GalleryRoutePrefix` whether the segment it was handed is the
-configured one. Any other value simply doesn't match, and the router carries on with the rest of the
+The first three are the ones the prefix applies to. A route path is compiled into the router's cache, so
+the prefix can't *be* the path: they are declared as `/{gallery_prefix}/…`, carrying it as a route
+parameter instead, and each of the three carries a condition asking `Routing\GalleryRoutePrefix` whether
+the segment it was handed is the configured one. Any other value simply doesn't match, and the router carries on with the rest of the
 site's routes — without that check, `/{gallery_prefix}/{category}` would swallow every two-segment url of
 the site. Generating a url is the mirror image: `Listener\GalleryRoutePrefixListener` puts the configured
 prefix in the router's request context, which is where the generator takes a route parameter it wasn't
@@ -160,6 +168,9 @@ the category route at the site root — as does a prefix not configured at all, 
 always match what the router serves; it does so directly rather than through the generator, the sitemap
 being written from the command line where no request has filled the context. Route *names* never change,
 whatever the prefix.
+
+The two print routes are deliberately **outside** the prefix: `gallery_print_certificate` is printed on
+paper and has to outlive a rename, and `gallery_print_file` is never read by a visitor.
 
 **Renaming the prefix breaks the previous urls**, which then 404. If they were indexed, declare a redirect
 — ConfigBundle's **Redirections** screen takes one.
@@ -183,14 +194,14 @@ items from the rendered menu, as it does for any target that no longer resolves.
 The item's own **label** field overrides that title, for a category whose name is too long to sit in a
 navbar.
 
-### The automatic gallery
+### The automatic galleries
 
 **The gallery of the last additions is a gallery of its own, and nobody creates it.** A photo library is
 arranged by subject - Animaux, Arbres, Fleurs - so an upload session is dispatched across a dozen
 categories at once, and nothing on the site says a single photo has arrived. **Derniers ajouts** is the one
 screen that shows them all: `GalleryCategoryRepository::findOrCreateAutomatic()` writes it the first time
 the galleries are listed - the back-office listing, the public index or a categories block, whichever comes
-first - and it is a normal category from then on, flagged `GalleryCategory::$automatic`. Rename it,
+first - and it is a normal category from then on, flagged `GalleryCategory::$automaticKind`. Rename it,
 describe it, give it a heading, move it up or down the index: it takes everything a gallery takes. It is
 never an option carried by one of your own galleries, which ticking a box on *Animaux* would turn into
 something it isn't.
@@ -239,6 +250,19 @@ carries: `findOrCreateAutomatic()` leaves a trashed one exactly where it was put
 "Non classé" is lifted back out. Restore it and it is back, with the additions of the moment. An imported
 archive carrying the flag only takes it on a site that holds no such gallery at all, trash included, so an
 import never leaves two of them behind.
+
+**It is one kind of automatic gallery, not the only one.** A site selling prints gets a second one, the
+photographs on offer (`GalleryCategory::AUTOMATIC_PRINTABLE`, see [selling prints](#selling-prints)),
+which behaves in every way described above and simply gathers on another rule. Everything a category
+needs around a list it doesn't own - being written the first time it is looked for, taking its place on
+the index, being handed to a tile, giving a media its neighbours - is `Service\GalleryAutomaticProvider`'s,
+written once for every kind. Each kind only answers what it gathers, through
+`Contract\AutomaticGalleryInterface`: `getKind()`, `isAvailable()` and `getMedias()`. A site gathering
+its photographs on a rule of its own - a tag, a year, a rating - writes that one class and has a gallery
+of it on the index, in the menus and in the sitemap, with nothing to tag and no screen to teach.
+
+A kind answering `false` to `isAvailable()` is never written at all, which is how the prints gallery
+stays absent from a site that doesn't sell any, rather than sitting empty on its index.
 
 ### Renaming a category
 
@@ -300,6 +324,121 @@ Restoring a category releases any such row left under its url by an earlier perm
 creating a category or uploading a media under a freed slug does (`GalleryUrlRedirector::release()`) — the
 redirect is resolved before the router, so the page would otherwise exist while its url kept saying it
 doesn't. A row that redirects somewhere is never touched.
+
+### Masking a gallery
+
+**Masking is the answer to a gallery worth keeping and not worth showing**, where the trash is the answer
+to one being removed. The switch sits on the category's edit form and on the listing itself, where it
+saves on the spot (`GalleryCategory::$hidden`, the same flag a photograph carries).
+
+A masked gallery leaves **every public page at once**: the index, the gallery blocks, the sitemap and the
+menu targets, all of them reading `GalleryCategoryRepository::findAllOrdered()`, which drops it exactly as
+it drops the trash. Its photographs leave the automatic galleries with it — the last additions and the
+prints — and are no longer sold as prints. Its url answers **404**, not the trash's 410: masking is
+reversible, and nothing a change of mind would have to take back should be told to a crawler. Its medias'
+pages answer 404 with it, being resolved through their category.
+
+It stays **whole in the back office**, listed like any other gallery: it is filled, arranged, credited and
+trashed from its own edit screen as usual, which is what lets a gallery be prepared long before it is
+shown. Masking it marks none of its medias, exactly as trashing it marks none of them, so showing it again
+gives back precisely what was showing before.
+
+Two consequences worth knowing: a masked gallery is no longer offered as a **move target** for a selection
+of medias, nor in the **gallery block's picker** or a **menu's** — a public page must not be composed on a
+url that answers 404. A block or a menu item already pointing at it simply renders nothing, and finds it
+again the day it is shown. The export/import carries the flag both ways: a gallery archived masked comes
+back masked, a sync mirroring the source rather than publishing what it had taken down.
+
+### Selling prints
+
+**A photograph can be sold as a print, and the lab ships it to the customer directly** — nothing transits
+through the shopkeeper, who never packs a tube. The shop is off out of the box: switch **Prints on sale**
+(`gallery-print-enabled`, group **Gallery** in **Configuration**) on and two screens appear in the
+dashboard, **Print formats** and **Print orders**.
+
+| Entry | Default | What it decides |
+| --- | --- | --- |
+| `gallery-print-enabled` | `false` | The shop's master switch. Off, the two screens and the sale block are gone |
+| `gallery-print-provider` | `prodigi` | Which lab fulfils the orders. `manual` to fulfil them by hand |
+| `gallery-print-api-key` | — | The lab's api key, held sensitive and restricted |
+| `gallery-print-sandbox` | `true` | The lab's test mode, toggled from a dashboard tile rather than from this screen |
+| `gallery-print-signature` | — | The signature laid on print files, a path under `public/`. Empty leaves prints unsigned |
+| `gallery-printable-max` | `200` | How many photographs the gallery of the prints stops at |
+
+**The switch is deliberately not inferred from the api key**: a key is pasted to try the lab's sandbox long
+before anything should be on sale, and inferring would turn developing into publishing.
+
+#### The catalogue, and what a photograph is actually offered at
+
+**Print formats** is the catalogue: a label, a size in centimetres, its dpi, its price and vat, and the
+**sku the lab knows it by** — distinct from the slug, and the only one of the two ever sent to a lab, so
+renaming a format in the back office never renames it at the printer.
+
+A photograph is **not offered at every size in the catalogue**. `Service\GalleryPrintService::getOffers()`
+keeps the formats whose proportions it matches (±3 %) and whose pixels it has, at the format's own dpi.
+Offering every size and cropping the difference would mean selling a print of something other than the
+photograph, and deciding for the photographer where the frame falls: the catalogue proposes, the file
+disposes.
+
+**Prints are made from the kept original**, never from the web derivative — so a photograph is only ever
+sellable if it was uploaded with **Keep the original file** ticked (see [uploading a
+batch](#uploading-a-batch)). A gallery uploaded without it has no file with the pixels a print needs, and
+simply offers nothing.
+
+#### Open editions and limited ones
+
+`GalleryMedia` carries **Sold as a print** (`printable`) and an optional **edition size**, both appliable
+to a whole selection from the medias toolbar. Left empty, the photograph is an open edition and sells
+without a count.
+
+Filling it announces a limited edition, and the register is written on the spot: one row per copy
+(`GalleryPrintCopy`, through `GalleryPrintCopyRepository::openEdition()`). **The number can't be changed
+afterwards** — `GalleryMediaCrudController::settleEdition()` refuses it, raising an announced edition of
+10 to one of 50 being a forgery against every certificate already signed. Selling a copy claims the lowest
+free row with a single conditional `UPDATE`, so two customers checking out on the last copy cannot both
+win it.
+
+#### The certificate of authenticity
+
+Every copy of a limited edition gets a **certificate as a pdf**, one page per copy, drawn from the orders
+screen to be signed by hand and posted with the print. It carries a **qr code** to its own public page,
+`/certificate/{certificate}` (route `gallery_print_certificate`), where anybody holding the print checks
+what the register says — and never who bought it: a certificate proves a print, it does not publish its
+owner. That route sits outside the renamable gallery prefix, being printed on paper and having to outlive
+a rename.
+
+**What a certificate states is frozen onto the copy at the sale** (`Model\PrintCopySnapshot`: the format,
+its label, its sku, the price, the work's title, the credits, the issuing site). Nothing is read live when
+the sheet is drawn, so a retitled photograph, a renamed format or a renamed site cannot contradict a sheet
+already signed and posted. A photograph deleted for good since leaves the register standing, the sheet
+then naming the rank alone.
+
+#### From the basket to the lab
+
+The sale plugs into [PaymentBundle](https://github.com/975L/PaymentBundle)'s one basket as a
+`BasketItemProviderInterface` of kind `gallery_print`. Once paid:
+
+- An **open edition** goes straight to the lab, over Messenger, away from the request that paid for it.
+- A **limited edition** stops and waits: two e-mails go out — the buyer's, naming the numbers they bought,
+  and the admin's *sign these* — and the order leaves for the lab only when the admin releases it from the
+  orders screen, certificates printed and signed.
+
+An order a lab refuses is left **failed with the reason on the row**, not retried: the customer has paid,
+so what matters is that a human sees why it didn't leave. A lab that refused a file would only refuse it
+again. `ManualFulfilment` throws on purpose for the same reason — the order stays pending in the back
+office instead of claiming it was sent.
+
+**The print file is composed from the untouched original** and the signature restamped at print
+resolution (`Service\GalleryPrintFileBuilder`) — a web-sized signature blown up to 60 cm is a smear. The
+lab fetches it through a signed url expiring at seven days (route `gallery_print_file`); an unsigned
+request gets 404 rather than 403, an url nobody signed naming nothing worth confirming exists.
+
+#### A lab of your own
+
+A lab is a `Contract\PrintFulfilmentInterface`. Write the class, and there is nothing to tag: every
+implementation is collected through `gallery.print_fulfilment` and picked by name from
+`gallery-print-provider`. `Service\Fulfilment\ProdigiFulfilment` ships, `ManualFulfilment` is the fallback
+for a site printing at home or at the shop on the corner.
 
 ### Uploading a batch
 
@@ -868,6 +1007,13 @@ The same toolbar carries a **gallery picker**, an optional **title root** box an
 button, posting to `GalleryCategoryCrudController::moveMedias()`. The photographs of "Voitures" that turn
 out to be Volvos are checked and filed into "Volvo" in one go, instead of one edit screen at a time.
 
+The picker opens on no gallery at all and the button stays out of reach until one is chosen, so a selection
+is never sent to whichever gallery happened to stand first. Its last entry, **New gallery**, creates the
+arrival gallery on the spot under the name typed beside it: "Volvo" doesn't have to exist before its
+photographs are gathered, and the selection isn't lost to a detour through the gallery form. The name is
+turned into the gallery's url exactly as the gallery form turns it, and one already taken is refused rather
+than suffixed — a gallery's slug is its natural key.
+
 Everything the medias carry follows them, `GalleryMediaMover` being the single place both ways of moving a
 media go through — this selection, and the category field of a media's own edit form:
 
@@ -1156,6 +1302,24 @@ everything under it, and from the medias a reimport replaces alike — never whe
 photo coming back having to find its likes where it left them.
 
 ---
+
+## Seeding a demo gallery
+
+`Service\GallerySampleCatalog` holds a made-up gallery once as plain data — three categories of four named
+photographs — and two consumers read it: `Service\GalleryShowcaseProvider` builds the arrays the block showcase
+renders, `Service\GalleryDemoFixtureProvider` (UiBundle's `DemoFixtureProviderInterface`) hands the lot over to be
+persisted, filling a demo site's gallery with something worth looking at — loading it being that site's own
+business, this bundle shipping no command that writes to a database. Enriching the
+catalog therefore shows up in both. Everything a visitor reads is a key of the `gallery` domain, so a demo site
+seeded in Spanish reads as a Spanish gallery.
+
+The photographs come from what the site declares through UiBundle's `PlaceholderMediaProviderInterface`, rotated
+over the catalog and taken **as a temporary copy**: an upload moves the file it is handed, and the placeholders
+belong to the whole site. A site declaring none is seeded with nothing at all rather than with empty categories —
+a gallery is its photographs.
+
+Only the categories are yielded: their medias follow through the cascade, files included, so a demo site taking a
+category back has VichUploader's removal listener take the stored files off the disk with it.
 
 ## Bringing an existing gallery in
 

@@ -25,11 +25,18 @@ class GalleryMediaRepository extends ServiceEntityRepository
         parent::__construct($registry, GalleryMedia::class);
     }
 
-    // What the public grid lists, the trash left out of it
+    // What the back-office grid lists, the trash left out of it - a hidden media stays in it, an admin having to see what he has masked (findVisibleByCategory() below is what the public reads)
     /** @return GalleryMedia[] */
     public function findByCategory(GalleryCategory $category): array
     {
         return $this->findBy(['category' => $category, 'isDeleted' => false], ['position' => 'ASC']);
+    }
+
+    // The same list, hidden medias left out too - what every public read asks for, the back-office grid keeping findByCategory() above so an admin still sees what he has masked
+    /** @return list<GalleryMedia> */
+    public function findVisibleByCategory(GalleryCategory $category): array
+    {
+        return $this->visibleMediasOf([$category]);
     }
 
     // The same list for several categories at once, grouped by category id - what GalleryCategoryRepository hands to the categories left without a cover, so a page listing them costs one query rather than one per category
@@ -63,6 +70,8 @@ class GalleryMediaRepository extends ServiceEntityRepository
         return $this->createQueryBuilder('m')
             ->andWhere('m.category IN (:categories)')
             ->andWhere('m.isDeleted = false')
+            // A hidden media is off every public page while staying whole in the back-office - the trash is where what is being removed goes, this is where what is kept and not shown stays
+            ->andWhere('m.hidden = false')
             ->setParameter('categories', $categories)
             ->orderBy('m.position', 'ASC')
             ->getQuery()
@@ -113,7 +122,7 @@ class GalleryMediaRepository extends ServiceEntityRepository
     }
 
     // The most recently added medias, from a date on or from the whole table, most recent first
-    // A trashed category's medias are left out as its own trashed medias are: they are off the site, and an addition is only an addition to something that shows. So are the medias of the automatic category itself, which a category flagged after it was filled would otherwise feed itself with
+    // A trashed category's medias are left out as its own trashed medias are: they are off the site, and an addition is only an addition to something that shows. A masked category's are left out for the same reason (see GalleryCategory::$hidden), a gallery taken off the site taking its photographs with it. So are the medias of the automatic category itself, which a category flagged after it was filled would otherwise feed itself with
     /** @return list<GalleryMedia> */
     protected function latestMedias(?\DateTimeImmutable $since, int $limit): array
     {
@@ -121,8 +130,10 @@ class GalleryMediaRepository extends ServiceEntityRepository
             ->innerJoin('m.category', 'c')
             ->addSelect('c')
             ->where('m.isDeleted = false')
+            ->andWhere('m.hidden = false')
             ->andWhere('c.isDeleted = false')
-            ->andWhere('c.automatic = false')
+            ->andWhere('c.hidden = false')
+            ->andWhere('c.automaticKind IS NULL')
             ->orderBy('m.createdAt', 'DESC')
             ->addOrderBy('m.id', 'DESC')
             ->setMaxResults($limit)
@@ -135,8 +146,37 @@ class GalleryMediaRepository extends ServiceEntityRepository
         return $qb->getQuery()->getResult();
     }
 
+    // The photographs on sale as prints, whatever category they landed in - what the automatic gallery of the prints shows (see GalleryPrintableProvider)
+    // Read off the flag alone and never off GalleryPrintService::isPrintable(): that one opens the file to count its pixels, which on a page listing the galleries would be one getimagesize() per photograph. A flagged photograph whose file is too small for any format shows here and is simply not offered for sale on its own page, which is the answer a visitor can act on
+    /** @return list<GalleryMedia> */
+    public function findPrintable(int $max): array
+    {
+        if ($max < 1) {
+            return [];
+        }
+
+        return $this->createQueryBuilder('m')
+            ->innerJoin('m.category', 'c')
+            ->addSelect('c')
+            ->where('m.isDeleted = false')
+            ->andWhere('m.hidden = false')
+            ->andWhere('m.printable = true')
+            ->andWhere('m.mediaType = :image')
+            ->andWhere('c.isDeleted = false')
+            ->andWhere('c.hidden = false')
+            ->andWhere('c.automaticKind IS NULL')
+            ->setParameter('image', GalleryMedia::MEDIA_TYPE_IMAGE)
+            ->orderBy('m.position', 'ASC')
+            ->addOrderBy('m.createdAt', 'DESC')
+            ->addOrderBy('m.id', 'DESC')
+            ->setMaxResults($max)
+            ->getQuery()
+            ->getResult()
+        ;
+    }
+
     // What the public media page resolves on - the category is part of the match, a slug only being unique within it (see GalleryMediaSlugger)
-    // Unfiltered on purpose, like GalleryCategoryRepository::findOneBySlug(): the page answers 410 for a trashed media, which it can only do holding the row
+    // Unfiltered on purpose, like GalleryCategoryRepository::findOneBySlug(): the page answers 410 for a trashed media, which it can only do holding the row. The same goes for a hidden one, which the controller answers 404 for
     public function findOneBySlugInCategory(GalleryCategory $category, string $slug): ?GalleryMedia
     {
         return $this->findOneBy(['category' => $category, 'slug' => $slug]);
@@ -159,6 +199,7 @@ class GalleryMediaRepository extends ServiceEntityRepository
             ->where('p.category = :category')
             ->andWhere('p != :media')
             ->andWhere('p.isDeleted = false')
+            ->andWhere('p.hidden = false')
             ->setParameter('category', $category)
             ->setParameter('media', $media)
             ->setParameter('position', $media->getPosition())
@@ -182,6 +223,7 @@ class GalleryMediaRepository extends ServiceEntityRepository
         $qb = $this->createQueryBuilder('p')
             ->where('p.category = :category')
             ->andWhere('p.isDeleted = false')
+            ->andWhere('p.hidden = false')
             ->setParameter('category', $category)
             ->setMaxResults(1)
         ;

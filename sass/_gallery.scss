@@ -130,6 +130,7 @@
 
 // The breadcrumb opening every page of the viewer - quieter than a row of buttons, the medias being the point of the page, but read at a glance from the back of a room, which a footnote size would not be
 .gallery-breadcrumb {
+    margin-block-start: var(--gallery-breadcrumb-margin-block-start);
     font-family: var(--font-family-body);
     font-size: var(--gallery-breadcrumb-font-size);
     color: var(--gallery-breadcrumb-color);
@@ -407,4 +408,9 @@
 // Same reason for a video of the site's own, whose width is only known once the browser has read the file: the container is shrunk to what the player comes out as rather than given a cap of its own, and the arrows come back against it
 .gallery-media-container:has(.gallery-video--video) {
     width: fit-content;
+}
+
+// The line naming what the check page states, above the work's title - the only rule the certificate needs on the site, the sheet itself being drawn by a pdf engine that reads no stylesheet of ours (see templates/print/certificate.html.twig)
+.gallery-certificate-label {
+    letter-spacing: var(--gallery-certificate-label-letter-spacing);
 }

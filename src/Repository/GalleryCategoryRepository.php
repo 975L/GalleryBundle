@@ -23,9 +23,16 @@ class GalleryCategoryRepository extends ServiceEntityRepository implements Reset
 {
     private const string UNCATEGORIZED_SLUG = 'non-classe';
 
-    // The url of the gallery of the last additions, posed once at creation and an admin's to rename afterwards - a rename records its redirect like any other category's (see GalleryCategoryCrudController::updateEntity)
-    // English, as everything this bundle names itself: it is a value shipped by a package, where the title next to it is translated because it is read by whoever visits the site
-    private const string AUTOMATIC_SLUG = 'latest';
+    // The url and the title key of each automatic gallery, posed once at creation and an admin's to rename afterwards - a rename records its redirect like any other category's (see GalleryCategoryCrudController::updateEntity)
+    // Slugs in English, as everything this bundle names itself: they are values shipped by a package, where the titles next to them are translated because they are read by whoever visits the site
+    private const array AUTOMATIC_SLUGS = [
+        GalleryCategory::AUTOMATIC_LATEST => 'latest',
+        GalleryCategory::AUTOMATIC_PRINTABLE => 'prints',
+    ];
+    private const array AUTOMATIC_TITLES = [
+        GalleryCategory::AUTOMATIC_LATEST => 'label.gallery_latest_title',
+        GalleryCategory::AUTOMATIC_PRINTABLE => 'label.gallery_printable_title',
+    ];
 
     // The ordered list, read once per request - see findAllOrdered()
     /** @var ?list<GalleryCategory> */
@@ -46,6 +53,7 @@ class GalleryCategoryRepository extends ServiceEntityRepository implements Reset
 
     // What the front-office index and the blocks list, in the order the admin arranged them. coverMedia is joined rather than left lazy: every caller renders the category's thumbnail from it (see components/Gallery/Category.html.twig), so each category would otherwise initialize its proxy with a query of its own - one per category on a page listing them all
     // The trash filter sits here rather than at each of the six callers (index, blocks, block form, sitemap, link picker, showcase): they all want the same thing, and one of them forgetting it would put a trashed category back on the site
+    // A hidden gallery is dropped for the very same reason (see GalleryCategory::$hidden), the back-office callers included: a masked gallery offered as a move target, in a block's picker or in a menu's would be a public page composed on something that answers 404. An admin reaches it from the category listing, which lists it like any other (see GalleryCategoryCrudController::createIndexQueryBuilder)
     // Memoized for the request: the six callers are spread over services that know nothing of each other (the blocks extension, the menu link provider, the sitemap...), and a page carrying a gallery block under a menu pointing at a category went through the very same query once for each of them
     /** @return list<GalleryCategory> */
     public function findAllOrdered(): array
@@ -65,6 +73,7 @@ class GalleryCategoryRepository extends ServiceEntityRepository implements Reset
             ->leftJoin('c.coverMedia', 'm')
             ->addSelect('m')
             ->andWhere('c.isDeleted = false')
+            ->andWhere('c.hidden = false')
             ->orderBy('c.position', 'ASC')
             ->getQuery()
             ->getResult()
@@ -77,31 +86,33 @@ class GalleryCategoryRepository extends ServiceEntityRepository implements Reset
         $this->ordered = null;
     }
 
-    // What the breadcrumb counts next to its home label - findAllOrdered()'s own count, without reading the rows, so the trash never shows up in "79 galeries"
+    // What the breadcrumb counts next to its home label - findAllOrdered()'s own count, without reading the rows, so neither the trash nor a masked gallery shows up in "79 galeries"
     public function countVisible(): int
     {
         return (int) $this->createQueryBuilder('c')
             ->select('COUNT(c.id)')
             ->andWhere('c.isDeleted = false')
+            ->andWhere('c.hidden = false')
             ->getQuery()
             ->getSingleScalarResult()
         ;
     }
 
-    // The gallery of the last additions, which nobody has to create: it is a gallery of its own, not an option carried by one of the site's - so it is written the first time the galleries are listed and is a normal category from then on, renamed, described, arranged and given a heading like any other (see GalleryLatestProvider for what it shows)
+    // An automatic gallery of the asked kind, which nobody has to create: it is a gallery of its own, not an option carried by one of the site's - so it is written the first time the galleries are listed and is a normal category from then on, renamed, described, arranged and given a heading like any other (see GalleryAutomaticProvider for what each kind shows)
     // Unlike the catch-all below, one left in the trash is left there: it is the only way to say "this site does not want that gallery", and lifting it back out would give an admin no way at all to be rid of it
-    public function findOrCreateAutomatic(): GalleryCategory
+    public function findOrCreateAutomatic(string $kind): GalleryCategory
     {
-        $category = $this->findOneBy(['automatic' => true]);
+        $category = $this->findOneBy(['automaticKind' => $kind]);
         if (null !== $category) {
             return $category;
         }
 
         // Translated at creation time only - like any other category it's a normal DB row afterwards, editable/renamable later from the Management CRUD
+        // A kind the bundle doesn't ship names its own url and heading (see AutomaticGalleryInterface): the constants above only hold the two it does, and a site's own kind is a perfectly good slug and a title an admin renames on the spot
         $category = new GalleryCategory()
-            ->setSlug($this->freeSlug(self::AUTOMATIC_SLUG))
-            ->setTitle($this->translator->trans('label.gallery_latest_title', [], 'gallery'))
-            ->setAutomatic(true)
+            ->setSlug($this->freeSlug(self::AUTOMATIC_SLUGS[$kind] ?? $kind))
+            ->setTitle($this->translator->trans(self::AUTOMATIC_TITLES[$kind] ?? $kind, [], 'gallery'))
+            ->setAutomaticKind($kind)
         ;
 
         $em = $this->getEntityManager();
@@ -115,6 +126,7 @@ class GalleryCategoryRepository extends ServiceEntityRepository implements Reset
     public function findOrCreateUncategorized(): GalleryCategory
     {
         // Read back out of the trash too, and restored on the way: the catch-all is the fallback an upload lands on, so it has to be a category that shows. GalleryCategoryCrudController refuses to trash it in the first place, this only covers the row being flagged some other way (a fixture, an import, a hand-written query)
+        // Masked is left as it is found, unlike the trash: hiding the catch-all is an admin saying "the unfiled photographs are not for the public yet", which is an answer, where a trashed fallback is a category an upload would land in and never come out of
         $category = $this->findOneBy(['uncategorized' => true]);
         if (null !== $category) {
             if ($category->isDeleted()) {

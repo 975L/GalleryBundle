@@ -1,0 +1,6 @@
+{# <twig:c975LGallery:Gallery:TestMode/> - speaks for the lab only. The rehearsal it announces is the printing side, not the charging one: PaymentBundle's own banner says whether the card is debited for real, and the two switches are independent (see GalleryShortcutProvider) #}
+{% if config('gallery-print-enabled')|to_bool and config('gallery-print-sandbox')|to_bool %}
+    <twig:c975LUi:Alert:Alert type="warning">
+        {{ 'label.print_test_mode'|trans({}, 'gallery') }}
+    </twig:c975LUi:Alert:Alert>
+{% endif %}

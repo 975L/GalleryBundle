@@ -15,7 +15,7 @@ use c975L\GalleryBundle\Entity\GalleryMedia;
 use c975L\GalleryBundle\Repository\GalleryCategoryRepository;
 use c975L\GalleryBundle\Repository\GalleryMediaRepository;
 use c975L\GalleryBundle\Routing\GalleryRoutePrefix;
-use c975L\GalleryBundle\Service\GalleryLatestProvider;
+use c975L\GalleryBundle\Service\GalleryAutomaticProvider;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -32,7 +32,7 @@ class GalleryController extends AbstractController
     public function __construct(
         private readonly GalleryCategoryRepository $categoryRepository,
         private readonly GalleryMediaRepository $mediaRepository,
-        private readonly GalleryLatestProvider $latestProvider,
+        private readonly GalleryAutomaticProvider $automaticProvider,
     ) {
     }
 
@@ -40,8 +40,8 @@ class GalleryController extends AbstractController
     #[Route('/{gallery_prefix}', name: 'gallery_index', methods: ['GET'], condition: self::PREFIX_CONDITION)]
     public function index(): Response
     {
-        // The gallery of the last additions is among them, written on the first render that misses it and handed the list it shows - it holds no media of its own, so its tile and its count come from there (see GalleryLatestProvider)
-        $categories = $this->latestProvider->prepare($this->categoryRepository->findAllOrdered());
+        // The automatic galleries are among them, written on the first render that misses them and handed the lists they show - they hold no media of their own, so their tile and their count come from there (see GalleryAutomaticProvider)
+        $categories = $this->automaticProvider->prepare($this->categoryRepository->findAllOrdered());
 
         // The breadcrumb counts the categories next to its home label, as it counts the medias next to a category - taken from the list already read, so no query of its own
         return $this->render('@c975LGallery/gallery/index.html.twig', [
@@ -56,14 +56,14 @@ class GalleryController extends AbstractController
     {
         $category = $this->resolveCategory($category);
 
-        // The automatic gallery is rendered by this very template, from this very route: it is a category like the others, only its list comes from the last days of additions instead of from its own relation (see GalleryLatestProvider)
-        $this->latestProvider->hydrate([$category]);
+        // An automatic gallery is rendered by this very template, from this very route: it is a category like the others, only its list is gathered instead of being read from a relation it has none of (see GalleryAutomaticProvider)
+        $this->automaticProvider->hydrate([$category]);
 
         // The breadcrumb's home link carries the same count as on the index, counted here rather than listed, the page having no use for the categories themselves
         return $this->render('@c975LGallery/gallery/category.html.twig', [
             'category' => $category,
             'categoriesCount' => $this->categoryRepository->countVisible(),
-            'medias' => $category->isAutomatic() ? $this->latestProvider->getMedias() : $this->mediaRepository->findByCategory($category),
+            'medias' => $this->automaticProvider->getMedias($category),
         ]);
     }
 
@@ -74,14 +74,14 @@ class GalleryController extends AbstractController
     {
         [$category, $media] = $this->resolveCategoryAndMedia($category, $slug);
 
-        // Which gallery the visitor is walking through, when it isn't the one holding the photo: a media opened from the last additions belongs to a category of its own, and its neighbours there are the ones just added, not the ones filed next to it (see GalleryLatestProvider)
+        // Which gallery the visitor is walking through, when it isn't the one holding the photo: a media opened from the last additions belongs to a category of its own, and its neighbours there are the ones just added, not the ones filed next to it (see GalleryAutomaticProvider)
         // The url stays the media's own, the same one an image search shows: where the visitor came from is a parameter over it, not a second path to the same photo
         $browsedFrom = $this->browsedFrom($request);
-        $previousNext = $browsedFrom instanceof GalleryCategory ? $this->latestProvider->findPreviousAndNext($media) : null;
+        $previousNext = $browsedFrom instanceof GalleryCategory ? $this->automaticProvider->findPreviousAndNext($media, $browsedFrom) : null;
 
         return $this->render('@c975LGallery/gallery/media.html.twig', [
             'category' => $category,
-            // Null again when the media has since left the last additions: the page is then browsed as its own category's, which is where it will still be tomorrow
+            // Null again when the media has since left the gallery it was opened from: the page is then browsed as its own category's, which is where it will still be tomorrow
             'browsedFrom' => null === $previousNext ? null : $browsedFrom,
             'categoriesCount' => $this->categoryRepository->countVisible(),
             'media' => $media,
@@ -98,22 +98,23 @@ class GalleryController extends AbstractController
         }
 
         $category = $this->categoryRepository->findOneBySlug($slug);
-        if (!$category instanceof GalleryCategory || !$category->isAutomatic() || $category->isDeleted()) {
+        if (!$category instanceof GalleryCategory || !$category->isAutomatic() || $category->isDeleted() || $category->isHidden()) {
             return null;
         }
 
         // The breadcrumb prints what it holds, which it only has once handed the list it shows
-        $this->latestProvider->hydrate([$category]);
+        $this->automaticProvider->hydrate([$category]);
 
         return $category;
     }
 
     // A trashed category answers 410 rather than 404, the same way SiteBundle serves a trashed Page: it says the url held something and no longer does, which a search engine acts on far faster than on a 404 - and it only lasts as long as the category can still be restored, deletePermanently() replacing it with a "gone" Redirect that says it for good (see GalleryCategoryCrudController)
+    // A hidden one answers 404, exactly as a hidden media does below and for the same reason: masking is reversible, and a crawler must not be told anything a change of mind would have to be taken back. The medias it holds answer 404 with it, their pages being resolved through here
     private function resolveCategory(string $slug): GalleryCategory
     {
         $category = $this->categoryRepository->findOneBySlug($slug);
 
-        if (null === $category) {
+        if (null === $category || $category->isHidden()) {
             throw new NotFoundHttpException('Gallery category not found');
         }
 
@@ -130,7 +131,8 @@ class GalleryController extends AbstractController
         $category = $this->resolveCategory($categorySlug);
         $media = $this->mediaRepository->findOneBySlugInCategory($category, $slug);
 
-        if (!$media instanceof GalleryMedia) {
+        // A hidden media answers 404 and not 410: 410 says "this was here and is gone for good", which is what the trash means. Hiding is reversible, and nothing should be told to a crawler that a change of mind would have to be taken back
+        if (!$media instanceof GalleryMedia || $media->isHidden()) {
             throw new NotFoundHttpException('Gallery media not found');
         }
 

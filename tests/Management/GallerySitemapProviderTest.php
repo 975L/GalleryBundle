@@ -54,7 +54,7 @@ class GallerySitemapProviderTest extends TestCase
         $categoryRepository->method('findAllOrdered')->willReturn($categories);
 
         $mediaRepository = $this->createStub(GalleryMediaRepository::class);
-        $mediaRepository->method('findByCategory')->willReturnCallback(
+        $mediaRepository->method('findVisibleByCategory')->willReturnCallback(
             static fn (GalleryCategory $category): array => $mediasByCategorySlug[$category->getSlug()] ?? []
         );
 

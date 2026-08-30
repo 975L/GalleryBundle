@@ -48,6 +48,12 @@
     {# The route takes the slug alone, its prefix being filled from the request context (see GalleryRoutePrefixListener) #}
     {{ include('@c975LConfig/management/_sharing_debugger.html.twig', {url: path('gallery_category', {category: entity.instance.slug})}) }}
 
+    {# The same address as a code to scan, drawn the way SiteBundle draws a page's (see GalleryCategoryCrudController::qrcode) - what goes on a card, a flyer or the wall a visitor is standing in front of #}
+    <div class="mb-4">
+        <p class="text-muted mb-2">{{ ('label.qrcode_help'|trans({}, 'gallery')) }}</p>
+        <img src="{{ ea_url().setAction('qrcode').setEntityId(entity.instance.id) }}" alt="{{ ('label.qrcode'|trans({}, 'gallery')) }}">
+    </div>
+
     {{ parent() }}
 
     {# The category's own medias, each opening its edit form (media_edit_urls comes from GalleryCategoryCrudController::configureResponseParameters) - same grid as UiBundle's media_index, on the "-thumb" derivative and reusing its CSS #}
@@ -199,18 +205,75 @@
                     </button>
                 </div>
 
+                {# Takes a whole selection off the public pages, or puts it back - the same button both ways, as the rights one above #}
+                <div class="d-flex flex-wrap gap-2 align-items-center">
+                    <label class="d-flex align-items-center gap-2 p-1 ui-check-label">
+                        <input type="checkbox"
+                            class="form-check-input m-0 ui-check-lg"
+                            name="hidden"
+                            value="1">
+                        {{ ('label.gallery_media_hidden'|trans({}, 'gallery')) }}
+                    </label>
+
+                    <button type="submit"
+                        name="field"
+                        value="hidden"
+                        formaction="{{ ea_url().setAction('editMedias') }}"
+                        class="btn btn-secondary"
+                        disabled
+                        data-gallery-media-selection-target="submit">
+                        <i class="fa fa-eye-slash"></i> {{ ('action.apply_hidden'|trans({}, 'gallery')) }}
+                    </button>
+                </div>
+
+                {# Puts a hundred photographs on sale in one click. Which sizes each is actually offered is worked out from its own original, so this only ever says "this one is for sale" (see GalleryPrintService::getOffers) #}
+                {% if config('gallery-print-enabled')|to_bool %}
+                    <div class="d-flex flex-wrap gap-2 align-items-center">
+                        <label class="d-flex align-items-center gap-2 p-1 ui-check-label">
+                            <input type="checkbox"
+                                class="form-check-input m-0 ui-check-lg"
+                                name="printable"
+                                value="1">
+                            {{ ('label.gallery_media_printable'|trans({}, 'gallery')) }}
+                        </label>
+
+                        <button type="submit"
+                            name="field"
+                            value="printable"
+                            formaction="{{ ea_url().setAction('editMedias') }}"
+                            class="btn btn-secondary"
+                            disabled
+                            data-gallery-media-selection-target="submit">
+                            <i class="fa fa-print"></i> {{ ('action.apply_printable'|trans({}, 'gallery')) }}
+                        </button>
+                    </div>
+                {% endif %}
+
                 {# Moves the checked medias into another gallery, their files following them there and the ranks of both galleries renumbered behind and in front (see GalleryCategoryCrudController::moveMedias) #}
                 {# The title root works exactly as the upload screen's: left empty the medias keep the titles they had, filled they are renumbered from where the arrival gallery leaves off - no public url moves either way, a slug never following a title in this bundle #}
-                {% if move_targets|default([])|length %}
+                {# Nothing is preselected and the button waits on a destination being picked: the first gallery of the list standing there ready to receive read as a choice already made, and a selection went where it was never sent. The last entry creates the gallery on the spot instead (see GalleryCategoryCrudController::createMoveTarget), which is why the group is rendered whether or not another one exists #}
                 {# The attribute is what a guided project points at, the group having no other stable hook (see GalleryGuidedProjectProvider) #}
                 <div class="d-flex flex-wrap gap-2 align-items-center" data-gallery-move-medias>
                     <select name="targetCategory"
                         class="form-select w-auto"
-                        aria-label="{{ ('action.move_selection'|trans({}, 'gallery')) }}">
-                        {% for target in move_targets %}
+                        aria-label="{{ ('action.move_selection'|trans({}, 'gallery')) }}"
+                        data-gallery-media-selection-target="moveTarget"
+                        data-action="gallery-media-selection#update">
+                        <option value="">{{ ('label.gallery_move_target'|trans({}, 'gallery')) }}</option>
+                        {% for target in move_targets|default([]) %}
                             <option value="{{ target.id }}">{{ target.title }}</option>
                         {% endfor %}
+                        <option value="new">{{ ('label.gallery_move_target_new'|trans({}, 'gallery')) }}</option>
                     </select>
+
+                    {# Shown by the controller above on the "new gallery" entry alone - its title is what names the gallery and builds its url, and a name already taken is refused rather than suffixed #}
+                    <input type="text"
+                        name="newCategoryTitle"
+                        class="form-control w-auto d-none"
+                        placeholder="{{ ('label.gallery_move_target_new_title'|trans({}, 'gallery')) }}"
+                        aria-label="{{ ('label.gallery_move_target_new_title'|trans({}, 'gallery')) }}"
+                        data-gallery-media-selection-target="newCategory"
+                        data-action="input->gallery-media-selection#update keydown.enter->gallery-media-selection#submitOwn">
 
                     <input type="text"
                         name="titleRoot"
@@ -219,15 +282,15 @@
                         aria-label="{{ ('label.gallery_title_root'|trans({}, 'gallery')) }}"
                         data-action="keydown.enter->gallery-media-selection#submitOwn">
 
+                    {# Its own target rather than the shared one: this button also waits on a destination being picked, where the others only wait on a media being checked #}
                     <button type="submit"
                         formaction="{{ ea_url().setAction('moveMedias') }}"
                         class="btn btn-secondary"
                         disabled
-                        data-gallery-media-selection-target="submit">
+                        data-gallery-media-selection-target="moveSubmit">
                         <i class="fa fa-images"></i> {{ ('action.move_selection'|trans({}, 'gallery')) }}
                     </button>
                 </div>
-                {% endif %}
 
                 {{ macros.download_buttons(ea_url().setAction('downloadMedias')) }}
 
@@ -247,9 +310,9 @@
                 {% endif %}
             </div>
 
-            {# The tile itself lives in a partial: the automatic gallery draws one grid per day of additions, every other category one grid for the whole of it #}
+            {# The tile itself lives in a partial: the gallery of the last additions draws one grid per day of uploads, every other category - the prints among them - one grid for the whole of it #}
             {% set tile = '@c975LGallery/management/_gallery_media_tile.html.twig' %}
-            {% if automatic %}
+            {% if automatic and medias_by_day|default([]) is not empty %}
                 {# A heading per day, which is what an upload session is: the photos of one day are credited, downloaded or trashed as the batch they arrived in, whatever galleries they were dispatched to #}
                 {% for group in medias_by_day|default([]) %}
                     <h3 class="h6 mt-4">
@@ -264,9 +327,10 @@
                     </div>
                 {% endfor %}
             {% else %}
-                <div class="management-media-grid" data-gallery-media-sort-target="grid">
+                {# An automatic gallery's medias belong to other categories, so they are neither arranged nor made a cover here, and each names the gallery it actually sits in #}
+                <div class="management-media-grid"{% if not automatic %} data-gallery-media-sort-target="grid"{% endif %}>
                     {% for media in medias %}
-                        {{ include(tile, {media: media, edit_url: media_edit_urls[media.id]|default(''), sortable: sortable, owner: false, cover_media_id: category.coverMedia ? category.coverMedia.id : null}, with_context: false) }}
+                        {{ include(tile, {media: media, edit_url: media_edit_urls[media.id]|default(''), sortable: sortable, owner: automatic, cover_media_id: category.coverMedia ? category.coverMedia.id : null}, with_context: false) }}
                     {% endfor %}
                 </div>
             {% endif %}

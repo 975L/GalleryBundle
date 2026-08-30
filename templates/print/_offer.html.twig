@@ -1,0 +1,53 @@
+{# The print offer of one photograph, shown on its page when the shop is open and the file has the pixels (see GalleryPrintService::isPrintable) #}
+{# One button per size rather than a size picker: the list is three or four lines, and a select would hide the prices - which is what the visitor came to read #}
+{# Adds through PaymentBundle's own basket controller, reading the very data attributes its product buttons read (see PaymentBundle assets/js/basket.js): the basket is one basket, whatever bundle filled it #}
+{% trans_default_domain 'gallery' %}
+
+{% set offers = gallery_print_offers(media) %}
+{% set remaining = gallery_print_remaining(media) %}
+
+{% if offers is not empty %}
+    <div data-controller="basket" class="gallery-print my-4">
+        <h2 class="h5 mb-3">{{ 'label.print_order'|trans }}</h2>
+
+        {# Above the prices, where it is read before the button and not after it #}
+        <twig:c975LGallery:Gallery:TestMode/>
+
+        {% if remaining is not null %}
+            {# The scarcity is stated as what is left of what was announced, never as a bare "limited edition" - a number nobody can check is not a promise #}
+            <p class="small text-body-secondary mb-3">
+                {{ 'label.print_remaining'|trans({'%count%': remaining, '%total%': media.editionSize}) }}
+            </p>
+        {% else %}
+            <p class="small text-body-secondary mb-3">{{ 'label.print_open_edition'|trans }}</p>
+        {% endif %}
+
+        {% if remaining is null or remaining > 0 %}
+            <ul class="list-unstyled mb-0">
+                {% for offer in offers %}
+                    <li class="d-flex justify-content-between align-items-center border-bottom py-2">
+                        <span>{{ offer.format.label }}</span>
+
+                        <span class="d-flex align-items-center gap-3">
+                            <span class="fw-semibold">{{ (offer.format.price / 100)|format_currency('EUR') }}</span>
+
+                            <button type="button"
+                                    class="btn btn-sm btn-primary"
+                                    data-action="basket#add"
+                                    data-item-id="{{ offer.id }}"
+                                    data-type="gallery_print"
+                                    data-quantity="1"
+                                    data-title="{{ media.title }}"
+                                    data-text="{{ 'label.added_to_basket'|trans({}, 'payment') }}"
+                                    data-alert="success">
+                                {{ 'label.print_order'|trans }}
+                            </button>
+                        </span>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="mb-0">{{ 'label.print_edition_sold_out'|trans }}</p>
+        {% endif %}
+    </div>
+{% endif %}

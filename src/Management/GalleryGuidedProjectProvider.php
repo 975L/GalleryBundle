@@ -161,16 +161,17 @@ class GalleryGuidedProjectProvider implements GuidedProjectProviderInterface
                     'description' => 'description.guided_step_gallery_medias_move_select',
                     'highlight' => '[data-gallery-media-selection-target="toggle"]',
                 ],
-                // The group is the only stable hook the toolbar offers, its three controls being reached from it (see gallery_category_edit.html.twig)
+                // The group is the only stable hook the toolbar offers, its controls being reached from it (see gallery_category_edit.html.twig)
                 [
                     'label' => 'label.guided_step_gallery_medias_move_target',
                     'description' => 'description.guided_step_gallery_medias_move_target',
                     'highlight' => '[data-gallery-move-medias] select',
                 ],
+                // Named rather than taken as "the input of the group", which the box naming a gallery created on the spot now comes before
                 [
                     'label' => 'label.guided_step_gallery_medias_move_title_root',
                     'description' => 'description.guided_step_gallery_medias_move_title_root',
-                    'highlight' => '[data-gallery-move-medias] input',
+                    'highlight' => '[data-gallery-move-medias] input[name="titleRoot"]',
                 ],
                 [
                     'label' => 'label.guided_step_gallery_medias_move_move',

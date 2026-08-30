@@ -14,6 +14,30 @@
                 <source>description.gallery_latest_max</source>
                 <target>Nombre maximal de médias affichés par la galerie automatique, 200 par défaut. Il protège la journée où toute une photothèque est entrée d'un coup - reprise, import - qui remplirait sinon la page de milliers de vignettes. Au-delà, seuls les plus récents sont montrés. Vide ou 0, 200 est appliqué.</target>
             </trans-unit>
+            <trans-unit id="bj8kKWN">
+                <source>description.gallery_print_api_key</source>
+                <target>Clé fournie par le laboratoire, qui authentifie chaque commande envoyée. Inutile avec « manual ». La renseigner n'ouvre pas la boutique : c'est la case « Vente de tirages » qui le fait.</target>
+            </trans-unit>
+            <trans-unit id="wHk0mCF">
+                <source>description.gallery_print_enabled</source>
+                <target>Ouvre la boutique de tirages : le bouton de commande apparaît sous les photographies marquées « vendable », et les commandes payées partent au laboratoire. Tant que c'est décoché, tout le reste peut être configuré et testé sans que rien ne soit visible du public.</target>
+            </trans-unit>
+            <trans-unit id="PqaY5vi">
+                <source>description.gallery_print_provider</source>
+                <target>Nom du laboratoire qui imprime — « prodigi » pour l'impression à la demande, « manual » pour passer les commandes vous-même depuis le back-office. Un site qui a écrit son propre pilote y met le nom de celui-ci.</target>
+            </trans-unit>
+            <trans-unit id="Pfdmed3">
+                <source>description.gallery_print_sandbox</source>
+                <target>Envoie les commandes à l'environnement de test du laboratoire : elles sont acceptées, rien n'est imprimé et rien n'est débité. À décocher le jour de l'ouverture, et pas avant — sinon chaque essai est un vrai tirage payé.</target>
+            </trans-unit>
+            <trans-unit id="0NknSLg">
+                <source>description.gallery_print_signature</source>
+                <target>Chemin, depuis public/, de l'image de signature posée sur les fichiers d'impression. Elle est recomposée à la taille du tirage et non reprise de l'image web, qui serait floue une fois agrandie. Vide, les tirages partent sans signature.</target>
+            </trans-unit>
+            <trans-unit id="ju2r8iI">
+                <source>description.gallery_printable_max</source>
+                <target>Nombre maximal de photos affichées par la galerie des tirages, 200 par défaut. Elle rassemble les photos cochées « à la vente », quelle que soit leur galerie. Vide ou 0, 200 est appliqué.</target>
+            </trans-unit>
             <trans-unit id="wn2FpRV">
                 <source>description.gallery_rating</source>
                 <target>Affiche un cœur sous une photo, que les visiteurs cliquent pour dire qu'ils l'aiment. Un seul geste, pas de note : la page indique combien de personnes l'ont aimée</target>
@@ -77,6 +101,30 @@
             <trans-unit id="paiRW9j">
                 <source>label.gallery_latest_max</source>
                 <target>Galerie automatique : nombre maximal de médias</target>
+            </trans-unit>
+            <trans-unit id="xRNwvo0">
+                <source>label.gallery_print_api_key</source>
+                <target>Clé d'API du laboratoire</target>
+            </trans-unit>
+            <trans-unit id="DPz9GXt">
+                <source>label.gallery_print_enabled</source>
+                <target>Vente de tirages</target>
+            </trans-unit>
+            <trans-unit id="m_TvWtA">
+                <source>label.gallery_print_provider</source>
+                <target>Laboratoire</target>
+            </trans-unit>
+            <trans-unit id="yQRuFun">
+                <source>label.gallery_print_sandbox</source>
+                <target>Laboratoire en mode test</target>
+            </trans-unit>
+            <trans-unit id="42wXpyI">
+                <source>label.gallery_print_signature</source>
+                <target>Signature des tirages</target>
+            </trans-unit>
+            <trans-unit id="vdLtZx.">
+                <source>label.gallery_printable_max</source>
+                <target>Galerie des tirages : nombre maximal de photos</target>
             </trans-unit>
             <trans-unit id="oYheJD4">
                 <source>label.gallery_rating</source>

@@ -56,19 +56,25 @@ class GalleryImportProvider implements ImportProviderInterface
         // The ids of the medias this import replaces, read while they still have one: their likes hang off "gallery_media" + id rather than off a relation (see c975L\UiBundle\Entity\Rating), so the orphanRemoval below takes the rows and leaves the likes
         $droppedMediaIds = [];
 
-        // Read once, then carried through the loop: import() only flushes at the end, so asking the database inside it would have every item of the same archive see it still empty and keep the flag (see below)
-        $automatic = $this->categoryRepository->findOneBy(['automatic' => true]);
+        // Read once per kind, then carried through the loop: import() only flushes at the end, so asking the database inside it would have every item of the same archive see it still empty and keep the kind (see below)
+        $automatic = [];
+        foreach (GalleryCategory::automaticKinds() as $kind) {
+            $automatic[$kind] = $this->categoryRepository->findOneBy(['automaticKind' => $kind]);
+        }
 
         foreach ($items as $item) {
             $category = $this->categoryRepository->findOneBySlug($item['slug']);
             $isNew = null === $category;
             $category ??= new GalleryCategory();
 
-            // Only taken when the site holds no gallery of the last additions at all, or when this very category is it: the site writes its own (see GalleryCategoryRepository::findOrCreateAutomatic), and a second one would show the same medias under a second url
+            // "automatic" is what an archive exported before the kinds carries, and it named the gallery of the last additions - read as a fallback rather than importing that gallery as an ordinary one
+            $kind = $item['automaticKind'] ?? (($item['automatic'] ?? false) ? GalleryCategory::AUTOMATIC_LATEST : null);
+
+            // Only taken when the site holds no gallery of that kind at all, or when this very category is it: the site writes its own (see GalleryCategoryRepository::findOrCreateAutomatic), and a second one would show the same medias under a second url
             // The first item marked wins it, the ones after are imported as normal categories
-            $takesAutomatic = ($item['automatic'] ?? false) && \in_array($automatic, [null, $category], true);
+            $takesAutomatic = null !== $kind && \in_array($automatic[$kind] ?? null, [null, $category], true);
             if ($takesAutomatic) {
-                $automatic = $category;
+                $automatic[$kind] = $category;
             }
 
             $category
@@ -80,9 +86,11 @@ class GalleryImportProvider implements ImportProviderInterface
                 ->setUncategorized($item['uncategorized'] ?? false)
                 // What the site added to this gallery of its own, put back whole - an archive predating it, or one from a site declaring no fields, importing a gallery carrying none
                 ->setData($item['data'] ?? null)
-                ->setAutomatic($takesAutomatic)
+                ->setAutomaticKind($takesAutomatic ? $kind : null)
                 // Optional like the rest, an archive predating the trash importing as a category that is not in it - which is what such an archive describes
                 ->setIsDeleted($item['isDeleted'] ?? false)
+                // Read back for the reason it is exported (see GalleryExportProvider): a round-trip must not put back on the site a gallery an admin had taken off it
+                ->setHidden($item['hidden'] ?? false)
                 ->setCoverMedia(null);
 
             // The key is optional, an archive exported before the category gained a lead-in staying importable - what it describes then is a category without one, same reading as PageImportProvider
@@ -236,6 +244,9 @@ class GalleryImportProvider implements ImportProviderInterface
             ->setExternalUrl($mediaData['externalUrl'] ?? $this->legacyEmbedUrl($mediaData))
             // Optional like the category's, an archive predating the trash importing as a media that is not in it
             ->setIsDeleted($mediaData['isDeleted'] ?? false)
+            // Read back for the same reason they are exported (see GalleryExportProvider::exportMediaData): a round-trip must not republish what an admin had taken off the public pages, nor put on sale what he had taken off sale
+            ->setHidden($mediaData['hidden'] ?? false)
+            ->setPrintable($mediaData['printable'] ?? false)
             ->setPosition($mediaData['position'] ?? 0);
 
         if (null !== $filesDir && isset($mediaData['file'])) {

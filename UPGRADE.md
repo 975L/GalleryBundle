@@ -1,5 +1,38 @@
 # UPGRADE
 
+## v1.12.0
+
+### The prints and the two masks add tables and columns
+
+Three tables appear — `gallery_print_format`, `gallery_print_order` and `gallery_print_copy` — and both
+entities gain columns: `gallery_media` takes `hidden`, `printable` and `edition_size`, and
+`gallery_category` takes `hidden` in its turn, a whole gallery being masked the way a photograph is (see
+[masking a gallery](README.md#masking-a-gallery)). An app already running this bundle generates and plays
+its migration after updating it, otherwise the galleries fail on an unknown column:
+
+```bash
+php bin/console make:migration
+php bin/console doctrine:migrations:migrate
+```
+
+The two masks default to false, so every gallery and every photograph stays exactly as visible as it was,
+and the print catalogue is empty until `gallery-print-enabled` is turned on.
+
+### The gallery of the last additions is now flagged by kind
+
+`GalleryCategory::$automatic` (a boolean) becomes `$automaticKind` (a string, `latest` or `printable`),
+the prints joining the last additions as a second automatic gallery. **`make:migration` writes a `DROP`
+plus an `ADD`, which loses the flag**: the existing *Derniers ajouts* would come back as an ordinary,
+permanently empty category, and the next listing would write a second one beside it. Carry the flag over
+in the generated migration, before dropping the old column:
+
+```php
+$this->addSql("UPDATE gallery_category SET automatic_kind = 'latest' WHERE automatic = 1");
+```
+
+A site that never had one has nothing to carry: the column is nullable and every ordinary gallery stays
+null.
+
 ## v1.10.1
 
 ### The sidebar entry needs CoreBundle `^1.14.0`

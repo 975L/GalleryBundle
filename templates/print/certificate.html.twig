@@ -1,0 +1,53 @@
+{# The certificate of authenticity, drawn on demand by GalleryCertificateService::renderMany() - one page per numbered copy, meant to be printed, signed by hand and posted #}
+{# A print document and not a page: no script, no link a finger can follow, nothing that means anything once it is on paper. The verification address is carried twice, as a code to scan and written out in full - the code is what anybody actually uses, the line under it is what still works when the sheet is scuffed or the reader has only a keyboard #}
+{% trans_default_domain 'gallery' %}
+<meta charset="utf-8">
+<title>{{ 'label.print_certificate'|trans }}</title>
+<style>
+    @page { size: A4; margin: 22mm 20mm; }
+    body { font-family: "DejaVu Sans", sans-serif; font-size: 11pt; color: #000; }
+    .sheet { page-break-after: always; }
+    .sheet:last-child { page-break-after: auto; }
+    h1 { font-size: 15pt; letter-spacing: 1.5pt; text-transform: uppercase; margin: 0 0 2mm; }
+    .site { font-size: 10pt; letter-spacing: .8pt; text-transform: uppercase; margin: 0 0 14mm; }
+    .rank { font-size: 34pt; margin: 10mm 0 2mm; }
+    .work { font-size: 14pt; margin: 0 0 12mm; }
+    table.facts { width: 100%; border-collapse: collapse; margin-bottom: 16mm; }
+    table.facts th, table.facts td { text-align: left; padding: 2mm 0; border-bottom: .2mm solid #bbb; vertical-align: top; }
+    table.facts th { width: 42mm; font-weight: normal; text-transform: uppercase; font-size: 8.5pt; letter-spacing: .6pt; color: #444; }
+    .verify { font-size: 9pt; color: #333; margin-bottom: 20mm; word-break: break-all; }
+    .verify img { width: 26mm; height: 26mm; margin-bottom: 2mm; display: block; }
+    .sign { border-top: .3mm solid #000; width: 70mm; padding-top: 2mm; font-size: 9pt; text-transform: uppercase; letter-spacing: .6pt; }
+</style>
+
+{# Everything below is read off the copy's own row, frozen at the sale (see PrintCopySnapshot) - never off the photograph, the catalogue or the configuration, which are all an admin's to change after the sheet has been signed and posted. The edition's size is the one exception: it cannot be changed once announced (see GalleryMediaCrudController::settleEdition) #}
+{% for certificate in certificates %}
+    {% set copy = certificate.copy %}
+    <div class="sheet">
+        <h1>{{ 'label.print_certificate'|trans }}</h1>
+        <p class="site">{{ copy.issuer }}</p>
+
+        {# The photograph may have been deleted for good since the sale (see GalleryPrintCopy::$media), the register outliving it - the sheet then states the rank alone rather than failing to render at all #}
+        <p class="rank">{{ copy.number }}{% if copy.media is not null %}&thinsp;/&thinsp;{{ copy.media.editionSize }}{% endif %}</p>
+        <p class="work">{{ copy.workTitle }}</p>
+
+        <table class="facts">
+            {% if copy.credits is not empty %}
+                <tr><th>{{ 'label.credits'|trans }}</th><td>{{ copy.credits }}</td></tr>
+            {% endif %}
+            <tr><th>{{ 'label.print_format'|trans }}</th><td>{{ copy.formatLabel }}</td></tr>
+            {% if copy.soldAt is not null %}
+                <tr><th>{{ 'label.print_certificate_sold_on'|trans({'%date%': ''})|trim }}</th><td>{{ copy.soldAt|date('d/m/Y') }}</td></tr>
+            {% endif %}
+        </table>
+
+        <p class="verify">
+            {% if certificate.qrCode is not null %}
+                <img src="{{ certificate.qrCode }}" alt="">
+            {% endif %}
+            {{ certificate.verificationUrl }}
+        </p>
+
+        <p class="sign">&nbsp;</p>
+    </div>
+{% endfor %}

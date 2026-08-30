@@ -1,5 +1,52 @@
 # ChangeLog
 
+## v1.12.0
+
+Photographs are sold as numbered prints
+
+- New `GalleryPrintFormat`, `GalleryPrintOrder` and `GalleryPrintCopy`: the print catalogue, the orders sent to a lab, and the register of what was printed (30/08/2026)
+- The sale plugs into PaymentBundle's basket as a `BasketItemProviderInterface` of kind `gallery_print` (30/08/2026)
+- A format is only offered for an original carrying its pixels and its proportions, never cropped to fit (30/08/2026)
+- `GalleryMedia` takes `hidden`, `printable` and `editionSize`, all three appliable to a whole selection (30/08/2026)
+- `GalleryCategory` takes `hidden`: the gallery leaves the index, the blocks, the menus and the sitemap (30/08/2026)
+- A masked gallery's medias leave the automatic galleries with it (30/08/2026)
+- An edition's rows are written when it is announced, `settleEdition()` refusing every later change to the number (30/08/2026)
+- A copy is claimed by a single conditional `UPDATE`, so the last one cannot be sold twice (30/08/2026)
+- New `PrintFulfilmentInterface` with a Prodigi driver and a manual fallback, any implementation being tagged on sight (30/08/2026)
+- The print file is composed from the original, the signature restamped at print resolution (30/08/2026)
+- It is served to the lab by a signed url expiring at 7 days (30/08/2026)
+- New `PrintCopySnapshot`: what a certificate states is frozen onto the copy at the sale (30/08/2026)
+- The lab's sku is frozen too, and it is the sku that is sent rather than the catalogue slug (30/08/2026)
+- Certificate of authenticity as a pdf, one page per copy, with a qr code pointing at its public verification page (30/08/2026)
+- New `gallery_print_certificate` and `gallery_print_file` routes, both outside the renamable gallery prefix (30/08/2026)
+- Six configuration entries for the shop, `gallery-print-enabled` gating the lot (30/08/2026)
+- New `AutomaticGalleryInterface`: `GalleryAutomaticProvider` carries the plumbing, each kind answering only what it gathers (30/08/2026)
+- `GalleryCategory::$automatic` becomes `$automaticKind`, the prints joining the last additions as a second kind (30/08/2026) [Needs db update]
+- `GalleryLatestProvider` keeps the window and the days, everything around it moving to `GalleryAutomaticProvider` (30/08/2026)
+- New `GalleryShortcutProvider`: a dashboard tile toggling the lab's test mode, with its banner on the sale block (30/08/2026)
+- Each gallery's own qr code on its edit screen, built on `site-url` (30/08/2026)
+- The breadcrumb takes a `--gallery-breadcrumb-margin-block-start`, 1.5rem by default (30/08/2026)
+- New `.gallery-certificate-label`, the one rule the certificate check page needs (30/08/2026)
+- Requires `c975l/payment-bundle` `^6.2` and `endroid/qr-code` `^6` (30/08/2026)
+- Added `tests/Entity/GalleryPrintFormatTest.php`, `tests/Entity/GalleryPrintCopyTest.php` and `tests/Model/PrintOfferTest.php` (30/08/2026)
+- Added `tests/Service/GalleryPrintServiceTest.php`, `tests/Entity/GalleryPrintOrderTest.php` and `tests/MessageHandler/GalleryPrintOrderMessageHandlerTest.php` (30/08/2026)
+- Added `tests/Twig/Extension/GalleryPrintExtensionTest.php`, `tests/Management/GalleryShortcutProviderTest.php`, `tests/Service/GalleryPrintFileUrlGeneratorTest.php` and `tests/Service/Fulfilment/ManualFulfilmentTest.php` (30/08/2026)
+- Added `tests/Controller/CertificateControllerTest.php`, `tests/Controller/PrintFileControllerTest.php` and `tests/Service/GalleryCertificateServiceTest.php` (30/08/2026)
+- `SkillsTest` reads a typed class constant, a plain substring having taken `const string X` for absent (30/08/2026)
+- New `GallerySampleCatalog`: the made-up gallery held once as plain data, three categories of four named photographs (28/08/2026)
+- New `GalleryDemoFixtureProvider` (`c975L\UiBundle\Contract\DemoFixtureProviderInterface`): that gallery persisted, photographs included (28/08/2026)
+- It takes the photograph a site declares for one media, keyed `gallery/<slug>` (28/08/2026)
+- Only the categories are yielded, so a reload leaves a demo site's own galleries alone (28/08/2026)
+- The photographs are seeded from a temporary copy of the site's placeholders, handed over as a `ReplacingFile` (28/08/2026)
+- `GalleryShowcaseProvider` reads its stand-ins off that catalog instead of numbering them (28/08/2026)
+- The `label.gallery_showcase_category_title` and `label.gallery_showcase_media_title` keys leave the catalogs, replaced by the `label.gallery_sample_*` ones (28/08/2026)
+- Requires `c975l/core-bundle` `^1.18` for `DemoFixtureProviderInterface` (28/08/2026)
+- Added `tests/Service/GallerySampleCatalogTest.php` and `tests/Service/GalleryDemoFixtureProviderTest.php` (28/08/2026)
+- The move toolbar preselects no arrival gallery, its button waiting for one to be chosen (28/08/2026)
+- Its last entry creates the arrival gallery on the spot, under the name typed beside it (28/08/2026)
+- A name whose slug another gallery already carries is refused, never suffixed (28/08/2026)
+- The guided project's title root step names its input, a second one now preceding it (28/08/2026)
+
 ## v1.11.0
 
 A media changes gallery with its files

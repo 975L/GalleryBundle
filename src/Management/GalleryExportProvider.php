@@ -77,9 +77,11 @@ class GalleryExportProvider implements ExportProviderInterface
             'data' => $category->getData(),
             'uncategorized' => $category->isUncategorized(),
             // The gallery of the last additions carries its flag too, so a site restoring its content gets it back rather than an empty category nobody remembers what it was for
-            'automatic' => $category->isAutomatic(),
+            'automaticKind' => $category->getAutomaticKind(),
             // The archive is a faithful copy, here as everywhere else in this bundle: a category exported out of the trash comes back to the trash, not onto the site, and a sync mirrors the source rather than publishing what it had taken down
             'isDeleted' => $category->isDeleted(),
+            // Same for a masked gallery, exactly as a media's own flag travels below: a gallery an admin took off the site comes back off it
+            'hidden' => $category->isHidden(),
             'coverMediaIndex' => $coverMediaIndex,
             // The category's editorial lead-in, carried the same way PageExportProvider carries a Page's, its own medias joining the archive
             'blocks' => $this->blockDataExporter->exportBlocks($category->getBlocks(), $files),
@@ -109,6 +111,10 @@ class GalleryExportProvider implements ExportProviderInterface
             'rightsReserved' => $media->isRightsReserved(),
             // Same as the category's: a media in the trash travels as one, files included, so nothing is lost and nothing is republished behind the admin's back
             'isDeleted' => $media->isDeleted(),
+            // For the same reason, a media kept off the public pages comes back kept off them - and one offered as a print comes back offered
+            // Nothing here about the edition: its size means nothing without the rows that were claimed from it (see GalleryPrintCopy), and an archive restoring the number alone would announce an edition nobody could ever buy from
+            'hidden' => $media->isHidden(),
+            'printable' => $media->isPrintable(),
             // Nothing here about the watermark, and nothing to say: it is not stored on the media (see GalleryMedia::wantsWatermark), only answered when a file is. What is archived is the stored file, which already carries the signature in its pixels, and an import that asked for one again would lay a second logo on top of the first
             // Exported for what reads an archive rather than for what imports one: the type is derived from the url on the way back in (see GalleryImportProvider), never read from here
             'mediaType' => $media->getMediaType(),

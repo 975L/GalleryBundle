@@ -14,6 +14,7 @@ use c975L\ConfigBundle\Service\ConfigServiceInterface;
 use c975L\GalleryBundle\Entity\GalleryCategory;
 use c975L\GalleryBundle\Entity\GalleryMedia;
 use c975L\GalleryBundle\Field\GalleryDataField;
+use c975L\GalleryBundle\Repository\GalleryPrintCopyRepository;
 use c975L\GalleryBundle\Service\GalleryCustomizationRegistry;
 use c975L\GalleryBundle\Service\GalleryMediaMover;
 use c975L\GalleryBundle\Service\GalleryMediaSlugger;
@@ -64,6 +65,7 @@ class GalleryMediaCrudController extends AbstractCrudController
         private readonly ConfigServiceInterface $configService,
         private readonly UploadLimits $uploadLimits,
         private readonly GalleryCustomizationRegistry $customizationRegistry,
+        private readonly GalleryPrintCopyRepository $printCopyRepository,
     ) {
     }
 
@@ -167,6 +169,8 @@ class GalleryMediaCrudController extends AbstractCrudController
 
             $this->redirectUrlChange($entityManager, $original, $entityInstance);
 
+            $this->settleEdition($entityManager, $original, $entityInstance);
+
             // The category field of this very form is the second way a media changes gallery, the selection of the category screen being the first (see GalleryCategoryCrudController::moveMedias) - the slug and the redirect are settled just above, so what is left to follow is the files and the ranks of the two galleries
             // The rank an admin typed on this form is honoured rather than overwritten: they arranged the media themselves, where an untouched one simply lands after what the arrival gallery already holds
             $source = $original['category'] ?? null;
@@ -178,6 +182,42 @@ class GalleryMediaCrudController extends AbstractCrudController
         }
 
         parent::updateEntity($entityManager, $entityInstance);
+    }
+
+    /**
+     * Writes the register of an edition the first time one is announced, and refuses to touch it afterwards.
+     *
+     * An edition is a promise made in public - thirty, and no thirty-first. Once its rows exist they are what the
+     * certificates already issued point at, so raising the number, lowering it or turning the edition back into an open
+     * one are all the same act: rewriting a promise after it was kept. The field is put back as it was and the admin is
+     * told, rather than the change being applied quietly.
+     *
+     * @param array<string, mixed> $original
+     */
+    private function settleEdition(EntityManagerInterface $entityManager, array $original, GalleryMedia $media): void
+    {
+        // Anything but a positive number is an open edition, and is stored as one: a zero saved as it was announced an edition of nothing, which no row could ever be claimed from and which the freeze below then refused to let anyone correct
+        // Both sides normalised, so a media already carrying a zero compares as open and is repairable
+        $previous = $original['editionSize'] ?? null;
+        $previous = \is_int($previous) && $previous > 0 ? $previous : null;
+
+        $size = $media->getEditionSize();
+        $size = null !== $size && $size > 0 ? $size : null;
+        $media->setEditionSize($size);
+
+        if ($previous === $size) {
+            return;
+        }
+
+        // Nothing has been sold and nothing was ever announced, so this is the announcement: the rows are written now, and claiming from them is what selling a numbered print means (see GalleryPrintCopyRepository::claimNumber)
+        if (null === $previous) {
+            $this->printCopyRepository->openEdition($media, $size);
+
+            return;
+        }
+
+        $media->setEditionSize($previous);
+        $this->addFlash('warning', $this->translator->trans('label.gallery_edition_frozen', [], 'gallery'));
     }
 
     // Both urls are generated rather than concatenated, the first segment being the configured route prefix (see GalleryRoutePrefix)
@@ -243,7 +283,7 @@ class GalleryMediaCrudController extends AbstractCrudController
             AssociationField::new('category')
                 ->setLabel(t('label.gallery_category', [], 'gallery'))
                 ->setQueryBuilder(static fn (QueryBuilder $queryBuilder): QueryBuilder => $queryBuilder
-                    ->andWhere('entity.automatic = false')
+                    ->andWhere('entity.automaticKind IS NULL')
                     ->andWhere('entity.isDeleted = false'))
                 ->setRequired(true),
 
@@ -364,6 +404,19 @@ class GalleryMediaCrudController extends AbstractCrudController
 
             BooleanField::new('rightsReserved')
                 ->setLabel(t('label.rights_reserved', [], 'gallery')),
+
+            BooleanField::new('hidden')
+                ->setLabel(t('label.gallery_media_hidden', [], 'gallery'))
+                ->setHelp(t('help.gallery_media_hidden', [], 'gallery')),
+
+            BooleanField::new('printable')
+                ->setLabel(t('label.gallery_media_printable', [], 'gallery'))
+                ->setHelp(t('help.gallery_media_printable', [], 'gallery')),
+
+            // Left empty the photograph is printed on demand without end. Filled it is an edition, and the register is written the moment it is saved - which is why nothing here lets it be raised afterwards (see GalleryMediaSubscriber)
+            IntegerField::new('editionSize')
+                ->setLabel(t('label.gallery_media_edition_size', [], 'gallery'))
+                ->setHelp(t('help.gallery_media_edition_size', [], 'gallery')),
 
             IntegerField::new('position')
                 ->setLabel(t('label.position', [], 'gallery')),

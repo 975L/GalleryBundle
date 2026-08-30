@@ -42,6 +42,15 @@ class GalleryCategoryTest extends TestCase
         $this->assertFalse($category->isUncategorized());
     }
 
+    public function testSetHiddenFallsBackToFalseWhenNull(): void
+    {
+        $category = new GalleryCategory()->setHidden(true);
+
+        $category->setHidden(null);
+
+        $this->assertFalse($category->isHidden());
+    }
+
     public function testAddMediaSetsBothSidesOfTheRelationOnlyOnce(): void
     {
         $category = new GalleryCategory();
@@ -103,6 +112,34 @@ class GalleryCategoryTest extends TestCase
         $category->addMedia(new GalleryMedia())->addMedia($trashed);
 
         $this->assertSame(1, $category->getMediasCount());
+    }
+
+    // The fallback path, taken when the medias were not read in bulk with the listing, has to answer the same list as the bulk read - a masked photograph is off every public page, cover and count included
+    public function testGetMediasCountLeavesTheHiddenMediasOut(): void
+    {
+        $category = new GalleryCategory();
+        $hidden = new GalleryMedia()->setHidden(true);
+        $category->addMedia(new GalleryMedia())->addMedia($hidden);
+
+        $this->assertSame(1, $category->getMediasCount());
+    }
+
+    // A site tagging a gallery of its own names a kind the bundle knows nothing about (see AutomaticGalleryInterface): dropping it left the category unfindable, and a fresh one was written at every render
+    public function testSetAutomaticKindKeepsAKindTheBundleDoesNotShip(): void
+    {
+        $category = new GalleryCategory()->setAutomaticKind('exhibitions');
+
+        $this->assertSame('exhibitions', $category->getAutomaticKind());
+        $this->assertTrue($category->isAutomatic());
+    }
+
+    public function testSetAutomaticKindReadsNoneAndAnEmptyStringAsNoKind(): void
+    {
+        $category = new GalleryCategory()->setAutomaticKind(GalleryCategory::AUTOMATIC_LATEST);
+
+        $this->assertNull($category->setAutomaticKind(null)->getAutomaticKind());
+        $this->assertNull($category->setAutomaticKind('')->getAutomaticKind());
+        $this->assertFalse($category->isAutomatic());
     }
 
     // A photo taken off the site must not come back through the tile that stands for the whole category
@@ -188,7 +225,7 @@ class GalleryCategoryTest extends TestCase
     // The automatic gallery holds none of the medias it shows, so its count and its tile come from the list it is handed (see GalleryLatestProvider)
     public function testAnAutomaticCategoryCountsTheMediasItIsHanded(): void
     {
-        $category = new GalleryCategory()->setAutomatic(true);
+        $category = new GalleryCategory()->setAutomaticKind(GalleryCategory::AUTOMATIC_LATEST);
         $category->setAutomaticMedias([new GalleryMedia(), new GalleryMedia()]);
 
         $this->assertSame(2, $category->getMediasCount());
@@ -198,7 +235,7 @@ class GalleryCategoryTest extends TestCase
     public function testAnAutomaticCategoryShowsItsNewestMedia(): void
     {
         $newest = new GalleryMedia();
-        $category = new GalleryCategory()->setAutomatic(true);
+        $category = new GalleryCategory()->setAutomaticKind(GalleryCategory::AUTOMATIC_LATEST);
         $category->setAutomaticMedias([$newest, new GalleryMedia(), new GalleryMedia()]);
 
         $this->assertSame($newest, $category->getCoverOrRandomMedia());
@@ -242,7 +279,7 @@ class GalleryCategoryTest extends TestCase
     public function testAnAutomaticCategoryPrefersItsOwnListOverAPreloadedOne(): void
     {
         $newest = new GalleryMedia();
-        $category = new GalleryCategory()->setAutomatic(true);
+        $category = new GalleryCategory()->setAutomaticKind(GalleryCategory::AUTOMATIC_LATEST);
         $category->setLoadedMedias([new GalleryMedia(), new GalleryMedia()]);
         $category->setAutomaticMedias([$newest]);
 

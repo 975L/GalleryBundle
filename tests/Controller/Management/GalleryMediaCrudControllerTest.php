@@ -18,6 +18,7 @@ use c975L\GalleryBundle\Controller\Management\GalleryCategoryCrudController;
 use c975L\GalleryBundle\Controller\Management\GalleryMediaCrudController;
 use c975L\GalleryBundle\Entity\GalleryCategory;
 use c975L\GalleryBundle\Entity\GalleryMedia;
+use c975L\GalleryBundle\Repository\GalleryPrintCopyRepository;
 use c975L\GalleryBundle\Service\GalleryCustomizationRegistry;
 use c975L\GalleryBundle\Service\GalleryMediaMover;
 use c975L\GalleryBundle\Service\GalleryMediaSlugger;
@@ -63,6 +64,7 @@ class GalleryMediaCrudControllerTest extends TestCase
         ?AdminUrlGeneratorInterface $adminUrlGenerator = null,
         ?RedirectRepository $redirectRepository = null,
         ?GalleryCustomizationRegistry $customizationRegistry = null,
+        ?GalleryPrintCopyRepository $printCopyRepository = null,
     ): GalleryMediaCrudController {
         $translator = $this->createStub(TranslatorInterface::class);
         $translator->method('trans')->willReturnArgument(0);
@@ -77,6 +79,8 @@ class GalleryMediaCrudControllerTest extends TestCase
             // Fixed ceilings rather than the machine's own php.ini, so the video field's limit is the same on every runner
             new UploadLimits('20', '64M', '128M'),
             $customizationRegistry ?? new GalleryCustomizationRegistry([]),
+            // Only reached by the tests that save an edition: what it writes is the register of a numbered edition, and only the first time one is announced (see GalleryMediaCrudController::settleEdition)
+            $printCopyRepository ?? $this->createStub(GalleryPrintCopyRepository::class),
         );
     }
 
@@ -409,7 +413,7 @@ class GalleryMediaCrudControllerTest extends TestCase
             ->from(GalleryCategory::class, 'entity');
 
         $dql = $queryBuilderCallable($queryBuilder)->getDQL();
-        $this->assertStringContainsString('entity.automatic = false', $dql);
+        $this->assertStringContainsString('entity.automaticKind IS NULL', $dql);
         $this->assertStringContainsString('entity.isDeleted = false', $dql);
     }
 
@@ -640,6 +644,42 @@ class GalleryMediaCrudControllerTest extends TestCase
         $this->createControllerWithRouter()->deleteEntity($this->createEntityManager([], $persisted), $media);
 
         $this->assertNull($category->getCoverMedia());
+    }
+
+    // Anything but a positive number is an open edition: a zero stored as it was announced an edition nothing could ever be claimed from, and the freeze then refused to let anyone correct it
+    public function testSettleEditionStoresAnEditionOfZeroAsAnOpenOne(): void
+    {
+        $printCopyRepository = $this->createMock(GalleryPrintCopyRepository::class);
+        $printCopyRepository->expects($this->never())->method('openEdition');
+
+        $media = new GalleryMedia()->setEditionSize(0);
+
+        $this->settleEdition($printCopyRepository, ['editionSize' => null], $media);
+
+        $this->assertNull($media->getEditionSize());
+    }
+
+    // Normalised on the stored side too, so a media already carrying a zero reads as open and its edition can still be announced
+    public function testSettleEditionAnnouncesAnEditionOverAStoredZero(): void
+    {
+        $printCopyRepository = $this->createMock(GalleryPrintCopyRepository::class);
+        $media = new GalleryMedia()->setEditionSize(30);
+        $printCopyRepository->expects($this->once())->method('openEdition')->with($media, 30);
+
+        $this->settleEdition($printCopyRepository, ['editionSize' => 0], $media);
+
+        $this->assertSame(30, $media->getEditionSize());
+    }
+
+    /** @param array<string, mixed> $original */
+    private function settleEdition(GalleryPrintCopyRepository $printCopyRepository, array $original, GalleryMedia $media): void
+    {
+        new \ReflectionMethod(GalleryMediaCrudController::class, 'settleEdition')->invoke(
+            $this->createController(printCopyRepository: $printCopyRepository),
+            $this->createStub(EntityManagerInterface::class),
+            $original,
+            $media,
+        );
     }
 
     // A media that was not the cover leaves it exactly where it was

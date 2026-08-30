@@ -286,8 +286,12 @@ class SkillsTest extends TestCase
                 }
 
                 $source = (string) file_get_contents($file);
-                $needle = str_ends_with($member, '()') ? 'function ' . substr($member, 0, -2) . '(' : 'const ' . $member;
-                $this->assertStringContainsString($needle, $source, sprintf('%s quotes "%s", which %s does not hold', $directory, $token, basename($file)));
+
+                // A constant may carry a type since PHP 8.3 ("const string AUTOMATIC_LATEST"), so the name is matched rather than a fixed prefix - a plain substring reads the typed one as absent
+                $needle = str_ends_with($member, '()')
+                    ? '/function\s+' . preg_quote(substr($member, 0, -2), '/') . '\s*\(/'
+                    : '/const\s+(?:[\\\\|?A-Za-z_][\\\\|?A-Za-z0-9_]*\s+)?' . preg_quote($member, '/') . '\b/';
+                $this->assertMatchesRegularExpression($needle, $source, sprintf('%s quotes "%s", which %s does not hold', $directory, $token, basename($file)));
             }
         }
     }

@@ -13,8 +13,7 @@ namespace c975L\GalleryBundle\Tests\Twig\Extension;
 use c975L\GalleryBundle\Entity\GalleryCategory;
 use c975L\GalleryBundle\Entity\GalleryMedia;
 use c975L\GalleryBundle\Repository\GalleryCategoryRepository;
-use c975L\GalleryBundle\Repository\GalleryMediaRepository;
-use c975L\GalleryBundle\Service\GalleryLatestProvider;
+use c975L\GalleryBundle\Service\GalleryAutomaticProvider;
 use c975L\GalleryBundle\Twig\Extension\GalleryBlockExtension;
 use PHPUnit\Framework\TestCase;
 use Twig\Extension\AttributeExtension;
@@ -130,7 +129,7 @@ class GalleryBlockExtensionTest extends TestCase
             new GalleryCategory()->setSlug('photos'),
             new GalleryCategory()->setSlug('videos'),
         ]);
-        $extension = new GalleryBlockExtension($categoryRepository, $this->createStub(GalleryMediaRepository::class), $this->createLatestProvider());
+        $extension = new GalleryBlockExtension($categoryRepository, $this->createAutomaticProvider());
 
         $this->assertSame('photos', $extension->getMedias('photos')['category']?->getSlug());
         $this->assertSame('videos', $extension->getMedias('videos')['category']?->getSlug());
@@ -142,26 +141,23 @@ class GalleryBlockExtensionTest extends TestCase
     {
         $categoryRepository = $this->createMock(GalleryCategoryRepository::class);
         $categoryRepository->expects($this->exactly(2))->method('findAllOrdered')->willReturn([]);
-        $extension = new GalleryBlockExtension($categoryRepository, $this->createStub(GalleryMediaRepository::class), $this->createLatestProvider());
+        $extension = new GalleryBlockExtension($categoryRepository, $this->createAutomaticProvider());
 
         $extension->getCategories();
         $extension->reset();
         $extension->getCategories();
     }
 
-    // A "gallery medias" block pointing at the automatic gallery shows the site's last additions on whatever page it is dropped on, its category holding none of them
-    public function testGetMediasOfTheAutomaticCategoryComesFromTheLatestProvider(): void
+    // A "gallery medias" block pointing at an automatic gallery shows the site's last additions, or the photographs on sale, on whatever page it is dropped on - its category holding none of them
+    public function testGetMediasOfAnAutomaticCategoryComesFromTheCoordinator(): void
     {
         $latest = [new GalleryMedia(), new GalleryMedia()];
-        $category = new GalleryCategory()->setSlug('latest')->setAutomatic(true);
+        $category = new GalleryCategory()->setSlug('latest')->setAutomaticKind(GalleryCategory::AUTOMATIC_LATEST);
 
         $categoryRepository = $this->createStub(GalleryCategoryRepository::class);
         $categoryRepository->method('findAllOrdered')->willReturn([$category]);
 
-        $mediaRepository = $this->createMock(GalleryMediaRepository::class);
-        $mediaRepository->expects($this->never())->method('findByCategory');
-
-        $gallery = new GalleryBlockExtension($categoryRepository, $mediaRepository, $this->createLatestProvider($latest))->getMedias('latest');
+        $gallery = new GalleryBlockExtension($categoryRepository, $this->createAutomaticProvider($latest))->getMedias('latest');
 
         $this->assertSame($latest, $gallery['medias']);
     }
@@ -172,19 +168,16 @@ class GalleryBlockExtensionTest extends TestCase
         $categoryRepository = $this->createStub(GalleryCategoryRepository::class);
         $categoryRepository->method('findAllOrdered')->willReturn([] !== $categories ? $categories : array_values(array_filter([$category])));
 
-        $mediaRepository = $this->createStub(GalleryMediaRepository::class);
-        $mediaRepository->method('findByCategory')->willReturn($medias);
-
-        return new GalleryBlockExtension($categoryRepository, $mediaRepository, $this->createLatestProvider());
+        return new GalleryBlockExtension($categoryRepository, $this->createAutomaticProvider($medias));
     }
 
-    // The list every screen listing categories is handed back: the provider hands it over as it got it, the gallery of the last additions being already in it here
-    private function createLatestProvider(array $medias = []): GalleryLatestProvider
+    // The list every screen listing categories is handed back: the coordinator hands it over as it got it, the automatic galleries being already in it here - and it answers the medias of every category, automatic or not (see GalleryAutomaticProvider::getMedias)
+    private function createAutomaticProvider(array $medias = []): GalleryAutomaticProvider
     {
-        $latestProvider = $this->createStub(GalleryLatestProvider::class);
-        $latestProvider->method('prepare')->willReturnArgument(0);
-        $latestProvider->method('getMedias')->willReturn($medias);
+        $automaticProvider = $this->createStub(GalleryAutomaticProvider::class);
+        $automaticProvider->method('prepare')->willReturnArgument(0);
+        $automaticProvider->method('getMedias')->willReturn($medias);
 
-        return $latestProvider;
+        return $automaticProvider;
     }
 }

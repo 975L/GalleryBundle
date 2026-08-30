@@ -44,6 +44,10 @@
         <p class="gallery-media-description">{{ media.description|nl2br }}</p>
     {% endif %}
     <twig:c975LGallery:Gallery:Credits media="{{ media }}"/>
+    {# Under the caption and the credit, where a price belongs: what is being sold has to be read after what it is, never before #}
+    {% if gallery_print_available(media) %}
+        {{ include('@c975LGallery/print/_offer.html.twig') }}
+    {% endif %}
     {# A single heart and no scale: a photo is liked or it is not, and what a visitor reads under it is how many others did, not the average of a column of ones. Both are stated here rather than left to the site's own rating settings, which serve the scales elsewhere. On unless the site turned it off #}
     {% if config('gallery-rating')|to_bool %}
         <twig:c975LUi:Rating:Rating ownerType="gallery_media" ownerId="{{ media.id }}" scale="1" icon="heart"/>

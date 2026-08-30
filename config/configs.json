@@ -28,7 +28,10 @@
         "restricted": false,
         "value": null,
         "kind": "choice",
-        "choices": ["light", "dark"],
+        "choices": [
+            "light",
+            "dark"
+        ],
         "group": "gallery",
         "severity": null,
         "description": "description.gallery_style"
@@ -40,7 +43,11 @@
         "restricted": false,
         "value": "thin",
         "kind": "choice",
-        "choices": ["none", "thin", "wide"],
+        "choices": [
+            "none",
+            "thin",
+            "wide"
+        ],
         "group": "gallery",
         "severity": null,
         "description": "description.gallery_frame"
@@ -176,5 +183,71 @@
         "group": "gallery",
         "severity": null,
         "description": "description.gallery_rating"
+    },
+    {
+        "label": "label.gallery_print_enabled",
+        "slug": "gallery-print-enabled",
+        "sensitive": false,
+        "restricted": false,
+        "value": "false",
+        "kind": "bool",
+        "group": "gallery",
+        "severity": null,
+        "description": "description.gallery_print_enabled"
+    },
+    {
+        "label": "label.gallery_printable_max",
+        "slug": "gallery-printable-max",
+        "sensitive": false,
+        "restricted": false,
+        "value": "200",
+        "kind": "int",
+        "group": "gallery",
+        "severity": null,
+        "description": "description.gallery_printable_max"
+    },
+    {
+        "label": "label.gallery_print_provider",
+        "slug": "gallery-print-provider",
+        "sensitive": false,
+        "restricted": false,
+        "value": "prodigi",
+        "kind": "text",
+        "group": "gallery",
+        "severity": "warning",
+        "description": "description.gallery_print_provider"
+    },
+    {
+        "label": "label.gallery_print_api_key",
+        "slug": "gallery-print-api-key",
+        "sensitive": true,
+        "restricted": true,
+        "value": null,
+        "kind": "text",
+        "group": "gallery",
+        "severity": "warning",
+        "description": "description.gallery_print_api_key"
+    },
+    {
+        "label": "label.gallery_print_sandbox",
+        "slug": "gallery-print-sandbox",
+        "sensitive": false,
+        "restricted": false,
+        "value": "true",
+        "kind": "bool",
+        "group": "gallery",
+        "severity": "warning",
+        "description": "description.gallery_print_sandbox"
+    },
+    {
+        "label": "label.gallery_print_signature",
+        "slug": "gallery-print-signature",
+        "sensitive": false,
+        "restricted": false,
+        "value": null,
+        "kind": "text",
+        "group": "gallery",
+        "severity": null,
+        "description": "description.gallery_print_signature"
     }
 ]
