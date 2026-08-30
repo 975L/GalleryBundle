@@ -163,6 +163,54 @@ class GalleryPrintBasketItemProvider implements BasketItemProviderInterface
         return [];
     }
 
+    // Writes what was sold and numbers it where the edition demands it
+    // Every print of the order, answering whether an edition ran out on the way and whether any numbered copy was claimed
+    // Counted here rather than asked of the order afterwards: a number is claimed by an UPDATE (see GalleryPrintCopyRepository::claimNumber) and an open copy only sets its owning side, so the order's own collection stays empty until it is read back from the base
+    /**
+     * @return array{0: bool, 1: bool}
+     */
+    private function addCopies(array $itemsOfThisKind, GalleryPrintOrder $order): array
+    {
+        $soldOut = false;
+        $hasLimitedEdition = false;
+
+        foreach ($itemsOfThisKind as $id => $itemContent) {
+            $offer = $this->printService->findOffer($id);
+            if (null === $offer) {
+                continue;
+            }
+
+            $snapshot = $this->snapshot($offer, $itemContent['item'] ?? []);
+
+            for ($unit = 0; $unit < (int) $itemContent['quantity']; ++$unit) {
+                $claimed = $this->addCopy($offer, $order, $snapshot);
+                $soldOut = $soldOut || false === $claimed;
+                $hasLimitedEdition = $hasLimitedEdition || true === $claimed;
+            }
+        }
+
+        return [$soldOut, $hasLimitedEdition];
+    }
+
+    // One print added to the order, answering true for a numbered copy actually claimed, false for an edition that ran out between the checkout and the payment, and null for an open print, which nothing can exhaust
+    // validateCheckout() weighed the edition minutes ago, so the false is the race it cannot close: two checkouts settling at once. The customer has paid and is owed a print, so the order is kept and flagged for a human rather than being lost
+    private function addCopy(PrintOffer $offer, GalleryPrintOrder $order, PrintCopySnapshot $snapshot): ?bool
+    {
+        if ($offer->media->isLimitedEdition()) {
+            return null !== $this->copyRepository->claimNumber($offer->media, $order, $snapshot);
+        }
+
+        $this->entityManager->persist(
+            new GalleryPrintCopy()
+                ->setMedia($offer->media)
+                ->setOrder($order)
+                ->setSoldAt(new \DateTimeImmutable())
+                ->applySnapshot($snapshot)
+        );
+
+        return null;
+    }
+
     /**
      * Writes what was sold, numbers it where the edition demands it, and sends it to the lab.
      *
@@ -185,45 +233,7 @@ class GalleryPrintBasketItemProvider implements BasketItemProviderInterface
         $this->entityManager->persist($order);
         $this->entityManager->flush();
 
-        $soldOut = false;
-
-        // Counted here rather than asked of the order afterwards: a number is claimed by an UPDATE (see GalleryPrintCopyRepository::claimNumber) and an open copy only sets its owning side, so the order's own collection stays empty until it is read back from the base
-        $hasLimitedEdition = false;
-
-        foreach ($itemsOfThisKind as $id => $itemContent) {
-            $offer = $this->printService->findOffer($id);
-
-            if (null === $offer) {
-                continue;
-            }
-
-            $snapshot = $this->snapshot($offer, $itemContent['item'] ?? []);
-
-            for ($unit = 0; $unit < (int) $itemContent['quantity']; ++$unit) {
-                if ($offer->media->isLimitedEdition()) {
-                    $copy = $this->copyRepository->claimNumber($offer->media, $order, $snapshot);
-
-                    // validateCheckout() weighed the edition minutes ago, so this is the race it cannot close: two checkouts settling at once. The customer has paid and is owed a print, so the order is kept and flagged for a human rather than being lost
-                    if (null === $copy) {
-                        $soldOut = true;
-
-                        continue;
-                    }
-
-                    $hasLimitedEdition = true;
-
-                    continue;
-                }
-
-                $this->entityManager->persist(
-                    new GalleryPrintCopy()
-                        ->setMedia($offer->media)
-                        ->setOrder($order)
-                        ->setSoldAt(new \DateTimeImmutable())
-                        ->applySnapshot($snapshot)
-                );
-            }
-        }
+        [$soldOut, $hasLimitedEdition] = $this->addCopies($itemsOfThisKind, $order);
 
         if ($soldOut) {
             $order->setLastError($this->translator->trans('label.print_edition_sold_out_after_payment', [], 'gallery'));

@@ -12,6 +12,7 @@ namespace c975L\GalleryBundle\Controller\Management;
 
 use c975L\ConfigBundle\Service\ConfigServiceInterface;
 use c975L\GalleryBundle\Entity\GalleryCategory;
+use c975L\GalleryBundle\Entity\GalleryMedia;
 use c975L\GalleryBundle\Form\GalleryMediaBatchUploadType;
 use c975L\GalleryBundle\Model\GalleryMediaBatch;
 use c975L\GalleryBundle\Repository\GalleryCategoryRepository;
@@ -74,48 +75,61 @@ class GalleryMediaUploadController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $data = $form->getData();
 
-            $medias = $this->galleryMediaFactory->createFromUploads(
-                $category,
-                $data['files'],
-                new GalleryMediaBatch(
-                    $data['titleRoot'] ?? null,
-                    $data['credits'] ?? null,
-                    $data['rightsReserved'] ?? false,
-                    $data['keepOriginals'] ?? false,
-                    $data['watermark'] ?? false,
-                    $data['watermarkPosition'] ?? null,
-                ),
-            );
-
-            foreach ($medias as $media) {
-                $this->entityManager->persist($media);
-
-                // A slug freed by an earlier deletion is still answering 410 Gone (see GalleryMediaCrudController::deleteEntity), and RedirectSubscriber runs before the router: the page would exist while its url kept saying it doesn't
-                if (\is_string($category->getSlug()) && \is_string($media->getSlug())) {
-                    $this->urlRedirector->release($this->entityManager, $this->generateUrl('gallery_media', [
-                        'category' => $category->getSlug(),
-                        'slug' => $media->getSlug(),
-                    ]));
-                }
-            }
-            $this->entityManager->flush();
+            $medias = $this->galleryMediaFactory->createFromUploads($category, $data['files'], $this->batchFrom($data));
+            $this->persistMedias($category, $medias);
 
             $this->addFlash('success', $this->translator->trans('label.gallery_medias_uploaded', [], 'gallery'));
 
-            // Back to the category just filled, whose edit screen is where its medias are listed
-            $url = $this->adminUrlGenerator
-                ->setController(GalleryCategoryCrudController::class)
-                ->setAction(Action::EDIT)
-                ->setEntityId($category->getId())
-                ->generateUrl()
-            ;
-
-            return $this->uploadProgress->redirect($request, $url);
+            return $this->uploadProgress->redirect($request, $this->categoryUrl($category));
         }
 
         return $this->render('@c975LGallery/management/gallery_media_upload.html.twig', [
             'form' => $form,
             'category' => $category,
         ]);
+    }
+
+    // What the whole batch shares, every field optional: the form leaves out what the admin left blank
+    private function batchFrom(array $data): GalleryMediaBatch
+    {
+        return new GalleryMediaBatch(
+            $data['titleRoot'] ?? null,
+            $data['credits'] ?? null,
+            $data['rightsReserved'] ?? false,
+            $data['keepOriginals'] ?? false,
+            $data['watermark'] ?? false,
+            $data['watermarkPosition'] ?? null,
+        );
+    }
+
+    /**
+     * @param iterable<GalleryMedia> $medias
+     */
+    private function persistMedias(GalleryCategory $category, iterable $medias): void
+    {
+        foreach ($medias as $media) {
+            $this->entityManager->persist($media);
+
+            // A slug freed by an earlier deletion is still answering 410 Gone (see GalleryMediaCrudController::deleteEntity), and RedirectSubscriber runs before the router: the page would exist while its url kept saying it doesn't
+            if (\is_string($category->getSlug()) && \is_string($media->getSlug())) {
+                $this->urlRedirector->release($this->entityManager, $this->generateUrl('gallery_media', [
+                    'category' => $category->getSlug(),
+                    'slug' => $media->getSlug(),
+                ]));
+            }
+        }
+
+        $this->entityManager->flush();
+    }
+
+    // Back to the category just filled, whose edit screen is where its medias are listed
+    private function categoryUrl(GalleryCategory $category): string
+    {
+        return $this->adminUrlGenerator
+            ->setController(GalleryCategoryCrudController::class)
+            ->setAction(Action::EDIT)
+            ->setEntityId($category->getId())
+            ->generateUrl()
+        ;
     }
 }

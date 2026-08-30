@@ -49,7 +49,7 @@ class GalleryDemoFixtureProviderTest extends TestCase
         $registry = $this->createStub(PlaceholderMediaRegistry::class);
         $registry->method('getImages')->willReturn($images);
 
-        return new GalleryDemoFixtureProvider(new GallerySampleCatalog(), $translator, $registry, $this->projectDir);
+        return new GalleryDemoFixtureProvider(new GallerySampleCatalog($registry), $translator, $registry, $this->projectDir);
     }
 
     /** @return list<GalleryCategory> */
@@ -68,7 +68,7 @@ class GalleryDemoFixtureProviderTest extends TestCase
 
     public function testEveryCategoryOfTheCatalogIsSeededWithItsMedias(): void
     {
-        $catalog = new GallerySampleCatalog();
+        $catalog = new GallerySampleCatalog($this->createStub(PlaceholderMediaRegistry::class));
         $categories = $this->categories($this->createProvider());
 
         $this->assertSame(

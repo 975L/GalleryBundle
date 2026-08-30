@@ -58,7 +58,7 @@ class GalleryDemoFixtureProvider implements DemoFixtureProviderInterface
 
             $mediaPosition = 0;
             foreach ($spec['medias'] as $mediaSpec) {
-                $media = $this->media($mediaSpec, $this->photograph($mediaSpec['slug'], $images, $index++), ++$mediaPosition);
+                $media = $this->media($mediaSpec, $this->catalog->photograph($mediaSpec['slug'], $images, $index++), ++$mediaPosition);
                 if (null === $media) {
                     continue;
                 }
@@ -71,21 +71,6 @@ class GalleryDemoFixtureProvider implements DemoFixtureProviderInterface
 
             yield $category;
         }
-    }
-
-    /**
-     * The photograph the site declares for this one media, keyed as "gallery/<slug>" (see
-     * PlaceholderMediaProviderInterface) - a gallery being the one place where the picture is not an illustration of
-     * the row but the row itself, so a rotated placeholder is the stopgap and never the point.
-     *
-     * @param list<string> $images
-     */
-    private function photograph(string $slug, array $images, int $index): string
-    {
-        $declared = $this->placeholderMediaRegistry->getImagesFor('gallery/' . $slug);
-
-        // One media is one photograph: a second declared file has nothing to be, where a product sheet would leaf through it
-        return $declared[0] ?? $images[$index % \count($images)];
     }
 
     /**

@@ -887,6 +887,13 @@ the same dark button whatever the page around it is. The cascade is unchanged �
 the admin's values, then the app's `themes/gallery.css`, so uncommenting a color there takes it back from
 the back office.
 
+It also ships the silhouettes of its own block kinds (`bundles/c975lgallery/css/block-thumbs.min.css`,
+drawn in `sass/block-thumbs.scss` on the frame and the parts UiBundle's `sass/_block-thumbs.scss` holds),
+contributed to the management registry through the same `Service\StylesheetProvider` and the
+`ui.management_stylesheet` tag: `gallery_categories` and `gallery_medias` are then recognisable at a glance
+in the block picker rather than sharing UiBundle's default silhouette. A site showing them on a public
+page — a block showcase — contributes that same file through its own stylesheet provider.
+
 ### Videos
 
 A `GalleryMedia` becomes a video by carrying **the url of the page the video is watched on** — the one an
@@ -1313,10 +1320,16 @@ business, this bundle shipping no command that writes to a database. Enriching t
 catalog therefore shows up in both. Everything a visitor reads is a key of the `gallery` domain, so a demo site
 seeded in Spanish reads as a Spanish gallery.
 
-The photographs come from what the site declares through UiBundle's `PlaceholderMediaProviderInterface`, rotated
-over the catalog and taken **as a temporary copy**: an upload moves the file it is handed, and the placeholders
-belong to the whole site. A site declaring none is seeded with nothing at all rather than with empty categories —
-a gallery is its photographs.
+The photographs come from what the site declares through UiBundle's `PlaceholderMediaProviderInterface`: each
+media is given the picture declared under its own `gallery/<slug>` key (`keyed_images`), so the showcase and the
+demo site show the same photograph under the same title, and falls back on the generic pool, rotated over the
+catalog, for a slug the site declares none for. The demo takes its files **as a temporary copy**: an upload moves
+the file it is handed, and the placeholders belong to the whole site. A site declaring none is seeded with nothing
+at all rather than with empty categories — a gallery is its photographs.
+
+The showcase's thumbnails lead to the demonstration site UiBundle's `ui-showcase-demo-url` names: `paysages`,
+`cretes-au-matin` and the rest exist only there, and the site hosting the showcase would answer a 404 for them.
+No demonstration named, no link — they render as plain images rather than as links going nowhere.
 
 Only the categories are yielded: their medias follow through the cascade, files included, so a demo site taking a
 category back has VichUploader's removal listener take the stored files off the disk with it.

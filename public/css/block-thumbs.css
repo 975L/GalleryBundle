@@ -1,0 +1,45 @@
+/*
+ * (c) 2026: 975L <contact@975l.com>
+ * (c) 2026: Laurent Marquet <laurent.marquet@laposte.net>
+ *
+ * This source file is subject to the MIT license that is bundled
+ * with this source code in the file LICENSE.
+ */
+/* The silhouettes of this bundle's block kinds, shown wherever a kind has to be recognised at a glance: the visual picker an editor chooses a block from (UiBundle's assets/js/block-picker.js) and the public block showcase of a site. Drawn here rather than in UiBundle for the same reason as the kinds' templates and fixtures: a block belongs to the bundle shipping it. The frame, the five parts and the default silhouette come from UiBundle's sass/_block-thumbs.scss - what follows only says how this bundle's kinds arrange them. */
+/* One thumbnail per category, each named underneath */
+.ui-block-thumb--gallery_categories .ui-block-thumb__media {
+  display: block;
+  background-image: linear-gradient(to right, currentcolor 0 84%, transparent 84%), linear-gradient(to right, currentcolor 0 84%, transparent 84%);
+  background-size: 50% 46%;
+  background-position: 0 0, 0 100%;
+  background-repeat: repeat-x;
+  background-color: transparent;
+}
+.ui-block-thumb--gallery_categories .ui-block-thumb__title {
+  display: none;
+}
+.ui-block-thumb--gallery_categories .ui-block-thumb__line {
+  height: 0.1875rem;
+  background-image: linear-gradient(to right, currentcolor 0 46%, transparent 46%);
+  background-size: 52% 100%;
+  background-color: transparent;
+}
+.ui-block-thumb--gallery_categories .ui-block-thumb__line + .ui-block-thumb__line {
+  display: none;
+}
+
+/* The photos and videos themselves, packed tighter and captioned by nothing */
+.ui-block-thumb--gallery_medias .ui-block-thumb__media {
+  display: block;
+  background-image: linear-gradient(to right, currentcolor 0 78%, transparent 78%), linear-gradient(to right, currentcolor 0 78%, transparent 78%), linear-gradient(to right, currentcolor 0 78%, transparent 78%);
+  background-size: 25% 30%;
+  background-position: 0 0, 0 50%, 0 100%;
+  background-repeat: repeat-x;
+  background-color: transparent;
+}
+.ui-block-thumb--gallery_medias .ui-block-thumb__title,
+.ui-block-thumb--gallery_medias .ui-block-thumb__line {
+  display: none;
+}
+
+/*# sourceMappingURL=block-thumbs.css.map */

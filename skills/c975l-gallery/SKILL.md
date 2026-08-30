@@ -1,6 +1,6 @@
 ---
 name: c975l-gallery
-description: "Use this skill when working with photo galleries in a Symfony application built on the c975L ecosystem with c975l/gallery-bundle. Covers categories and medias, the admin-renamable url prefix, the two-step trash, batch upload and the three image derivatives, videos and embeds, the two gallery blocks, theming, and every extension point the bundle offers. Triggers on: GalleryCategory, GalleryMedia, gallery-route-prefix, gallery_index, gallery_category, gallery_media, gallery_categories, gallery_medias, c975l:gallery:rebuild-thumbnails, c975l:gallery:fill-slugs, photo gallery, thumbnail, lightbox, batch upload, upload progress, passe-partout, trash, restore, delete permanently, 410 Gone, download highres, download originals, GalleryMediaArchiver, move medias, move selection, GalleryMediaMover, moveMedias, files-gallery, health check, automatic gallery, latest additions, GalleryLatestProvider, findOrCreateAutomatic, findLatest, gallery-latest-days, gallery-latest-max, gallery-rating, likes, like a photo, heart, rating, findVisibleByCategories, setLoadedMedias, media caption, media description, GalleryCustomizationProviderInterface, gallery.customization_provider, GalleryDataField, getDataValue, gallery-video-self-hosted-max-height, self-hosted video, portrait video., GallerySampleCatalog, GalleryDemoFixtureProvider, DemoFixtureProviderInterface, demo gallery, ReplacingFile, hidden, hide a gallery, masking, sell prints, print shop, limited edition, editionSize, printable, certificate of authenticity, gallery_print_certificate, gallery_print_file, gallery-print-enabled, gallery-printable-max, gallery-print-provider, gallery-print-sandbox, gallery-print-signature, GalleryPrintFormat, GalleryPrintOrder, GalleryPrintCopy, PrintCopySnapshot, PrintFulfilmentInterface, ProdigiFulfilment, ManualFulfilment, gallery.print_fulfilment, AutomaticGalleryInterface, gallery.automatic_gallery, GalleryAutomaticProvider, GalleryPrintableProvider, automaticKind, qr code"
+description: "Use this skill when working with photo galleries in a Symfony application built on the c975L ecosystem with c975l/gallery-bundle. Covers categories and medias, the admin-renamable url prefix, the two-step trash, batch upload and the three image derivatives, videos and embeds, the two gallery blocks, theming, and every extension point the bundle offers. Triggers on: GalleryCategory, GalleryMedia, gallery-route-prefix, gallery_index, gallery_category, gallery_media, gallery_categories, gallery_medias, c975l:gallery:rebuild-thumbnails, c975l:gallery:fill-slugs, photo gallery, thumbnail, lightbox, batch upload, upload progress, passe-partout, trash, restore, delete permanently, 410 Gone, download highres, download originals, GalleryMediaArchiver, move medias, move selection, GalleryMediaMover, moveMedias, files-gallery, health check, automatic gallery, latest additions, GalleryLatestProvider, findOrCreateAutomatic, findLatest, gallery-latest-days, gallery-latest-max, gallery-rating, likes, like a photo, heart, rating, findVisibleByCategories, setLoadedMedias, media caption, media description, GalleryCustomizationProviderInterface, gallery.customization_provider, GalleryDataField, getDataValue, gallery-video-self-hosted-max-height, self-hosted video, portrait video., GallerySampleCatalog, GalleryDemoFixtureProvider, DemoFixtureProviderInterface, demo gallery, ReplacingFile, hidden, hide a gallery, masking, sell prints, print shop, limited edition, editionSize, printable, certificate of authenticity, gallery_print_certificate, gallery_print_file, gallery-print-enabled, gallery-printable-max, gallery-print-provider, gallery-print-sandbox, gallery-print-signature, GalleryPrintFormat, GalleryPrintOrder, GalleryPrintCopy, PrintCopySnapshot, PrintFulfilmentInterface, ProdigiFulfilment, ManualFulfilment, gallery.print_fulfilment, AutomaticGalleryInterface, gallery.automatic_gallery, GalleryAutomaticProvider, GalleryPrintableProvider, automaticKind, qr code, GalleryShowcaseProvider, ui-showcase-demo-url, block showcase, block-thumbs, block picker silhouette, ui.management_stylesheet, getManagementStylesheets"
 ---
 
 # c975L GalleryBundle
@@ -234,6 +234,12 @@ In a template of your own, the same Twig functions and components are available:
 Anonymous components under `templates/components/Gallery/`: `Categories`, `Category`, `Medias`,
 `Media`, `Navigation`, `Previous`, `Next`, `Lightbox`, `Video`, `Credits`.
 
+Each kind is drawn as a silhouette in `sass/block-thumbs.scss`, compiled to
+`public/css/block-thumbs.min.css` and handed to the back office by `Service\StylesheetProvider`
+(`BundleStylesheetManagementProviderInterface`, tag `ui.management_stylesheet`), so the block picker shows
+what a kind looks like instead of UiBundle's default frame. A new kind adds its own rule there —
+`StylesheetProviderTest` reads the tagged kinds off `config/services.yaml` and fails on one left undrawn.
+
 ## Images: what the bundle generates
 
 Three derivatives per uploaded image, generated automatically by UiBundle's `VichImageResizeListener`
@@ -451,7 +457,8 @@ What the bundle already contributes to the dashboard, so you do not have to: `Me
 `GalleryExportProvider` /
 `GalleryImportProvider` (categories as a zip, files included), `GalleryBackupPathProvider`,
 `GalleryBlockOwnerResolver`, `GalleryGuidedProjectProvider`, `WhatsNewProvider`, `ImportmapProvider`,
-`Service\ScriptProvider`, `Service\StylesheetProvider`, `Service\GalleryShowcaseProvider`,
+`Service\ScriptProvider`, `Service\StylesheetProvider` (public and management stylesheets both),
+`Service\GalleryShowcaseProvider`,
 `GalleryShortcutProvider` (the tile toggling the lab's test mode), `GalleryDemoFixtureProvider`,
 `Service\GalleryPrintBasketItemProvider` (PaymentBundle's basket, kind `gallery_print`),
 `Email\GalleryEmailTemplateProvider`.
@@ -464,10 +471,14 @@ photographs. `GalleryShowcaseProvider` builds the arrays the block showcase rend
 demo site loads it - this bundle ships no command that writes to a database. Enriching the catalog shows
 up in both, and everything a visitor reads is a key of the `gallery` domain.
 
-The photographs come from `PlaceholderMediaProviderInterface`, rotated over the catalog and taken as a
-temporary copy — an upload moves the file it is handed. A site declaring none is seeded with nothing at
-all: a gallery is its photographs. A media's slug is set before the flush, being half of where its file
-lands (see `GalleryMedia::getVichMediaPath()`).
+The photographs come from `PlaceholderMediaProviderInterface`: each media takes the one declared under
+its own `gallery/<slug>` key (`keyed_images`), so the showcase and the demo site show the same photograph
+under the same title, and falls back on the generic pool, rotated over the catalog, for a slug declared
+nowhere. The demo takes its files as a temporary copy — an upload moves the file it is handed. A site
+declaring none is seeded with nothing at all: a gallery is its photographs. The showcase's thumbnails
+lead to the demonstration site UiBundle's `ui-showcase-demo-url` names, the only place holding these
+categories, and render as plain images when none is named. A media's slug is set before the flush, being
+half of where its file lands (see `GalleryMedia::getVichMediaPath()`).
 
 Only the categories are yielded, their medias following through the cascade so Vich takes their files
 and derivatives off the disk with them.

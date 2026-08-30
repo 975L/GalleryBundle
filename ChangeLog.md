@@ -1,5 +1,25 @@
 # ChangeLog
 
+## v1.12.1
+
+The showcase shows the gallery's own photographs
+
+- `GalleryShowcaseProvider` attaches the photograph the site declares for each media (`gallery/<slug>`) instead of rotating the generic pool (30/08/2026)
+- `GallerySampleCatalog` resolves that photograph, the showcase and the demo fixtures reading it from there (30/08/2026)
+- Its stand-ins carry the url they lead to, built on UiBundle's new `ui-showcase-demo-url` (30/08/2026)
+- Those links carry the default gallery prefix, not the one this site renamed its own to (30/08/2026)
+- `Category.html.twig` and `Media.html.twig` read that url when the stand-in carries one (30/08/2026)
+- An empty url renders a `<span>` rather than a dead link (30/08/2026)
+- `StylesheetProvider` implements `BundleStylesheetManagementProviderInterface`, tagged `ui.management_stylesheet` (30/08/2026)
+- `sass/block-thumbs.scss` draws `gallery_categories` and `gallery_medias` for the back-office block picker (30/08/2026)
+- `StylesheetProviderTest` fails on a pickable kind left without a silhouette (30/08/2026)
+- `phpmd.xml.dist` holds the ruleset, the counting rules measuring the contract left out (30/08/2026)
+- `configureFields()` carries PHPMD's length marker, PHPStan ignoring the tag it cannot parse (30/08/2026)
+- `.codacy.yaml` excludes the repository root's own `public/`, `tests/` and minified files (30/08/2026)
+- `GalleryImportProvider`, `GalleryPrintBasketItemProvider` and `GalleryMediaUploadController` split their longest methods (30/08/2026)
+- The README and the `c975l-gallery` skill follow (30/08/2026)
+- Requires `c975l/core-bundle` `^1.19.1` (30/08/2026)
+
 ## v1.12.0
 
 Photographs are sold as numbered prints

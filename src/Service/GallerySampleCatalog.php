@@ -10,8 +10,11 @@
 
 namespace c975L\GalleryBundle\Service;
 
+use c975L\UiBundle\Registry\PlaceholderMediaRegistry;
+
 /**
- * The made-up gallery this bundle stands behind, held as plain data and read by its two consumers.
+ * The made-up gallery this bundle stands behind, held as plain data and read by its two consumers, down to the
+ * photograph each of its medias is shown under.
  *
  * GalleryShowcaseProvider turns it into the arrays a block showcase renders, GalleryDemoFixtureProvider into the
  * rows a demo site is browsed for. One dataset, two readings: enriching it here shows up in both, which is the
@@ -24,6 +27,11 @@ class GallerySampleCatalog
 {
     // Every media of a made-up gallery says the same of who took it, there being no one to credit
     public const string CREDITS_KEY = 'label.gallery_sample_credits';
+
+    public function __construct(
+        private readonly PlaceholderMediaRegistry $placeholderMediaRegistry,
+    ) {
+    }
 
     /**
      * Three categories of four medias: the showcase reads the first three categories and the first four medias
@@ -65,6 +73,26 @@ class GallerySampleCatalog
                 ],
             ],
         ];
+    }
+
+    /**
+     * The photograph the site declares for this one media, keyed as "gallery/<slug>" (see
+     * PlaceholderMediaProviderInterface) - a gallery being the one place where the picture is not an illustration of
+     * the row but the row itself, so a rotated placeholder is the stopgap and never the point.
+     *
+     * Read here by both consumers rather than resolved on each side, so the showcase and the gallery its links lead
+     * to show the same picture under the same title.
+     *
+     * Falls back on the generic pool, rotated over the medias, for a slug the site declares no photograph for.
+     *
+     * @param list<string> $images
+     */
+    public function photograph(string $slug, array $images, int $index): string
+    {
+        $declared = $this->placeholderMediaRegistry->getImagesFor('gallery/' . $slug);
+
+        // One media is one photograph: a second declared file has nothing to be, where a product sheet would leaf through it
+        return $declared[0] ?? $images[$index % \count($images)];
     }
 
     /**

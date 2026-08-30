@@ -67,65 +67,13 @@ class GalleryImportProvider implements ImportProviderInterface
             $isNew = null === $category;
             $category ??= new GalleryCategory();
 
-            // "automatic" is what an archive exported before the kinds carries, and it named the gallery of the last additions - read as a fallback rather than importing that gallery as an ordinary one
-            $kind = $item['automaticKind'] ?? (($item['automatic'] ?? false) ? GalleryCategory::AUTOMATIC_LATEST : null);
-
-            // Only taken when the site holds no gallery of that kind at all, or when this very category is it: the site writes its own (see GalleryCategoryRepository::findOrCreateAutomatic), and a second one would show the same medias under a second url
-            // The first item marked wins it, the ones after are imported as normal categories
-            $takesAutomatic = null !== $kind && \in_array($automatic[$kind] ?? null, [null, $category], true);
-            if ($takesAutomatic) {
-                $automatic[$kind] = $category;
-            }
-
-            $category
-                ->setSlug($item['slug'])
-                ->setTitle($item['title'])
-                // "description" is what an archive exported before the rename carries: read as a fallback rather than importing a category stripped of its lead-in. Both optional, an archive predating the field altogether staying importable - and read as "no lead-in", which is what such an archive describes
-                ->setSummarySocialNetwork($item['summarySocialNetwork'] ?? $item['description'] ?? null)
-                ->setPosition($item['position'] ?? 0)
-                ->setUncategorized($item['uncategorized'] ?? false)
-                // What the site added to this gallery of its own, put back whole - an archive predating it, or one from a site declaring no fields, importing a gallery carrying none
-                ->setData($item['data'] ?? null)
-                ->setAutomaticKind($takesAutomatic ? $kind : null)
-                // Optional like the rest, an archive predating the trash importing as a category that is not in it - which is what such an archive describes
-                ->setIsDeleted($item['isDeleted'] ?? false)
-                // Read back for the reason it is exported (see GalleryExportProvider): a round-trip must not put back on the site a gallery an admin had taken off it
-                ->setHidden($item['hidden'] ?? false)
-                ->setCoverMedia(null);
+            $this->fillCategory($category, $item, $automatic);
 
             // The key is optional, an archive exported before the category gained a lead-in staying importable - what it describes then is a category without one, same reading as PageImportProvider
             $this->replaceBlocks($category, $item['blocks'] ?? [], $filesDir);
 
-            // Existing Medias have no natural key to match the imported ones against, so the whole collection is replaced - orphanRemoval on GalleryCategory::$medias deletes the orphaned rows on flush
-            foreach ($category->getMedias()->toArray() as $existingMedia) {
-                if (null !== $existingMedia->getId()) {
-                    $droppedMediaIds[] = $existingMedia->getId();
-                }
-                $category->removeMedia($existingMedia);
-            }
-
-            // "photos"/"coverPhotoIndex" are what an archive exported before the rename carries: read as a fallback rather than importing a category emptied of everything it held
-            $newMedias = [];
-            foreach ($item['medias'] ?? $item['photos'] ?? [] as $mediaData) {
-                $media = $this->buildMedia($mediaData, $filesDir);
-                $this->em->persist($media);
-                $category->addMedia($media);
-
-                // Once the media has joined its category, the slug being unique within it - the exported one is honoured when it is still free, and the media's imported file is named after whatever it ends up being (see GalleryMedia::getVichMediaPath)
-                $this->mediaSlugger->assign($media, $mediaData['slug'] ?? null);
-
-                // Held back rather than laid down right away: every archived file is named after the stored one, which is only named by the flush below (see restoreArchivedFiles)
-                if (null !== $filesDir) {
-                    $archived[] = [$media, $mediaData];
-                }
-
-                $newMedias[] = $media;
-            }
-
-            $coverIndex = $item['coverMediaIndex'] ?? $item['coverPhotoIndex'] ?? null;
-            if (null !== $coverIndex && isset($newMedias[$coverIndex])) {
-                $category->setCoverMedia($newMedias[$coverIndex]);
-            }
+            $droppedMediaIds = [...$droppedMediaIds, ...$this->dropMedias($category)];
+            $archived = [...$archived, ...$this->addMedias($category, $item, $filesDir)];
 
             $this->em->persist($category);
             $isNew ? $created++ : $updated++;
@@ -143,6 +91,120 @@ class GalleryImportProvider implements ImportProviderInterface
         return ['created' => $created, 'updated' => $updated];
     }
 
+    // Writes the category's own fields, the fallbacks reading the archives that predate each rename
+    /**
+     * @param array<string, GalleryCategory|null> $automatic the gallery already holding each automatic kind, updated as this import hands one out
+     */
+    private function fillCategory(GalleryCategory $category, array $item, array &$automatic): void
+    {
+        $kind = $this->claimAutomaticKind($category, $item, $automatic);
+
+        $category
+            ->setSlug($item['slug'])
+            ->setTitle($item['title'])
+            // "description" is what an archive exported before the rename carries: read as a fallback rather than importing a category stripped of its lead-in. Both optional, an archive predating the field altogether staying importable - and read as "no lead-in", which is what such an archive describes
+            ->setSummarySocialNetwork($item['summarySocialNetwork'] ?? $item['description'] ?? null)
+            ->setPosition($item['position'] ?? 0)
+            ->setUncategorized($item['uncategorized'] ?? false)
+            // What the site added to this gallery of its own, put back whole - an archive predating it, or one from a site declaring no fields, importing a gallery carrying none
+            ->setData($item['data'] ?? null)
+            ->setAutomaticKind($kind)
+            ->setCoverMedia(null);
+
+        $this->fillCategoryPublication($category, $item);
+    }
+
+    // Where the gallery stands rather than what it holds, read back for the reason they are exported (see GalleryExportProvider): a round-trip must not put back on the site a gallery an admin had taken off it
+    private function fillCategoryPublication(GalleryCategory $category, array $item): void
+    {
+        $category
+            // Optional like the rest, an archive predating the trash importing as a category that is not in it - which is what such an archive describes
+            ->setIsDeleted($item['isDeleted'] ?? false)
+            ->setHidden($item['hidden'] ?? false);
+    }
+
+    // The automatic kind this category walks away with, or null for an ordinary gallery
+    // Only taken when the site holds no gallery of that kind at all, or when this very category is it: the site writes its own (see GalleryCategoryRepository::findOrCreateAutomatic), and a second one would show the same medias under a second url
+    // The first item marked wins it, the ones after are imported as normal categories
+    /**
+     * @param array<string, GalleryCategory|null> $automatic the gallery already holding each automatic kind, updated as this import hands one out
+     */
+    private function claimAutomaticKind(GalleryCategory $category, array $item, array &$automatic): ?string
+    {
+        // "automatic" is what an archive exported before the kinds carries, and it named the gallery of the last additions - read as a fallback rather than importing that gallery as an ordinary one
+        $kind = $item['automaticKind'] ?? (($item['automatic'] ?? false) ? GalleryCategory::AUTOMATIC_LATEST : null);
+        if (null === $kind || !\in_array($automatic[$kind] ?? null, [null, $category], true)) {
+            return null;
+        }
+
+        $automatic[$kind] = $category;
+
+        return $kind;
+    }
+
+    // Empties the category of the medias it held, and answers the ids they were stored under
+    // Existing Medias have no natural key to match the imported ones against, so the whole collection is replaced - orphanRemoval on GalleryCategory::$medias deletes the orphaned rows on flush
+    /**
+     * @return list<int>
+     */
+    private function dropMedias(GalleryCategory $category): array
+    {
+        $droppedIds = [];
+
+        foreach ($category->getMedias()->toArray() as $existingMedia) {
+            if (null !== $existingMedia->getId()) {
+                $droppedIds[] = $existingMedia->getId();
+            }
+            $category->removeMedia($existingMedia);
+        }
+
+        return $droppedIds;
+    }
+
+    // Fills the category with the medias the archive carries, cover included, and answers those whose files are still to be laid down
+    /**
+     * @return list<array{0: GalleryMedia, 1: array<string, mixed>}>
+     */
+    private function addMedias(GalleryCategory $category, array $item, ?string $filesDir): array
+    {
+        $archived = [];
+        $newMedias = [];
+
+        // "photos" is what an archive exported before the rename carries: read as a fallback rather than importing a category emptied of everything it held
+        foreach ($item['medias'] ?? $item['photos'] ?? [] as $mediaData) {
+            $media = $this->buildMedia($mediaData, $filesDir);
+            $this->em->persist($media);
+            $category->addMedia($media);
+
+            // Once the media has joined its category, the slug being unique within it - the exported one is honoured when it is still free, and the media's imported file is named after whatever it ends up being (see GalleryMedia::getVichMediaPath)
+            $this->mediaSlugger->assign($media, $mediaData['slug'] ?? null);
+
+            // Held back rather than laid down right away: every archived file is named after the stored one, which is only named by the flush in import() (see restoreArchivedFiles)
+            if (null !== $filesDir) {
+                $archived[] = [$media, $mediaData];
+            }
+
+            $newMedias[] = $media;
+        }
+
+        $this->assignCover($category, $item, $newMedias);
+
+        return $archived;
+    }
+
+    // The cover is designated by rank among the medias just added, an archive naming one it no longer carries leaving the category without
+    /**
+     * @param list<GalleryMedia> $newMedias
+     */
+    private function assignCover(GalleryCategory $category, array $item, array $newMedias): void
+    {
+        // "coverPhotoIndex" is what an archive exported before the rename carries
+        $coverIndex = $item['coverMediaIndex'] ?? $item['coverPhotoIndex'] ?? null;
+        if (null !== $coverIndex && isset($newMedias[$coverIndex])) {
+            $category->setCoverMedia($newMedias[$coverIndex]);
+        }
+    }
+
     // Existing Blocks have no natural key to match the imported ones against, so the whole collection is replaced - BlockRemovalListener removes the orphaned rows (and their Medias) on flush, same as PageImportProvider
     private function replaceBlocks(GalleryCategory $category, array $blocksData, ?string $filesDir): void
     {
@@ -158,7 +220,9 @@ class GalleryImportProvider implements ImportProviderInterface
     // Puts every archived file back exactly as it was exported, each under the name the stored one carries - which is why it can only run after the first flush, that name being the media's own when the archive carried it, and Vich's when it didn't
     // For a media that kept its name nothing has written anything yet, and these copies are the whole storage. For one Vich named, what the upload pipeline recomputed is overwritten rather than kept: it derived the thumbnail and the high resolution from the re-uploaded stored file, so the largest of the three came back at that file's own width, and it re-encoded the webp it was handed once more (see UiBundle's VichImageResizeListener)
     // The kept original is deliberately not left to that listener's own keepOriginal() either: what an import re-uploads is the already-processed file, so it would keep a webp copy of that instead of the untouched upload the archive actually carries
-    // @param list<array{0: GalleryMedia, 1: array}> $archived
+    /**
+     * @param list<array{0: GalleryMedia, 1: array<string, mixed>}> $archived
+     */
     private function restoreArchivedFiles(array $archived, string $filesDir): void
     {
         if ([] === $archived) {
@@ -166,36 +230,48 @@ class GalleryImportProvider implements ImportProviderInterface
         }
 
         foreach ($archived as [$media, $mediaData]) {
-            $filename = $media->getFilename();
-            if (null === $filename) {
-                continue;
-            }
-
-            $storedPath = $this->restoreFile($filesDir, $mediaData['file'] ?? null, $filename, 'public');
-            if (null !== $storedPath) {
-                // The two columns describe the file actually served: nothing has written them when the media kept its exported name, Vich never having seen a file, and the pipeline had set them from its own re-encoding otherwise
-                $media
-                    ->setSize(filesize($storedPath) ?: null)
-                    ->setMimeType(mime_content_type($storedPath) ?: null);
-            }
-
-            $this->restoreFile($filesDir, $mediaData['thumbFile'] ?? null, $media->getThumbnailFilename(), 'public');
-            $this->restoreFile($filesDir, $mediaData['highresFile'] ?? null, $media->getHighresFilename(), 'public');
-            $this->restoreOriginal($filesDir, $mediaData['originalFile'] ?? null, $media, $filename);
-
-            // Only ever restored for a media that kept its exported name: the other way round Vich has stored the video itself, under a name of its own, and removed the archived copy on the way (see buildMedia)
-            $videoPath = $this->restoreFile($filesDir, $mediaData['videoFile'] ?? null, $media->getVideoFilename(), 'public');
-            if (null !== $videoPath) {
-                $media
-                    ->setVideoSize(filesize($videoPath) ?: null)
-                    ->setVideoMimeType(mime_content_type($videoPath) ?: null);
-            }
-
-            // A media Vich stored carries a plain File on the property by now (see its FileInjector), which is exactly what GalleryMediaDerivativeCleanupListener::preUpdate() reads as "a new file is being uploaded" - left in place, it would take the flush below for a file replacement and erase the very files that were just restored
-            $media->setFile(null);
+            $this->restoreMediaFiles($media, $mediaData, $filesDir);
         }
 
         $this->em->flush();
+    }
+
+    // The five files one media travels with, each put back under the name the stored one carries
+    private function restoreMediaFiles(GalleryMedia $media, array $mediaData, string $filesDir): void
+    {
+        $filename = $media->getFilename();
+        if (null === $filename) {
+            return;
+        }
+
+        $storedPath = $this->restoreFile($filesDir, $mediaData['file'] ?? null, $filename, 'public');
+        if (null !== $storedPath) {
+            // The two columns describe the file actually served: nothing has written them when the media kept its exported name, Vich never having seen a file, and the pipeline had set them from its own re-encoding otherwise
+            $media
+                ->setSize(filesize($storedPath) ?: null)
+                ->setMimeType(mime_content_type($storedPath) ?: null);
+        }
+
+        $this->restoreFile($filesDir, $mediaData['thumbFile'] ?? null, $media->getThumbnailFilename(), 'public');
+        $this->restoreFile($filesDir, $mediaData['highresFile'] ?? null, $media->getHighresFilename(), 'public');
+        $this->restoreOriginal($filesDir, $mediaData['originalFile'] ?? null, $media, $filename);
+        $this->restoreVideo($media, $mediaData, $filesDir);
+
+        // A media Vich stored carries a plain File on the property by now (see its FileInjector), which is exactly what GalleryMediaDerivativeCleanupListener::preUpdate() reads as "a new file is being uploaded" - left in place, it would take the flush for a file replacement and erase the very files that were just restored
+        $media->setFile(null);
+    }
+
+    // Only ever restored for a media that kept its exported name: the other way round Vich has stored the video itself, under a name of its own, and removed the archived copy on the way (see buildMedia)
+    private function restoreVideo(GalleryMedia $media, array $mediaData, string $filesDir): void
+    {
+        $videoPath = $this->restoreFile($filesDir, $mediaData['videoFile'] ?? null, $media->getVideoFilename(), 'public');
+        if (null === $videoPath) {
+            return;
+        }
+
+        $media
+            ->setVideoSize(filesize($videoPath) ?: null)
+            ->setVideoMimeType(mime_content_type($videoPath) ?: null);
     }
 
     // Copies one archived file over what the pipeline wrote in its place, and answers where it landed. Nothing is done for a key the archive doesn't carry - an archive exported before the derivatives travelled keeps the recomputed ones, which is the best it can describe
@@ -232,22 +308,9 @@ class GalleryImportProvider implements ImportProviderInterface
 
     private function buildMedia(array $mediaData, ?string $filesDir): GalleryMedia
     {
-        // "alt" is what an archive exported before the title/slug rework carries, read as a fallback rather than importing medias with no name at all
-        $media = new GalleryMedia()
-            ->setTitle($mediaData['title'] ?? $mediaData['alt'] ?? null)
-            ->setDescription($mediaData['description'] ?? null)
-            ->setData($mediaData['data'] ?? null)
-            ->setCredits($mediaData['credits'] ?? null)
-            ->setRightsReserved($mediaData['rightsReserved'] ?? false)
-            // The type is derived from the url rather than imported alongside it (see GalleryMedia::setExternalUrl), so an archive can never carry the two out of step
-            // "externalId" is what an archive exported before the url rework carries: an id next to a platform name, rebuilt into the url that platform gives it - an archive from a platform nobody declares anymore has nothing to rebuild, and imports as the image it already was
-            ->setExternalUrl($mediaData['externalUrl'] ?? $this->legacyEmbedUrl($mediaData))
-            // Optional like the category's, an archive predating the trash importing as a media that is not in it
-            ->setIsDeleted($mediaData['isDeleted'] ?? false)
-            // Read back for the same reason they are exported (see GalleryExportProvider::exportMediaData): a round-trip must not republish what an admin had taken off the public pages, nor put on sale what he had taken off sale
-            ->setHidden($mediaData['hidden'] ?? false)
-            ->setPrintable($mediaData['printable'] ?? false)
-            ->setPosition($mediaData['position'] ?? 0);
+        $media = new GalleryMedia();
+        $this->fillMediaContent($media, $mediaData);
+        $this->fillMediaPublication($media, $mediaData);
 
         if (null !== $filesDir && isset($mediaData['file'])) {
             $this->attachFiles($media, $mediaData, $filesDir);
@@ -259,6 +322,45 @@ class GalleryImportProvider implements ImportProviderInterface
         }
 
         return $media;
+    }
+
+    // What the media shows, the fallbacks reading the archives that predate each rename
+    private function fillMediaContent(GalleryMedia $media, array $mediaData): void
+    {
+        $media
+            // "alt" is what an archive exported before the title/slug rework carries, read as a fallback rather than importing medias with no name at all
+            ->setTitle($mediaData['title'] ?? $mediaData['alt'] ?? null)
+            ->setDescription($mediaData['description'] ?? null)
+            ->setData($mediaData['data'] ?? null)
+            ->setExternalUrl($this->externalUrl($mediaData));
+
+        $this->fillMediaCredits($media, $mediaData);
+    }
+
+    // Who the picture is owed to, and whether the site claims it
+    private function fillMediaCredits(GalleryMedia $media, array $mediaData): void
+    {
+        $media
+            ->setCredits($mediaData['credits'] ?? null)
+            ->setRightsReserved($mediaData['rightsReserved'] ?? false);
+    }
+
+    // The type is derived from the url rather than imported alongside it (see GalleryMedia::setExternalUrl), so an archive can never carry the two out of step
+    // "externalId" is what an archive exported before the url rework carries: an id next to a platform name, rebuilt into the url that platform gives it - an archive from a platform nobody declares anymore has nothing to rebuild, and imports as the image it already was
+    private function externalUrl(array $mediaData): ?string
+    {
+        return $mediaData['externalUrl'] ?? $this->legacyEmbedUrl($mediaData);
+    }
+
+    // Where the media stands rather than what it holds, all four read back for the reason they are exported (see GalleryExportProvider::exportMediaData): a round-trip must not republish what an admin had taken off the public pages, nor put on sale what he had taken off sale
+    private function fillMediaPublication(GalleryMedia $media, array $mediaData): void
+    {
+        $media
+            // Optional like the category's, an archive predating the trash importing as a media that is not in it
+            ->setIsDeleted($mediaData['isDeleted'] ?? false)
+            ->setHidden($mediaData['hidden'] ?? false)
+            ->setPrintable($mediaData['printable'] ?? false)
+            ->setPosition($mediaData['position'] ?? 0);
     }
 
     // The two ways of putting a media's files back, decided by whether the archive says what they were called

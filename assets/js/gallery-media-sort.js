@@ -72,7 +72,7 @@ export default class extends Controller {
     // Order and cover go together on every call, whichever of the two was just changed: they are one row's two sides server-side, and sending both spares a second route for the second of them
     save() {
         const body = new URLSearchParams();
-        this.itemTargets.forEach((item) => body.append("mediaOrder[]", item.dataset.mediaId));
+        this.itemTargets.forEach((item) => { body.append("mediaOrder[]", item.dataset.mediaId); });
         body.append("coverMediaId", this.cover());
 
         fetch(this.urlValue, {

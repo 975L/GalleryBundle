@@ -2,12 +2,14 @@
 {% set coverMedia = category.coverOrRandomMedia %}
 {# Framed like the medias' own grid, the two reading as one gallery - see Media.html.twig #}
 {% set whole = config('gallery-thumbnail-whole') %}
+{# A showcase stand-in carries the url it leads to, its categories living in a demonstration site rather than in this one (see GalleryShowcaseProvider) - a real category has none and keeps its own page. Left empty, Image:Link renders a <span> instead of a link going nowhere #}
+{% set url = category.url ?? path('gallery_category', { category: category.slug }) %}
 {% if coverMedia %}
     <div class="gallery-thumb{{ whole ? ' gallery-thumb--whole' : '' }}">
         <twig:c975LUi:Image:Link
             label="{{ category.title }} ({{ category.mediasCount }})"
             src="{{ coverMedia.thumbnailFilename }}"
-            url="{{ path('gallery_category', { category: category.slug }) }}"
+            url="{{ url }}"
             class="img-thumbnail" alt="{{ category.title }}" width="150" height="150"/>
     </div>
 {% endif %}

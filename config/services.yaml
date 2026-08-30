@@ -34,6 +34,7 @@ services:
     c975L\GalleryBundle\Service\StylesheetProvider:
         tags:
             - { name: 'ui.stylesheet', priority: 100 }
+            - { name: 'ui.management_stylesheet' }
 
     # Block kinds registered in UiBundle - cacheable: false on both, their templates resolving their content live via gallery_block_*() on entities BlockCacheInvalidationListener does not watch
     gallery.block.categories:

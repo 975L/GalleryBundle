@@ -276,6 +276,8 @@ class GalleryMediaCrudController extends AbstractCrudController
     }
 
     #[\Override]
+    // A declaration of fields, one line per field: its length says how much the screen shows, not how much the method decides
+    /** @SuppressWarnings(PHPMD.ExcessiveMethodLength) */
     public function configureFields(string $pageName): iterable
     {
         return [
