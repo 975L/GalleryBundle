@@ -723,6 +723,10 @@ names the medias it found nothing to rebuild from. `--dry-run` lists what it wou
 
 ### Blocks defined by this bundle
 
+![GalleryBundle blocks](.github/images/GalleryBlocks.png)
+
+One tile per kind, captured on the showcase at [bundles.975l.com](https://bundles.975l.com/pages/blocks/Gallery) - a kind with several variants shows only its first one, and a kind with no example there has no tile. Colors are the showcase's own theme, not what a site with its own theme renders.
+
 On top of the generic block system provided by [UiBundle](https://github.com/975L/CoreBundle), GalleryBundle registers the following blocks (see `config/services.yaml`), so a gallery can be placed on any page composed in the back office - a home page's "our latest photos" section, say - instead of only living under its own routes:
 
 | Kind | Category | Description |

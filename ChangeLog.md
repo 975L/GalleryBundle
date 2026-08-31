@@ -1,5 +1,11 @@
 # ChangeLog
 
+## v1.12.2
+
+The README shows the block kinds as a picture
+
+- New `.github/images/GalleryBlocks.png`, one tile per kind, captured on the showcase (31/08/2026)
+
 ## v1.12.1
 
 The showcase shows the gallery's own photographs
