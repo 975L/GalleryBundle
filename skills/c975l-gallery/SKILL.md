@@ -1,6 +1,6 @@
 ---
 name: c975l-gallery
-description: "Use this skill when working with photo galleries in a Symfony application built on the c975L ecosystem with c975l/gallery-bundle. Covers categories and medias, the admin-renamable url prefix, the two-step trash, batch upload and the three image derivatives, videos and embeds, the two gallery blocks, theming, and every extension point the bundle offers. Triggers on: GalleryCategory, GalleryMedia, gallery-route-prefix, gallery_index, gallery_category, gallery_media, gallery_categories, gallery_medias, c975l:gallery:rebuild-thumbnails, c975l:gallery:fill-slugs, photo gallery, thumbnail, lightbox, batch upload, upload progress, passe-partout, trash, restore, delete permanently, 410 Gone, download highres, download originals, GalleryMediaArchiver, move medias, move selection, GalleryMediaMover, moveMedias, files-gallery, health check, automatic gallery, latest additions, GalleryLatestProvider, findOrCreateAutomatic, findLatest, gallery-latest-days, gallery-latest-max, gallery-rating, likes, like a photo, heart, rating, findVisibleByCategories, setLoadedMedias, media caption, media description, GalleryCustomizationProviderInterface, gallery.customization_provider, GalleryDataField, getDataValue, gallery-video-self-hosted-max-height, self-hosted video, portrait video., GallerySampleCatalog, GalleryDemoFixtureProvider, DemoFixtureProviderInterface, demo gallery, ReplacingFile, hidden, hide a gallery, masking, sell prints, print shop, limited edition, editionSize, printable, certificate of authenticity, gallery_print_certificate, gallery_print_file, gallery-print-enabled, gallery-printable-max, gallery-print-provider, gallery-print-sandbox, gallery-print-signature, GalleryPrintFormat, GalleryPrintOrder, GalleryPrintCopy, PrintCopySnapshot, PrintFulfilmentInterface, ProdigiFulfilment, ManualFulfilment, gallery.print_fulfilment, AutomaticGalleryInterface, gallery.automatic_gallery, GalleryAutomaticProvider, GalleryPrintableProvider, automaticKind, qr code, GalleryShowcaseProvider, ui-showcase-demo-url, block showcase, block-thumbs, block picker silhouette, ui.management_stylesheet, getManagementStylesheets"
+description: "Use this skill when working with photo galleries in a Symfony application built on the c975L ecosystem with c975l/gallery-bundle. Covers categories and medias, the admin-renamable url prefix, the two-step trash, batch upload and the three image derivatives, videos and embeds, the two gallery blocks, theming, and every extension point the bundle offers. Triggers on: GalleryCategory, GalleryMedia, gallery-route-prefix, gallery_index, gallery_category, gallery_media, gallery_categories, gallery_medias, c975l:gallery:rebuild-thumbnails, c975l:gallery:fill-slugs, photo gallery, thumbnail, lightbox, batch upload, upload progress, passe-partout, trash, restore, delete permanently, 410 Gone, download highres, download originals, GalleryMediaArchiver, move medias, move selection, GalleryMediaMover, moveMedias, files-gallery, health check, automatic gallery, latest additions, GalleryLatestProvider, findOrCreateAutomatic, findLatest, gallery-latest-days, gallery-latest-max, gallery-rating, likes, like a photo, heart, rating, findVisibleByCategories, setLoadedMedias, media caption, media description, GalleryCustomizationProviderInterface, gallery.customization_provider, GalleryDataField, getDataValue, gallery-video-self-hosted-max-height, self-hosted video, portrait video., GallerySampleCatalog, GalleryDemoFixtureProvider, DemoFixtureProviderInterface, demo gallery, ReplacingFile, hidden, hide a gallery, masking, sell prints, print shop, limited edition, editionSize, printable, certificate of authenticity, gallery_print_certificate, gallery_print_file, gallery-print-enabled, gallery-printable-max, gallery-print-provider, gallery-print-sandbox, gallery-print-signature, GalleryPrintFormat, GalleryPrintOrder, GalleryPrintCopy, PrintCopySnapshot, PrintFulfilmentInterface, ProdigiFulfilment, ManualFulfilment, gallery.print_fulfilment, BasketItemProviderInterface, CatalogueBasketItemProviderInterface, getCatalogueUrl, continue shopping, AutomaticGalleryInterface, gallery.automatic_gallery, GalleryAutomaticProvider, GalleryPrintableProvider, automaticKind, qr code, GalleryShowcaseProvider, ui-showcase-demo-url, block showcase, block-thumbs, block picker silhouette, ui.management_stylesheet, getManagementStylesheets"
 ---
 
 # c975L GalleryBundle
@@ -384,8 +384,11 @@ read by `c975l/core-bundle` `^1.14.0` and up, earlier ones giving every entry th
 
 ## Selling prints
 
-Off unless `gallery-print-enabled` is on. Requires `c975l/payment-bundle`: a print is sold through the
-one basket, this bundle plugging in as a `BasketItemProviderInterface` of kind `gallery_print`.
+Off unless `gallery-print-enabled` is on. Requires `c975l/payment-bundle` `^6.6`: a print is sold through
+the one basket, this bundle plugging in as a `BasketItemProviderInterface` of kind `gallery_print`. It
+also answers `CatalogueBasketItemProviderInterface`, whose `getCatalogueUrl()` hands the basket the path
+its "continue shopping" button goes back to — `gallery_index`, PaymentBundle knowing of no shop to send
+anybody to on a site running the gallery and the basket alone.
 
 Three entities. `GalleryPrintFormat` is the catalogue — a size, its dpi, its price, and the **sku** the
 lab knows it by (distinct from the slug; only the sku is ever sent to a lab). `GalleryPrintOrder` is one
@@ -460,7 +463,8 @@ What the bundle already contributes to the dashboard, so you do not have to: `Me
 `Service\ScriptProvider`, `Service\StylesheetProvider` (public and management stylesheets both),
 `Service\GalleryShowcaseProvider`,
 `GalleryShortcutProvider` (the tile toggling the lab's test mode), `GalleryDemoFixtureProvider`,
-`Service\GalleryPrintBasketItemProvider` (PaymentBundle's basket, kind `gallery_print`),
+`Service\GalleryPrintBasketItemProvider` (PaymentBundle's basket, kind `gallery_print`, and the
+catalogue its "continue shopping" button returns to),
 `Email\GalleryEmailTemplateProvider`.
 
 ## Seeding a demo gallery

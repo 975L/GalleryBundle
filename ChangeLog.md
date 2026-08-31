@@ -1,5 +1,14 @@
 # ChangeLog
 
+## v1.12.3
+
+The basket finds its way back to the galleries
+
+- `GalleryPrintBasketItemProvider` implements PaymentBundle's `CatalogueBasketItemProviderInterface` (31/08/2026)
+- The basket's "continue shopping" button goes back to `gallery_index` (31/08/2026)
+- The README and the `c975l-gallery` skill follow, UPGRADE the dependency they ask for (31/08/2026)
+- Requires `c975l/payment-bundle` `^6.6` (31/08/2026)
+
 ## v1.12.2
 
 The README shows the block kinds as a picture

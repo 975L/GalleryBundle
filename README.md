@@ -416,7 +416,9 @@ then naming the rank alone.
 #### From the basket to the lab
 
 The sale plugs into [PaymentBundle](https://github.com/975L/PaymentBundle)'s one basket as a
-`BasketItemProviderInterface` of kind `gallery_print`. Once paid:
+`BasketItemProviderInterface` of kind `gallery_print`. It also answers PaymentBundle's
+`CatalogueBasketItemProviderInterface`, so the basket's "continue shopping" button goes back to the galleries on a
+site running the gallery and the basket without a shop. Once paid:
 
 - An **open edition** goes straight to the lab, over Messenger, away from the request that paid for it.
 - A **limited edition** stops and waits: two e-mails go out — the buyer's, naming the numbers they bought,

@@ -1,5 +1,10 @@
 # UPGRADE
 
+## v1.12.3
+
+**Nothing to do**, beyond upgrading `c975l/payment-bundle` to ^6.6 along with it: the basket asks this bundle where
+its galleries are rather than naming a shop route no such site declares.
+
 ## v1.12.0
 
 ### The prints and the two masks add tables and columns

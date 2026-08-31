@@ -25,6 +25,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\MessageBusInterface;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 // What a paid basket writes, and what it then triggers - the certificate of a numbered edition is signed by hand, so its order waits where an open one goes straight to the lab
@@ -38,6 +39,20 @@ class GalleryPrintBasketItemProviderTest extends TestCase
         $format = new GalleryPrintFormat()->setSlug('30x40')->setLabel('30 x 40 cm')->setPrice(12000);
 
         return new PrintOffer($media, $format);
+    }
+
+    // A site running the gallery without a shop still has somewhere to send a customer back to: its own galleries
+    public function testTheCatalogueIsTheGalleryIndex(): void
+    {
+        $urlGenerator = $this->createMock(UrlGeneratorInterface::class);
+        $urlGenerator->expects($this->once())
+            ->method('generate')
+            ->with('gallery_index')
+            ->willReturn('/galerie');
+
+        $provider = $this->createProvider($this->createOffer(false), ['urlGenerator' => $urlGenerator]);
+
+        $this->assertSame('/galerie', $provider->getCatalogueUrl());
     }
 
     /** @param array<string, mixed> $services */
@@ -66,6 +81,7 @@ class GalleryPrintBasketItemProviderTest extends TestCase
             $this->createStub(EntityManagerInterface::class),
             $messageBus,
             $translator,
+            $services['urlGenerator'] ?? $this->createStub(UrlGeneratorInterface::class),
         );
     }
 

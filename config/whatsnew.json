@@ -1,5 +1,15 @@
 [
     {
+        "date": "2026-08-31",
+        "description": [
+            {
+                "en": "On a site selling prints without a shop, the basket now opens as it should, and its \"continue shopping\" button brings the visitor back to your galleries",
+                "fr": "Sur un site qui vend des tirages sans boutique, le panier s'ouvre désormais normalement et son bouton « continuer mes achats » ramène le visiteur à vos galeries",
+                "es": "En un sitio que vende copias sin tienda, la cesta ya se abre con normalidad y su botón «seguir comprando» devuelve al visitante a sus galerías"
+            }
+        ]
+    },
+    {
         "date": "2026-08-30",
         "description": [
             {

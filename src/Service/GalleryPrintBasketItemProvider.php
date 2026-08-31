@@ -18,14 +18,16 @@ use c975L\GalleryBundle\Model\PrintCopySnapshot;
 use c975L\GalleryBundle\Model\PrintOffer;
 use c975L\GalleryBundle\Repository\GalleryPrintCopyRepository;
 use c975L\PaymentBundle\Contract\BasketItemProviderInterface;
+use c975L\PaymentBundle\Contract\CatalogueBasketItemProviderInterface;
 use c975L\PaymentBundle\Entity\Basket;
 use c975L\PaymentBundle\Service\VatCalculator;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Messenger\MessageBusInterface;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 // Plugs prints into PaymentBundle's basket and checkout (see BasketItemProviderInterface). What is sold is a photograph at one size, which is why every id here names both
-class GalleryPrintBasketItemProvider implements BasketItemProviderInterface
+class GalleryPrintBasketItemProvider implements BasketItemProviderInterface, CatalogueBasketItemProviderInterface
 {
     public function __construct(
         private readonly GalleryPrintService $printService,
@@ -36,12 +38,19 @@ class GalleryPrintBasketItemProvider implements BasketItemProviderInterface
         private readonly EntityManagerInterface $entityManager,
         private readonly MessageBusInterface $messageBus,
         private readonly TranslatorInterface $translator,
+        private readonly UrlGeneratorInterface $urlGenerator,
     ) {
     }
 
     public function getKind(): string
     {
         return 'gallery_print';
+    }
+
+    // Where the basket sends a customer back to on a site running the gallery without a shop - the prefix is fed to the generator by GalleryRoutePrefixListener, so nothing has to be passed here (see CatalogueBasketItemProviderInterface)
+    public function getCatalogueUrl(): ?string
+    {
+        return $this->urlGenerator->generate('gallery_index');
     }
 
     public function findItem(int | string $id): ?object
