@@ -48,11 +48,11 @@ class GalleryMediaDescriptionTest extends TestCase
         );
     }
 
-    // Without one, the sentence composed from the site, the gallery, the title and the credits still stands
+    // Without one, the sentence composed from the site, the gallery, the title and the credits still stands - minus a credit naming the site itself, which a photographer's own site would otherwise repeat in every one of them
     public function testAMediaWithoutACaptionFallsBackOnTheComposedSentence(): void
     {
         $this->assertStringContainsString(
-            ": [config('site-name'), category.title, media.title, media.credits]|filter(v => v is not empty)|join(' - ') %}",
+            ": [siteName, category.title, media.title, media.credits == siteName ? null : media.credits]|filter(v => v is not empty)|join(' - ') %}",
             $this->read(self::MEDIA_PAGE)
         );
     }

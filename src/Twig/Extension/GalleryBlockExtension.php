@@ -37,6 +37,11 @@ class GalleryBlockExtension implements ResetInterface
     {
         $categories = $this->loadCategories();
 
+        // The automatic galleries are floated before the list is cut, not after: they are shown apart above the rest (see components/Gallery/Categories.html.twig), and the list being alphabetical, a block asked for six categories would otherwise stop at "Bois" and drop both of them
+        $automatic = array_values(array_filter($categories, static fn (GalleryCategory $category): bool => $category->isAutomatic()));
+        $ordinary = array_values(array_filter($categories, static fn (GalleryCategory $category): bool => !$category->isAutomatic()));
+        $categories = [...$automatic, ...$ordinary];
+
         return null !== $max ? \array_slice($categories, 0, $max) : $categories;
     }
 

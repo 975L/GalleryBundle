@@ -1,8 +1,22 @@
+{# The automatic galleries are shown apart, above the rest: "Derniers ajouts" and "Tirages d'art" are what a visitor landing here is meant to open first, and they would otherwise be lost in eighty tiles ordered alphabetically (see GalleryCategoryRepository::findAllOrdered) #}
+{% set automatic = categories|filter(category => category.automatic) %}
+{% set ordinary = categories|filter(category => not category.automatic) %}
 {# Right click and drag are blocked on the grid rather than on each thumbnail, one controller instead of one per category #}
-<div class="flex-center gallery-grid"
+<div class="gallery-categories"
     data-controller="gallery-media-protect"
     data-action="contextmenu->gallery-media-protect#block dragstart->gallery-media-protect#block">
-    {% for category in categories %}
-        <twig:c975LGallery:Gallery:Category category="{{ category }}"/>
-    {% endfor %}
+    {% if automatic is not empty %}
+        <div class="flex-center gallery-grid gallery-grid--featured">
+            {% for category in automatic %}
+                <twig:c975LGallery:Gallery:Category category="{{ category }}"/>
+            {% endfor %}
+        </div>
+    {% endif %}
+    {% if ordinary is not empty %}
+        <div class="flex-center gallery-grid">
+            {% for category in ordinary %}
+                <twig:c975LGallery:Gallery:Category category="{{ category }}"/>
+            {% endfor %}
+        </div>
+    {% endif %}
 </div>

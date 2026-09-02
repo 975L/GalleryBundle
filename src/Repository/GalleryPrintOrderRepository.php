@@ -41,4 +41,36 @@ class GalleryPrintOrderRepository extends ServiceEntityRepository
     {
         return $this->findOneBy(['provider' => $provider, 'reference' => $reference]);
     }
+
+    // The orders a lab is holding, which the nightly synchronisation asks it about (see GalleryPrintSyncCommand). A reference is what makes an order askable at all, an order without one having never been accepted
+    /** @return list<GalleryPrintOrder> */
+    public function findTracked(): array
+    {
+        return $this->createQueryBuilder('o')
+            ->andWhere('o.state IN (:states)')
+            ->andWhere('o.reference IS NOT NULL')
+            ->setParameter('states', GalleryPrintOrder::STATES_HELD_BY_LAB)
+            ->orderBy('o.sentAt', 'ASC')
+            ->getQuery()
+            ->getResult()
+        ;
+    }
+
+    // Moves an order the lab is still holding, and answers whether this call is the one that moved it. The database is the lock: a callback the lab replayed and the nightly command can both read the same state, but only one of them updates a row still held by a lab, and only that one goes on to write the letter (see GalleryPrintOrderTracker)
+    public function claim(GalleryPrintOrder $order, string $state, ?\DateTimeImmutable $shippedAt): bool
+    {
+        return 0 < $this->createQueryBuilder('o')
+            ->update()
+            ->set('o.state', ':state')
+            ->set('o.shippedAt', ':shippedAt')
+            ->andWhere('o.id = :id')
+            ->andWhere('o.state IN (:states)')
+            ->setParameter('state', $state)
+            ->setParameter('shippedAt', $shippedAt)
+            ->setParameter('id', $order->getId())
+            ->setParameter('states', GalleryPrintOrder::STATES_HELD_BY_LAB)
+            ->getQuery()
+            ->execute()
+        ;
+    }
 }

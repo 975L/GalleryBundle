@@ -1,0 +1,223 @@
+<?xml version="1.0"?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+    <file source-language="en" target-language="fr" datatype="plaintext" original="gallery_narration.fr.xlf">
+        <body>
+            <trans-unit id="63yZFT3">
+                <source>narration.gallery</source>
+                <target>« Galerie » tient les galeries du site et leurs photos. Mettre une galerie à la corbeille ne fait que la retirer du site : le bouton au-dessus de la liste montre ce qui y attend, et l'y reprend.</target>
+            </trans-unit>
+            <trans-unit id="BfIWVkl">
+                <source>narration.guided_step_gallery_creation_done</source>
+                <target>Votre galerie est en ligne. Elle n'a rien à publier : elle est visible dès qu'elle existe, et le bouton « voir sur le site » l'ouvre.</target>
+            </trans-unit>
+            <trans-unit id="BC59ALP">
+                <source>narration.guided_step_gallery_creation_files</source>
+                <target>Choisissez vos photos : plusieurs fichiers à la fois, chacun devenant un média de la galerie. Les tailles indiquées sont ce qu'accepte le serveur.</target>
+            </trans-unit>
+            <trans-unit id="baen4pJ">
+                <source>narration.guided_step_gallery_creation_new</source>
+                <target>Ajoutez une galerie avec le bouton en haut de la liste. Le formulaire de création porte aussi le premier lot de médias : la galerie se crée et se remplit en une fois.</target>
+            </trans-unit>
+            <trans-unit id="bQOKxCE">
+                <source>narration.guided_step_gallery_creation_open</source>
+                <target>Le panneau vous emmène sur vos galeries. Toutes celles du site sont listées ici, dans leur ordre d'affichage.</target>
+            </trans-unit>
+            <trans-unit id="e7HL5pQ">
+                <source>narration.guided_step_gallery_creation_save</source>
+                <target>Enregistrez avec le bouton en bas du formulaire.</target>
+            </trans-unit>
+            <trans-unit id="yJqrQ8h">
+                <source>narration.guided_step_gallery_creation_title</source>
+                <target>Nommez-la. Le titre est ce qu'affiche le site, et l'adresse de la galerie en est construite.</target>
+            </trans-unit>
+            <trans-unit id="S6LfiKO">
+                <source>narration.guided_step_gallery_creation_title_root</source>
+                <target>Nommez le lot. Chaque média prend ce nom, numéroté ; chacun se retouche ensuite, un par un.</target>
+            </trans-unit>
+            <trans-unit id="KFjqSSF">
+                <source>narration.guided_step_gallery_latest_days</source>
+                <target>Un intertitre par jour : les médias ajoutés ces derniers jours, toutes galeries confondues, et chaque vignette nomme la galerie à laquelle elle appartient vraiment.</target>
+            </trans-unit>
+            <trans-unit id="tdJYtj2">
+                <source>narration.guided_step_gallery_latest_done</source>
+                <target>Deux réglages du groupe galerie décident jusqu'où elle remonte : le nombre de jours, et le nombre de photos qu'elle montre au plus. Si la fenêtre ne prend rien, elle se rabat sur le dernier jour portant un ajout.</target>
+            </trans-unit>
+            <trans-unit id="fpFdxAJ">
+                <source>narration.guided_step_gallery_latest_edit</source>
+                <target>Ouvrez-la. Elle n'offre ni envoi, ni réordonnancement, ni couverture : elle n'a rien à elle à organiser.</target>
+            </trans-unit>
+            <trans-unit id="9VAmvHi">
+                <source>narration.guided_step_gallery_latest_open</source>
+                <target>Le panneau vous emmène sur vos galeries. « Derniers ajouts » est parmi elles, écrite par le site au premier affichage de la liste : c'est une galerie comme les autres, qui se renomme et se déplace.</target>
+            </trans-unit>
+            <trans-unit id="psakJ1d">
+                <source>narration.guided_step_gallery_latest_selection</source>
+                <target>Travaillez sur une séance d'envoi entière : les crédits, les droits, le téléchargement et la mise à la corbeille agissent sur les photos cochées là où elles se trouvent. C'est ainsi qu'une journée entière d'envois se crédite en une fois.</target>
+            </trans-unit>
+            <trans-unit id="opbMRuM">
+                <source>narration.guided_step_gallery_media_detail_category</source>
+                <target>Le premier champ est sa galerie. La changer ici déplace cette seule photo, ses fichiers la suivant ; toute une sélection se déplace plutôt depuis l'écran de la galerie.</target>
+            </trans-unit>
+            <trans-unit id="ssY52a9">
+                <source>narration.guided_step_gallery_media_detail_credits</source>
+                <target>Créditez son auteur : les crédits sont affichés avec le média sur le site, et la même valeur s'écrit sur toute une sélection depuis la galerie.</target>
+            </trans-unit>
+            <trans-unit id=".RlZo_n">
+                <source>narration.guided_step_gallery_media_detail_done</source>
+                <target>Vous voilà de retour à la galerie. L'adresse du média ne se change que derrière le cadenas, et l'ancienne continue de rediriger vers la nouvelle.</target>
+            </trans-unit>
+            <trans-unit id="B8rq2v1">
+                <source>narration.guided_step_gallery_media_detail_edit</source>
+                <target>Ouvrez la galerie : ses médias sont listés sous son formulaire.</target>
+            </trans-unit>
+            <trans-unit id="7_HK17h">
+                <source>narration.guided_step_gallery_media_detail_open</source>
+                <target>Le panneau vous emmène sur vos galeries : un média s'atteint toujours depuis celle qui le porte.</target>
+            </trans-unit>
+            <trans-unit id="azrVJ0G">
+                <source>narration.guided_step_gallery_media_detail_save</source>
+                <target>Enregistrez avec le bouton en bas du formulaire.</target>
+            </trans-unit>
+            <trans-unit id="Aucfetg">
+                <source>narration.guided_step_gallery_media_detail_thumbnail</source>
+                <target>Cliquez sur une vignette. Elle ouvre le seul écran qu'a un média, et l'enregistrer vous ramènera ici.</target>
+            </trans-unit>
+            <trans-unit id="qzDbJuT">
+                <source>narration.guided_step_gallery_media_detail_title</source>
+                <target>Écrivez sa légende. Elle s'affiche sous le média et le remplace à voix haute pour un lecteur d'écran ; la retoucher ne déplace aucune adresse.</target>
+            </trans-unit>
+            <trans-unit id="2o.cWMu">
+                <source>narration.guided_step_gallery_media_detail_video</source>
+                <target>Vous pouvez y attacher une vidéo : collez l'adresse de la page où vous la regardiez, la plateforme s'y lit d'elle-même. Le champ en dessous envoie plutôt la copie du site.</target>
+            </trans-unit>
+            <trans-unit id="nFU0BJA">
+                <source>narration.guided_step_gallery_medias_arrangement_cover</source>
+                <target>Choisissez la couverture, le média qui représente la galerie partout où elle s'affiche. Sans choix, un média au hasard est pris à chaque fois.</target>
+            </trans-unit>
+            <trans-unit id="yvuxFpQ">
+                <source>narration.guided_step_gallery_medias_arrangement_done</source>
+                <target>Il n'y a rien à enregistrer : l'ordre et la couverture le sont au fil de l'eau. Seuls les champs de la galerie elle-même demandent le bouton d'enregistrement.</target>
+            </trans-unit>
+            <trans-unit id="1BknBOA">
+                <source>narration.guided_step_gallery_medias_arrangement_edit</source>
+                <target>Ouvrez la galerie. Ses médias sont listés sous son formulaire, et c'est là que tout ce qui suit se passe.</target>
+            </trans-unit>
+            <trans-unit id="hNY4fYo">
+                <source>narration.guided_step_gallery_medias_arrangement_open</source>
+                <target>Le panneau vous emmène sur vos galeries. Celle à organiser est l'une d'elles, mais pas « Derniers ajouts », qui ne porte aucune photo à elle et n'organise rien.</target>
+            </trans-unit>
+            <trans-unit id="ShP8z4d">
+                <source>narration.guided_step_gallery_medias_arrangement_selection</source>
+                <target>Vous pouvez travailler sur plusieurs à la fois : cochez les médias, puis écrivez les mêmes crédits sur tous, marquez-les en droits réservés, téléchargez-les en haute définition ou en originaux, ou mettez-les à la corbeille en une fois.</target>
+            </trans-unit>
+            <trans-unit id="FCQrz.i">
+                <source>narration.guided_step_gallery_medias_arrangement_sort</source>
+                <target>Réordonnez-les : faites glisser un média par sa poignée. Le nouvel ordre est enregistré au moment où vous le lâchez, sans rien à valider.</target>
+            </trans-unit>
+            <trans-unit id="LWZTx.f">
+                <source>narration.guided_step_gallery_medias_arrangement_upload</source>
+                <target>Ajoutez des médias, un lot à la fois, toujours depuis la galerie qui les porte : un média ne se crée jamais tout seul.</target>
+            </trans-unit>
+            <trans-unit id="dwmaPR6">
+                <source>narration.guided_step_gallery_medias_move_done</source>
+                <target>Rien ne se perd en chemin : l'ancienne page de chaque photo redirige vers sa nouvelle adresse, la galerie quittée referme le trou dans son ordre, et sa couverture est libérée si c'était l'une d'elles.</target>
+            </trans-unit>
+            <trans-unit id="_.CTmdP">
+                <source>narration.guided_step_gallery_medias_move_edit</source>
+                <target>Ouvrez la galerie : ses médias sont listés sous son formulaire, et le déplacement se fait de là.</target>
+            </trans-unit>
+            <trans-unit id="G8KTnrR">
+                <source>narration.guided_step_gallery_medias_move_move</source>
+                <target>Déplacez la sélection. Les fichiers suivent dans le dossier propre à la galerie d'arrivée, et les photos se rangent à la suite de ce qu'elle porte déjà.</target>
+            </trans-unit>
+            <trans-unit id="pGMxKZr">
+                <source>narration.guided_step_gallery_medias_move_open</source>
+                <target>Le panneau vous emmène sur vos galeries. Partez de celle qui porte les photos à déplacer, pas de celle qui les reçoit.</target>
+            </trans-unit>
+            <trans-unit id="3WrUKj.">
+                <source>narration.guided_step_gallery_medias_move_select</source>
+                <target>Cochez ce qui part, quelques photos ou toute la galerie. Elles sont déplacées dans l'ordre où la grille les montre.</target>
+            </trans-unit>
+            <trans-unit id="bIjhNq6">
+                <source>narration.guided_step_gallery_medias_move_target</source>
+                <target>Choisissez la galerie d'arrivée. Toute galerie portant ses propres photos est proposée, sauf celle que vous regardez et « Derniers ajouts », qui n'en porte aucune. La dernière entrée en crée une : son nom est demandé juste à côté.</target>
+            </trans-unit>
+            <trans-unit id="OHqxadg">
+                <source>narration.guided_step_gallery_medias_move_title_root</source>
+                <target>Renommez-les, ou non. Laissé vide, les photos gardent les titres qu'elles avaient ; rempli, elles sont numérotées à partir de là où la galerie d'arrivée s'arrête, « Voitures 12 » devenant « Volvo 3 ».</target>
+            </trans-unit>
+            <trans-unit id="MKtnc8v">
+                <source>narration.guided_step_gallery_medias_recovery_download</source>
+                <target>Téléchargez-les : un zip pour la sélection, avec la haute définition conservée par le site, ou les originaux tels qu'ils ont été envoyés si la galerie a été réglée pour les garder. Une sélection dépassant un gigaoctet est refusée, avec sa taille indiquée.</target>
+            </trans-unit>
+            <trans-unit id="mftkXWo">
+                <source>narration.guided_step_gallery_medias_recovery_edit</source>
+                <target>Ouvrez la galerie : ses médias sont listés sous son formulaire.</target>
+            </trans-unit>
+            <trans-unit id="KOULEQC">
+                <source>narration.guided_step_gallery_medias_recovery_open</source>
+                <target>Le panneau vous emmène sur vos galeries : les fichiers se reprennent depuis celle qui les porte.</target>
+            </trans-unit>
+            <trans-unit id="_5vpMDm">
+                <source>narration.guided_step_gallery_medias_recovery_select</source>
+                <target>Cochez ce que vous voulez, toute la galerie d'un coup ou seulement les quelques photos que vous cherchez.</target>
+            </trans-unit>
+            <trans-unit id="9HsZZTT">
+                <source>narration.guided_step_gallery_medias_recovery_trash</source>
+                <target>Les photos ont aussi une corbeille. Chaque galerie porte la sienne, sous son formulaire dès qu'une photo y est mise : les mêmes téléchargements y sont offerts, et « Restaurer » rend les photos à la galerie, à la suite des autres.</target>
+            </trans-unit>
+            <trans-unit id="oQrN9MT">
+                <source>narration.guided_step_gallery_print_setup_done</source>
+                <target>Les formats sont prêts. Une photo ne se vend pourtant que si sa fiche porte la case « imprimable » : c'est là, média par média, que vous choisissez ce qui est offert au tirage.</target>
+            </trans-unit>
+            <trans-unit id="HM3EpkO">
+                <source>narration.guided_step_gallery_print_setup_edit</source>
+                <target>Ouvrez la fiche du format. Les tailles et le nombre de pixels demandé viennent du laboratoire ; ce qui suit vient de vous.</target>
+            </trans-unit>
+            <trans-unit id="By22xyM">
+                <source>narration.guided_step_gallery_print_setup_import</source>
+                <target>Le bouton n'apparaît que si le laboratoire configuré publie son catalogue. Il crée les formats avec leurs tailles et leurs références, et laisse les prix à zéro : ce sont les vôtres, pas les siens.</target>
+            </trans-unit>
+            <trans-unit id="3zlqVb5">
+                <source>narration.guided_step_gallery_print_setup_open</source>
+                <target>La vente de tirages tient dans cette liste. Chaque ligne est une taille sur un papier, avec son prix ; une photo mise en vente est proposée dans tous les formats publiés.</target>
+            </trans-unit>
+            <trans-unit id="7uwNWQg">
+                <source>narration.guided_step_gallery_print_setup_price</source>
+                <target>Le prix est ce que le client paie, tout compris. Le laboratoire vous facturera le sien de son côté : la différence est votre marge.</target>
+            </trans-unit>
+            <trans-unit id="DagUAKX">
+                <source>narration.guided_step_gallery_print_setup_published</source>
+                <target>Tant que la case reste décochée, le format n'existe que pour vous. Cochez-la et il apparaît sous chaque photo mise en vente.</target>
+            </trans-unit>
+            <trans-unit id="E66DXJx">
+                <source>narration.guided_step_gallery_trash_delete</source>
+                <target>Retirez-en une du site. Le bouton demande confirmation, puis met la galerie à la corbeille : ses médias, ses fichiers et son adresse sont conservés, et seule sa page répond désormais qu'elle n'existe plus.</target>
+            </trans-unit>
+            <trans-unit id="jkS92Sw">
+                <source>narration.guided_step_gallery_trash_done</source>
+                <target>Rien ne se perd en un clic. Jeter une galerie pour de bon est l'autre bouton de la corbeille, tenu à l'administrateur : c'est le seul qui retire les fichiers du serveur.</target>
+            </trans-unit>
+            <trans-unit id="WBdp.7G">
+                <source>narration.guided_step_gallery_trash_open</source>
+                <target>Le panneau vous emmène sur vos galeries, celles que le site affiche en ce moment.</target>
+            </trans-unit>
+            <trans-unit id="e0aNsNJ">
+                <source>narration.guided_step_gallery_trash_restore</source>
+                <target>Remettez-la en ligne. Elle revient à sa place, avec ses médias et sa position, et son adresse recommence à répondre.</target>
+            </trans-unit>
+            <trans-unit id="uroJAVb">
+                <source>narration.guided_step_gallery_trash_switch</source>
+                <target>Ouvrez la corbeille. Le bouton au-dessus de la liste bascule entre les galeries en ligne et celles mises de côté : le même écran, montrant l'autre versant.</target>
+            </trans-unit>
+            <trans-unit id="MdQod4k">
+                <source>narration.print_formats</source>
+                <target>« Formats de tirage » tient les tailles proposées à la vente, leur prix et la référence du laboratoire.</target>
+            </trans-unit>
+            <trans-unit id="odCCuWc">
+                <source>narration.print_orders</source>
+                <target>« Commandes de tirages » liste les tirages commandés : ceux que le laboratoire imprime, et ceux qui attendent votre signature.</target>
+            </trans-unit>
+        </body>
+    </file>
+</xliff>

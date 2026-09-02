@@ -101,7 +101,7 @@ class GalleryMediaTest extends TestCase
     public function testAPastedUrlIsStoredAsThePlatformCanonicalEmbedUrl(): void
     {
         $youtube = new GalleryMedia()->setExternalUrl('https://www.youtube.com/watch?v=dQw4w9WgXcQ');
-        $tiktok = new GalleryMedia()->setExternalUrl('https://www.tiktok.com/@kalaan/video/6860377138386734341');
+        $tiktok = new GalleryMedia()->setExternalUrl('https://www.tiktok.com/@example/video/6860377138386734341');
 
         $this->assertTrue($youtube->isVideo());
         $this->assertSame('youtube', $youtube->getMediaType());
@@ -171,7 +171,7 @@ class GalleryMediaTest extends TestCase
     // The site's own copy: nothing framed, nothing to consent to, and a video that outlives whatever a platform decides
     public function testAnUploadedVideoMakesTheMediaASelfHostedOne(): void
     {
-        $media = new GalleryMedia()->setVideoFilename('medias/gallery/kalaan/skate-a1b2c3.mp4');
+        $media = new GalleryMedia()->setVideoFilename('medias/gallery/demo/skate-a1b2c3.mp4');
 
         $this->assertSame(GalleryMedia::MEDIA_TYPE_VIDEO, $media->getMediaType());
         $this->assertTrue($media->isVideo());
@@ -185,7 +185,7 @@ class GalleryMediaTest extends TestCase
     {
         $media = new GalleryMedia()
             ->setExternalUrl('https://youtu.be/dQw4w9WgXcQ')
-            ->setVideoFilename('medias/gallery/kalaan/skate-a1b2c3.mp4');
+            ->setVideoFilename('medias/gallery/demo/skate-a1b2c3.mp4');
 
         $this->assertSame(GalleryMedia::MEDIA_TYPE_VIDEO, $media->getMediaType());
         $this->assertTrue($media->isSelfHostedVideo());

@@ -45,14 +45,12 @@ class GalleryDemoFixtureProvider implements DemoFixtureProviderInterface
             return;
         }
 
-        $position = 0;
         $index = 0;
 
         foreach ($this->catalog->getCategories() as $spec) {
             $category = new GalleryCategory();
             $category->setSlug($spec['slug']);
             $category->setTitle($this->trans($spec['title']));
-            $category->setPosition(++$position);
             $category->setUncategorized(false);
             $category->setAutomaticKind(null);
 

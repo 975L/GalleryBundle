@@ -1,5 +1,45 @@
 # UPGRADE
 
+## v1.13.0
+
+### The print shop runs from the lab's catalogue to the letterbox
+
+**Route the message.** `Message\GalleryPrintOrderMessage` has to reach an asynchronous transport, or the lab is
+called inside the payment webhook - which retries what it thinks timed out:
+
+```yaml
+# config/packages/messenger.yaml
+framework:
+    messenger:
+        routing:
+            c975L\GalleryBundle\Message\GalleryPrintOrderMessage: async
+```
+
+**`GalleryPrintEmailInterface` gains `shipped()` and `cancelled()`.** A site that redeclared the alias to a class of its own
+implements it in its turn; a site running the bundle's own `GalleryPrintEmail` has nothing to do.
+
+**The new letter needs no deployment step**, the renderer falling back on what this bundle declares - but
+run `c975l:ui:email-templates:ensure` to get the row an admin rewrites it in, as any other release does.
+
+**One migration.** Run `php bin/console make:migration` then `doctrine:migrations:migrate`: it drops
+`gallery_category.position`, the galleries being listed alphabetically from now on, and adds
+`gallery_print_format.paper` and `.paper_description`, both nullable - a catalogue filled before them keeps
+working untouched.
+
+**A second Prodigi key.** The sandbox is a separate account with its own secret, so fill the new
+**Lab's test API key** entry beside the production one; `gallery-print-sandbox` picks which is used.
+`ProdigiFulfilment` now takes `Service\Fulfilment\ProdigiEnvironment` where it took
+`ConfigServiceInterface` - a site wiring it by hand updates its arguments.
+
+**Upgrade `c975l/payment-bundle` to `^6.7`** along with this bundle: the print offer draws the basket
+navbar that release ships.
+
+**`GalleryCategory::$position` is gone**, with its getter, its setter and the form field. Code ordering
+galleries on it reads `GalleryCategoryRepository::findAllOrdered()` instead.
+
+Nothing has to be set in the lab's dashboard - each order carries its own `callbackUrl`. A lab posting no
+callbacks is covered by `c975l:gallery:print:sync`, which the maintenance schedule picks up on its own.
+
 ## v1.12.3
 
 **Nothing to do**, beyond upgrading `c975l/payment-bundle` to ^6.6 along with it: the basket asks this bundle where

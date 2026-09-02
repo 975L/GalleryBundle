@@ -2,10 +2,11 @@
 
 {# Defines specific variables #}
 {% set title = 'label.gallery_media'|trans({}, 'gallery') ~ ' - ' ~ (media.title is not empty ? media.title : category.title) %}
-{# The meta description and the og:description of the page: the caption an admin wrote when there is one, nobody summarising a photo better than whoever filed it. Without one it is composed rather than left empty - the site it lives on, the gallery it belongs to, its own title, who took it, a photo's sentence being these four said in order. Empty parts are dropped rather than left as an empty slot between two separators #}
+{# The meta description and the og:description of the page: the caption an admin wrote when there is one, nobody summarising a photo better than whoever filed it. Without one it is composed rather than left empty - the site it lives on, the gallery it belongs to, its own title, who took it, a photo's sentence being these four said in order. Empty parts are dropped rather than left as an empty slot between two separators, and a credit naming the site itself is dropped too: a photographer's own site would otherwise open and close every one of its descriptions with the same name #}
+{% set siteName = config('site-name') %}
 {% set summarySocialNetwork = media.description is not empty
     ? media.description
-    : [config('site-name'), category.title, media.title, media.credits]|filter(v => v is not empty)|join(' - ') %}
+    : [siteName, category.title, media.title, media.credits == siteName ? null : media.credits]|filter(v => v is not empty)|join(' - ') %}
 {# The photo is what the page is for, so it is what a share of it shows - stated here, the layout's own chain (the url's row, then the site's default og-image, then the logo) is only ever reached by a media carrying no file #}
 {# The stored (medium) file, 1024px wide: the thumbnail is capped at 600 and cropped by the grid, and the high resolution weighs megabytes for a card nobody views at 2048px. A video entry shares its still, which is the image it has #}
 {% if media.filename is not null %}
@@ -44,12 +45,12 @@
         <p class="gallery-media-description">{{ media.description|nl2br }}</p>
     {% endif %}
     <twig:c975LGallery:Gallery:Credits media="{{ media }}"/>
-    {# Under the caption and the credit, where a price belongs: what is being sold has to be read after what it is, never before #}
-    {% if gallery_print_available(media) %}
-        {{ include('@c975LGallery/print/_offer.html.twig') }}
-    {% endif %}
-    {# A single heart and no scale: a photo is liked or it is not, and what a visitor reads under it is how many others did, not the average of a column of ones. Both are stated here rather than left to the site's own rating settings, which serve the scales elsewhere. On unless the site turned it off #}
+    {# A single heart and no scale: a photo is liked or it is not, and what a visitor reads under it is how many others did, not the average of a column of ones. Both are stated here rather than left to the site's own rating settings, which serve the scales elsewhere. It follows the credit, before any price: what visitors made of the photo is read with what it is, and never after what it costs. On unless the site turned it off #}
     {% if config('gallery-rating')|to_bool %}
         <twig:c975LUi:Rating:Rating ownerType="gallery_media" ownerId="{{ media.id }}" scale="1" icon="heart"/>
+    {% endif %}
+    {# Last of the page, where a price belongs: what is being sold has to be read after what it is and after what others thought of it, never before #}
+    {% if gallery_print_available(media) %}
+        {{ include('@c975LGallery/print/_offer.html.twig') }}
     {% endif %}
 {% endblock %}

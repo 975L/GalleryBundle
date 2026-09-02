@@ -304,6 +304,49 @@ class GalleryMediaCrudController extends AbstractCrudController
                 ])
                 ->onlyOnForms(),
 
+            // The media's name and its alt text (see GalleryMedia::$title) - freely retouched, and no longer the source of the slug, so nothing it does moves a public url: a batch is uploaded under a title root and the medias worth describing are described afterwards, one by one, at no cost
+            TextField::new('title')
+                ->setLabel(t('label.title', [], 'gallery'))
+                ->setRequired(true)
+                ->setHelp(t('label.gallery_media_title_help', [], 'gallery')),
+
+            // Editable, and the only field here that moves a public url - hence the padlock EasyAdmin's own SlugField draws, the same one a category and a page are edited behind (see GalleryCategoryCrudController and SiteBundle's PageCrudController): it is read-only until deliberately unlocked, and unlocking asks for the confirmation the change deserves
+            // Never resynced from the title either, the field-slug script only following its target while the slug is still empty - which is exactly how an emptied field asks for one rebuilt from the title (see GalleryMediaSlugger)
+            SlugField::new('slug')
+                ->setLabel(t('label.slug', [], 'gallery'))
+                ->setTargetFieldName('title')
+                ->setHelp(t('label.gallery_media_slug_help', [], 'gallery'))
+                ->setUnlockConfirmationMessage(t('confirm.media_slug_change', [], 'gallery')),
+
+            // The caption shown under the media on its own page, as long as it needs to be - hidden from the grid, where a paragraph per row would bury the thumbnails it exists to show
+            TextareaField::new('description')
+                ->setLabel(t('label.description', [], 'gallery'))
+                ->setHelp(t('label.gallery_media_description_help', [], 'gallery'))
+                ->setRequired(false)
+                ->hideOnIndex(),
+
+            TextField::new('credits')
+                ->setLabel(t('label.credits', [], 'gallery')),
+
+            BooleanField::new('rightsReserved')
+                ->setLabel(t('label.rights_reserved', [], 'gallery')),
+
+            BooleanField::new('hidden')
+                ->setLabel(t('label.gallery_media_hidden', [], 'gallery'))
+                ->setHelp(t('help.gallery_media_hidden', [], 'gallery')),
+
+            BooleanField::new('printable')
+                ->setLabel(t('label.gallery_media_printable', [], 'gallery'))
+                ->setHelp(t('help.gallery_media_printable', [], 'gallery')),
+
+            // Left empty the photograph is printed on demand without end. Filled it is an edition, and the register is written the moment it is saved - which is why nothing here lets it be raised afterwards (see GalleryMediaSubscriber)
+            IntegerField::new('editionSize')
+                ->setLabel(t('label.gallery_media_edition_size', [], 'gallery'))
+                ->setHelp(t('help.gallery_media_edition_size', [], 'gallery')),
+
+            ...$this->dataFields(),
+
+            // Kept below the media's own fields rather than under the upload above: the pair is answered once in a while, where everything above it is retouched at every pass
             // Same pair as the batch screens', asked again here because a replacement is an upload of its own: the media keeps no flag from the batch that created it (see GalleryMedia::wantsWatermark), and the file already stored carries whatever signature it was given
             // Unmapped, and read back on submit (see createEditFormBuilder): they answer for the file being uploaded, not for the media
             Field::new('watermark')
@@ -336,32 +379,6 @@ class GalleryMediaCrudController extends AbstractCrudController
                     ],
                 ])
                 ->onlyOnForms(),
-
-            // The media's name and its alt text (see GalleryMedia::$title) - freely retouched, and no longer the source of the slug, so nothing it does moves a public url: a batch is uploaded under a title root and the medias worth describing are described afterwards, one by one, at no cost
-            TextField::new('title')
-                ->setLabel(t('label.title', [], 'gallery'))
-                ->setRequired(true)
-                ->setHelp(t('label.gallery_media_title_help', [], 'gallery')),
-
-            // Editable, and the only field here that moves a public url - hence the padlock EasyAdmin's own SlugField draws, the same one a category and a page are edited behind (see GalleryCategoryCrudController and SiteBundle's PageCrudController): it is read-only until deliberately unlocked, and unlocking asks for the confirmation the change deserves
-            // Never resynced from the title either, the field-slug script only following its target while the slug is still empty - which is exactly how an emptied field asks for one rebuilt from the title (see GalleryMediaSlugger)
-            SlugField::new('slug')
-                ->setLabel(t('label.slug', [], 'gallery'))
-                ->setTargetFieldName('title')
-                ->setHelp(t('label.gallery_media_slug_help', [], 'gallery'))
-                ->setUnlockConfirmationMessage(t('confirm.media_slug_change', [], 'gallery')),
-
-            // The caption shown under the media on its own page, as long as it needs to be - hidden from the grid, where a paragraph per row would bury the thumbnails it exists to show
-            TextareaField::new('description')
-                ->setLabel(t('label.description', [], 'gallery'))
-                ->setHelp(t('label.gallery_media_description_help', [], 'gallery'))
-                ->setRequired(false)
-                ->hideOnIndex(),
-
-            TextField::new('credits')
-                ->setLabel(t('label.credits', [], 'gallery')),
-
-            ...$this->dataFields(),
 
             // A video entry keeps its uploaded image above - it is what the grid shows, and what a self-hosted player uses as its poster; the two fields below only decide what the detail page opens on (see GalleryMedia::isVideo())
             // One field where there used to be a type and an id: an admin pastes the address bar of the page they were watching the video on, and the platform reads itself off it (see GalleryMedia::setExternalUrl). Nothing to extract by hand, and no pair of fields left to contradict each other
@@ -403,22 +420,6 @@ class GalleryMediaCrudController extends AbstractCrudController
                     array_map(static fn (string $type) => t('label.gallery_media_type_' . $type, [], 'gallery'), GalleryMedia::mediaTypes()),
                 ))
                 ->setFormTypeOption('disabled', true),
-
-            BooleanField::new('rightsReserved')
-                ->setLabel(t('label.rights_reserved', [], 'gallery')),
-
-            BooleanField::new('hidden')
-                ->setLabel(t('label.gallery_media_hidden', [], 'gallery'))
-                ->setHelp(t('help.gallery_media_hidden', [], 'gallery')),
-
-            BooleanField::new('printable')
-                ->setLabel(t('label.gallery_media_printable', [], 'gallery'))
-                ->setHelp(t('help.gallery_media_printable', [], 'gallery')),
-
-            // Left empty the photograph is printed on demand without end. Filled it is an edition, and the register is written the moment it is saved - which is why nothing here lets it be raised afterwards (see GalleryMediaSubscriber)
-            IntegerField::new('editionSize')
-                ->setLabel(t('label.gallery_media_edition_size', [], 'gallery'))
-                ->setHelp(t('help.gallery_media_edition_size', [], 'gallery')),
 
             IntegerField::new('position')
                 ->setLabel(t('label.position', [], 'gallery')),

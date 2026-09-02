@@ -34,6 +34,10 @@
                 <source>action.export_selection</source>
                 <target>Exporter la sélection</target>
             </trans-unit>
+            <trans-unit id="C0BLWQ_">
+                <source>action.import_print_catalogue</source>
+                <target>Importer le catalogue du laboratoire</target>
+            </trans-unit>
             <trans-unit id="CN88tnV">
                 <source>action.move</source>
                 <target>Déplacer</target>
@@ -117,6 +121,10 @@
             <trans-unit id="u_SEkIG">
                 <source>description.guided_project_gallery_medias_recovery</source>
                 <target>Le site rend les originaux en une archive, et garde une corbeille propre aux photos.</target>
+            </trans-unit>
+            <trans-unit id="tsnfDBM">
+                <source>description.guided_project_gallery_print_setup</source>
+                <target>Les formats, leurs prix, et ce qu'il faut cocher pour qu'une photo soit vendue.</target>
             </trans-unit>
             <trans-unit id="Q1mOGK1">
                 <source>description.guided_project_gallery_trash</source>
@@ -274,6 +282,30 @@
                 <source>description.guided_step_gallery_medias_recovery_trash</source>
                 <target>Chaque galerie porte la sienne, sous son formulaire dès qu'une photo y est mise : les mêmes téléchargements y sont offerts, et « Restaurer » rend les photos à la galerie, à la suite des autres.</target>
             </trans-unit>
+            <trans-unit id="vdrMdME">
+                <source>description.guided_step_gallery_print_setup_done</source>
+                <target>Il reste à cocher « imprimable » sur les photos que vous vendez, sur leur propre fiche.</target>
+            </trans-unit>
+            <trans-unit id="mwwAUyV">
+                <source>description.guided_step_gallery_print_setup_edit</source>
+                <target>Chaque format se règle sur sa propre fiche.</target>
+            </trans-unit>
+            <trans-unit id="esDFV4F">
+                <source>description.guided_step_gallery_print_setup_import</source>
+                <target>Si votre laboratoire publie sa gamme, ce bouton la reprend d'un coup. Sinon, créez vos formats à la main.</target>
+            </trans-unit>
+            <trans-unit id="6VmejR9">
+                <source>description.guided_step_gallery_print_setup_open</source>
+                <target>Ce que la boutique propose : une taille, un papier, un prix. Rien ne se vend tant que cette liste est vide.</target>
+            </trans-unit>
+            <trans-unit id="zfBh3ig">
+                <source>description.guided_step_gallery_print_setup_price</source>
+                <target>Le prix payé par le client, celui du laboratoire et votre marge compris.</target>
+            </trans-unit>
+            <trans-unit id="_De1g0e">
+                <source>description.guided_step_gallery_print_setup_published</source>
+                <target>Un format non publié n'est proposé nulle part.</target>
+            </trans-unit>
             <trans-unit id="vZywfgl">
                 <source>description.guided_step_gallery_trash_delete</source>
                 <target>Le bouton demande confirmation, puis met la galerie à la corbeille : ses médias, ses fichiers et son adresse sont conservés, et seule sa page répond désormais qu'elle n'existe plus.</target>
@@ -314,6 +346,18 @@
                 <source>email.edition_sold_verify</source>
                 <target>Vérifier le certificat</target>
             </trans-unit>
+            <trans-unit id="ZiBgMjW">
+                <source>email.print_cancelled_intro</source>
+                <target>Le laboratoire a annulé la commande de tirages %number%, qui ne sera pas imprimée.</target>
+            </trans-unit>
+            <trans-unit id="eZObqEC">
+                <source>email.print_cancelled_subject</source>
+                <target>Une commande de tirages annulée</target>
+            </trans-unit>
+            <trans-unit id="ScbLaFK">
+                <source>email.print_cancelled_what_next</source>
+                <target>Le client a payé et ne recevra rien : remboursez-le, ou faites imprimer les mêmes tirages ailleurs.</target>
+            </trans-unit>
             <trans-unit id="CSUrULC">
                 <source>email.print_edition_signature_subject</source>
                 <target>Un tirage d'art à signer</target>
@@ -322,6 +366,18 @@
                 <source>email.print_edition_sold_subject</source>
                 <target>Votre tirage numéroté</target>
             </trans-unit>
+            <trans-unit id="44LMjP7">
+                <source>email.print_shipped_care</source>
+                <target>Déballez le tirage à plat et manipulez-le par les bords : le papier fine art ne pardonne ni le pli ni les traces de doigts.</target>
+            </trans-unit>
+            <trans-unit id="EHSzojO">
+                <source>email.print_shipped_intro</source>
+                <target>Vos tirages ont quitté le laboratoire et sont en route.</target>
+            </trans-unit>
+            <trans-unit id="FDDrwha">
+                <source>email.print_shipped_subject</source>
+                <target>Vos tirages sont partis</target>
+            </trans-unit>
             <trans-unit id="ZSCwjpo">
                 <source>flash.gallery_category_deleted_permanently</source>
                 <target>Galerie supprimée définitivement</target>
@@ -329,6 +385,22 @@
             <trans-unit id="XcWUcOA">
                 <source>flash.gallery_category_restored</source>
                 <target>Galerie restaurée</target>
+            </trans-unit>
+            <trans-unit id="jEF1Zc.">
+                <source>flash.print_catalogue_imported</source>
+                <target>%count% format(s) importés, non publiés : fixez vos prix puis publiez ceux que vous vendez.</target>
+            </trans-unit>
+            <trans-unit id="B5bZPiE">
+                <source>flash.print_catalogue_nothing_to_import</source>
+                <target>Rien à importer : votre catalogue contient déjà tous les formats proposés par le laboratoire.</target>
+            </trans-unit>
+            <trans-unit id="6OJbprz">
+                <source>flash.print_catalogue_unchecked</source>
+                <target>Les références n'ont pas pu être vérifiées auprès du laboratoire (clé d'API absente ou service injoignable). Vérifiez-les avant de publier.</target>
+            </trans-unit>
+            <trans-unit id="dT7Qa5p">
+                <source>flash.print_catalogue_unknown_skus</source>
+                <target>Références inconnues du laboratoire, laissées de côté : %skus%</target>
             </trans-unit>
             <trans-unit id="VT.tHCu">
                 <source>flash.print_test_mode_disabled</source>
@@ -357,6 +429,18 @@
             <trans-unit id="4cNQ8IL">
                 <source>help.print_format_dpi</source>
                 <target>300 pour un tirage regardé de près. 200 suffit pour un grand format accroché au mur et ouvre la vente à des fichiers plus petits.</target>
+            </trans-unit>
+            <trans-unit id="u7Tkzvu">
+                <source>help.print_format_label</source>
+                <target>Ce que le client lit : la taille et le papier, par exemple « 30 × 45 cm, Hahnemühle Photo Rag ». Le papier ne s'écrit nulle part ailleurs.</target>
+            </trans-unit>
+            <trans-unit id="G1rR6QD">
+                <source>help.print_format_paper</source>
+                <target>Le nom du papier. Les formats qui le partagent sont regroupés sous ce titre sur la page du visiteur.</target>
+            </trans-unit>
+            <trans-unit id="7EDqKQn">
+                <source>help.print_format_paper_description</source>
+                <target>Une phrase disant à quoi sert ce papier, affichée sous son titre. C'est ce qui justifie l'écart de prix aux yeux du client.</target>
             </trans-unit>
             <trans-unit id="aM5drLM">
                 <source>help.print_format_required_pixels</source>
@@ -866,6 +950,10 @@
                 <source>label.guided_project_gallery_medias_recovery</source>
                 <target>Récupérer les fichiers des photos</target>
             </trans-unit>
+            <trans-unit id="c1tUhx0">
+                <source>label.guided_project_gallery_print_setup</source>
+                <target>Ouvrir la vente de tirages</target>
+            </trans-unit>
             <trans-unit id="zZGX7f.">
                 <source>label.guided_project_gallery_trash</source>
                 <target>Mettre une galerie de côté et la reprendre</target>
@@ -1030,6 +1118,30 @@
                 <source>label.guided_step_gallery_medias_recovery_trash</source>
                 <target>Les photos ont aussi une corbeille</target>
             </trans-unit>
+            <trans-unit id="KDDjH_n">
+                <source>label.guided_step_gallery_print_setup_done</source>
+                <target>Mettre une photo en vente</target>
+            </trans-unit>
+            <trans-unit id="2BYhjJo">
+                <source>label.guided_step_gallery_print_setup_edit</source>
+                <target>Ouvrir un format</target>
+            </trans-unit>
+            <trans-unit id="1g03sEI">
+                <source>label.guided_step_gallery_print_setup_import</source>
+                <target>Reprendre la gamme du laboratoire</target>
+            </trans-unit>
+            <trans-unit id="iLWhg4e">
+                <source>label.guided_step_gallery_print_setup_open</source>
+                <target>Les formats de tirage</target>
+            </trans-unit>
+            <trans-unit id="9_6Mttc">
+                <source>label.guided_step_gallery_print_setup_price</source>
+                <target>Fixer le prix</target>
+            </trans-unit>
+            <trans-unit id="dXd9cfo">
+                <source>label.guided_step_gallery_print_setup_published</source>
+                <target>Publier le format</target>
+            </trans-unit>
             <trans-unit id="van4.w.">
                 <source>label.guided_step_gallery_trash_delete</source>
                 <target>Retirez-en une du site</target>
@@ -1052,7 +1164,7 @@
             </trans-unit>
             <trans-unit id="IJ3OllR">
                 <source>label.info_gallery_category</source>
-                <target>Catégories des médias, elles sont la galerie du site. "Non classé" est une catégorie de secours, non supprimable. Créez ou modifiez une catégorie, réordonnez leur position d'affichage et ajoutez-y des médias. Mettre une galerie à la corbeille ne fait que la retirer du site : le bouton au-dessus de la liste montre ce qui y attend, et l'y reprend.</target>
+                <target>Catégories des médias, elles sont la galerie du site. "Non classé" est une catégorie de secours, non supprimable. Créez ou modifiez une catégorie et ajoutez-y des médias : elles sont listées par ordre alphabétique, ici comme sur le site. Mettre une galerie à la corbeille ne fait que la retirer du site : le bouton au-dessus de la liste montre ce qui y attend, et l'y reprend.</target>
             </trans-unit>
             <trans-unit id="FyUiQ4f">
                 <source>label.info_gallery_category_delete</source>
@@ -1106,6 +1218,10 @@
                 <source>label.print_certificate</source>
                 <target>Certificat d'authenticité</target>
             </trans-unit>
+            <trans-unit id="Fj_w29o">
+                <source>label.print_certificate_posted</source>
+                <target>Le certificat d'authenticité, signé, vous sera adressé séparément.</target>
+            </trans-unit>
             <trans-unit id="mY07tEY">
                 <source>label.print_certificate_sold_on</source>
                 <target>Acquis le %date%</target>
@@ -1141,6 +1257,14 @@
             <trans-unit id="mEVpkG2">
                 <source>label.print_format_label</source>
                 <target>Intitulé</target>
+            </trans-unit>
+            <trans-unit id="hC01YRw">
+                <source>label.print_format_paper</source>
+                <target>Papier</target>
+            </trans-unit>
+            <trans-unit id="D7jZdEM">
+                <source>label.print_format_paper_description</source>
+                <target>Description du papier</target>
             </trans-unit>
             <trans-unit id="v7W416N">
                 <source>label.print_format_position</source>

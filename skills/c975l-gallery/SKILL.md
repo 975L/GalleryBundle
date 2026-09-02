@@ -1,6 +1,6 @@
 ---
 name: c975l-gallery
-description: "Use this skill when working with photo galleries in a Symfony application built on the c975L ecosystem with c975l/gallery-bundle. Covers categories and medias, the admin-renamable url prefix, the two-step trash, batch upload and the three image derivatives, videos and embeds, the two gallery blocks, theming, and every extension point the bundle offers. Triggers on: GalleryCategory, GalleryMedia, gallery-route-prefix, gallery_index, gallery_category, gallery_media, gallery_categories, gallery_medias, c975l:gallery:rebuild-thumbnails, c975l:gallery:fill-slugs, photo gallery, thumbnail, lightbox, batch upload, upload progress, passe-partout, trash, restore, delete permanently, 410 Gone, download highres, download originals, GalleryMediaArchiver, move medias, move selection, GalleryMediaMover, moveMedias, files-gallery, health check, automatic gallery, latest additions, GalleryLatestProvider, findOrCreateAutomatic, findLatest, gallery-latest-days, gallery-latest-max, gallery-rating, likes, like a photo, heart, rating, findVisibleByCategories, setLoadedMedias, media caption, media description, GalleryCustomizationProviderInterface, gallery.customization_provider, GalleryDataField, getDataValue, gallery-video-self-hosted-max-height, self-hosted video, portrait video., GallerySampleCatalog, GalleryDemoFixtureProvider, DemoFixtureProviderInterface, demo gallery, ReplacingFile, hidden, hide a gallery, masking, sell prints, print shop, limited edition, editionSize, printable, certificate of authenticity, gallery_print_certificate, gallery_print_file, gallery-print-enabled, gallery-printable-max, gallery-print-provider, gallery-print-sandbox, gallery-print-signature, GalleryPrintFormat, GalleryPrintOrder, GalleryPrintCopy, PrintCopySnapshot, PrintFulfilmentInterface, ProdigiFulfilment, ManualFulfilment, gallery.print_fulfilment, BasketItemProviderInterface, CatalogueBasketItemProviderInterface, getCatalogueUrl, continue shopping, AutomaticGalleryInterface, gallery.automatic_gallery, GalleryAutomaticProvider, GalleryPrintableProvider, automaticKind, qr code, GalleryShowcaseProvider, ui-showcase-demo-url, block showcase, block-thumbs, block picker silhouette, ui.management_stylesheet, getManagementStylesheets"
+description: "Use this skill when working with photo galleries in a Symfony application built on the c975L ecosystem with c975l/gallery-bundle. Covers categories and medias, the admin-renamable url prefix, the two-step trash, batch upload and the three image derivatives, videos and embeds, the two gallery blocks, theming, and every extension point the bundle offers. Triggers on: GalleryCategory, GalleryMedia, gallery-route-prefix, gallery_index, gallery_category, gallery_media, gallery_categories, gallery_medias, c975l:gallery:rebuild-thumbnails, c975l:gallery:fill-slugs, photo gallery, thumbnail, lightbox, batch upload, upload progress, passe-partout, trash, restore, delete permanently, 410 Gone, download highres, download originals, GalleryMediaArchiver, move medias, move selection, GalleryMediaMover, moveMedias, files-gallery, health check, automatic gallery, latest additions, GalleryLatestProvider, findOrCreateAutomatic, findLatest, gallery-latest-days, gallery-latest-max, gallery-rating, likes, like a photo, heart, rating, findVisibleByCategories, setLoadedMedias, media caption, media description, GalleryCustomizationProviderInterface, gallery.customization_provider, GalleryDataField, getDataValue, gallery-video-self-hosted-max-height, self-hosted video, portrait video., GallerySampleCatalog, GalleryDemoFixtureProvider, DemoFixtureProviderInterface, demo gallery, ReplacingFile, hidden, hide a gallery, masking, sell prints, print shop, limited edition, editionSize, printable, certificate of authenticity, gallery_print_certificate, gallery_print_file, gallery_print_callback, c975l:gallery:print:sync, GalleryPrintOrderTracker, GalleryMaintenanceTaskProvider, callbackUrl, gallery-print-enabled, gallery-printable-max, gallery-print-provider, gallery-print-sandbox, gallery-print-signature, GalleryPrintFormat, GalleryPrintOrder, GalleryPrintCopy, PrintCopySnapshot, PrintFulfilmentInterface, ProdigiFulfilment, ManualFulfilment, gallery.print_fulfilment, PrintCatalogueProviderInterface, PrintCatalogueImporter, ProdigiCatalogue, import print catalogue, GalleryPrintOrderRepository, claim, gallery-print-edition-hold, shop-currency, gallery-print-setup, BasketItemProviderInterface, CatalogueBasketItemProviderInterface, getCatalogueUrl, continue shopping, AutomaticGalleryInterface, gallery.automatic_gallery, GalleryAutomaticProvider, GalleryPrintableProvider, automaticKind, qr code, GalleryShowcaseProvider, ui-showcase-demo-url, block showcase, block-thumbs, block picker silhouette, ui.management_stylesheet, getManagementStylesheets"
 ---
 
 # c975L GalleryBundle
@@ -121,8 +121,9 @@ not worth showing — a gallery being prepared, one taken down for a season, a p
 | `gallery_media` | `/{prefix}/{category}/{slug}` | the medium-resolution photo, or the video player |
 | `gallery_print_certificate` | `/certificate/{certificate}` | the public check page of one numbered print |
 | `gallery_print_file` | `/gallery-print-file/{copy}` | the print file, fetched by the lab through a signed url |
+| `gallery_print_callback` | `/gallery-print-callback/{provider}` | where a lab reports an order has moved on |
 
-The last two sit **outside** the renamable prefix: one is printed on paper and has to outlive a rename,
+The last three sit **outside** the renamable prefix: one is printed on paper and has to outlive a rename,
 the other is never read by a visitor.
 
 The first segment is the `gallery-route-prefix` setting, renamed from the dashboard (`galerie`,
@@ -162,7 +163,9 @@ is the one place every screen asks (`ResetInterface`, so it reads once per reque
 `AutomaticGalleryInterface` — `getKind()`, `isAvailable()`, `getMedias()` — collected through
 `gallery.automatic_gallery`. `Service\GalleryLatestProvider` and `Service\GalleryPrintableProvider` are the
 two shipped. A kind answering `false` to `isAvailable()` never gets a row written, so a feature nobody
-turned on leaves nothing behind.
+turned on leaves nothing behind — and `prepare()` drops it from the list it hands back even when a row
+already exists, so turning the feature off afterwards takes the gallery off the index too. A kind no
+provider answers for at all is kept: it is the ordinary gallery it became the day its bundle went.
 
 `GalleryLatestProvider`'s list comes from `GalleryMediaRepository::findLatest($days, $max)`: a rolling
 window of calendar days, today included, falling back on the last day that carries an addition when the
@@ -394,6 +397,12 @@ Three entities. `GalleryPrintFormat` is the catalogue — a size, its dpi, its p
 lab knows it by (distinct from the slug; only the sku is ever sent to a lab). `GalleryPrintOrder` is one
 consignment. `GalleryPrintCopy` is **the register**: one row per print.
 
+**The catalogue is imported rather than typed** where the lab publishes its range: a driver answering
+`PrintCatalogueProviderInterface` (`ProdigiCatalogue` is the shipped one) hands `PrintCatalogueImporter`
+the sizes, papers and skus, and the **Import the catalogue** action of `GalleryPrintFormatCrudController`
+writes them unpublished and unpriced — the prices are the shop's, never the lab's. The action is only
+drawn where a driver answers, a shop printing by hand writing its formats itself.
+
 `GalleryMedia` carries `printable` (on offer), `hidden` (kept out of every public page without being
 deleted, filtered in the repository and 404 in the controller) and `editionSize` (null for an open
 edition). Announcing an edition writes its rows at once through `GalleryPrintCopyRepository::openEdition()`,
@@ -416,11 +425,28 @@ screen.
 
 A lab is a `PrintFulfilmentInterface`; every implementation is tagged on sight by `TaggedInterfacePass`,
 so a site adding its own printer wires nothing. `ProdigiFulfilment` ships, `ManualFulfilment` throws on
-purpose so the order stays pending in the back office rather than claiming it was sent.
+purpose so the order stays pending in the back office rather than claiming it was sent. A sold edition is
+always announced; the letter asking for a signature only goes out where `gallery-print-edition-hold` is on
+and the order really is waiting to be released.
 
 The print file is composed from the untouched original, never from the web derivative, and the signature
 is restamped at print resolution (`GalleryPrintFileBuilder`). The lab fetches it through a `UriSigner`
 url expiring at seven days; an unsigned request gets 404, not 403.
+
+What the lab says afterwards reaches the order two ways, and both write through
+`GalleryPrintOrderTracker` and nowhere else: the lab's callbacks on `gallery_print_callback` (whose
+address `ProdigiFulfilment` sends per order as `callbackUrl`, rather than relying on the lab's dashboard),
+and the nightly `c975l:gallery:print:sync`, declared by `GalleryMaintenanceTaskProvider`, which asks each
+lab about the orders it holds. **A callback is read as a name, never as a state** — a print lab signs
+nothing and that url is public, so the state is then asked of the lab itself. Shipped, the order is
+stamped, the buyer gets *your prints are on their way*, and the composed files are discarded. States never
+walk backwards, and nothing a lab says moves an order waiting for a signature. The move itself is a single
+conditional `UPDATE` (`GalleryPrintOrderRepository::claim()`), so a callback the lab replayed at the same
+moment as the nightly command sends one letter and frees the files once. A cancellation writes to
+the shop and never to the buyer - the refund is the shopkeeper's decision.
+
+The consuming site routes `GalleryPrintOrderMessage` to an asynchronous transport, so a slow lab never
+reaches the payment webhook.
 
 ## Extending and overriding
 
@@ -459,7 +485,8 @@ What the bundle already contributes to the dashboard, so you do not have to: `Me
 `files-gallery`, reporting every media whose image or self-hosted video is gone from the server),
 `GalleryExportProvider` /
 `GalleryImportProvider` (categories as a zip, files included), `GalleryBackupPathProvider`,
-`GalleryBlockOwnerResolver`, `GalleryGuidedProjectProvider`, `WhatsNewProvider`, `ImportmapProvider`,
+`GalleryBlockOwnerResolver`, `GalleryGuidedProjectProvider` (whose `gallery-print-setup` parcours is only
+offered where `gallery-print-enabled` is on), `WhatsNewProvider`, `ImportmapProvider`,
 `Service\ScriptProvider`, `Service\StylesheetProvider` (public and management stylesheets both),
 `Service\GalleryShowcaseProvider`,
 `GalleryShortcutProvider` (the tile toggling the lab's test mode), `GalleryDemoFixtureProvider`,
@@ -510,6 +537,11 @@ and derivatives off the disk with them.
   to disagree with the page checking it.
 - **Do not claim a copy with a read-then-write.** `GalleryPrintCopyRepository::claimNumber()` is a single
   conditional `UPDATE` precisely so two checkouts on the last copy cannot both win.
+- **Do not move an order's state with a read-then-write either.** Go through
+  `GalleryPrintOrderTracker::apply()`, whose `GalleryPrintOrderRepository::claim()` is the same single
+  conditional `UPDATE` — a replayed callback would otherwise post the shipping letter twice.
+- **Do not print a price with a hardcoded currency.** Read `shop-currency`, as
+  `templates/print/_offer.html.twig` and PaymentBundle's own basket templates do.
 - **Do not send the catalogue slug to a lab, nor the web derivative as a print file.** The frozen sku is
   what a lab knows, and `GalleryPrintFileBuilder` composes from the untouched original.
 - **Do not hand VichUploader a plain `File`** when seeding a media — `UploadHandler::hasUploadedFile()`

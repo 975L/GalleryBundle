@@ -45,6 +45,29 @@ class GalleryPrintExtensionTest extends TestCase
         $this->assertSame([], $this->extension()->getOffers(new GalleryMedia()));
     }
 
+    // Four papers across three sizes is twelve near-identical lines read as one list - gathered, it is four headings a visitor chooses between
+    public function testTheSizesAreGatheredUnderThePaperTheyArePrintedOn(): void
+    {
+        $media = new GalleryMedia();
+        $grouped = $this->extension(offers: [
+            $this->offer($media, 'mat-30x30', 12000, 'Papier art mat'),
+            $this->offer($media, 'lustre-20x20', 4500, 'Papier photo lustré'),
+            $this->offer($media, 'mat-20x20', 5500, 'Papier art mat'),
+        ])->getOffersByPaper($media);
+
+        $this->assertSame(['Papier photo lustré', 'Papier art mat'], array_keys($grouped));
+        $this->assertSame(['mat-20x20', 'mat-30x30'], array_map(static fn (PrintOffer $offer): ?string => $offer->format->getSlug(), $grouped['Papier art mat']));
+    }
+
+    // A catalogue filled before the paper had a column of its own, which the template draws as the flat list it drew before
+    public function testFormatsNamingNoPaperFallIntoOneUnnamedGroup(): void
+    {
+        $media = new GalleryMedia();
+        $grouped = $this->extension(offers: [$this->offer($media, '20x20', 5500)])->getOffersByPaper($media);
+
+        $this->assertSame([''], array_keys($grouped));
+    }
+
     // The difference between a page saying "3 left of 30" and one saying nothing at all
     public function testAnOpenEditionCountsNothingDown(): void
     {
@@ -67,8 +90,8 @@ class GalleryPrintExtensionTest extends TestCase
         return new GalleryPrintExtension($printService);
     }
 
-    private function offer(GalleryMedia $media, string $slug, int $price): PrintOffer
+    private function offer(GalleryMedia $media, string $slug, int $price, ?string $paper = null): PrintOffer
     {
-        return new PrintOffer($media, new GalleryPrintFormat()->setSlug($slug)->setPrice($price));
+        return new PrintOffer($media, new GalleryPrintFormat()->setSlug($slug)->setPrice($price)->setPaper($paper));
     }
 }

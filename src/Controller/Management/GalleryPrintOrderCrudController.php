@@ -81,6 +81,7 @@ class GalleryPrintOrderCrudController extends AbstractCrudController
             // Newest first, an order being acted on within a day or two of arriving
             ->setDefaultSort(['createdAt' => 'DESC'])
             ->showEntityActionsInlined()
+            ->overrideTemplate('crud/index', '@c975LGallery/management/gallery_print_order_index.html.twig')
         ;
     }
 

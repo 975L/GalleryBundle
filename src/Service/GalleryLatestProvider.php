@@ -21,10 +21,6 @@ use Symfony\Contracts\Service\ResetInterface;
 // Everything a category needs around that list is GalleryAutomaticProvider's, this one answering what it gathers and nothing else
 class GalleryLatestProvider implements AutomaticGalleryInterface, ResetInterface
 {
-    // What a site that never touched the two entries shows: the week just gone, and never more than two hundred medias on one page
-    public const int DEFAULT_DAYS = 7;
-    public const int DEFAULT_MAX = 200;
-
     /** @var ?list<GalleryMedia> */
     private ?array $medias = null;
 
@@ -39,21 +35,21 @@ class GalleryLatestProvider implements AutomaticGalleryInterface, ResetInterface
         return GalleryCategory::AUTOMATIC_LATEST;
     }
 
-    // Always - a gallery of the last additions is what any gallery has, where the one of the prints only makes sense on a site that sells them
+    // Always, as soon as the two entries it is drawn from hold a value - a gallery of the last additions is what any gallery has, where the one of the prints only makes sense on a site that sells them. Emptying either entry closes it, rather than quietly drawing it over one day or one media
     public function isAvailable(): bool
     {
-        return true;
+        return $this->getDays() > 0 && $this->getMax() > 0;
     }
 
-    // How many days back the gallery reaches, and how many medias it stops at - a value nobody set, or set to nothing, falls back on the constants above rather than emptying the gallery
+    // How many days back the gallery reaches, and how many medias it stops at - each straight from its own entry, which ships with its value: nothing is defaulted here, an entry left empty or set below one closing the gallery through isAvailable()
     public function getDays(): int
     {
-        return max(1, (int) ($this->configService->get('gallery-latest-days') ?: self::DEFAULT_DAYS));
+        return max(0, (int) $this->configService->get('gallery-latest-days'));
     }
 
     public function getMax(): int
     {
-        return max(1, (int) ($this->configService->get('gallery-latest-max') ?: self::DEFAULT_MAX));
+        return max(0, (int) $this->configService->get('gallery-latest-max'));
     }
 
     // The medias the gallery shows, most recent first - read once per request, every screen showing them (the index tile, the page itself, a block) asking for the same list

@@ -8,15 +8,23 @@
             </trans-unit>
             <trans-unit id="AHd3sWy">
                 <source>description.gallery_latest_days</source>
-                <target>Nombre de jours du calendrier, aujourd'hui compris, sur lesquels la galerie automatique montre les médias ajoutés - 7 par défaut. Si rien n'a été ajouté sur cette période, elle retombe sur la dernière journée qui porte un ajout, de sorte qu'elle n'est jamais vide tant qu'il existe une photo. Vide ou 0, 7 est appliqué.</target>
+                <target>Nombre de jours du calendrier, aujourd'hui compris, sur lesquels la galerie automatique montre les médias ajoutés. Si rien n'a été ajouté sur cette période, elle retombe sur la dernière journée qui porte un ajout, de sorte qu'elle n'est jamais vide tant qu'il existe une photo. Vide ou en dessous de 1, la galerie est fermée : aucune valeur n'est appliquée à sa place.</target>
             </trans-unit>
             <trans-unit id="6QTN5rG">
                 <source>description.gallery_latest_max</source>
-                <target>Nombre maximal de médias affichés par la galerie automatique, 200 par défaut. Il protège la journée où toute une photothèque est entrée d'un coup - reprise, import - qui remplirait sinon la page de milliers de vignettes. Au-delà, seuls les plus récents sont montrés. Vide ou 0, 200 est appliqué.</target>
+                <target>Nombre maximal de médias affichés par la galerie automatique. Il protège la journée où toute une photothèque est entrée d'un coup - reprise, import - qui remplirait sinon la page de milliers de vignettes. Au-delà, seuls les plus récents sont montrés. Vide ou en dessous de 1, la galerie est fermée.</target>
             </trans-unit>
             <trans-unit id="bj8kKWN">
                 <source>description.gallery_print_api_key</source>
                 <target>Clé fournie par le laboratoire, qui authentifie chaque commande envoyée. Inutile avec « manual ». La renseigner n'ouvre pas la boutique : c'est la case « Vente de tirages » qui le fait.</target>
+            </trans-unit>
+            <trans-unit id="JKmprXw">
+                <source>description.gallery_print_api_key_test</source>
+                <target>Clé du compte bac à sable, distincte de celle de production : chez Prodigi un même compte a les deux, avec un secret différent pour chacun. C'est celle-ci qui est employée tant que « Bac à sable » est coché — les deux se gardent côte à côte, sans avoir à recoller un secret pour passer de l'une à l'autre.</target>
+            </trans-unit>
+            <trans-unit id="fP4OVMW">
+                <source>description.gallery_print_edition_hold</source>
+                <target>Une commande de tirage numéroté attend dans le back-office que vous ayez signé son certificat, et ne part au laboratoire qu'une fois relâchée. À décocher si vous traitez le certificat de votre côté : la commande part alors comme une édition ouverte, et l'e-mail vous rappelant de signer vous parvient quand même.</target>
             </trans-unit>
             <trans-unit id="wHk0mCF">
                 <source>description.gallery_print_enabled</source>
@@ -36,7 +44,7 @@
             </trans-unit>
             <trans-unit id="ju2r8iI">
                 <source>description.gallery_printable_max</source>
-                <target>Nombre maximal de photos affichées par la galerie des tirages, 200 par défaut. Elle rassemble les photos cochées « à la vente », quelle que soit leur galerie. Vide ou 0, 200 est appliqué.</target>
+                <target>Nombre maximal de photos affichées par la galerie des tirages. Elle rassemble les photos cochées « à la vente », quelle que soit leur galerie. Vide ou en dessous de 1, la galerie est fermée.</target>
             </trans-unit>
             <trans-unit id="wn2FpRV">
                 <source>description.gallery_rating</source>
@@ -105,6 +113,14 @@
             <trans-unit id="xRNwvo0">
                 <source>label.gallery_print_api_key</source>
                 <target>Clé d'API du laboratoire</target>
+            </trans-unit>
+            <trans-unit id="yRwtUE6">
+                <source>label.gallery_print_api_key_test</source>
+                <target>Clé d'API de test du laboratoire</target>
+            </trans-unit>
+            <trans-unit id="SHUl1ZW">
+                <source>label.gallery_print_edition_hold</source>
+                <target>Retenir les éditions limitées jusqu'à la signature</target>
             </trans-unit>
             <trans-unit id="DPz9GXt">
                 <source>label.gallery_print_enabled</source>

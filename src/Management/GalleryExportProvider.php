@@ -72,7 +72,6 @@ class GalleryExportProvider implements ExportProviderInterface
             'slug' => $category->getSlug(),
             'title' => $category->getTitle(),
             'summarySocialNetwork' => $category->getSummarySocialNetwork(),
-            'position' => $category->getPosition(),
             // Same as a media's below: what the site adds to a gallery of its own travels with it
             'data' => $category->getData(),
             'uncategorized' => $category->isUncategorized(),

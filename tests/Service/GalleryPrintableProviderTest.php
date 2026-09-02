@@ -38,20 +38,29 @@ class GalleryPrintableProviderTest extends TestCase
         $this->assertSame(GalleryCategory::AUTOMATIC_PRINTABLE, $this->createProvider()->getKind());
     }
 
-    // A site that never opened the shop must not grow a gallery of prints (see GalleryAutomaticProvider::ensureCategory)
-    public function testItIsOnlyWantedWhereTheShopIsOpen(): void
+    // A site that never opened the shop must not grow a gallery of prints (see GalleryAutomaticProvider::ensureCategory), and neither must one whose ceiling entry says nothing
+    public function testItIsOnlyWantedWhereTheShopIsOpenAndTheCeilingIsSet(): void
     {
         $this->assertFalse($this->createProvider()->isAvailable());
-        $this->assertFalse($this->createProvider(['gallery-print-enabled' => false])->isAvailable());
-        $this->assertTrue($this->createProvider(['gallery-print-enabled' => true])->isAvailable());
+        $this->assertFalse($this->createProvider(['gallery-print-enabled' => false, 'gallery-printable-max' => '200'])->isAvailable());
+        $this->assertFalse($this->createProvider(['gallery-print-enabled' => true])->isAvailable());
+        $this->assertTrue($this->createProvider(['gallery-print-enabled' => true, 'gallery-printable-max' => '200'])->isAvailable());
     }
 
-    // A site that never opened the entry gets the shipped ceiling rather than an empty gallery, and a negative one is floored at a photograph rather than emptying it - same as the gallery of the last additions
-    public function testTheCeilingFallsBackOnItsDefault(): void
+    // An entry emptied in the back office, or set to a value that would show nothing at all, closes the gallery rather than drawing it over a single photograph - same as the gallery of the last additions
+    public function testAnEmptyOrNegativeCeilingClosesTheGallery(): void
     {
-        $this->assertSame(GalleryPrintableProvider::DEFAULT_MAX, $this->createProvider()->getMax());
-        $this->assertSame(GalleryPrintableProvider::DEFAULT_MAX, $this->createProvider(['gallery-printable-max' => ''])->getMax());
-        $this->assertSame(1, $this->createProvider(['gallery-printable-max' => '-5'])->getMax());
+        $this->assertSame(0, $this->createProvider()->getMax());
+        $this->assertSame(0, $this->createProvider(['gallery-printable-max' => ''])->getMax());
+        $this->assertSame(0, $this->createProvider(['gallery-printable-max' => '-5'])->getMax());
+    }
+
+    // The entry ships with its ceiling, so the gallery a fresh install draws is the one it describes
+    public function testTheEntryShipsWithItsCeiling(): void
+    {
+        $configs = json_decode(file_get_contents(__DIR__ . '/../../config/configs.json'), true, 512, \JSON_THROW_ON_ERROR);
+
+        $this->assertSame('200', array_column($configs, 'value', 'slug')['gallery-printable-max']);
     }
 
     public function testTheCeilingIsReadFromTheConfiguration(): void

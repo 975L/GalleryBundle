@@ -38,6 +38,9 @@ class GalleryPrintOrder implements \Stringable
     // The lab refused it, or could not be reached often enough to keep trying. Reads like pending to the admin, who retries or orders it by hand, but is kept apart so a genuine refusal is not lost among the orders simply waiting
     public const STATE_FAILED = 'failed';
 
+    // The states an order can still be moved out of: those where a lab is holding it. A pending or failed order is a human's business, and a shipped or cancelled one is over
+    public const array STATES_HELD_BY_LAB = [self::STATE_SENT, self::STATE_PRODUCING];
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]

@@ -8,6 +8,12 @@
     /* --gallery-thumb-size: 150px; */
     /* --gallery-grid-gap: 1em; */
 
+    /* The row the automatic galleries ("Derniers ajouts", "Tirages d'art") are shown in, above the rest and parted from it by a rule - larger tiles, the index's own entrance. Set the size to var(--gallery-thumb-size) to have them shown like the others */
+    /* --gallery-featured-thumb-size: 220px; */
+    /* --gallery-featured-gap: 2.5rem; */
+    /* --gallery-featured-rule-height: 1px; */
+    /* --gallery-featured-rule-color: var(--c975l-color-gallery-featured-rule, color-mix(in srgb, var(--text) 20%, var(--background))); */
+
     /* What parts a category's title from its cover, in the grid of categories */
     /* --gallery-thumb-label-gap: 0.4em; */
 
@@ -76,6 +82,22 @@
     /* --gallery-credits-font-size: 0.9rem; */
     /* --gallery-credits-gap: 1em; */
     /* --gallery-credits-color: var(--c975l-color-gallery-credits, color-mix(in srgb, var(--text) 60%, var(--background))); */
+
+    /* The print offer under a media - the same measure as the photo above it, so a price list never runs wider than what it prices */
+    /* --gallery-print-margin-top: 2em; */
+    /* --gallery-print-title-font-size: 1.15rem; */
+    /* --gallery-print-title-margin-bottom: 0.75em; */
+
+    /* The edition line, and the sold-out one - toward the background like the credits, a mention read before the prices rather than with them */
+    /* --gallery-print-edition-font-size: 0.9rem; */
+    /* --gallery-print-edition-color: var(--c975l-color-gallery-print-edition, color-mix(in srgb, var(--text) 60%, var(--background))); */
+
+    /* One row per size: the label on one side, the price and its button on the other, parted by a rule rather than by a box each */
+    /* --gallery-print-offer-padding: 0.6em 0; */
+    /* --gallery-print-offer-gap: 1em; */
+    /* --gallery-print-offer-rule-color: var(--c975l-color-gallery-print-rule, color-mix(in srgb, var(--text) 20%, var(--background))); */
+    /* --gallery-print-price-gap: 1em; */
+    /* --gallery-print-price-font-weight: 600; */
 
     /* The line naming what the certificate page states, above the work's title - spaced out, a plate's lettering rather than a heading */
     /* --gallery-certificate-label-letter-spacing: 0.1em; */

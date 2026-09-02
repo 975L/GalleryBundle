@@ -51,6 +51,20 @@ class GalleryBlockExtensionTest extends TestCase
         $this->assertCount(1, $extension->getCategories(1));
     }
 
+    // The list is alphabetical, so a block cut at a few categories would stop well before "Derniers ajouts" or "Tirages d'art" - they are floated first, the cut happening after
+    public function testGetCategoriesFloatsTheAutomaticGalleriesBeforeCappingTheList(): void
+    {
+        $extension = $this->extension(null, [], [
+            new GalleryCategory()->setSlug('animaux'),
+            new GalleryCategory()->setSlug('bois'),
+            new GalleryCategory()->setSlug('latest')->setAutomaticKind(GalleryCategory::AUTOMATIC_LATEST),
+        ]);
+
+        $slugs = array_map(static fn (GalleryCategory $category): ?string => $category->getSlug(), $extension->getCategories(2));
+
+        $this->assertSame(['latest', 'animaux'], $slugs);
+    }
+
     // A site that has never created a category still renders the block, empty
     public function testGetCategoriesReturnsNoneWithoutAnyCategory(): void
     {

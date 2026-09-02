@@ -47,6 +47,29 @@ class GalleryPrintExtension
         return $offers;
     }
 
+    /**
+     * The same offers, gathered under the paper they are printed on and each group ordered by price.
+     *
+     * Grouped here and not in the template, Twig having no filter for it - and grouped at all because four papers
+     * across three sizes is twelve near-identical lines, where four described headings is a choice a visitor can make.
+     *
+     * A catalogue whose formats carry no paper comes back as one group keyed on the empty string, which the template
+     * draws as the flat list it drew before.
+     *
+     * @return array<string, list<PrintOffer>>
+     */
+    #[AsTwigFunction('gallery_print_offers_by_paper')]
+    public function getOffersByPaper(GalleryMedia $media): array
+    {
+        $grouped = [];
+
+        foreach ($this->getOffers($media) as $offer) {
+            $grouped[(string) $offer->format->getPaper()][] = $offer;
+        }
+
+        return $grouped;
+    }
+
     // How many of an edition are left, null when the photograph is sold as an open one - the difference between a page that says "3 left of 30" and one that says nothing at all
     #[AsTwigFunction('gallery_print_remaining')]
     public function getRemaining(GalleryMedia $media): ?int

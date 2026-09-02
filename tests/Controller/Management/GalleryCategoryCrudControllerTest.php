@@ -165,35 +165,67 @@ class GalleryCategoryCrudControllerTest extends TestCase
         $translator = $this->createStub(TranslatorInterface::class);
         $translator->method('trans')->willReturnArgument(0);
 
-        $galleryCategoryRepository ??= $this->createStub(GalleryCategoryRepository::class);
+        // What the caller handed over, laid over the defaults: a "??" per collaborator reads as a branch each, where the pair of arrays reads as one
+        $services = array_filter([
+            'categoryRepository' => $galleryCategoryRepository,
+            'contentExporter' => $contentExporter,
+            'exportProvider' => $galleryExportProvider,
+            'redirectRepository' => $redirectRepository,
+            'requestStack' => $requestStack,
+            'mediaRepository' => $galleryMediaRepository,
+            'mediaArchiver' => $galleryMediaArchiver,
+            'automaticProvider' => $automaticProvider,
+            'latestProvider' => $latestProvider,
+            'customizationRegistry' => $customizationRegistry,
+        ]) + $this->defaultControllerServices($galleryCategoryRepository);
 
         return new GalleryCategoryCrudController(
-            $galleryCategoryRepository,
+            $services['categoryRepository'],
             new AsciiSlugger(),
             $translator,
             $this->createAdminUrlGenerator(),
-            $contentExporter ?? $this->createStub(ContentExporter::class),
-            $galleryExportProvider ?? new GalleryExportProvider($galleryCategoryRepository, new BlockDataExporter(sys_get_temp_dir()), sys_get_temp_dir()),
+            $services['contentExporter'],
+            $services['exportProvider'],
             $this->createStub(AdminContextProviderInterface::class),
             $this->createStub(BlockMoveRowAttrBuilder::class),
             new GalleryMediaFactory(new GalleryMediaSlugger(new AsciiSlugger())),
             new GalleryMediaMover(
                 new GalleryMediaSlugger(new AsciiSlugger()),
-                new GalleryUrlRedirector($redirectRepository ?? $this->createStub(RedirectRepository::class)),
+                new GalleryUrlRedirector($services['redirectRepository']),
                 $this->createUrlGenerator(),
                 sys_get_temp_dir(),
             ),
             new UploadLimits(),
-            new GalleryUrlRedirector($redirectRepository ?? $this->createStub(RedirectRepository::class)),
+            new GalleryUrlRedirector($services['redirectRepository']),
             $this->createConfigService(),
-            $requestStack ?? new RequestStack([new Request()]),
-            $galleryMediaRepository ?? $this->createStub(GalleryMediaRepository::class),
+            $services['requestStack'],
+            $services['mediaRepository'],
             $this->createCsrfTokenManager(true),
-            $galleryMediaArchiver ?? new GalleryMediaArchiver(sys_get_temp_dir()),
-            $automaticProvider ?? $this->createStub(GalleryAutomaticProvider::class),
-            $latestProvider ?? $this->createStub(GalleryLatestProvider::class),
-            $customizationRegistry ?? new GalleryCustomizationRegistry([]),
+            $services['mediaArchiver'],
+            $services['automaticProvider'],
+            $services['latestProvider'],
+            $services['customizationRegistry'],
         );
+    }
+
+    // The collaborators a test says nothing about, the export provider reading the very repository the caller may have handed over
+    /** @return array<string, object> */
+    private function defaultControllerServices(?GalleryCategoryRepository $categoryRepository): array
+    {
+        $categoryRepository ??= $this->createStub(GalleryCategoryRepository::class);
+
+        return [
+            'categoryRepository' => $categoryRepository,
+            'contentExporter' => $this->createStub(ContentExporter::class),
+            'exportProvider' => new GalleryExportProvider($categoryRepository, new BlockDataExporter(sys_get_temp_dir()), sys_get_temp_dir()),
+            'redirectRepository' => $this->createStub(RedirectRepository::class),
+            'requestStack' => new RequestStack([new Request()]),
+            'mediaRepository' => $this->createStub(GalleryMediaRepository::class),
+            'mediaArchiver' => new GalleryMediaArchiver(sys_get_temp_dir()),
+            'automaticProvider' => $this->createStub(GalleryAutomaticProvider::class),
+            'latestProvider' => $this->createStub(GalleryLatestProvider::class),
+            'customizationRegistry' => new GalleryCustomizationRegistry([]),
+        ];
     }
 
     // The two urls of a moved media, built by the mover rather than by the controller (see GalleryMediaMover::mediaUrl)
@@ -263,7 +295,7 @@ class GalleryCategoryCrudControllerTest extends TestCase
         file_put_contents($projectDir . '/public/uploads/p1.jpg', 'bytes-1');
         file_put_contents($projectDir . '/public/uploads/p2.jpg', 'bytes-2');
 
-        $category = new GalleryCategory()->setSlug('voyages')->setTitle('Voyages')->setPosition(0);
+        $category = new GalleryCategory()->setSlug('voyages')->setTitle('Voyages');
         $media1 = new GalleryMedia()->setFilename('uploads/p1.jpg')->setTitle('Media 1')->setSlug('media-1')->setPosition(0);
         $media2 = new GalleryMedia()->setFilename('uploads/p2.jpg')->setTitle('Media 2')->setSlug('media-2')->setPosition(1);
         $category->addMedia($media1);
@@ -1109,7 +1141,7 @@ class GalleryCategoryCrudControllerTest extends TestCase
     public function testMoveMediasCreatesTheGalleryAskedForAndMovesIntoIt(): void
     {
         $category = $this->createCategoryWithMedias(7, 8);
-        $arranged = new GalleryCategory()->setSlug('voitures')->setTitle('Voitures')->setPosition(4);
+        $arranged = new GalleryCategory()->setSlug('voitures')->setTitle('Voitures');
 
         $created = null;
         $entityManager = $this->createMock(EntityManagerInterface::class);
@@ -1135,9 +1167,6 @@ class GalleryCategoryCrudControllerTest extends TestCase
         $this->assertInstanceOf(GalleryCategory::class, $created);
         $this->assertSame('calandres-volvo', $created->getSlug());
         $this->assertSame('Calandres Volvo', $created->getTitle());
-
-        // After the galleries already arranged rather than at rank 0, where it would jump to the head of the index
-        $this->assertSame(5, $created->getPosition());
 
         $categories = $category->getMedias()->map(static fn (GalleryMedia $media): ?string => $media->getCategory()?->getSlug())->toArray();
         $this->assertSame(['calandres-volvo', 'calandres-volvo'], array_values($categories));

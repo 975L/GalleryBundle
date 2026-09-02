@@ -1,0 +1,223 @@
+<?xml version="1.0"?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+    <file source-language="en" target-language="en" datatype="plaintext" original="gallery_narration.en.xlf">
+        <body>
+            <trans-unit id="63yZFT3">
+                <source>narration.gallery</source>
+                <target>"Gallery" holds the galleries of the site and their photos. Moving a gallery to the trash only takes it off the site: the button above the list shows what waits there, and takes it back.</target>
+            </trans-unit>
+            <trans-unit id="BfIWVkl">
+                <source>narration.guided_step_gallery_creation_done</source>
+                <target>Your gallery is online. It has nothing to publish: it is visible the moment it exists, and the view on site button opens it.</target>
+            </trans-unit>
+            <trans-unit id="BC59ALP">
+                <source>narration.guided_step_gallery_creation_files</source>
+                <target>Pick your photographs: several files at once, each becoming a media of the gallery. The sizes shown are what the server accepts.</target>
+            </trans-unit>
+            <trans-unit id="baen4pJ">
+                <source>narration.guided_step_gallery_creation_new</source>
+                <target>Add a gallery with the button above the list. The creation form carries the first batch of media too: the gallery is created and filled in one go.</target>
+            </trans-unit>
+            <trans-unit id="bQOKxCE">
+                <source>narration.guided_step_gallery_creation_open</source>
+                <target>The panel takes you to your galleries. Every one of the site is listed here, in the order they are displayed in.</target>
+            </trans-unit>
+            <trans-unit id="e7HL5pQ">
+                <source>narration.guided_step_gallery_creation_save</source>
+                <target>Save with the button at the bottom of the form.</target>
+            </trans-unit>
+            <trans-unit id="yJqrQ8h">
+                <source>narration.guided_step_gallery_creation_title</source>
+                <target>Name it. The title is what the site shows, and the address of the gallery is built from it.</target>
+            </trans-unit>
+            <trans-unit id="S6LfiKO">
+                <source>narration.guided_step_gallery_creation_title_root</source>
+                <target>Name the batch. Every media takes this name, numbered; each one is retouched afterwards, one by one.</target>
+            </trans-unit>
+            <trans-unit id="KFjqSSF">
+                <source>narration.guided_step_gallery_latest_days</source>
+                <target>One heading per day: the media added over the last days, all galleries taken together, and each thumbnail names the gallery it really belongs to.</target>
+            </trans-unit>
+            <trans-unit id="tdJYtj2">
+                <source>narration.guided_step_gallery_latest_done</source>
+                <target>Two settings of the gallery group decide how far back it looks: the number of days, and how many photos it shows at most. When the window catches nothing, it falls back on the last day carrying an addition.</target>
+            </trans-unit>
+            <trans-unit id="fpFdxAJ">
+                <source>narration.guided_step_gallery_latest_edit</source>
+                <target>Open it. It offers no upload, no reordering and no cover: it holds nothing of its own to arrange.</target>
+            </trans-unit>
+            <trans-unit id="9VAmvHi">
+                <source>narration.guided_step_gallery_latest_open</source>
+                <target>The panel takes you to your galleries. "Latest additions" is among them, written by the site the first time the galleries are listed: it is a gallery like the others, which can be renamed and moved.</target>
+            </trans-unit>
+            <trans-unit id="psakJ1d">
+                <source>narration.guided_step_gallery_latest_selection</source>
+                <target>Work on a whole upload session: credits, rights, download and move to trash act on the checked photos where they actually sit. That is how a whole day's upload is credited in one go.</target>
+            </trans-unit>
+            <trans-unit id="opbMRuM">
+                <source>narration.guided_step_gallery_media_detail_category</source>
+                <target>The first field is its gallery. Changing it here moves this one photo, its files following it; a whole selection is moved from the gallery screen instead.</target>
+            </trans-unit>
+            <trans-unit id="ssY52a9">
+                <source>narration.guided_step_gallery_media_detail_credits</source>
+                <target>Credit its author: the credits are shown with the media on the site, and the same value can be written on a whole selection from the gallery.</target>
+            </trans-unit>
+            <trans-unit id=".RlZo_n">
+                <source>narration.guided_step_gallery_media_detail_done</source>
+                <target>Here you are back at the gallery. The media's own address is changed behind the padlock only, and the old one keeps redirecting to the new one.</target>
+            </trans-unit>
+            <trans-unit id="B8rq2v1">
+                <source>narration.guided_step_gallery_media_detail_edit</source>
+                <target>Open the gallery: its media are listed under its form.</target>
+            </trans-unit>
+            <trans-unit id="7_HK17h">
+                <source>narration.guided_step_gallery_media_detail_open</source>
+                <target>The panel takes you to your galleries: a media is always reached from the one holding it.</target>
+            </trans-unit>
+            <trans-unit id="azrVJ0G">
+                <source>narration.guided_step_gallery_media_detail_save</source>
+                <target>Save with the button at the bottom of the form.</target>
+            </trans-unit>
+            <trans-unit id="Aucfetg">
+                <source>narration.guided_step_gallery_media_detail_thumbnail</source>
+                <target>Click a thumbnail. It opens the only screen a media has, and saving it will bring you back here.</target>
+            </trans-unit>
+            <trans-unit id="qzDbJuT">
+                <source>narration.guided_step_gallery_media_detail_title</source>
+                <target>Write its caption. It is shown under the media and stands for it aloud in a screen reader; retouching it moves no address.</target>
+            </trans-unit>
+            <trans-unit id="2o.cWMu">
+                <source>narration.guided_step_gallery_media_detail_video</source>
+                <target>You can attach a video to it: paste the address of the page you were watching it on, the platform reads itself off it. The field below uploads the site's own copy instead.</target>
+            </trans-unit>
+            <trans-unit id="nFU0BJA">
+                <source>narration.guided_step_gallery_medias_arrangement_cover</source>
+                <target>Choose the cover, the media representing the gallery wherever it is shown. Left unpicked, a random one is taken each time.</target>
+            </trans-unit>
+            <trans-unit id="yvuxFpQ">
+                <source>narration.guided_step_gallery_medias_arrangement_done</source>
+                <target>There is nothing to save: the order and the cover are stored as you go. Only the gallery's own fields need the save button.</target>
+            </trans-unit>
+            <trans-unit id="1BknBOA">
+                <source>narration.guided_step_gallery_medias_arrangement_edit</source>
+                <target>Open the gallery. Its media are listed under its own form, which is where everything below happens.</target>
+            </trans-unit>
+            <trans-unit id="hNY4fYo">
+                <source>narration.guided_step_gallery_medias_arrangement_open</source>
+                <target>The panel takes you to your galleries. The one to arrange is among them, but not "Latest additions", which holds no photo of its own and arranges nothing.</target>
+            </trans-unit>
+            <trans-unit id="ShP8z4d">
+                <source>narration.guided_step_gallery_medias_arrangement_selection</source>
+                <target>You can work on several at once: check the media, then write the same credits on all of them, mark them as rights reserved, download them in high resolution or as originals, or move them to the trash in one go.</target>
+            </trans-unit>
+            <trans-unit id="FCQrz.i">
+                <source>narration.guided_step_gallery_medias_arrangement_sort</source>
+                <target>Reorder them: drag a media by its handle. The new order is saved the moment you drop it, with nothing to validate.</target>
+            </trans-unit>
+            <trans-unit id="LWZTx.f">
+                <source>narration.guided_step_gallery_medias_arrangement_upload</source>
+                <target>Add media, a batch at a time, always from the gallery holding them: a media is never created on its own.</target>
+            </trans-unit>
+            <trans-unit id="dwmaPR6">
+                <source>narration.guided_step_gallery_medias_move_done</source>
+                <target>Nothing is lost on the way: the old page of each photo redirects to its new address, the gallery left behind closes the gap in its order, and its cover is released if it was one of them.</target>
+            </trans-unit>
+            <trans-unit id="_.CTmdP">
+                <source>narration.guided_step_gallery_medias_move_edit</source>
+                <target>Open the gallery: its media are listed under its form, and the move is done from there.</target>
+            </trans-unit>
+            <trans-unit id="G8KTnrR">
+                <source>narration.guided_step_gallery_medias_move_move</source>
+                <target>Move the selection. The files follow into the arrival gallery's own directory, and the photos land after what it already holds.</target>
+            </trans-unit>
+            <trans-unit id="pGMxKZr">
+                <source>narration.guided_step_gallery_medias_move_open</source>
+                <target>The panel takes you to your galleries. Start from the one holding the photos to move, not from the one receiving them.</target>
+            </trans-unit>
+            <trans-unit id="3WrUKj.">
+                <source>narration.guided_step_gallery_medias_move_select</source>
+                <target>Check what leaves, a few photos or the whole gallery. They are moved in the order the grid shows them.</target>
+            </trans-unit>
+            <trans-unit id="bIjhNq6">
+                <source>narration.guided_step_gallery_medias_move_target</source>
+                <target>Choose the arrival gallery. Every gallery holding photos of its own is offered, except the one you are looking at and "Latest additions", which holds none. The last entry creates one: its name is asked for right next to it.</target>
+            </trans-unit>
+            <trans-unit id="OHqxadg">
+                <source>narration.guided_step_gallery_medias_move_title_root</source>
+                <target>Rename them, or not. Left empty, the photos keep the titles they had; filled, they are numbered from where the arrival gallery leaves off, "Cars 12" becoming "Volvo 3".</target>
+            </trans-unit>
+            <trans-unit id="MKtnc8v">
+                <source>narration.guided_step_gallery_medias_recovery_download</source>
+                <target>Download them: one zip for the selection, with the high resolution kept by the site, or the originals as they were uploaded if the gallery was told to keep them. A selection past one gigabyte is refused, its size stated.</target>
+            </trans-unit>
+            <trans-unit id="mftkXWo">
+                <source>narration.guided_step_gallery_medias_recovery_edit</source>
+                <target>Open the gallery: its media are listed under its form.</target>
+            </trans-unit>
+            <trans-unit id="KOULEQC">
+                <source>narration.guided_step_gallery_medias_recovery_open</source>
+                <target>The panel takes you to your galleries: the files are handed back from the one holding them.</target>
+            </trans-unit>
+            <trans-unit id="_5vpMDm">
+                <source>narration.guided_step_gallery_medias_recovery_select</source>
+                <target>Check what you want, the whole gallery at once or only the few photos you are after.</target>
+            </trans-unit>
+            <trans-unit id="9HsZZTT">
+                <source>narration.guided_step_gallery_medias_recovery_trash</source>
+                <target>The photos have a trash too. Each gallery carries its own, under its form as soon as a photo is put there: the same downloads are offered, and "Restore" hands the photos back to the gallery, after the others.</target>
+            </trans-unit>
+            <trans-unit id="oQrN9MT">
+                <source>narration.guided_step_gallery_print_setup_done</source>
+                <target>The formats are ready. A photograph is still only sold if its own screen carries the "printable" box: that is where, media by media, you choose what is offered as a print.</target>
+            </trans-unit>
+            <trans-unit id="HM3EpkO">
+                <source>narration.guided_step_gallery_print_setup_edit</source>
+                <target>Open the format's screen. The sizes and the pixels asked for come from the lab; what follows comes from you.</target>
+            </trans-unit>
+            <trans-unit id="By22xyM">
+                <source>narration.guided_step_gallery_print_setup_import</source>
+                <target>The button only shows where the configured lab publishes its catalogue. It writes the formats with their sizes and references, and leaves the prices at zero: those are yours, not the lab's.</target>
+            </trans-unit>
+            <trans-unit id="3zlqVb5">
+                <source>narration.guided_step_gallery_print_setup_open</source>
+                <target>The print shop lives in this list. Each line is a size on a paper, with its price; a photograph put up for sale is offered in every published format.</target>
+            </trans-unit>
+            <trans-unit id="7uwNWQg">
+                <source>narration.guided_step_gallery_print_setup_price</source>
+                <target>The price is what the customer pays, everything included. The lab will bill you its own separately: the difference is your margin.</target>
+            </trans-unit>
+            <trans-unit id="DagUAKX">
+                <source>narration.guided_step_gallery_print_setup_published</source>
+                <target>While the box stays unticked, the format exists for you alone. Tick it and it appears under every photograph put up for sale.</target>
+            </trans-unit>
+            <trans-unit id="E66DXJx">
+                <source>narration.guided_step_gallery_trash_delete</source>
+                <target>Take one off the site. The button asks first, then moves the gallery to the trash: its media, its files and its address are all kept, and only its own page answers gone from then on.</target>
+            </trans-unit>
+            <trans-unit id="jkS92Sw">
+                <source>narration.guided_step_gallery_trash_done</source>
+                <target>Nothing is lost in one click. Dropping a gallery for good is the other button of the trash, held at the administrator: it is the only one removing the files from the server.</target>
+            </trans-unit>
+            <trans-unit id="WBdp.7G">
+                <source>narration.guided_step_gallery_trash_open</source>
+                <target>The panel takes you to your galleries, the ones the site is showing right now.</target>
+            </trans-unit>
+            <trans-unit id="e0aNsNJ">
+                <source>narration.guided_step_gallery_trash_restore</source>
+                <target>Put it back online. It comes back where it was, with its media and its position, and its address starts answering again.</target>
+            </trans-unit>
+            <trans-unit id="uroJAVb">
+                <source>narration.guided_step_gallery_trash_switch</source>
+                <target>Open the trash. The button above the list switches between the galleries online and the ones set aside: the same screen, showing the other side.</target>
+            </trans-unit>
+            <trans-unit id="MdQod4k">
+                <source>narration.print_formats</source>
+                <target>"Print formats" holds the sizes offered for sale, their price and the lab's reference.</target>
+            </trans-unit>
+            <trans-unit id="odCCuWc">
+                <source>narration.print_orders</source>
+                <target>"Print orders" lists the prints ordered: the ones the lab is printing, and the ones waiting for your signature.</target>
+            </trans-unit>
+        </body>
+    </file>
+</xliff>

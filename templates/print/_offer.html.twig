@@ -1,53 +1,78 @@
 {# The print offer of one photograph, shown on its page when the shop is open and the file has the pixels (see GalleryPrintService::isPrintable) #}
-{# One button per size rather than a size picker: the list is three or four lines, and a select would hide the prices - which is what the visitor came to read #}
-{# Adds through PaymentBundle's own basket controller, reading the very data attributes its product buttons read (see PaymentBundle assets/js/basket.js): the basket is one basket, whatever bundle filled it #}
+{# One button per size rather than a size picker: a select would hide the prices, which is what the visitor came to read #}
+{# Grouped by paper, each under its own heading and the sentence saying what that paper is for: the same three sizes on four papers is twelve lines a visitor reads as one flat list of near-identical rows, and a price that climbs with nothing explaining why is how a shop is left without a sale (see GalleryPrintFormat::$paper) #}
+{# A catalogue whose formats carry no paper falls back to one unnamed group, which draws exactly the flat list it drew before #}
+{# Adds through PaymentBundle's own basket controller, reading the very attributes its buttons read (see PaymentBundle's assets/js/basket.js and its Basket:AddOneButton component): the basket is one basket, whatever bundle filled it #}
+{# Styled by this bundle's own classes and not by utilities: nothing in this ecosystem ships Bootstrap, so a "d-flex" here lays out nothing at all #}
 {% trans_default_domain 'gallery' %}
 
-{% set offers = gallery_print_offers(media) %}
+{# Asked once and as the grouping: the flat list is what the grouping is built from, and asking for both would read the original's pixels off the disk twice on every page #}
+{% set offersByPaper = gallery_print_offers_by_paper(media) %}
 {% set remaining = gallery_print_remaining(media) %}
 
-{% if offers is not empty %}
-    <div data-controller="basket" class="gallery-print my-4">
-        <h2 class="h5 mb-3">{{ 'label.print_order'|trans }}</h2>
+{% if offersByPaper is not empty %}
+    <div data-controller="basket" class="gallery-print">
+        <h2 class="gallery-print__title">{{ 'label.print_order'|trans }}</h2>
 
         {# Above the prices, where it is read before the button and not after it #}
         <twig:c975LGallery:Gallery:TestMode/>
 
         {% if remaining is not null %}
             {# The scarcity is stated as what is left of what was announced, never as a bare "limited edition" - a number nobody can check is not a promise #}
-            <p class="small text-body-secondary mb-3">
+            <p class="gallery-print__edition">
                 {{ 'label.print_remaining'|trans({'%count%': remaining, '%total%': media.editionSize}) }}
             </p>
+
+            {# Said before the price and not in the confirmation email: a numbered print is signed and posted by hand, so the certificate follows in its own envelope - which a buyer has to know he is buying, not discover when the tube arrives without it #}
+            <p class="gallery-print__edition">{{ 'label.print_certificate_posted'|trans }}</p>
         {% else %}
-            <p class="small text-body-secondary mb-3">{{ 'label.print_open_edition'|trans }}</p>
+            <p class="gallery-print__edition">{{ 'label.print_open_edition'|trans }}</p>
         {% endif %}
 
         {% if remaining is null or remaining > 0 %}
-            <ul class="list-unstyled mb-0">
-                {% for offer in offers %}
-                    <li class="d-flex justify-content-between align-items-center border-bottom py-2">
-                        <span>{{ offer.format.label }}</span>
+            {% for paper, paperOffers in offersByPaper %}
+                {% if paper is not empty %}
+                    <h3 class="gallery-print__paper">{{ paper }}</h3>
 
-                        <span class="d-flex align-items-center gap-3">
-                            <span class="fw-semibold">{{ (offer.format.price / 100)|format_currency('EUR') }}</span>
+                    {% if paperOffers|first.format.paperDescription %}
+                        <p class="gallery-print__paper-description">{{ paperOffers|first.format.paperDescription }}</p>
+                    {% endif %}
+                {% endif %}
+
+                <ul class="gallery-print__list">
+                {% for offer in paperOffers %}
+                    <li class="gallery-print__offer">
+                        {# The size alone, the paper being written above it once - repeating it on every line is what made the list unreadable #}
+                        <span class="gallery-print__format">{{ paper is empty ? offer.format.label : offer.format.sizeLabel }}</span>
+
+                        <span class="gallery-print__action">
+                            <span class="gallery-print__price">{{ (offer.format.price / 100)|format_currency(config('shop-currency')) }}</span>
 
                             <button type="button"
-                                    class="btn btn-sm btn-primary"
-                                    data-action="basket#add"
+                                    class="btn btn-primary btn-small"
+                                    data-action="click->basket#addItem"
                                     data-item-id="{{ offer.id }}"
                                     data-type="gallery_print"
                                     data-quantity="1"
+                                    {# What the basket controller stops the ordering on: how many were ever offered and how many are gone, which is what disables this button once the edition is spoken for (see PaymentBundle's assets/js/basket.js). An open edition says zero to both #}
+                                    data-limited="{{ remaining is null ? 0 : media.editionSize }}"
+                                    data-ordered="{{ remaining is null ? 0 : media.editionSize - remaining }}"
                                     data-title="{{ media.title }}"
-                                    data-text="{{ 'label.added_to_basket'|trans({}, 'payment') }}"
+                                    data-text="{{ 'label.added'|trans({}, 'payment') }}"
                                     data-alert="success">
                                 {{ 'label.print_order'|trans }}
                             </button>
                         </span>
                     </li>
                 {% endfor %}
-            </ul>
+                </ul>
+            {% endfor %}
         {% else %}
-            <p class="mb-0">{{ 'label.print_edition_sold_out'|trans }}</p>
+            <p class="gallery-print__edition">{{ 'label.print_edition_sold_out'|trans }}</p>
         {% endif %}
+
+        {# What the click answers with, both drawn by PaymentBundle: the line saying the print was added, and the bar carrying the count, the total and the way to the basket - without them the button fills the basket in silence #}
+        <twig:c975LPayment:Basket:Message/>
+        <twig:c975LPayment:Basket:Navbar/>
     </div>
 {% endif %}

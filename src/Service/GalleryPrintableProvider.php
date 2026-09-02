@@ -21,9 +21,6 @@ use Symfony\Contracts\Service\ResetInterface;
 // A shop needs one page gathering what it sells: a gallery of a thousand photographs of which sixty are for sale gives a visitor no way to see the sixty, and asking him to open them one by one is asking him to leave
 class GalleryPrintableProvider implements AutomaticGalleryInterface, ResetInterface
 {
-    // What a site that never touched the entry shows - a ceiling and not a page size, the grid being the same one every gallery is drawn with
-    public const int DEFAULT_MAX = 200;
-
     /** @var ?list<GalleryMedia> */
     private ?array $medias = null;
 
@@ -41,13 +38,13 @@ class GalleryPrintableProvider implements AutomaticGalleryInterface, ResetInterf
     // The shop's own master switch, and nothing else: a site that never opened the shop must not grow a gallery of prints, and one that closes it keeps the category it already has - trashing that row is an admin's decision, not a consequence of a checkbox (see GalleryAutomaticProvider::ensureCategory)
     public function isAvailable(): bool
     {
-        return true === $this->configService->get('gallery-print-enabled');
+        return true === $this->configService->get('gallery-print-enabled') && $this->getMax() > 0;
     }
 
-    // How many photographs the gallery stops at - a value nobody set, or set to nothing, falls back on the constant above rather than emptying the gallery
+    // How many photographs the gallery stops at - a ceiling and not a page size, the grid being the same one every gallery is drawn with. Straight from its own entry, which ships with its value: an entry left empty or set below one closes the gallery through isAvailable() instead of being defaulted here
     public function getMax(): int
     {
-        return max(1, (int) ($this->configService->get('gallery-printable-max') ?: self::DEFAULT_MAX));
+        return max(0, (int) $this->configService->get('gallery-printable-max'));
     }
 
     // The photographs the gallery shows - read once per request, every screen showing them (the index tile, the page itself, a block) asking for the same list

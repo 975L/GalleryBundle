@@ -20,6 +20,11 @@ services:
         arguments:
             $drivers: !tagged_iterator gallery.print_fulfilment
 
+    # The catalogues installed, same shape - a lab that publishes a range has it offered for import in the print formats screen
+    c975L\GalleryBundle\Service\PrintCatalogueImporter:
+        arguments:
+            $catalogues: !tagged_iterator gallery.print_catalogue_provider
+
     # The automatic galleries installed, same shape - a site gathering its photographs on a rule of its own writes the class and has a gallery of it
     c975L\GalleryBundle\Service\GalleryAutomaticProvider:
         arguments:

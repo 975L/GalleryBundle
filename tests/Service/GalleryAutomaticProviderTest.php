@@ -148,18 +148,20 @@ class GalleryAutomaticProviderTest extends TestCase
         $this->assertSame(2, $automatic->getMediasCount());
     }
 
-    // The very first render, on a site that has never had one: it is written and joins the list at its own rank
-    public function testPrepareWritesTheCategoryAndPutsItInTheListAtItsPosition(): void
+    // The very first render, on a site that has never had one: it is written, and the list is read back rather than sorted here, so it comes out in the database's own alphabetical order
+    public function testPrepareWritesTheCategoryAndReadsTheListBack(): void
     {
-        $automatic = new GalleryCategory()->setAutomaticKind(GalleryCategory::AUTOMATIC_LATEST)->setPosition(0);
+        $automatic = new GalleryCategory()->setAutomaticKind(GalleryCategory::AUTOMATIC_LATEST)->setTitle('Derniers ajouts');
+        $arles = new GalleryCategory()->setTitle('Arles');
+        $venise = new GalleryCategory()->setTitle('Venise');
         $categoryRepository = $this->createStub(GalleryCategoryRepository::class);
         $categoryRepository->method('findOrCreateAutomatic')->willReturn($automatic);
+        $categoryRepository->method('findAllOrdered')->willReturn([$arles, $automatic, $venise]);
 
         $categories = $this->createProvider([$this->createGallery(GalleryCategory::AUTOMATIC_LATEST)], $categoryRepository)
-            ->prepare([new GalleryCategory()->setPosition(1), new GalleryCategory()->setPosition(2)]);
+            ->prepare([$arles, $venise]);
 
-        $this->assertCount(3, $categories);
-        $this->assertSame($automatic, $categories[0]);
+        $this->assertSame([$arles, $automatic, $venise], $categories);
     }
 
     // Two kinds installed, and a site that only wants one of them: the other leaves no row and no tile
@@ -168,6 +170,7 @@ class GalleryAutomaticProviderTest extends TestCase
         $latest = new GalleryCategory()->setAutomaticKind(GalleryCategory::AUTOMATIC_LATEST);
         $categoryRepository = $this->createStub(GalleryCategoryRepository::class);
         $categoryRepository->method('findOrCreateAutomatic')->willReturn($latest);
+        $categoryRepository->method('findAllOrdered')->willReturn([$latest]);
 
         $categories = $this->createProvider([
             $this->createGallery(GalleryCategory::AUTOMATIC_LATEST),
@@ -175,6 +178,28 @@ class GalleryAutomaticProviderTest extends TestCase
         ], $categoryRepository)->prepare([]);
 
         $this->assertSame([$latest], $categories);
+    }
+
+    // The row outlives the feature: emptying "gallery-latest-days" turns the kind off, and the gallery written back when it was on has to leave the index rather than stay on it holding nothing
+    public function testPrepareDropsACategoryWhoseKindIsNoLongerOffered(): void
+    {
+        $latest = new GalleryCategory()->setAutomaticKind(GalleryCategory::AUTOMATIC_LATEST);
+        $ordinary = new GalleryCategory();
+
+        $categories = $this->createProvider([$this->createGallery(GalleryCategory::AUTOMATIC_LATEST, available: false)])
+            ->prepare([$ordinary, $latest]);
+
+        $this->assertSame([$ordinary], $categories);
+    }
+
+    // A bundle removed takes its kind with it, and the gallery it flagged stays on the site as the ordinary one it has become (see GalleryAutomaticProvider::gallery)
+    public function testPrepareKeepsACategoryNoProviderAnswersFor(): void
+    {
+        $orphan = new GalleryCategory()->setAutomaticKind(GalleryCategory::AUTOMATIC_LATEST);
+
+        $categories = $this->createProvider()->prepare([$orphan]);
+
+        $this->assertSame([$orphan], $categories);
     }
 
     // Moving it to the trash is how an admin is rid of it, so it must not come back on the site by the very call that would have written it

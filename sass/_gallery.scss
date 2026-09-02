@@ -65,6 +65,19 @@
     gap: var(--gallery-grid-gap);
 }
 
+// The automatic galleries, above the rest and parted from them by a rule - larger tiles, the index's own entrance (see components/Gallery/Categories.html.twig)
+// The rule is drawn under the featured row rather than over the ordinary one, so an index holding no automatic gallery has nothing to hide
+.gallery-grid--featured {
+    padding-bottom: var(--gallery-featured-gap);
+    margin-bottom: var(--gallery-featured-gap);
+    border-bottom: var(--gallery-featured-rule-height) solid var(--gallery-featured-rule-color);
+}
+
+.gallery-grid--featured .img-thumbnail {
+    width: var(--gallery-featured-thumb-size);
+    height: var(--gallery-featured-thumb-size);
+}
+
 // One grid entry. Image:Link wraps its own markup in a centered <p>, whose margin would otherwise double the grid's gap - and the badge below needs a positioned box to sit on
 .gallery-thumb {
     position: relative;
@@ -408,6 +421,76 @@
 // Same reason for a video of the site's own, whose width is only known once the browser has read the file: the container is shrunk to what the player comes out as rather than given a cap of its own, and the arrows come back against it
 .gallery-media-container:has(.gallery-video--video) {
     width: fit-content;
+}
+
+// The print offer, under the credits - the same measure as the media above it, a price list being read against the photograph it prices and not across the whole page
+.gallery-print {
+    box-sizing: border-box;
+    margin: var(--gallery-print-margin-top) auto 0;
+    max-width: var(--gallery-media-max-width);
+    text-align: left;
+}
+
+.gallery-print__title {
+    margin: 0 0 var(--gallery-print-title-margin-bottom);
+    font-size: var(--gallery-print-title-font-size);
+    text-align: center;
+}
+
+.gallery-print__edition {
+    margin: 0 0 1em;
+    font-size: var(--gallery-print-edition-font-size);
+    color: var(--gallery-print-edition-color);
+    text-align: center;
+}
+
+// The paper the sizes below are printed on - a heading and not a line of the list, which is what stops four papers reading as twelve interchangeable rows
+// Left at the size a h3 already has, the theme having no say to add on a heading it styles everywhere else
+.gallery-print__paper {
+    margin: 1.5em 0 0.25em;
+}
+
+.gallery-print__paper:first-of-type {
+    margin-top: 0;
+}
+
+// What that paper is for, in one sentence: a visitor asked to pay half again for cotton has to be told what the cotton does
+.gallery-print__paper-description {
+    margin: 0 0 0.75em;
+    font-size: var(--gallery-print-edition-font-size);
+    color: var(--gallery-print-edition-color);
+}
+
+.gallery-print__list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+// The size on one side, what it costs and how to order it on the other - and stacked rather than squeezed once the row no longer holds the two apart
+.gallery-print__offer {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--gallery-print-offer-gap);
+    padding: var(--gallery-print-offer-padding);
+    border-bottom: 1px solid var(--gallery-print-offer-rule-color);
+}
+
+.gallery-print__offer:last-child {
+    border-bottom: 0;
+}
+
+.gallery-print__action {
+    display: flex;
+    align-items: center;
+    gap: var(--gallery-print-price-gap);
+    margin-left: auto;
+}
+
+.gallery-print__price {
+    font-weight: var(--gallery-print-price-font-weight);
 }
 
 // The line naming what the check page states, above the work's title - the only rule the certificate needs on the site, the sheet itself being drawn by a pdf engine that reads no stylesheet of ours (see templates/print/certificate.html.twig)

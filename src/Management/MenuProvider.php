@@ -38,6 +38,7 @@ class MenuProvider implements MenuProviderInterface
             'gallery' => [
                 'controller' => GalleryCategoryCrudController::class,
                 'label' => 'label.gallery',
+                'narration' => 'narration.gallery',
                 'translation_domain' => 'gallery',
                 'icon' => 'fas fa-images',
                 // The very text the categories screen opens on (see gallery_category_index.html.twig), reused as-is for the onboarding tour rather than written again for it
@@ -52,6 +53,7 @@ class MenuProvider implements MenuProviderInterface
             $menus['gallery_print_order'] = [
                 'controller' => GalleryPrintOrderCrudController::class,
                 'label' => 'label.print_orders',
+                'narration' => 'narration.print_orders',
                 'translation_domain' => 'gallery',
                 'icon' => 'fas fa-print',
                 'description' => 'label.info_print_orders',
@@ -61,6 +63,7 @@ class MenuProvider implements MenuProviderInterface
             $menus['gallery_print_format'] = [
                 'controller' => GalleryPrintFormatCrudController::class,
                 'label' => 'label.print_formats',
+                'narration' => 'narration.print_formats',
                 'translation_domain' => 'gallery',
                 'icon' => 'fas fa-ruler-combined',
                 'description' => 'label.info_print_formats',

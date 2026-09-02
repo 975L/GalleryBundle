@@ -18,8 +18,8 @@
     ],
     "require": {
         "php": ">=8.4",
-        "c975l/core-bundle": "^1.19.1",
-        "c975l/payment-bundle": "^6.6",
+        "c975l/core-bundle": "^1.21",
+        "c975l/payment-bundle": "^6.7",
         "doctrine/orm": "^3.6",
         "easycorp/easyadmin-bundle": "^5.1",
         "endroid/qr-code": "^6",
@@ -36,6 +36,7 @@
         "ext-exif": "Reads a photo's capture date to discriminate the urls of a batch uploaded under one title root - without it, the filename and the batch rank are used instead"
     },
     "require-dev": {
+        "chrome-php/chrome": "^1.16",
         "doctrine/doctrine-fixtures-bundle": "^4.3",
         "phpunit/phpunit": "^13.2",
         "symfony/browser-kit": "^8.0",

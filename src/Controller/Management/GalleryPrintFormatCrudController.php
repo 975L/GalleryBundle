@@ -12,6 +12,10 @@ namespace c975L\GalleryBundle\Controller\Management;
 
 use c975L\ConfigBundle\Service\ConfigServiceInterface;
 use c975L\GalleryBundle\Entity\GalleryPrintFormat;
+use c975L\GalleryBundle\Service\PrintCatalogueImporter;
+use EasyCorp\Bundle\EasyAdminBundle\Attribute\AdminRoute;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Field\BooleanField;
@@ -20,6 +24,9 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\MoneyField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\NumberField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\SlugField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
+use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGeneratorInterface;
+use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 use function Symfony\Component\Translation\t;
 
@@ -28,6 +35,9 @@ class GalleryPrintFormatCrudController extends AbstractCrudController
 {
     public function __construct(
         private readonly ConfigServiceInterface $configService,
+        private readonly PrintCatalogueImporter $printCatalogueImporter,
+        private readonly TranslatorInterface $translator,
+        private readonly AdminUrlGeneratorInterface $adminUrlGenerator,
     ) {
     }
 
@@ -50,7 +60,52 @@ class GalleryPrintFormatCrudController extends AbstractCrudController
             ->setEntityPermission($this->roleNeeded())
             ->setDefaultSort(['position' => 'ASC'])
             ->showEntityActionsInlined()
+            ->overrideTemplate('crud/index', '@c975LGallery/management/gallery_print_format_index.html.twig')
         ;
+    }
+
+    #[\Override]
+    public function configureActions(Actions $actions): Actions
+    {
+        // Only offered where there is something to import: a site printing by hand, or at a lab that publishes no range, is shown a button that would do nothing
+        if (null === $this->printCatalogueImporter->getCatalogue()) {
+            return $actions;
+        }
+
+        $importAction = Action::new('importPrintCatalogue', t('action.import_print_catalogue', [], 'gallery'), 'fas fa-download')
+            ->linkToCrudAction('importPrintCatalogue')
+            ->createAsGlobalAction()
+            ->addCssClass('btn btn-secondary')
+        ;
+
+        return $actions
+            ->add(Crud::PAGE_INDEX, $importAction)
+            ->setPermission('importPrintCatalogue', $this->roleNeeded())
+        ;
+    }
+
+    // Writes the lines the lab confirms it prints, and says what it did - run again after a bundle update, it adds what the catalogue has gained and touches nothing else
+    #[AdminRoute('/import-catalogue')]
+    public function importPrintCatalogue(): RedirectResponse
+    {
+        $report = $this->printCatalogueImporter->import();
+
+        if ($report->imported > 0) {
+            $this->addFlash('success', $this->translator->trans('flash.print_catalogue_imported', ['%count%' => $report->imported], 'gallery'));
+        } else {
+            $this->addFlash('info', $this->translator->trans('flash.print_catalogue_nothing_to_import', [], 'gallery'));
+        }
+
+        // Said out loud rather than left to be discovered: the rows were written on references nobody confirmed, and the first order is where an unknown one would surface
+        if ($report->unchecked) {
+            $this->addFlash('warning', $this->translator->trans('flash.print_catalogue_unchecked', [], 'gallery'));
+        }
+
+        if ([] !== $report->unknownSkus) {
+            $this->addFlash('warning', $this->translator->trans('flash.print_catalogue_unknown_skus', ['%skus%' => implode(', ', $report->unknownSkus)], 'gallery'));
+        }
+
+        return $this->redirect($this->adminUrlGenerator->setController(self::class)->setAction(Action::INDEX)->generateUrl());
     }
 
     #[\Override]
@@ -62,7 +117,8 @@ class GalleryPrintFormatCrudController extends AbstractCrudController
             ->hideOnIndex()
         ;
 
-        yield TextField::new('label', t('label.print_format_label', [], 'gallery'));
+        yield TextField::new('label', t('label.print_format_label', [], 'gallery'))
+            ->setHelp(t('help.print_format_label', [], 'gallery'));
 
         yield IntegerField::new('widthCm', t('label.print_format_width', [], 'gallery'));
         yield IntegerField::new('heightCm', t('label.print_format_height', [], 'gallery'));
@@ -90,6 +146,15 @@ class GalleryPrintFormatCrudController extends AbstractCrudController
 
         yield TextField::new('sku', t('label.print_format_sku', [], 'gallery'))
             ->setHelp(t('help.print_format_sku', [], 'gallery'))
+        ;
+
+        yield TextField::new('paper', t('label.print_format_paper', [], 'gallery'))
+            ->setHelp(t('help.print_format_paper', [], 'gallery'))
+        ;
+
+        yield TextField::new('paperDescription', t('label.print_format_paper_description', [], 'gallery'))
+            ->setHelp(t('help.print_format_paper_description', [], 'gallery'))
+            ->hideOnIndex()
         ;
 
         yield IntegerField::new('position', t('label.print_format_position', [], 'gallery'))->hideOnIndex();

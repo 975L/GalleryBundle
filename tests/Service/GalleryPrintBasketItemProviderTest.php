@@ -11,6 +11,7 @@
 namespace c975L\GalleryBundle\Tests\Service;
 
 use c975L\ConfigBundle\Service\ConfigServiceInterface;
+use c975L\GalleryBundle\Entity\GalleryCategory;
 use c975L\GalleryBundle\Entity\GalleryMedia;
 use c975L\GalleryBundle\Entity\GalleryPrintCopy;
 use c975L\GalleryBundle\Entity\GalleryPrintFormat;
@@ -55,8 +56,84 @@ class GalleryPrintBasketItemProviderTest extends TestCase
         $this->assertSame('/galerie', $provider->getCatalogueUrl());
     }
 
+    // Everything a basket row is drawn with, none of which PaymentBundle can work out on its own: without the id the page cannot even be rendered, and two sizes of one photograph read as two identical lines without the size
+    public function testABasketRowIsHandedEverythingItIsDrawnWith(): void
+    {
+        $offer = $this->createOffer(false);
+        $offer->media->setSlug('mont-blanc')->setCategory(new GalleryCategory()->setTitle('Montagnes')->setSlug('montagnes'));
+
+        $urlGenerator = $this->createStub(UrlGeneratorInterface::class);
+        $urlGenerator->method('generate')->willReturn('https://example.org/galerie/montagnes/mont-blanc');
+
+        $configService = $this->createStub(ConfigServiceInterface::class);
+        $configService->method('get')->willReturn('eur');
+
+        $line = $this->createProvider($offer, ['urlGenerator' => $urlGenerator, 'configService' => $configService])->toBasketData($offer, 2);
+
+        $this->assertSame('0:30x40', $line['item']['id']);
+        $this->assertSame('30 x 40 cm', $line['item']['description']);
+        $this->assertSame('eur', $line['item']['currency']);
+        $this->assertArrayHasKey('media', $line['item']);
+        // The page the photograph is read on, which "gallery_print_display" - the route the row falls back on - never was
+        $this->assertSame('https://example.org/galerie/montagnes/mont-blanc', $line['parent']['url']);
+    }
+
+    // What stops the quantity buttons short of the edition: how many numbers were ever offered, and how many are already claimed
+    public function testALimitedEditionSaysWhatIsLeftOfItToTheQuantityButtons(): void
+    {
+        $offer = $this->createOffer(true);
+
+        $printService = $this->createStub(GalleryPrintService::class);
+        $printService->method('findOffer')->willReturn($offer);
+        $printService->method('getRemaining')->willReturn(4);
+
+        $line = $this->createProvider($offer, ['printService' => $printService])->toBasketData($offer, 1);
+
+        $this->assertSame(30, $line['item']['limitedQuantity']);
+        $this->assertSame(26, $line['item']['orderedQuantity']);
+    }
+
+    // An open edition is never short of anything, and a zero is what the buttons read as "no limit at all"
+    public function testAnOpenEditionNeverStopsTheQuantityButtons(): void
+    {
+        $line = $this->createProvider($this->createOffer(false))->toBasketData($this->createOffer(false), 1);
+
+        $this->assertSame(0, $line['item']['limitedQuantity']);
+        $this->assertSame(0, $line['item']['orderedQuantity']);
+    }
+
+    // A photograph filed nowhere has no page to be sent to, and a row saying so is drawn as its title alone
+    public function testAPhotographWithoutAGalleryIsSentNowhere(): void
+    {
+        $line = $this->createProvider($this->createOffer(false))->toBasketData($this->createOffer(false), 1);
+
+        $this->assertNull($line['parent']['url']);
+    }
+
     /** @param array<string, mixed> $services */
     private function createProvider(PrintOffer $offer, array $services = []): GalleryPrintBasketItemProvider
+    {
+        $translator = $this->createStub(TranslatorInterface::class);
+        $translator->method('trans')->willReturnArgument(0);
+
+        // The given collaborators over the defaults, rather than a "??" per argument: the defaults are the ones that need arranging, and only where nothing was handed over
+        $services += $this->defaultServices($offer);
+
+        return new GalleryPrintBasketItemProvider(
+            $services['printService'],
+            $services['copyRepository'],
+            $this->createStub(PrintFulfilmentRegistry::class),
+            $services['printEmail'],
+            $services['configService'],
+            $this->createStub(EntityManagerInterface::class),
+            $services['messageBus'],
+            $translator,
+            $services['urlGenerator'],
+        );
+    }
+
+    /** @return array<string, mixed> */
+    private function defaultServices(PrintOffer $offer): array
     {
         $printService = $this->createStub(GalleryPrintService::class);
         $printService->method('findOffer')->willReturn($offer);
@@ -64,25 +141,17 @@ class GalleryPrintBasketItemProviderTest extends TestCase
         $configService = $this->createStub(ConfigServiceInterface::class);
         $configService->method('get')->willReturn('Galerie');
 
-        $translator = $this->createStub(TranslatorInterface::class);
-        $translator->method('trans')->willReturnArgument(0);
+        $messageBus = $this->createStub(MessageBusInterface::class);
+        $messageBus->method('dispatch')->willReturn(new Envelope(new \stdClass()));
 
-        $messageBus = $services['messageBus'] ?? $this->createStub(MessageBusInterface::class);
-        if ($messageBus instanceof MessageBusInterface && !isset($services['messageBus'])) {
-            $messageBus->method('dispatch')->willReturn(new Envelope(new \stdClass()));
-        }
-
-        return new GalleryPrintBasketItemProvider(
-            $printService,
-            $services['copyRepository'] ?? $this->createStub(GalleryPrintCopyRepository::class),
-            $this->createStub(PrintFulfilmentRegistry::class),
-            $services['printEmail'] ?? $this->createStub(GalleryPrintEmailInterface::class),
-            $configService,
-            $this->createStub(EntityManagerInterface::class),
-            $messageBus,
-            $translator,
-            $services['urlGenerator'] ?? $this->createStub(UrlGeneratorInterface::class),
-        );
+        return [
+            'printService' => $printService,
+            'copyRepository' => $this->createStub(GalleryPrintCopyRepository::class),
+            'printEmail' => $this->createStub(GalleryPrintEmailInterface::class),
+            'configService' => $configService,
+            'messageBus' => $messageBus,
+            'urlGenerator' => $this->createStub(UrlGeneratorInterface::class),
+        ];
     }
 
     // The copy is claimed by an UPDATE and the order's own collection stays empty until it is read back, so asking the order whether it holds a numbered copy answered no on every sale: the certificate was never asked for and the print went to the lab unsigned
@@ -102,6 +171,34 @@ class GalleryPrintBasketItemProviderTest extends TestCase
 
         $this->createProvider($offer, [
             'copyRepository' => $copyRepository,
+            'printEmail' => $printEmail,
+            'messageBus' => $messageBus,
+        ])->onBasketPaid(new Basket(), [$offer->getId() => ['quantity' => 1]], []);
+    }
+
+    // A shop that issues its certificates on its own turns the hold off: the number is still claimed and the sale still announced, but the print leaves for the lab with the open editions and nobody is asked to release an order that is already gone
+    public function testANumberedEditionGoesToTheLabWhenTheHoldIsOff(): void
+    {
+        $offer = $this->createOffer(true);
+
+        $copyRepository = $this->createStub(GalleryPrintCopyRepository::class);
+        $copyRepository->method('claimNumber')->willReturn(new GalleryPrintCopy()->setNumber(1));
+
+        $configService = $this->createStub(ConfigServiceInterface::class);
+        $configService->method('get')->willReturnCallback(
+            static fn (string $slug): mixed => 'gallery-print-edition-hold' === $slug ? false : 'Galerie',
+        );
+
+        $printEmail = $this->createMock(GalleryPrintEmailInterface::class);
+        $printEmail->expects($this->once())->method('editionSold');
+        $printEmail->expects($this->never())->method('editionAwaitingSignature');
+
+        $messageBus = $this->createMock(MessageBusInterface::class);
+        $messageBus->expects($this->once())->method('dispatch')->willReturn(new Envelope(new \stdClass()));
+
+        $this->createProvider($offer, [
+            'copyRepository' => $copyRepository,
+            'configService' => $configService,
             'printEmail' => $printEmail,
             'messageBus' => $messageBus,
         ])->onBasketPaid(new Basket(), [$offer->getId() => ['quantity' => 1]], []);

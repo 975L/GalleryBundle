@@ -104,7 +104,7 @@ class GalleryImportProvider implements ImportProviderInterface
             ->setTitle($item['title'])
             // "description" is what an archive exported before the rename carries: read as a fallback rather than importing a category stripped of its lead-in. Both optional, an archive predating the field altogether staying importable - and read as "no lead-in", which is what such an archive describes
             ->setSummarySocialNetwork($item['summarySocialNetwork'] ?? $item['description'] ?? null)
-            ->setPosition($item['position'] ?? 0)
+            // An archive exported while galleries were arranged by hand carries a "position" - read by nothing now, the index being ordered alphabetically (see GalleryCategoryRepository::findAllOrdered), and dropped rather than stored
             ->setUncategorized($item['uncategorized'] ?? false)
             // What the site added to this gallery of its own, put back whole - an archive predating it, or one from a site declaring no fields, importing a gallery carrying none
             ->setData($item['data'] ?? null)

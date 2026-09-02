@@ -30,7 +30,7 @@ class GalleryExportProviderTest extends TestCase
 
     public function testExportAllSerializesEveryCategoryFromTheRepository(): void
     {
-        $category = new GalleryCategory()->setSlug('voyages')->setTitle('Voyages')->setSummarySocialNetwork('<div>Nos voyages</div>')->setPosition(0);
+        $category = new GalleryCategory()->setSlug('voyages')->setTitle('Voyages')->setSummarySocialNetwork('<div>Nos voyages</div>');
 
         $categoryRepository = $this->createMock(GalleryCategoryRepository::class);
         $categoryRepository->expects($this->once())->method('findAll')->willReturn([$category]);
@@ -41,7 +41,6 @@ class GalleryExportProviderTest extends TestCase
             'slug' => 'voyages',
             'title' => 'Voyages',
             'summarySocialNetwork' => '<div>Nos voyages</div>',
-            'position' => 0,
             'data' => [],
             'uncategorized' => false,
             'automaticKind' => null,
@@ -61,7 +60,7 @@ class GalleryExportProviderTest extends TestCase
         file_put_contents($projectDir . '/public/uploads/p1.jpg', 'bytes-1');
         file_put_contents($projectDir . '/public/uploads/p2.jpg', 'bytes-2');
 
-        $category = new GalleryCategory()->setSlug('voyages')->setTitle('Voyages')->setPosition(0);
+        $category = new GalleryCategory()->setSlug('voyages')->setTitle('Voyages');
         $media1 = new GalleryMedia()->setFilename('uploads/p1.jpg')->setTitle('Media 1')->setSlug('media-1')->setDescription('Le port au petit matin')->setData(['photographer' => 'Laurent'])->setPosition(0);
         $media2 = new GalleryMedia()->setFilename('uploads/p2.jpg')->setTitle('Media 2')->setSlug('media-2')->setPosition(1);
         $category->addMedia($media1);

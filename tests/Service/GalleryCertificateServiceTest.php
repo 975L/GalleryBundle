@@ -84,7 +84,7 @@ class GalleryCertificateServiceTest extends TestCase
             static fn (string $route, array $parameters): string => 'https://example.org/certificate/' . $parameters['certificate'],
         );
 
-        return new GalleryCertificateService($pdfGenerator, $urlGenerator);
+        return new GalleryCertificateService($pdfGenerator, $urlGenerator, sys_get_temp_dir());
     }
 
     private function sold(int $number, string $token): GalleryPrintCopy

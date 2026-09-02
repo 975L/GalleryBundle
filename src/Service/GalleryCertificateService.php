@@ -13,6 +13,9 @@ namespace c975L\GalleryBundle\Service;
 use c975L\GalleryBundle\Entity\GalleryPrintCopy;
 use c975L\UiBundle\Contract\PdfGeneratorInterface;
 use Endroid\QrCode\Builder\Builder;
+use Imagine\Gd\Imagine;
+use Imagine\Image\Box;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 /**
@@ -31,6 +34,8 @@ class GalleryCertificateService
     public function __construct(
         private readonly PdfGeneratorInterface $pdfGenerator,
         private readonly UrlGeneratorInterface $urlGenerator,
+        #[Autowire(param: 'kernel.project_dir')]
+        private readonly string $projectDir,
     ) {
     }
 
@@ -56,11 +61,12 @@ class GalleryCertificateService
             if (null !== $copy->getNumber() && null !== $copy->getCertificate()) {
                 $url = $this->getVerificationUrl($copy);
 
-                // The copy alone, no photograph: everything the sheet states was frozen onto the row at the sale (see PrintCopySnapshot), and reading the entity again is exactly what would let a retitled photograph contradict a certificate already signed
+                // Everything the sheet states is read off the copy's own row, frozen at the sale (see PrintCopySnapshot) - reading the entity again is exactly what would let a retitled photograph contradict a certificate already signed. The reproduction below is the one thing taken from the photograph, because there is nowhere else to take it from
                 $numbered[] = [
                     'copy' => $copy,
                     'verificationUrl' => $url,
                     'qrCode' => null === $url ? null : $this->getQrCode($url),
+                    'photo' => $this->getPhoto($copy),
                 ];
             }
         }
@@ -70,6 +76,47 @@ class GalleryCertificateService
         }
 
         return $this->pdfGenerator->render('@c975LGallery/print/certificate.html.twig', ['certificates' => $numbered]);
+    }
+
+    // How wide the reproduction is rendered before being inlined - a thumbnail on a sheet, not a print: past this it only weighs on a pdf nobody zooms into
+    private const int PHOTO_WIDTH = 600;
+
+    /**
+     * The photograph itself, small, inlined as a data uri - so the sheet shows what it certifies rather than naming it.
+     *
+     * Converted to jpeg rather than inlined as it sits on disk: the stored derivative is a webp, which the pure-php
+     * engine of this ecosystem does not draw (see UiBundle's DompdfGenerator), and a certificate has to come out the
+     * same whichever engine the server carries.
+     *
+     * Null whenever there is nothing to show - a photograph deleted for good since the sale, a file gone from under it.
+     * The sheet then states its facts without a reproduction, which is a certificate still.
+     */
+    private function getPhoto(GalleryPrintCopy $copy): ?string
+    {
+        $filename = $copy->getMedia()?->getFilename();
+
+        if (null === $filename) {
+            return null;
+        }
+
+        $path = $this->projectDir . '/public/' . $filename;
+
+        if (!is_file($path)) {
+            return null;
+        }
+
+        try {
+            $image = new Imagine()->open($path);
+            $size = $image->getSize();
+
+            if ($size->getWidth() > self::PHOTO_WIDTH) {
+                $image = $image->resize(new Box(self::PHOTO_WIDTH, (int) round($size->getHeight() * self::PHOTO_WIDTH / $size->getWidth())));
+            }
+
+            return 'data:image/jpeg;base64,' . base64_encode($image->get('jpeg', ['jpeg_quality' => 80]));
+        } catch (\Exception) {
+            return null;
+        }
     }
 
     /**

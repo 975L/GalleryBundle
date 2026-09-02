@@ -32,10 +32,12 @@ class GalleryGuidedProjectProviderTest extends TestCase
         return $generator;
     }
 
-    private function createProvider(array &$controllers = []): GalleryGuidedProjectProvider
+    private function createProvider(array &$controllers = [], bool $printEnabled = true): GalleryGuidedProjectProvider
     {
         $configService = $this->createStub(ConfigServiceInterface::class);
-        $configService->method('get')->willReturn('ROLE_EDITOR');
+        $configService->method('get')->willReturnCallback(
+            static fn (string $slug): mixed => 'gallery-print-enabled' === $slug ? $printEnabled : 'ROLE_EDITOR',
+        );
 
         return new GalleryGuidedProjectProvider($this->createAdminUrlGenerator($controllers), $configService);
     }
@@ -46,10 +48,19 @@ class GalleryGuidedProjectProviderTest extends TestCase
         $projects = $this->createProvider()->getGuidedProjects();
 
         $this->assertSame(
-            ['gallery-creation', 'gallery-medias-arrangement', 'gallery-medias-move', 'gallery-media-detail', 'gallery-trash', 'gallery-medias-recovery', 'gallery-latest'],
+            ['gallery-creation', 'gallery-medias-arrangement', 'gallery-medias-move', 'gallery-media-detail', 'gallery-trash', 'gallery-medias-recovery', 'gallery-latest', 'gallery-print-setup'],
             array_column($projects, 'slug')
         );
-        $this->assertSame([5010, 5020, 5025, 5030, 5040, 5050, 5060], array_column($projects, 'order'));
+        $this->assertSame([5010, 5020, 5025, 5030, 5040, 5050, 5060, 5070], array_column($projects, 'order'));
+    }
+
+    // The two print screens are hidden from the menu on a site that does not sell prints (see MenuProvider), and a parcours walking a screen with no way in reads as a broken one
+    public function testThePrintProjectIsOnlyOfferedWhereTheShopIsOpen(): void
+    {
+        $controllers = [];
+        $projects = $this->createProvider($controllers, false)->getGuidedProjects();
+
+        $this->assertNotContains('gallery-print-setup', array_column($projects, 'slug'));
     }
 
     public function testEverySlugIsPrefixedWithTheBundleName(): void
@@ -101,14 +112,14 @@ class GalleryGuidedProjectProviderTest extends TestCase
         }
     }
 
-    // The categories are the single sidebar entry of the whole feature, so every parcours opens on them
-    public function testEveryProjectOpensOnTheCategoryCrudIndex(): void
+    // The categories are the single sidebar entry of the galleries, so every parcours about them opens there - the print one opening on the formats instead, which is where a shop is written
+    public function testEveryProjectOpensOnTheScreenItWalks(): void
     {
         $controllers = [];
         $this->createProvider($controllers)->getGuidedProjects();
 
         $this->assertSame(
-            array_fill(0, 7, 'GalleryCategoryCrudController'),
+            [...array_fill(0, 7, 'GalleryCategoryCrudController'), 'GalleryPrintFormatCrudController'],
             array_map(static fn (string $fqcn): string => basename(str_replace('\\', '/', $fqcn)), $controllers)
         );
     }

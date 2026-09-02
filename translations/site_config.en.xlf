@@ -8,15 +8,23 @@
             </trans-unit>
             <trans-unit id="AHd3sWy">
                 <source>description.gallery_latest_days</source>
-                <target>Number of calendar days, today included, the automatic gallery shows the medias added over - 7 by default. If nothing was added over that period, it falls back on the last day carrying an addition, so it is never empty as long as a single photo exists. Empty or 0, 7 is applied.</target>
+                <target>Number of calendar days, today included, the automatic gallery shows the medias added over. If nothing was added over that period, it falls back on the last day carrying an addition, so it is never empty as long as a single photo exists. Empty or below 1, the gallery is closed: no value is applied in its place.</target>
             </trans-unit>
             <trans-unit id="6QTN5rG">
                 <source>description.gallery_latest_max</source>
-                <target>Maximum number of medias the automatic gallery shows, 200 by default. It guards the day a whole library came in at once - a migration, an import - which would otherwise fill the page with thousands of thumbnails. Past it, only the most recent ones are shown. Empty or 0, 200 is applied.</target>
+                <target>Maximum number of medias the automatic gallery shows. It guards the day a whole library came in at once - a migration, an import - which would otherwise fill the page with thousands of thumbnails. Past it, only the most recent ones are shown. Empty or below 1, the gallery is closed.</target>
             </trans-unit>
             <trans-unit id="bj8kKWN">
                 <source>description.gallery_print_api_key</source>
                 <target>The key the lab issued, which authenticates every order sent. Not needed with "manual". Filling it in does not open the shop: the "Print sales" box is what does that.</target>
+            </trans-unit>
+            <trans-unit id="JKmprXw">
+                <source>description.gallery_print_api_key_test</source>
+                <target>The sandbox account's key, separate from the production one: at Prodigi a single account holds both, with a different secret for each. This is the one used while "Sandbox" is ticked - the two are kept side by side, so switching never means pasting a secret again.</target>
+            </trans-unit>
+            <trans-unit id="fP4OVMW">
+                <source>description.gallery_print_edition_hold</source>
+                <target>An order for a numbered print waits in the back office until you have signed its certificate, and only reaches the lab once released. Uncheck it if you handle the certificate on your own: the order then leaves like an open edition, and the email reminding you to sign still reaches you.</target>
             </trans-unit>
             <trans-unit id="wHk0mCF">
                 <source>description.gallery_print_enabled</source>
@@ -36,7 +44,7 @@
             </trans-unit>
             <trans-unit id="ju2r8iI">
                 <source>description.gallery_printable_max</source>
-                <target>Maximum number of photographs shown by the prints gallery, 200 by default. It gathers the photographs flagged as for sale, whatever gallery they were filed in. Empty or 0, 200 is applied.</target>
+                <target>Maximum number of photographs shown by the prints gallery. It gathers the photographs flagged as for sale, whatever gallery they were filed in. Empty or below 1, the gallery is closed.</target>
             </trans-unit>
             <trans-unit id="wn2FpRV">
                 <source>description.gallery_rating</source>
@@ -105,6 +113,14 @@
             <trans-unit id="xRNwvo0">
                 <source>label.gallery_print_api_key</source>
                 <target>Lab api key</target>
+            </trans-unit>
+            <trans-unit id="yRwtUE6">
+                <source>label.gallery_print_api_key_test</source>
+                <target>Lab's test API key</target>
+            </trans-unit>
+            <trans-unit id="SHUl1ZW">
+                <source>label.gallery_print_edition_hold</source>
+                <target>Hold limited editions until they are signed</target>
             </trans-unit>
             <trans-unit id="DPz9GXt">
                 <source>label.gallery_print_enabled</source>

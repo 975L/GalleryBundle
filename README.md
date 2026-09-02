@@ -47,7 +47,7 @@ See it in action at [bundles.975l.com/pages/gallery-bundle](https://bundles.975l
 - The gallery index and each category offered as a SiteBundle menu target, so a navbar links straight to one of the site's galleries (see [linking a gallery from a menu](#linking-a-gallery-from-a-menu))
 - Categories can be exported/imported as a zip (heading blocks, medias and files bundled in), plugging into ConfigBundle's **Export sync (everything)** dashboard shortcut and **Import content** screen.
 - The two upload roots declared to the backup, via ConfigBundle's `BackupPathProviderInterface`, mirrored offsite rather than tarred (see [backup](#backup))
-- Six replayable guided projects contributed to the dashboard, via ConfigBundle's `GuidedProjectProviderInterface`, walking a gallery's creation, its medias' arrangement, a media's own screen, the trash and the way back out of it, the files handed back as an archive, and the gallery of the latest additions (see [guided projects](#guided-projects))
+- Eight replayable guided projects contributed to the dashboard, via ConfigBundle's `GuidedProjectProviderInterface`, walking a gallery's creation, its medias' arrangement, a media's own screen, the trash and the way back out of it, the files handed back as an archive, the gallery of the latest additions, and the opening of the print shop (see [guided projects](#guided-projects))
 - Photographs can be **sold as prints**, behind one setting: a catalogue of sizes and prices, an order plugged into PaymentBundle's basket, and a lab that prints and ships to the customer directly - nothing transiting through the shopkeeper. A photograph can be offered as a limited edition, the bundle holding the register so the last copy cannot be sold twice, and drawing the certificate of authenticity to sign, with a qr code to its public verification page.
 - A photograph can be **hidden** from every public page without being deleted, and hiding it or putting it on sale applies to a whole selection at once.
 - A whole gallery can be **hidden** the same way: it leaves the index, the blocks, the menus and the sitemap, its photographs leave the automatic galleries with it, and everything stays in the back office to be shown again (see [masking a gallery](#masking-a-gallery)).
@@ -60,12 +60,12 @@ See it in action at [bundles.975l.com/pages/gallery-bundle](https://bundles.975l
 
 - PHP >= 8.4
 - Symfony ^8.0
-- [c975L/CoreBundle](https://github.com/975L/CoreBundle) in `^1.14.0` — ConfigBundle and UiBundle ship as the single `c975l/core-bundle` package, so requiring this bundle pulls both (Vich naming/resizing, EasyAdmin form-theme conventions, stylesheet registry, page layout fallback, menu provider, scaffold, sitemap and health checks). `^1.14.0` is what reads the role a menu entry states, without which the gallery's own sidebar entry falls back on the admin bar and an editor never sees it
+- [c975L/CoreBundle](https://github.com/975L/CoreBundle) in `^1.21` — ConfigBundle and UiBundle ship as the single `c975l/core-bundle` package, so requiring this bundle pulls both (Vich naming/resizing, EasyAdmin form-theme conventions, stylesheet registry, page layout fallback, menu provider, scaffold, sitemap and health checks). `^1.21` is what reads the role a menu entry states and the narration a guided step is spoken with, without which the gallery's own sidebar entry falls back on the admin bar and an editor never sees it
 - Doctrine ORM
 - EasyAdmin
 - VichUploader Bundle
 - `symfony/expression-language`, which the public routes' condition is evaluated with (see [public routes](#public-routes)) — pulled in by Composer
-- [c975L/PaymentBundle](https://github.com/975L/PaymentBundle) in `^6.2` — the one basket a print is bought through. Required rather than suggested so the print shop is there to be switched on, instead of being a feature nobody knows exists
+- [c975L/PaymentBundle](https://github.com/975L/PaymentBundle) in `^6.7` — the one basket a print is bought through. Required rather than suggested so the print shop is there to be switched on, instead of being a feature nobody knows exists
 - `endroid/qr-code` in `^6` — the qr code of a certificate and of a gallery
 
 `GalleryMedia::$user` is typed against `c975L\ConfigBundle\Contract\UserInterface`: your `App\Entity\User` must implement it. The scaffolded `User` already does; an older one adds the `implements` itself, with no migration and no configuration change.
@@ -148,6 +148,7 @@ Copies `assets/styles/themes/gallery.css` into the app, where it is owned from t
 | `gallery_media` | `/gallery/{category}/{slug}` | Media: photo in medium resolution, or video embed |
 | `gallery_print_certificate` | `/certificate/{certificate}` | Public check page of one numbered print (see [selling prints](#selling-prints)) |
 | `gallery_print_file` | `/gallery-print-file/{copy}` | The print file, fetched by the lab through a signed url |
+| `gallery_print_callback` | `/gallery-print-callback/{provider}` | Where a lab reports an order has moved on (see [selling prints](#selling-prints)) |
 
 The first segment is the **Gallery url prefix** setting (`gallery-route-prefix`, group **Gallery** in
 **Configuration**), so a site serves these routes in its own language — `galerie`, `fotos` — renamed from
@@ -169,11 +170,29 @@ always match what the router serves; it does so directly rather than through the
 being written from the command line where no request has filled the context. Route *names* never change,
 whatever the prefix.
 
-The two print routes are deliberately **outside** the prefix: `gallery_print_certificate` is printed on
-paper and has to outlive a rename, and `gallery_print_file` is never read by a visitor.
+The three print routes are deliberately **outside** the prefix: `gallery_print_certificate` is printed on
+paper and has to outlive a rename, and neither `gallery_print_file` nor `gallery_print_callback` is ever
+read by a visitor - renaming the gallery in the dashboard must not silence a lab already posting there.
 
 **Renaming the prefix breaks the previous urls**, which then 404. If they were indexed, declare a redirect
 — ConfigBundle's **Redirections** screen takes one.
+
+### How the index is ordered
+
+**The galleries are listed alphabetically by title**, and nothing arranges them by hand:
+`GalleryCategoryRepository::findAllOrdered()` orders on the title, and every screen reading it follows —
+the public index, a categories block, the sitemap, the menu link picker, a block's own category list and
+the back-office listing. On a library of eighty subjects that is the one order a visitor can predict, and
+the one a picker is scanned in. Accented titles fall where the database's collation puts them (*Forêts*
+with *Forets*, *Noël* with *Noel* under `utf8mb4_unicode_ci`).
+
+The [automatic galleries](#the-automatic-galleries) are the exception, and are shown **apart**: they take a
+row of their own above the alphabetical grid, on larger thumbnails and parted from it by a rule
+(`components/Gallery/Categories.html.twig`, styled through `--gallery-featured-*` in the [theme](#theme)).
+*Derniers ajouts* and *Tirages d'art* are what a visitor landing on the index is meant to open first, and
+they would otherwise be two tiles among eighty. Set `--gallery-featured-thumb-size` to
+`var(--gallery-thumb-size)` in your `themes/gallery.css` to have them shown at the size of the others; they
+stay in their own row either way. A categories **block** parts them the same way.
 
 ### Linking a gallery from a menu
 
@@ -202,7 +221,8 @@ categories at once, and nothing on the site says a single photo has arrived. **D
 screen that shows them all: `GalleryCategoryRepository::findOrCreateAutomatic()` writes it the first time
 the galleries are listed - the back-office listing, the public index or a categories block, whichever comes
 first - and it is a normal category from then on, flagged `GalleryCategory::$automaticKind`. Rename it,
-describe it, give it a heading, move it up or down the index: it takes everything a gallery takes. It is
+describe it, give it a heading: it takes everything a gallery takes. Where it sits is the one thing it does
+not take - it is shown apart, in a row of its own above the alphabetical grid (see below). It is
 never an option carried by one of your own galleries, which ticking a box on *Animaux* would turn into
 something it isn't.
 
@@ -374,6 +394,34 @@ before anything should be on sale, and inferring would turn developing into publ
 **sku the lab knows it by** — distinct from the slug, and the only one of the two ever sent to a lab, so
 renaming a format in the back office never renames it at the printer.
 
+Filling that catalogue by hand is fifteen fields an admin has no way of guessing, and one wrong sku is an
+order refused after it was paid — so **Import the lab's catalogue** writes it from what the configured lab
+actually prints: the five shapes a photograph comes in — square, 3:2, 4:3, 16:9 and the ISO sizes — three
+of each, on four papers, two for everyday prints and the two cottons an art print is sold on, smooth and
+textured. Short of everything the lab prints, on purpose: a hundred lines to sort through is how a shop
+ends up publishing none of them, and a size wanted and not there is one row to add by hand. The action is
+idempotent on the slug and on the sku alike: run it again after an update to pick up what the range has
+gained, and it touches nothing already there.
+
+**The sizes are shown under the paper they are printed on**, not as one flat list: a format carries `paper` and
+`paperDescription`, and the offer under a photograph draws one heading per paper with the sentence saying what
+that paper is for. Twelve near-identical lines whose price climbs for no stated reason is a visitor hesitating
+instead of buying. A format naming no paper falls into a single unnamed group, which draws the flat list.
+
+**Everything arrives unpublished**, at a placeholder price on a plain curve. The sizes and the references
+are the lab's business and are shipped; the prices are the shop's, and the ones in the bundle are there so
+a catalogue does not import at zero. Set yours, then publish the lines you sell.
+
+**The references are checked before they are written**, when `gallery-print-api-key` is filled: a sku the
+lab no longer has is reported and left out, rather than imported as a row somebody could publish and sell.
+A refused key or an unreachable lab is reported as *unchecked* — which is not the same answer as *nothing
+is missing*, and is said out loud instead of being discovered at the first order.
+
+A lab proposes a catalogue by implementing `Contract\PrintCatalogueProviderInterface`, separate from
+`PrintFulfilmentInterface` and optional: sending an order and publishing a range are two different jobs,
+and a lab whose products nobody wrote down still has a working driver.
+`Service\Fulfilment\ProdigiCatalogue` ships.
+
 A photograph is **not offered at every size in the catalogue**. `Service\GalleryPrintService::getOffers()`
 keeps the formats whose proportions it matches (±3 %) and whose pixels it has, at the format's own dpi.
 Offering every size and cropping the difference would mean selling a print of something other than the
@@ -434,6 +482,48 @@ office instead of claiming it was sent.
 resolution (`Service\GalleryPrintFileBuilder`) — a web-sized signature blown up to 60 cm is a smear. The
 lab fetches it through a signed url expiring at seven days (route `gallery_print_file`); an unsigned
 request gets 404 rather than 403, an url nobody signed naming nothing worth confirming exists.
+
+#### From the lab to the letterbox
+
+The lab reports an order twice over, and both roads end at `Service\GalleryPrintOrderTracker`, the one
+writer of the states a lab hands back:
+
+- **Its two accounts.** The sandbox is a separate account with its own credentials, not a mode: the production
+  key is answered with a 401 there, and the other way round. Both are held at once — `gallery-print-api-key`
+  and `gallery-print-api-key-test` — and `gallery-print-sandbox` picks the endpoint and the secret together
+  (`Service\Fulfilment\ProdigiEnvironment`), so a shop goes and comes back without pasting a secret again.
+
+- **Its callbacks.** `ProdigiFulfilment` sends the address of `gallery_print_callback` as the order's own
+  `callbackUrl`, so nothing has to be pasted into the lab's dashboard - and a site developing in the
+  sandbox does not have to share that dashboard setting with the site in production.
+- **The nightly `c975l:gallery:print:sync`**, declared by `Scheduler\GalleryMaintenanceTaskProvider` and
+  run by the site's maintenance schedule, which asks each lab about the orders it is holding. It is what
+  makes the callbacks optional: one lost request would otherwise leave an order reading *sent* for ever.
+
+**A callback is read as a name, never as a state.** A print lab does not sign what it posts and that url
+is public, so the payload only says *which* order this is about; where the order now stands is then asked
+of the lab itself. The worst a forged call can do is have the site put one question to its own printer.
+
+**A cancelled order writes to the shop**, not to the buyer: the customer has paid and will receive
+nothing, and whether that becomes a refund or the same prints made elsewhere is a decision nobody but the
+shopkeeper takes - an automatic letter would be the shop promising money nobody has sent yet.
+
+Shipped, the order is stamped, the buyer is written to (**Your prints are on their way**, a template of
+its own in **Emails**), and the composed print files are deleted - they are the largest files this bundle
+writes, and nothing will be printed from them again. States never walk backwards: two callbacks crossing
+cannot reopen an order whose letter has left, and an order still waiting for a signature is a human's
+business, not a lab's.
+
+**Route the message.** The consuming site sends `Message\GalleryPrintOrderMessage` to an asynchronous
+transport, so a slow lab never reaches the payment webhook - which retries what it thinks timed out:
+
+```yaml
+# config/packages/messenger.yaml
+framework:
+    messenger:
+        routing:
+            c975L\GalleryBundle\Message\GalleryPrintOrderMessage: async
+```
 
 #### A lab of your own
 
@@ -1259,7 +1349,7 @@ pages, not which class carries it — the ChangeLog is where the code's history 
 
 ### Guided projects
 
-`GalleryGuidedProjectProvider` (ConfigBundle's `GuidedProjectProviderInterface`) contributes seven replayable
+`GalleryGuidedProjectProvider` (ConfigBundle's `GuidedProjectProviderInterface`) contributes eight replayable
 exercises to the dashboard's "Guided projects" panel: **creating a gallery** with its first photographs in
 one go — the creation form carries the whole batch, which is the only screen doing both —, **arranging a
 gallery's medias** on its own edit screen, where the order, the cover and the batch edits all save as they
@@ -1268,18 +1358,23 @@ answering, **filling in a media's own screen**, where a caption is written and a
 gallery aside and bringing it back**, which walks the trash and stops before the permanent deletion — held
 one role higher, so a step highlighting it would point at a button an editor never sees —, **getting the
 photo files back** as one archive, and **the gallery of the latest additions**, the one gallery arranged by
-nobody. Nothing to register — the provider is picked up automatically.
+nobody, and **opening the print shop**, which imports the lab's range, prices a format and publishes it.
+Nothing to register — the provider is picked up automatically.
 
-Only the opening step of each carries an `url`, all seven sending the user to the categories, the single
-sidebar entry of the whole feature — which states `site-role-editor` itself, the bar its own screen sits
-at, rather than taking the admin default every entry used to be given. From there the panel walks that
-screen, highlighting the button or the field they are meant to use next — one they click themselves, which
-brings the panel back on that very step:
+The print one is only offered where `gallery-print-enabled` is on, exactly as its two screens are: a
+parcours walking a screen with no way into it reads as a broken one.
+
+Only the opening step of each carries an `url`, the seven gallery ones sending the user to the categories,
+the single sidebar entry of the whole feature — which states `site-role-editor` itself, the bar its own
+screen sits at, rather than taking the admin default every entry used to be given — and the print one to
+the formats, which is where a shop is written. From there the panel walks that screen, highlighting the
+button or the field they are meant to use next — one they click themselves, which brings the panel back on
+that very step:
 
 | Pointed at | What it is |
 | --- | --- |
-| `.action-new`, `.action-edit`, `.action-saveAndReturn`, `.action-delete`, `.action-trash`, `.action-restore` | EasyAdmin builds an `action-<name>` class from the action's own name — `saveAndReturn`, not `save` |
-| `#GalleryCategory_title`, `#GalleryCategory_titleRoot`, `#GalleryMedia_title`, `#GalleryMedia_category`, `#GalleryMedia_credits`, `#GalleryMedia_externalUrl` | plain form fields, pointed at through their rendered id |
+| `.action-new`, `.action-edit`, `.action-saveAndReturn`, `.action-delete`, `.action-trash`, `.action-restore`, `.action-importPrintCatalogue` | EasyAdmin builds an `action-<name>` class from the action's own name — `saveAndReturn`, not `save`. The import one is only drawn where the lab publishes a range, and the step reads as well without the outline |
+| `#GalleryCategory_title`, `#GalleryCategory_titleRoot`, `#GalleryMedia_title`, `#GalleryMedia_category`, `#GalleryMedia_credits`, `#GalleryMedia_externalUrl`, `#GalleryPrintFormat_price`, `#GalleryPrintFormat_published` | plain form fields, pointed at through their rendered id |
 | `#GalleryCategory_files` | the batch upload of the creation form |
 | `[data-gallery-upload-medias]`, `[data-gallery-cover-radio]`, `[data-gallery-media-sort-handle]`, `[data-gallery-media-selection-target="toggle"]`, `[data-gallery-download-medias]` | markers carried by this bundle's own templates, the elements having no id of their own |
 | `[data-gallery-move-medias] select`, `[data-gallery-move-medias] input`, `[data-gallery-move-medias] button` | the move group of the medias toolbar, its three controls reached from the marker it carries |
@@ -1288,9 +1383,9 @@ brings the panel back on that very step:
 An app overriding `templates/management/gallery_category_edit.html.twig` keeps those `data-` attributes, or
 the steps resting on them point at nothing — they are read as selectors, not as behaviour.
 
-All six are gated by `site-role-editor`, the same ConfigBundle entry the gallery's management screens sit
+All eight are gated by `site-role-editor`, the same ConfigBundle entry the gallery's management screens sit
 behind: an admin without it is never offered a parcours ending on an access-denied page. Their `order`
-(5010 to 5060) runs the 5000 block `GuidedProjectProviderInterface` reserves this bundle, at the step of 10
+(5010 to 5070) runs the 5000 block `GuidedProjectProviderInterface` reserves this bundle, at the step of 10
 it states — the same docblock naming every other bundle's block, so a range is read there rather than
 recopied here. Nothing is derived from the site's own data, so a project is worth following on a site
 already full of galleries, and worth replaying once done (see ConfigBundle's README,

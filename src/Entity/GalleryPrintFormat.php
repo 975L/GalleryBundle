@@ -64,6 +64,14 @@ class GalleryPrintFormat implements \Stringable
     #[ORM\Column(length: 100, nullable: true)]
     private ?string $sku = null;
 
+    // The paper alone, as its own field and not only inside the label: a catalogue of four papers across three sizes is twelve lines a visitor reads as one flat list, where the same three sizes under four headings is a choice he can make
+    #[ORM\Column(length: 100, nullable: true)]
+    private ?string $paper = null;
+
+    // The sentence under that heading - what this paper is for, in the shop's own words. A visitor asked to pay half again for cotton has to be told what the cotton does
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $paperDescription = null;
+
     #[ORM\Column(options: ['default' => 0])]
     private int $position = 0;
 
@@ -174,6 +182,36 @@ class GalleryPrintFormat implements \Stringable
         $this->sku = $sku;
 
         return $this;
+    }
+
+    public function getPaper(): ?string
+    {
+        return $this->paper;
+    }
+
+    public function setPaper(?string $paper): self
+    {
+        $this->paper = $paper;
+
+        return $this;
+    }
+
+    public function getPaperDescription(): ?string
+    {
+        return $this->paperDescription;
+    }
+
+    public function setPaperDescription(?string $paperDescription): self
+    {
+        $this->paperDescription = $paperDescription;
+
+        return $this;
+    }
+
+    // What the size reads as on its own, the paper being written above it once - a heading and its lines, instead of the paper repeated on each
+    public function getSizeLabel(): string
+    {
+        return sprintf('%d × %d cm', (int) $this->widthCm, (int) $this->heightCm);
     }
 
     public function getPosition(): int

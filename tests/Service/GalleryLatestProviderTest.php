@@ -33,22 +33,31 @@ class GalleryLatestProviderTest extends TestCase
         return new GalleryLatestProvider($configService, $mediaRepository);
     }
 
-    // The kind the category of this gallery carries, and what tells a site that never sells prints it still wants this one
+    // The kind the category of this gallery carries, and what tells a site that never sells prints it still wants this one - as soon as the two entries it is drawn from hold a value
     public function testItIsTheGalleryOfTheLastAdditionsAndEverySiteHasIt(): void
     {
-        $provider = $this->createProvider();
+        $provider = $this->createProvider(['gallery-latest-days' => '7', 'gallery-latest-max' => '200']);
 
         $this->assertSame(GalleryCategory::AUTOMATIC_LATEST, $provider->getKind());
         $this->assertTrue($provider->isAvailable());
     }
 
-    // A site that never opened the two entries gets the shipped rhythm rather than an empty gallery
-    public function testTheDaysAndTheCeilingFallBackOnTheirDefaults(): void
+    // Nothing in the entries, no gallery: the rhythm is theirs to give, and no value is picked here in their place
+    public function testItIsClosedWhileEitherEntryIsEmpty(): void
     {
-        $provider = $this->createProvider();
+        $this->assertFalse($this->createProvider()->isAvailable());
+        $this->assertFalse($this->createProvider(['gallery-latest-days' => '7'])->isAvailable());
+        $this->assertFalse($this->createProvider(['gallery-latest-max' => '200'])->isAvailable());
+    }
 
-        $this->assertSame(GalleryLatestProvider::DEFAULT_DAYS, $provider->getDays());
-        $this->assertSame(GalleryLatestProvider::DEFAULT_MAX, $provider->getMax());
+    // Both entries ship with their value, so the gallery a fresh install draws is the one they describe
+    public function testTheEntriesShipWithTheRhythmTheGalleryIsDrawnOn(): void
+    {
+        $configs = json_decode(file_get_contents(__DIR__ . '/../../config/configs.json'), true, 512, \JSON_THROW_ON_ERROR);
+        $values = array_column($configs, 'value', 'slug');
+
+        $this->assertSame('7', $values['gallery-latest-days']);
+        $this->assertSame('200', $values['gallery-latest-max']);
     }
 
     public function testTheDaysAndTheCeilingAreReadFromTheConfiguration(): void
@@ -59,13 +68,14 @@ class GalleryLatestProviderTest extends TestCase
         $this->assertSame(50, $provider->getMax());
     }
 
-    // An entry emptied in the back office, or set to a value that would show nothing at all, is read as "not set" rather than as an empty gallery
-    public function testAnEmptyOrNegativeEntryFallsBackOnItsDefault(): void
+    // An entry emptied in the back office, or set to a value that would show nothing at all, closes the gallery rather than drawing it over a single day
+    public function testAnEmptyOrNegativeEntryClosesTheGallery(): void
     {
         $provider = $this->createProvider(['gallery-latest-days' => '', 'gallery-latest-max' => '-10']);
 
-        $this->assertSame(GalleryLatestProvider::DEFAULT_DAYS, $provider->getDays());
-        $this->assertSame(1, $provider->getMax());
+        $this->assertSame(0, $provider->getDays());
+        $this->assertSame(0, $provider->getMax());
+        $this->assertFalse($provider->isAvailable());
     }
 
     // Read once per request, however many screens of the page ask for the list

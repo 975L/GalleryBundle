@@ -14,11 +14,11 @@ use c975L\UiBundle\Contract\EmailTemplateProviderInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
- * The two letters a print order sends, as templates an admin rewrites rather than Twig files only a developer can
- * touch - the same shape as PaymentBundle's own provider, whose comment explains the reasoning at length.
+ * The letters a print order sends, as templates an admin rewrites rather than Twig files only a developer can touch -
+ * the same shape as PaymentBundle's own provider, whose comment explains the reasoning at length.
  *
- * Both are about the edition and nothing else. What the customer bought and what it cost is the order confirmation's
- * business, and restating it here would send two e-mails saying the same thing.
+ * None of them restates what the customer bought and what it cost: that is the order confirmation's business, and
+ * saying it again here would send two e-mails carrying the same thing.
  */
 class GalleryEmailTemplateProvider implements EmailTemplateProviderInterface
 {
@@ -30,6 +30,12 @@ class GalleryEmailTemplateProvider implements EmailTemplateProviderInterface
 
     // The name it asks for when the shop has a certificate to sign
     public const TEMPLATE_EDITION_SIGNATURE = 'gallery_edition_signature';
+
+    // The name it asks for when the lab reports the prints have left
+    public const TEMPLATE_PRINT_SHIPPED = 'gallery_print_shipped';
+
+    // The name it asks for when a lab cancels an order it had accepted
+    public const TEMPLATE_PRINT_CANCELLED = 'gallery_print_cancelled';
 
     public function __construct(
         private readonly TranslatorInterface $translator,
@@ -64,6 +70,16 @@ class GalleryEmailTemplateProvider implements EmailTemplateProviderInterface
             self::TEMPLATE_EDITION_SIGNATURE => [
                 $this->text('email.edition_signature_intro', $locale, ['%numbers%' => '{{ numbers }}']),
                 $this->text('email.edition_signature_what_next', $locale),
+            ],
+            // Written to the shop and not to the buyer: an order cancelled is an order to refund, and a letter saying so before the money has left would be the shop promising what nobody has done yet
+            self::TEMPLATE_PRINT_CANCELLED => [
+                $this->text('email.print_cancelled_intro', $locale, ['%number%' => '{{ number }}']),
+                $this->text('email.print_cancelled_what_next', $locale),
+            ],
+            // No tracking number: a lab shipping white-label posts the parcel under the shop's name and reports a stage, not a carrier's reference
+            self::TEMPLATE_PRINT_SHIPPED => [
+                $this->text('email.print_shipped_intro', $locale),
+                $this->text('email.print_shipped_care', $locale),
             ],
         ];
     }

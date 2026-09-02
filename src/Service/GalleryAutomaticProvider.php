@@ -114,11 +114,24 @@ class GalleryAutomaticProvider implements ResetInterface
             $category->setAutomaticMedias($gallery->getMedias());
         }
 
+        // Read back rather than sorted here, on the one render that writes a gallery: the list is ordered alphabetically by the database, whose collation is what every later render is ordered by - a comparator written in PHP would order accented titles its own way, and this very list differently from the next
+        // The rows were flushed on creation (see GalleryCategoryRepository::findOrCreateAutomatic), and the entities come back as the very same objects, the lists just handed to them included
         if ($added) {
-            usort($categories, static fn (GalleryCategory $a, GalleryCategory $b): int => $a->getPosition() <=> $b->getPosition());
+            $this->galleryCategoryRepository->reset();
+            $categories = $this->galleryCategoryRepository->findAllOrdered();
         }
 
-        return $categories;
+        // Last of all, the read-back included: the row of an automatic gallery outlives the feature that wrote it, and a site that empties "gallery-latest-days" would otherwise keep for ever a tile holding nothing
+        return array_values(array_filter($categories, $this->isStillOffered(...)));
+    }
+
+    // Whether the site still offers a category: an ordinary gallery always does, an automatic one only for as long as its kind answers yes
+    // A kind no provider is installed for is left alone rather than dropped, being the ordinary gallery it became the day its bundle went (see gallery())
+    private function isStillOffered(GalleryCategory $category): bool
+    {
+        $kind = $category->getAutomaticKind();
+
+        return null === $kind || !isset($this->galleries[$kind]) || $this->galleries[$kind]->isAvailable();
     }
 
     // Hands the automatic categories the lists they show, the others being left alone - for the callers holding entities they did not read themselves (the back-office listing, whose rows EasyAdmin paginates)

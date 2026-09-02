@@ -53,9 +53,6 @@ class GalleryCategory implements HasBlocksInterface, TrashableInterface, \String
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $summarySocialNetwork = null;
 
-    #[ORM\Column]
-    private int $position = 0;
-
     // Withheld from every public page while staying whole in the back-office, exactly as GalleryMedia::$hidden withholds one photograph - a gallery being prepared, or one an admin takes down for a season, without emptying it nor trashing it
     // What it drops out of is what findAllOrdered() answers (index, blocks, sitemap, menu links), plus the medias it holds, which leave the automatic galleries with it (see GalleryMediaRepository::latestMedias) - the back-office lists it like any other, its own edit screen being where it is filled and shown again
     #[ORM\Column(options: ['default' => false])]
@@ -148,18 +145,6 @@ class GalleryCategory implements HasBlocksInterface, TrashableInterface, \String
     public function setSummarySocialNetwork(?string $summarySocialNetwork): self
     {
         $this->summarySocialNetwork = $summarySocialNetwork;
-
-        return $this;
-    }
-
-    public function getPosition(): int
-    {
-        return $this->position;
-    }
-
-    public function setPosition(?int $position): self
-    {
-        $this->position = $position ?? 0;
 
         return $this;
     }

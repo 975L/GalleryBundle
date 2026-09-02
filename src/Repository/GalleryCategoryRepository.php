@@ -51,7 +51,7 @@ class GalleryCategoryRepository extends ServiceEntityRepository implements Reset
         return $this->findOneBy(['slug' => $slug]);
     }
 
-    // What the front-office index and the blocks list, in the order the admin arranged them. coverMedia is joined rather than left lazy: every caller renders the category's thumbnail from it (see components/Gallery/Category.html.twig), so each category would otherwise initialize its proxy with a query of its own - one per category on a page listing them all
+    // What the front-office index and the blocks list, in alphabetical order of title - the one order a visitor can predict on a gallery of eighty categories, and the one a picker is scanned in. coverMedia is joined rather than left lazy: every caller renders the category's thumbnail from it (see components/Gallery/Category.html.twig), so each category would otherwise initialize its proxy with a query of its own - one per category on a page listing them all
     // The trash filter sits here rather than at each of the six callers (index, blocks, block form, sitemap, link picker, showcase): they all want the same thing, and one of them forgetting it would put a trashed category back on the site
     // A hidden gallery is dropped for the very same reason (see GalleryCategory::$hidden), the back-office callers included: a masked gallery offered as a move target, in a block's picker or in a menu's would be a public page composed on something that answers 404. An admin reaches it from the category listing, which lists it like any other (see GalleryCategoryCrudController::createIndexQueryBuilder)
     // Memoized for the request: the six callers are spread over services that know nothing of each other (the blocks extension, the menu link provider, the sitemap...), and a page carrying a gallery block under a menu pointing at a category went through the very same query once for each of them
@@ -74,7 +74,7 @@ class GalleryCategoryRepository extends ServiceEntityRepository implements Reset
             ->addSelect('m')
             ->andWhere('c.isDeleted = false')
             ->andWhere('c.hidden = false')
-            ->orderBy('c.position', 'ASC')
+            ->orderBy('c.title', 'ASC')
             ->getQuery()
             ->getResult()
         ;

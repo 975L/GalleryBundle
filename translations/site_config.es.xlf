@@ -8,15 +8,23 @@
             </trans-unit>
             <trans-unit id="AHd3sWy">
                 <source>description.gallery_latest_days</source>
-                <target>Número de días del calendario, hoy incluido, sobre los que la galería automática muestra los medios añadidos - 7 por defecto. Si no se añadió nada en ese periodo, recurre al último día con incorporaciones, de modo que nunca está vacía mientras exista una foto. Vacío o 0, se aplica 7.</target>
+                <target>Número de días del calendario, hoy incluido, sobre los que la galería automática muestra los medios añadidos. Si no se añadió nada en ese periodo, recurre al último día con incorporaciones, de modo que nunca está vacía mientras exista una foto. Vacío o por debajo de 1, la galería se cierra: no se aplica ningún valor en su lugar.</target>
             </trans-unit>
             <trans-unit id="6QTN5rG">
                 <source>description.gallery_latest_max</source>
-                <target>Número máximo de medios que muestra la galería automática, 200 por defecto. Protege el día en que entró toda una fototeca de una vez - una migración, una importación - que si no llenaría la página con miles de miniaturas. Más allá, solo se muestran los más recientes. Vacío o 0, se aplica 200.</target>
+                <target>Número máximo de medios que muestra la galería automática. Protege el día en que entró toda una fototeca de una vez - una migración, una importación - que si no llenaría la página con miles de miniaturas. Más allá, solo se muestran los más recientes. Vacío o por debajo de 1, la galería se cierra.</target>
             </trans-unit>
             <trans-unit id="bj8kKWN">
                 <source>description.gallery_print_api_key</source>
                 <target>Clave facilitada por el laboratorio, que autentica cada pedido enviado. No es necesaria con «manual». Rellenarla no abre la tienda: eso lo hace la casilla «Venta de copias».</target>
+            </trans-unit>
+            <trans-unit id="JKmprXw">
+                <source>description.gallery_print_api_key_test</source>
+                <target>La clave de la cuenta de pruebas, distinta de la de producción: en Prodigi una misma cuenta tiene ambas, con un secreto diferente para cada una. Es la que se usa mientras «Entorno de pruebas» esté marcado — las dos se guardan juntas, sin tener que volver a pegar un secreto para cambiar.</target>
+            </trans-unit>
+            <trans-unit id="fP4OVMW">
+                <source>description.gallery_print_edition_hold</source>
+                <target>Un pedido de copia numerada espera en el back office a que haya firmado su certificado, y solo llega al laboratorio una vez liberado. Desmárquelo si gestiona el certificado por su cuenta: el pedido sale entonces como una edición abierta, y el correo que le recuerda firmar le llega igualmente.</target>
             </trans-unit>
             <trans-unit id="wHk0mCF">
                 <source>description.gallery_print_enabled</source>
@@ -36,7 +44,7 @@
             </trans-unit>
             <trans-unit id="ju2r8iI">
                 <source>description.gallery_printable_max</source>
-                <target>Número máximo de fotos mostradas por la galería de impresiones, 200 por defecto. Reúne las fotos marcadas como en venta, sea cual sea su galería. Vacío o 0, se aplica 200.</target>
+                <target>Número máximo de fotos mostradas por la galería de impresiones. Reúne las fotos marcadas como en venta, sea cual sea su galería. Vacío o por debajo de 1, la galería se cierra.</target>
             </trans-unit>
             <trans-unit id="wn2FpRV">
                 <source>description.gallery_rating</source>
@@ -105,6 +113,14 @@
             <trans-unit id="xRNwvo0">
                 <source>label.gallery_print_api_key</source>
                 <target>Clave de API del laboratorio</target>
+            </trans-unit>
+            <trans-unit id="yRwtUE6">
+                <source>label.gallery_print_api_key_test</source>
+                <target>Clave de API de prueba del laboratorio</target>
+            </trans-unit>
+            <trans-unit id="SHUl1ZW">
+                <source>label.gallery_print_edition_hold</source>
+                <target>Retener las ediciones limitadas hasta la firma</target>
             </trans-unit>
             <trans-unit id="DPz9GXt">
                 <source>label.gallery_print_enabled</source>

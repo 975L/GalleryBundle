@@ -58,7 +58,6 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\BooleanField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\CollectionField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\Field;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
-use EasyCorp\Bundle\EasyAdminBundle\Field\IntegerField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\SlugField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextareaField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
@@ -158,7 +157,8 @@ class GalleryCategoryCrudController extends AbstractCrudController
             ->setEntityLabelInSingular(t('label.gallery_category', [], 'gallery'))
             ->setEntityLabelInPlural(t('label.gallery_categories', [], 'gallery'))
             ->setEntityPermission($this->roleNeeded())
-            ->setDefaultSort(['position' => 'ASC'])
+            // The order the site itself lists them in (see GalleryCategoryRepository::findAllOrdered), so a gallery is looked for here where it is found there
+            ->setDefaultSort(['title' => 'ASC'])
             // The row actions are icon-only (see configureActions), so they cost less width side by side than the dropdown they'd otherwise be folded into
             ->showEntityActionsInlined()
             ->overrideTemplate('crud/index', '@c975LGallery/management/gallery_category_index.html.twig')
@@ -637,10 +637,6 @@ class GalleryCategoryCrudController extends AbstractCrudController
                 ->setLabel(t('label.summary_social_network', [], 'config'))
                 ->setHelp(t('label.gallery_summary_social_network_help', [], 'gallery'))
                 ->setFormType(TrixEditorType::class)
-                ->hideOnIndex(),
-
-            IntegerField::new('position')
-                ->setLabel(t('label.position', [], 'gallery'))
                 ->hideOnIndex(),
 
             // Kept on the index, where EasyAdmin draws it as a switch saving on the spot: taking a gallery off the site is an answer to something happening now, and reading the listing is where an admin sees which ones are masked
@@ -1156,14 +1152,9 @@ class GalleryCategoryCrudController extends AbstractCrudController
             return null;
         }
 
-        // Placed after the galleries already arranged rather than at rank 0, where a gallery created from the toolbar would jump to the head of the index
-        $ordered = $this->galleryCategoryRepository->findAllOrdered();
-        $last = end($ordered);
-
         $target = new GalleryCategory()
             ->setSlug($slug)
             ->setTitle($title)
-            ->setPosition($last instanceof GalleryCategory ? $last->getPosition() + 1 : 0)
         ;
 
         $this->releaseCategoryUrl($entityManager, $target);

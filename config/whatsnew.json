@@ -1,5 +1,55 @@
 [
     {
+        "date": "2026-09-02",
+        "description": [
+            {
+                "en": "Your lab's test key now has an entry of its own, beside the production one: at Prodigi the sandbox is a separate account with a different secret, so switching between the two used to mean pasting one over the other. Both are kept side by side, and the \"Sandbox\" box picks which one is used",
+                "fr": "La clé de test de votre laboratoire a maintenant son propre champ, à côté de celle de production : chez Prodigi le bac à sable est un compte distinct avec un secret différent, si bien que passer de l'un à l'autre revenait à recoller une clé par-dessus l'autre. Les deux se conservent côte à côte, et la case « Bac à sable » choisit laquelle est employée",
+                "es": "La clave de prueba de su laboratorio tiene ahora su propio campo, junto a la de producción: en Prodigi el entorno de pruebas es una cuenta distinta con un secreto diferente, de modo que pasar de una a otra obligaba a pegar una clave sobre la otra. Ambas se conservan juntas, y la casilla «Entorno de pruebas» elige cuál se usa"
+            },
+            {
+                "en": "On a photograph's page, the sizes are now gathered under the paper they are printed on, with a sentence saying what that paper is for - instead of a list of twelve near-identical lines whose price climbed with nothing explaining why. The paper and its description are set on each format, in the print formats screen",
+                "fr": "Sur la page d'une photographie, les tailles sont maintenant regroupées sous le papier sur lequel elles sont tirées, avec une phrase disant à quoi sert ce papier — au lieu d'une liste où douze lignes presque identiques voyaient leur prix monter sans que rien ne l'explique. Le papier et sa description se saisissent sur chaque format, dans les formats d'impression",
+                "es": "En la página de una fotografía, los tamaños se agrupan ahora bajo el papel en el que se imprimen, con una frase que dice para qué sirve ese papel — en lugar de una lista de doce líneas casi idénticas cuyo precio subía sin que nada lo explicara. El papel y su descripción se indican en cada formato, en la pantalla de formatos de impresión"
+            },
+            {
+                "en": "Opening a print shop no longer starts from a blank screen: one button fills your catalogue with what your lab actually prints - the five shapes a photograph comes in (square, 3:2, 4:3, 16:9, ISO sizes), three sizes each, on four papers: photographic for saturated colour, matte art for everyday prints, and the two cottons an art print is sold on, Hahnemühle Photo Rag (smooth, safe on any subject) and German Etching (textured, for black and white and matter). Every reference is checked with the lab before it is written, and nothing arrives on sale: you set your prices, then publish the ones you sell",
+                "fr": "Ouvrir une boutique de tirages ne commence plus par un écran vide : un bouton remplit votre catalogue de ce que votre laboratoire imprime vraiment — les cinq proportions d'une photographie (carré, 3:2, 4:3, 16:9, formats ISO), trois tailles chacune, sur quatre papiers : photo lustré pour la couleur saturée, art mat pour le tirage courant, et les deux cotons du tirage d'art, Hahnemühle Photo Rag (lisse, sûr sur tous les sujets) et German Etching (texturé, pour le noir et blanc et les matières). Chaque référence est vérifiée auprès du laboratoire avant d'être écrite, et rien n'arrive en vente : vous fixez vos prix, puis vous publiez ce que vous vendez",
+                "es": "Abrir una tienda de copias ya no empieza con una pantalla en blanco: un botón llena su catálogo con lo que su laboratorio imprime realmente — las cinco proporciones de una fotografía (cuadrado, 3:2, 4:3, 16:9, tamaños ISO), tres tamaños cada una, en cuatro papeles: fotográfico para el color saturado, arte mate para la copia corriente, y los dos algodones de la copia de arte, Hahnemühle Photo Rag (liso, seguro en cualquier tema) y German Etching (texturado, para el blanco y negro y las materias). Cada referencia se comprueba con el laboratorio antes de escribirse, y nada llega a la venta: usted fija sus precios y luego publica los que vende"
+            },
+            {
+                "en": "Your customers are now told when their prints leave the lab, and an order that has shipped no longer sits on \"sent\" in the back office: the lab reports it, and the site checks every morning in case that report never arrived - and you are written to if a lab ever cancels an order somebody has paid for",
+                "fr": "Vos clients sont désormais prévenus quand leurs tirages quittent le laboratoire, et une commande expédiée ne reste plus sur « envoyée » dans le back-office : le laboratoire l'annonce, et le site vérifie chaque matin au cas où l'annonce ne serait jamais arrivée — et vous êtes prévenu si un laboratoire annule une commande déjà payée",
+                "es": "Sus clientes ahora reciben aviso cuando sus copias salen del laboratorio, y un pedido enviado ya no se queda en «enviado» en el back-office: el laboratorio lo anuncia, y el sitio lo comprueba cada mañana por si ese aviso nunca llegó — y se le avisa si un laboratorio cancela un pedido ya pagado"
+            },
+            {
+                "en": "The galleries are now listed in alphabetical order, on the index as in every list the site draws from them - there is no longer a display rank to arrange by hand, a title being what a visitor looks a gallery up by",
+                "fr": "Les galeries sont désormais listées par ordre alphabétique, sur l'index comme dans toutes les listes que le site en tire — il n'y a plus de rang d'affichage à régler à la main, un visiteur cherchant une galerie par son titre",
+                "es": "Las galerías se listan ahora por orden alfabético, en el índice como en todas las listas que el sitio extrae de ellas — ya no hay un rango de visualización que ajustar a mano, pues un visitante busca una galería por su título"
+            },
+            {
+                "en": "\"Latest additions\" and \"Art prints\" are shown apart, in a row of their own above the others and on larger thumbnails: they are what a visitor arriving on the gallery is meant to open first, and they were until now two tiles lost among all the subjects",
+                "fr": "« Derniers ajouts » et « Tirages d'art » sont affichés à part, sur une rangée qui leur est propre au-dessus des autres et en vignettes plus grandes : ce sont elles qu'un visiteur arrivant sur la galerie doit ouvrir en premier, et elles étaient jusqu'ici deux vignettes perdues parmi tous les sujets",
+                "es": "«Últimas incorporaciones» y «Copias de arte» se muestran aparte, en una fila propia encima de las demás y con miniaturas más grandes: son las que un visitante que llega a la galería debe abrir primero, y hasta ahora eran dos miniaturas perdidas entre todos los temas"
+            },
+            {
+                "en": "A guided project now walks you through opening the print shop: importing the lab's range, pricing a format and publishing it. It appears in the dashboard as soon as prints are on sale",
+                "fr": "Un projet guidé vous accompagne maintenant pour ouvrir la vente de tirages : reprendre la gamme du laboratoire, fixer un prix, publier le format. Il apparaît sur le tableau de bord dès que la vente est activée",
+                "es": "Un proyecto guiado le acompaña ahora para abrir la venta de copias: recuperar la gama del laboratorio, fijar un precio, publicar el formato. Aparece en el panel en cuanto la venta está activada"
+            },
+            {
+                "en": "The price shown under a photograph now follows your shop's currency instead of always being written in euros",
+                "fr": "Le prix affiché sous une photo suit maintenant la devise de votre boutique, au lieu d'être toujours écrit en euros",
+                "es": "El precio que aparece bajo una fotografía sigue ahora la moneda de su tienda, en lugar de escribirse siempre en euros"
+            },
+            {
+                "en": "Emptying the number of days of the latest-additions gallery now takes it off your site, where it used to stay in place showing nothing",
+                "fr": "Vider le nombre de jours de la galerie des derniers ajouts la retire maintenant de votre site, alors qu'elle y restait en n'affichant rien",
+                "es": "Vaciar el número de días de la galería de las últimas incorporaciones la retira ahora de su sitio, donde antes permanecía sin mostrar nada"
+            }
+        ]
+    },
+    {
         "date": "2026-08-31",
         "description": [
             {

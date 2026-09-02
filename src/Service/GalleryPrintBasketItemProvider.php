@@ -133,25 +133,43 @@ class GalleryPrintBasketItemProvider implements BasketItemProviderInterface, Cat
         $media = $item->media;
         $format = $item->format;
         $total = $quantity * (int) $format->getPrice();
+        // What is left of the edition, said as the pair the basket brides its buttons with: how many were ever offered, and how many are already gone (see PaymentBundle's Basket:AddOneButton). An open edition offers none of either, which is what "0" means there
+        $remaining = $this->printService->getRemaining($media);
+        $editionSize = (int) $media->getEditionSize();
 
         return [
             'item' => [
+                // What every line of a basket is keyed and drawn by (see PaymentBundle's Basket:Item): the pair's own id, since neither the photograph nor the format is what was bought
+                'id' => $item->getId(),
                 'mediaId' => $media->getId(),
                 'title' => $media->getTitle(),
                 'slug' => $media->getSlug(),
-                'image' => $media->getThumbnailFilename(),
+                // The picture and the sentence a basket row is drawn with (see PaymentBundle's Basket:Item): the size and its paper, without which two sizes of the same photograph are two identical rows - and both are frozen into the order, so the invoice and the emails say what was sold
+                'media' => $media->getThumbnailFilename(),
+                'description' => $format->getLabel(),
                 // Frozen here rather than read back from the catalogue: what an order says it sold has to keep saying it after a price rise or a change of paper
                 'format' => $format->getSlug(),
                 'formatLabel' => $format->getLabel(),
                 'sku' => $format->getSku(),
                 'price' => $format->getPrice(),
+                // The shop's own currency, read here as the other providers do: a row prints its price with it, and an order keeps saying what it was charged in
+                'currency' => (string) $this->configService->get('shop-currency'),
                 'vat' => $format->getVat(),
                 // What tells the two checkout paths apart once the basket is paid - one is printed straight away, the other waits for a signature
                 'editionSize' => $media->getEditionSize(),
+                // Read per line, where an edition is counted per photograph, all sizes together: the buttons stop a visitor short of what is left, and validateCheckout() is what actually holds the edition
+                'limitedQuantity' => null === $remaining ? 0 : $editionSize,
+                'orderedQuantity' => null === $remaining ? 0 : $editionSize - $remaining,
             ],
             'parent' => [
                 'title' => $media->getCategory()?->getTitle(),
                 'slug' => $media->getCategory()?->getSlug(),
+                'image' => $media->getThumbnailFilename(),
+                // The page this was bought on, written here rather than left to the "<kind>_display" convention a basket row falls back on: a photograph is reached under its gallery and its own slug, which no single slug names. Absolute, the row being sent in the order emails as it is
+                'url' => null === $media->getCategory() ? null : $this->urlGenerator->generate('gallery_media', [
+                    'category' => $media->getCategory()->getSlug(),
+                    'slug' => $media->getSlug(),
+                ], UrlGeneratorInterface::ABSOLUTE_URL),
             ],
             'type' => 'gallery_print',
             'quantity' => $quantity,
@@ -254,9 +272,13 @@ class GalleryPrintBasketItemProvider implements BasketItemProviderInterface, Cat
             return;
         }
 
-        // An art edition stops here: its certificate has to be signed and posted, so the admin releases it in the back-office and the sending happens then. An open edition goes straight to the lab
+        // An art edition is announced whatever happens next: a number is gone, and the shop is told at the sale
         if ($hasLimitedEdition) {
             $this->printEmail->editionSold($order);
+        }
+
+        // And it stops here by default: its certificate has to be signed and posted, so the admin releases the order in the back-office and the sending happens then. A shop that issues its certificates on its own turns "gallery-print-edition-hold" off and the print leaves like any other - which is why the letter asking for a pen only goes out when the order really is waiting for one
+        if ($hasLimitedEdition && false !== $this->configService->get('gallery-print-edition-hold')) {
             $this->printEmail->editionAwaitingSignature($order);
 
             return;

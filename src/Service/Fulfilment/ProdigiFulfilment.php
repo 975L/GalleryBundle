@@ -10,11 +10,11 @@
 
 namespace c975L\GalleryBundle\Service\Fulfilment;
 
-use c975L\ConfigBundle\Service\ConfigServiceInterface;
 use c975L\GalleryBundle\Contract\PrintFulfilmentInterface;
 use c975L\GalleryBundle\Entity\GalleryPrintOrder;
 use c975L\GalleryBundle\Exception\PrintFulfilmentException;
 use c975L\GalleryBundle\Service\GalleryPrintFileUrlGenerator;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Contracts\HttpClient\Exception\ExceptionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
@@ -27,11 +27,6 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
  */
 class ProdigiFulfilment implements PrintFulfilmentInterface
 {
-    private const string ENDPOINT = 'https://api.prodigi.com/v4.0';
-
-    // Orders placed here are acknowledged and never printed, and no card is charged. What a site develops against, and what "gallery-print-sandbox" leaves it on until the day it opens
-    private const string SANDBOX_ENDPOINT = 'https://api.sandbox.prodigi.com/v4.0';
-
     // How the lab's own stages map onto the states an order goes through here. Anything it reports that is not in this list leaves the order where it was rather than moving it somewhere invented
     private const array STAGES = [
         'InProgress' => GalleryPrintOrder::STATE_PRODUCING,
@@ -41,8 +36,9 @@ class ProdigiFulfilment implements PrintFulfilmentInterface
 
     public function __construct(
         private readonly HttpClientInterface $httpClient,
-        private readonly ConfigServiceInterface $configService,
-        private readonly GalleryPrintFileUrlGenerator $urlGenerator,
+        private readonly ProdigiEnvironment $environment,
+        private readonly GalleryPrintFileUrlGenerator $fileUrlGenerator,
+        private readonly UrlGeneratorInterface $urlGenerator,
     ) {
     }
 
@@ -62,7 +58,7 @@ class ProdigiFulfilment implements PrintFulfilmentInterface
         $items = [];
 
         foreach ($order->getCopies() as $copy) {
-            $url = $this->urlGenerator->generate($copy);
+            $url = $this->fileUrlGenerator->generate($copy);
 
             // A copy whose file cannot be reached would be printed as nothing at all, so the whole order is refused rather than shipped incomplete
             if (null === $url) {
@@ -85,6 +81,8 @@ class ProdigiFulfilment implements PrintFulfilmentInterface
 
         $response = $this->request('POST', '/Orders', [
             'shippingMethod' => 'Standard',
+            // Told per order rather than left to the lab's dashboard: a site is developed in the sandbox and opened in production without anybody going to set an address there, and the two are not the same site
+            'callbackUrl' => $this->urlGenerator->generate('gallery_print_callback', ['provider' => $this->getName()], UrlGeneratorInterface::ABSOLUTE_URL),
             'recipient' => [
                 'name' => $basket->getName(),
                 'email' => $basket->getEmail(),
@@ -139,10 +137,11 @@ class ProdigiFulfilment implements PrintFulfilmentInterface
      */
     private function request(string $method, string $path, ?array $body = null): array
     {
-        $apiKey = $this->configService->get('gallery-print-api-key');
+        $apiKey = $this->environment->getApiKey();
 
-        if (!\is_string($apiKey) || '' === $apiKey) {
-            throw new PrintFulfilmentException('No api key is configured for this lab.');
+        // Named as the account it is missing for: a site on the sandbox with only its production key filled has to be told which of the two it lacks, the other one being no use here
+        if (null === $apiKey) {
+            throw new PrintFulfilmentException(sprintf('No api key is configured for this lab in %s.', $this->environment->isSandbox() ? 'the sandbox' : 'production'));
         }
 
         $options = ['headers' => ['X-API-Key' => $apiKey]];
@@ -152,18 +151,12 @@ class ProdigiFulfilment implements PrintFulfilmentInterface
         }
 
         try {
-            $response = $this->httpClient->request($method, $this->getEndpoint() . $path, $options);
+            $response = $this->httpClient->request($method, $this->environment->getEndpoint() . $path, $options);
 
             // Read inside the try on purpose: with the http client, the status code is only checked when the body is asked for, and a 4xx from the lab has to come back as our own exception rather than as its
             return $response->toArray();
         } catch (ExceptionInterface $exception) {
             throw new PrintFulfilmentException(sprintf('The lab could not be reached or refused the request: %s', $exception->getMessage()), 0, $exception);
         }
-    }
-
-    // Sandbox until a site says otherwise, so a shop that has not thought about it yet tests instead of printing
-    private function getEndpoint(): string
-    {
-        return false === $this->configService->get('gallery-print-sandbox') ? self::ENDPOINT : self::SANDBOX_ENDPOINT;
     }
 }

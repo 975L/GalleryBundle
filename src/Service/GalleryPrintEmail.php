@@ -67,6 +67,41 @@ class GalleryPrintEmail implements GalleryPrintEmailInterface
         );
     }
 
+    public function shipped(GalleryPrintOrder $order): void
+    {
+        $basket = $order->getBasket();
+
+        // An order written in the back-office may name nobody, and BasketEmailSender falling back on the site's own address would post the customer's notice to the shop
+        if (null === $basket || null === $basket->getEmail() || '' === $basket->getEmail()) {
+            return;
+        }
+
+        $this->basketEmailSender->send(
+            $basket,
+            'email.print_shipped_subject',
+            GalleryEmailTemplateProvider::TEMPLATE_PRINT_SHIPPED,
+        );
+    }
+
+    public function cancelled(GalleryPrintOrder $order): void
+    {
+        $basket = $order->getBasket();
+        $shopEmail = $this->configService->get('shop-email-from');
+
+        // No address configured means no shop to write to - the order still reads "cancelled" in the back-office, which is where it is acted on anyway
+        if (null === $basket || !\is_string($shopEmail) || '' === $shopEmail) {
+            return;
+        }
+
+        $this->basketEmailSender->send(
+            $basket,
+            'email.print_cancelled_subject',
+            GalleryEmailTemplateProvider::TEMPLATE_PRINT_CANCELLED,
+            ['number' => (string) $basket->getNumber()],
+            $shopEmail,
+        );
+    }
+
     /** @return list<GalleryPrintCopy> */
     private function numberedCopies(GalleryPrintOrder $order): array
     {

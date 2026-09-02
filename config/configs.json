@@ -229,6 +229,17 @@
         "description": "description.gallery_print_api_key"
     },
     {
+        "label": "label.gallery_print_api_key_test",
+        "slug": "gallery-print-api-key-test",
+        "sensitive": true,
+        "restricted": true,
+        "value": null,
+        "kind": "text",
+        "group": "gallery",
+        "severity": null,
+        "description": "description.gallery_print_api_key_test"
+    },
+    {
         "label": "label.gallery_print_sandbox",
         "slug": "gallery-print-sandbox",
         "sensitive": false,
@@ -238,6 +249,17 @@
         "group": "gallery",
         "severity": "warning",
         "description": "description.gallery_print_sandbox"
+    },
+    {
+        "label": "label.gallery_print_edition_hold",
+        "slug": "gallery-print-edition-hold",
+        "sensitive": false,
+        "restricted": false,
+        "value": "true",
+        "kind": "bool",
+        "group": "gallery",
+        "severity": null,
+        "description": "description.gallery_print_edition_hold"
     },
     {
         "label": "label.gallery_print_signature",

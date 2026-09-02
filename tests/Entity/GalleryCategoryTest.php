@@ -24,15 +24,6 @@ class GalleryCategoryTest extends TestCase
         $this->assertSame('Voyages', (string) new GalleryCategory()->setTitle('Voyages'));
     }
 
-    public function testSetPositionFallsBackToZeroWhenNull(): void
-    {
-        $category = new GalleryCategory()->setPosition(3);
-
-        $category->setPosition(null);
-
-        $this->assertSame(0, $category->getPosition());
-    }
-
     public function testSetUncategorizedFallsBackToFalseWhenNull(): void
     {
         $category = new GalleryCategory()->setUncategorized(true);
@@ -310,9 +301,9 @@ class GalleryCategoryTest extends TestCase
         $this->assertNull($category->getDataValue('sponsor'));
         $this->assertSame('none', $category->getDataValue('sponsor', 'none'));
 
-        $category->setData(['sponsor' => 'Lolant']);
+        $category->setData(['sponsor' => 'Un Sponsor']);
 
-        $this->assertSame('Lolant', $category->getDataValue('sponsor'));
+        $this->assertSame('Un Sponsor', $category->getDataValue('sponsor'));
         $this->assertSame('none', $category->getDataValue('absent', 'none'));
     }
 }

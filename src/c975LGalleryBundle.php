@@ -13,6 +13,7 @@ namespace c975L\GalleryBundle;
 use c975L\ConfigBundle\DependencyInjection\Compiler\TaggedInterfacePass;
 use c975L\GalleryBundle\Contract\AutomaticGalleryInterface;
 use c975L\GalleryBundle\Contract\GalleryCustomizationProviderInterface;
+use c975L\GalleryBundle\Contract\PrintCatalogueProviderInterface;
 use c975L\GalleryBundle\Contract\PrintFulfilmentInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
@@ -45,6 +46,7 @@ class c975LGalleryBundle extends AbstractBundle
         $container->addCompilerPass(new TaggedInterfacePass(GalleryCustomizationProviderInterface::class, 'gallery.customization_provider'));
         $container->addCompilerPass(new TaggedInterfacePass(PrintFulfilmentInterface::class, 'gallery.print_fulfilment'));
         $container->addCompilerPass(new TaggedInterfacePass(AutomaticGalleryInterface::class, 'gallery.automatic_gallery'));
+        $container->addCompilerPass(new TaggedInterfacePass(PrintCatalogueProviderInterface::class, 'gallery.print_catalogue_provider'));
     }
 
     #[\Override]
