@@ -1,6 +1,6 @@
 ---
 name: c975l-gallery
-description: "Use this skill when working with photo galleries in a Symfony application built on the c975L ecosystem with c975l/gallery-bundle. Covers categories and medias, the admin-renamable url prefix, the two-step trash, batch upload and the three image derivatives, videos and embeds, the two gallery blocks, theming, and every extension point the bundle offers. Triggers on: GalleryCategory, GalleryMedia, gallery-route-prefix, gallery_index, gallery_category, gallery_media, gallery_categories, gallery_medias, c975l:gallery:rebuild-thumbnails, c975l:gallery:fill-slugs, photo gallery, thumbnail, lightbox, batch upload, upload progress, passe-partout, trash, restore, delete permanently, 410 Gone, download highres, download originals, GalleryMediaArchiver, move medias, move selection, GalleryMediaMover, moveMedias, files-gallery, health check, automatic gallery, latest additions, GalleryLatestProvider, findOrCreateAutomatic, findLatest, gallery-latest-days, gallery-latest-max, gallery-rating, likes, like a photo, heart, rating, findVisibleByCategories, setLoadedMedias, media caption, media description, GalleryCustomizationProviderInterface, gallery.customization_provider, GalleryDataField, getDataValue, gallery-video-self-hosted-max-height, self-hosted video, portrait video., GallerySampleCatalog, GalleryDemoFixtureProvider, DemoFixtureProviderInterface, demo gallery, ReplacingFile, hidden, hide a gallery, masking, sell prints, print shop, limited edition, editionSize, printable, certificate of authenticity, gallery_print_certificate, gallery_print_file, gallery_print_callback, c975l:gallery:print:sync, GalleryPrintOrderTracker, GalleryMaintenanceTaskProvider, callbackUrl, gallery-print-enabled, gallery-printable-max, gallery-print-provider, gallery-print-sandbox, gallery-print-signature, GalleryPrintFormat, GalleryPrintOrder, GalleryPrintCopy, PrintCopySnapshot, PrintFulfilmentInterface, ProdigiFulfilment, ManualFulfilment, gallery.print_fulfilment, PrintCatalogueProviderInterface, PrintCatalogueImporter, ProdigiCatalogue, import print catalogue, GalleryPrintOrderRepository, claim, gallery-print-edition-hold, shop-currency, gallery-print-setup, BasketItemProviderInterface, CatalogueBasketItemProviderInterface, getCatalogueUrl, continue shopping, AutomaticGalleryInterface, gallery.automatic_gallery, GalleryAutomaticProvider, GalleryPrintableProvider, automaticKind, qr code, GalleryShowcaseProvider, ui-showcase-demo-url, block showcase, block-thumbs, block picker silhouette, ui.management_stylesheet, getManagementStylesheets"
+description: "Use this skill when working with photo galleries in a Symfony application built on the c975L ecosystem with c975l/gallery-bundle. Covers categories and medias, the admin-renamable url prefix, the two-step trash, batch upload and the three image derivatives, videos and embeds, the two gallery blocks, theming, and every extension point the bundle offers. Triggers on: GalleryCategory, GalleryMedia, gallery-route-prefix, gallery_index, gallery_category, gallery_media, gallery_categories, gallery_medias, c975l:gallery:rebuild-thumbnails, c975l:gallery:fill-slugs, photo gallery, thumbnail, lightbox, batch upload, upload progress, passe-partout, trash, restore, delete permanently, 410 Gone, download highres, download originals, GalleryMediaArchiver, move medias, move selection, GalleryMediaMover, moveMedias, files-gallery, health check, automatic gallery, latest additions, GalleryLatestProvider, findOrCreateAutomatic, findLatest, gallery-latest-days, gallery-latest-max, gallery-rating, likes, like a photo, heart, rating, findVisibleByCategories, setLoadedMedias, media caption, media description, GalleryCustomizationProviderInterface, gallery.customization_provider, GalleryDataField, getDataValue, gallery-video-self-hosted-max-height, self-hosted video, portrait video., GallerySampleCatalog, GalleryDemoFixtureProvider, DemoFixtureProviderInterface, demo gallery, ReplacingFile, hidden, hide a gallery, masking, sell prints, print shop, limited edition, editionSize, printable, certificate of authenticity, gallery_print_certificate, gallery_print_file, gallery_print_callback, c975l:gallery:print:sync, GalleryPrintOrderTracker, GalleryMaintenanceTaskProvider, callbackUrl, gallery-print-enabled, gallery-printable-max, gallery-print-provider, gallery-print-sandbox, gallery-print-signature, GalleryPrintFormat, GalleryPrintOrder, GalleryPrintCopy, PrintCopySnapshot, PrintFulfilmentInterface, ProdigiFulfilment, ManualFulfilment, gallery.print_fulfilment, PrintCatalogueProviderInterface, PrintCatalogueImporter, ProdigiCatalogue, import print catalogue, GalleryPrintOrderRepository, claim, gallery-print-edition-hold, shop-currency, gallery-print-setup, BasketItemProviderInterface, CatalogueBasketItemProviderInterface, getCatalogueUrl, continue shopping, AutomaticGalleryInterface, gallery.automatic_gallery, GalleryAutomaticProvider, GalleryPrintableProvider, automaticKind, qr code, GalleryShowcaseProvider, ui-showcase-demo-url, block showcase, block-thumbs, block picker silhouette, ui.management_stylesheet, getManagementStylesheets, GallerySnippetBuilder, GalleryJsonLdExtension, gallery_media_json_ld, gallery_json_ld, gallery_index_json_ld, ImageObject, VideoObject, ImageGallery, acquireLicensePage, creditText, copyrightNotice, embedUrl, GalleryBlockCacheTagProvider, GalleryBlockCacheInvalidator, GalleryCacheInvalidationListener, BlockCacheTagProviderInterface, block cache, cacheable, invalidateTags, gallery-thumbnail-whole."
 ---
 
 # c975L GalleryBundle
@@ -10,7 +10,7 @@ description: "Use this skill when working with photo galleries in a Symfony appl
 **Package:** `c975l/gallery-bundle` · **Namespace:** `c975L\GalleryBundle\` · **Twig namespace:** `@c975LGallery` · **Translation domain:** `gallery`
 
 **Key source paths** (relative to the package root):
-`src/Controller/GalleryController.php`, `src/Contract/`, `src/Entity/`, `src/Field/`, `src/Model/`, `src/Repository/`, `src/Routing/GalleryRoutePrefix.php`, `src/Service/`, `src/Service/Fulfilment/`, `src/Twig/Extension/`, `src/Management/`, `src/Form/Block/`, `templates/gallery/`, `templates/print/`, `templates/components/Gallery/`, `templates/blocks/`, `config/configs.json`, `config/services.yaml`
+`src/Controller/GalleryController.php`, `src/Contract/`, `src/Entity/`, `src/Field/`, `src/Model/`, `src/Repository/`, `src/Routing/GalleryRoutePrefix.php`, `src/Listener/`, `src/Service/`, `src/Service/Fulfilment/`, `src/Twig/Extension/`, `src/Management/`, `src/Form/Block/`, `templates/gallery/`, `templates/print/`, `templates/components/Gallery/`, `templates/blocks/`, `config/configs.json`, `config/services.yaml`
 
 **Related documentation:** this package's `README.md` is the exhaustive reference — every section named below is an anchor in it. The ecosystem's own rules (database-backed configuration, blocks, media library, management contributions) live in `c975l/core-bundle`.
 
@@ -216,9 +216,23 @@ any page composed in the back office:
 | `gallery_categories` | every category, one thumbnail each | optional maximum |
 | `gallery_medias` | one category's medias | category, optional maximum, random draw, link to the full category |
 
-Both are `cacheable: false` and resolve their content live through
-`Twig\Extension\GalleryBlockExtension`, so a block never goes stale against the media library. What a
-block stores is *what* to show — a category **slug**, a maximum — never the medias themselves.
+Both resolve their content live through `Twig\Extension\GalleryBlockExtension`, so a block never goes
+stale against the media library. What a block stores is *what* to show — a category **slug**, a
+maximum — never the medias themselves.
+
+Both are `cacheable: true` all the same. `Service\GalleryBlockCacheTagProvider` (UiBundle's
+`BlockCacheTagProviderInterface`) puts every entry under one tag, and
+`Listener\GalleryCacheInvalidationListener` drops it whenever a `GalleryCategory` or a `GalleryMedia` is
+saved or removed, or one of the settings the blocks are drawn from is: the automatic galleries' four
+entries, `gallery-route-prefix` and `gallery-thumbnail-whole`. The tag never goes out before the flush
+is over, so a rollback leaves the cache alone. UiBundle only ever invalidates the Block that was
+edited, and knows nothing of what these two kinds query at render time — which is what that listener is
+for.
+
+Three cases decline the entry and render live instead, an entry never expiring: a block with the random
+draw ticked, which would be frozen into one single draw; the gallery of the last additions, whose
+photographs leave it as the days go by with nothing saved to drop the tag on; and the listing, for as
+long as a gallery has no cover of its own, its tile being drawn at random too.
 
 In a template of your own, the same Twig functions and components are available:
 
@@ -514,8 +528,29 @@ half of where its file lands (see `GalleryMedia::getVichMediaPath()`).
 Only the categories are yielded, their medias following through the cascade so Vich takes their files
 and derivatives off the disk with them.
 
+## Structured data
+
+The three public pages publish a schema.org graph, built by `Service\GallerySnippetBuilder` and rendered by the
+Twig functions `gallery_media_json_ld()`, `gallery_json_ld()` and `gallery_index_json_ld()`
+(`Twig\Extension\GalleryJsonLdExtension`) — never by a template of the bundle, so a site overriding a page keeps
+its structured data by calling the same function.
+
+A photograph is an `ImageObject`, a video a `VideoObject` whose still becomes the `thumbnailUrl` and whose own
+file the `contentUrl` — a video framed from a platform having none, it names its player as `embedUrl` instead
+(`GalleryMedia::getEmbedUrl()`). Four properties are what an image search reads a licence from: `creator` and
+`creditText` off `GalleryMedia::$credits`, `copyrightNotice` off `$rightsReserved`, and `acquireLicensePage` —
+the photograph's own url, stated only where the page actually prints an offer for it. That offer is handed to
+`buildMedia()` as its `$printAvailable` argument, the very boolean `gallery_print_available()` gave the page:
+the builder asks the shop nothing itself, so the graph can never announce a licence page the visitor is not
+being offered. A gallery is an `ImageGallery` whose `mainEntity` is the `ItemList` of the photographs the page
+was served with; the index is that `ItemList` alone.
+
+The urls are resolved by the caller, only a template turning a stored file into an absolute one — the builder
+publishes no graph for a media with neither a file to name nor a player to frame.
+
 ## Do not
 
+- **Do not emit an `offers` node from this bundle** — what a print costs belongs to ShopBundle, the one place of the ecosystem publishing one.
 - **Do not hardcode `/gallery`** in a template, a link or a test. The prefix is admin-editable; use
   `path('gallery_category', {category: slug})`.
 - **Do not add a `.env` variable, a container parameter or a bundle Configuration class** for a
@@ -557,8 +592,9 @@ and derivatives off the disk with them.
 - **Do not add a video platform here.** Declare it in `c975L\UiBundle\Video\VideoPlatform`.
 - **Do not render a third-party iframe directly.** Use `<twig:c975LUi:Video:Iframe>`, which honours the
   cookie banner.
-- **Do not make the gallery blocks cacheable.** They resolve live on purpose; caching them is what
-  makes a "latest photos" section go stale and freezes the random draw.
+- **Do not cache a gallery block without its tag.** They resolve live, so an entry only holds where
+  `GalleryBlockCacheTagProvider` puts it under the tag `GalleryCacheInvalidationListener` drops — and
+  where nothing is drawn at random or by a window of days, which that provider declines.
 - **Do not add a page layout to this bundle.** A satellite never ships one; templates extend the app's
   `layout.html.twig`.
 - **Do not build an import command for an existing photo folder.** There is no reliable way to tell

@@ -31,4 +31,15 @@
     <div class="block-editable"{% if editUrl %} data-controller="blockEditOverlay" data-edit-label="{{ 'label.edit'|trans({}, 'ui') }}" data-block-edit-url="{{ editUrl }}"{% endif %}>
         <twig:c975LGallery:Gallery:Medias category="{{ category }}" medias="{{ medias }}"/>
     </div>
+
+    {# The gallery as the collection it is, listing the photographs this page was served with - the next page publishes its own (see GallerySnippetBuilder) #}
+    {# Each entry is addressed under the gallery filing it rather than the one being walked through: an automatic gallery shows photographs of other categories, and GalleryController::media resolves a media within the category its url names #}
+    {% set jsonLd = gallery_json_ld(
+        category,
+        medias|map(media => {name: media.title|default(category.title), url: url('gallery_media', {category: media.category.slug, slug: media.slug})}),
+        url('gallery_category', {category: category.slug})
+    ) %}
+    {% if jsonLd %}
+        <script type="application/ld+json">{{ jsonLd|raw }}</script>
+    {% endif %}
 {% endblock %}

@@ -1,5 +1,21 @@
 # ChangeLog
 
+## v1.14.0
+
+Photographs describe themselves to a search engine
+
+- **The three public pages publish a schema.org graph as JSON-LD**, built by `Service\GallerySnippetBuilder`: a photograph as an `ImageObject`, a video as a `VideoObject`, a gallery as an `ImageGallery` and the index as an `ItemList` (03/09/2026)
+- The graph carries the four properties Google's "Licensable" badge is drawn from: `creator`, `creditText`, `copyrightNotice` and `acquireLicensePage` (03/09/2026)
+- `acquireLicensePage` names the page only where the page really prints an offer (03/09/2026)
+- A video framed from a platform publishes its player as `embedUrl` (03/09/2026)
+- **New `Twig\Extension\GalleryJsonLdExtension`** and its `gallery_media_json_ld()`, `gallery_json_ld()` and `gallery_index_json_ld()`, so a site overriding a page keeps its structured data (03/09/2026)
+- A gallery's `ItemList` addresses each photograph under the category filing it (03/09/2026)
+- **Both block kinds are now `cacheable: true`**, their entries carrying the tag the new `Service\GalleryBlockCacheTagProvider` applies (03/09/2026)
+- **New `Listener\GalleryCacheInvalidationListener`**, dropping that tag on a gallery, a photograph or one of the six settings the blocks are drawn from (03/09/2026)
+- The tag goes out after the flush and once per flush, never inside the transaction nor once per row (03/09/2026)
+- **New `Service\GalleryBlockCacheInvalidator`**, the one place the tag is named (03/09/2026)
+- A block drawn at random, the gallery of the last additions and a listing where a gallery has no cover decline their cache entry (03/09/2026)
+
 ## v1.13.0
 
 The print shop runs from the lab's catalogue to the letterbox

@@ -1,5 +1,20 @@
 [
     {
+        "date": "2026-09-03",
+        "description": [
+            {
+                "en": "Your photographs now describe themselves to search engines: each one publishes its title, its caption, the credit you typed, the copyright when you reserved the rights, and - where a print of it is on sale - the page it is bought on. That last one is what earns the \"Licensable\" badge in Google Images, a link to where the photo is bought, printed under it in the results",
+                "fr": "Vos photographies se décrivent maintenant elles-mêmes aux moteurs de recherche : chacune publie son titre, sa légende, le crédit que vous avez saisi, le copyright si vous avez réservé les droits et — lorsqu'un tirage est en vente — la page où il s'achète. C'est ce dernier point qui vaut le badge « Licensable » dans Google Images, un lien vers l'endroit où la photo s'achète, imprimé sous elle dans les résultats",
+                "es": "Sus fotografías se describen ahora por sí solas a los motores de búsqueda: cada una publica su título, su pie de foto, el crédito que usted escribió, el copyright si reservó los derechos y — cuando hay una copia en venta — la página donde se compra. Esto último es lo que da la insignia «Licensable» en Google Imágenes, un enlace al lugar donde se compra la foto, impreso bajo ella en los resultados"
+            },
+            {
+                "en": "The gallery sections placed on your composed pages are now kept in memory instead of being rebuilt at every visit, so those pages open faster. They refresh on their own the moment you rename a gallery, add, hide or move a photograph, or change one of the gallery settings - and a section drawing its photos at random keeps drawing them fresh at each visit",
+                "fr": "Les sections galerie placées sur vos pages composées sont maintenant gardées en mémoire au lieu d'être refabriquées à chaque visite, si bien que ces pages s'ouvrent plus vite. Elles se rafraîchissent d'elles-mêmes dès que vous renommez une galerie, ajoutez, masquez ou déplacez une photographie, ou modifiez un réglage des galeries — et une section qui tire ses photos au hasard continue d'en tirer de nouvelles à chaque visite",
+                "es": "Las secciones de galería colocadas en sus páginas compuestas se guardan ahora en memoria en lugar de rehacerse en cada visita, de modo que esas páginas se abren más rápido. Se actualizan solas en cuanto usted renombra una galería, añade, oculta o mueve una fotografía, o cambia un ajuste de las galerías — y una sección que saca sus fotos al azar sigue sacando otras nuevas en cada visita"
+            }
+        ]
+    },
+    {
         "date": "2026-09-02",
         "description": [
             {

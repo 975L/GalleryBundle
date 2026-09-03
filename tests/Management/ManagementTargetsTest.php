@@ -29,7 +29,7 @@ class ManagementTargetsTest extends ManagementTargetsTestCase
             new MenuProvider($this->configService()),
             new LinkableRouteProvider($this->categoryRepository(), $this->createStub(TranslatorInterface::class)),
             // The socle's own recorder rather than a bare stub, so the controller each parcours opens on is read back and checked (see ManagementTargetsTestCase)
-            new GalleryGuidedProjectProvider($this->adminUrlGenerator(), $this->createStub(ConfigServiceInterface::class)),
+            new GalleryGuidedProjectProvider($this->adminUrlGenerator(), $this->configService()),
             new GalleryShortcutProvider($this->createStub(TranslatorInterface::class), $this->configService()),
         ];
     }

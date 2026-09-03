@@ -41,7 +41,7 @@ services:
             - { name: 'ui.stylesheet', priority: 100 }
             - { name: 'ui.management_stylesheet' }
 
-    # Block kinds registered in UiBundle - cacheable: false on both, their templates resolving their content live via gallery_block_*() on entities BlockCacheInvalidationListener does not watch
+    # Block kinds registered in UiBundle - both resolve their content live via gallery_block_*() on entities BlockCacheInvalidationListener does not watch, so they are cached under the tag GalleryBlockCacheTagProvider applies and GalleryCacheInvalidationListener drops. A gallery drawn at random, the one of the last additions, and a listing where a gallery has no cover decline their entry rather than freeze a draw or a window of days (see GalleryBlockCacheTagProvider)
     gallery.block.categories:
         class: stdClass
         tags:
@@ -54,7 +54,7 @@ services:
               form: 'c975L\GalleryBundle\Form\Block\GalleryCategoriesBlockType'
               template: '@c975LGallery/blocks/Categories.html.twig'
               pickable: true
-              cacheable: false
+              cacheable: true
 
     gallery.block.medias:
         class: stdClass
@@ -68,4 +68,4 @@ services:
               form: 'c975L\GalleryBundle\Form\Block\GalleryMediasBlockType'
               template: '@c975LGallery/blocks/Medias.html.twig'
               pickable: true
-              cacheable: false
+              cacheable: true

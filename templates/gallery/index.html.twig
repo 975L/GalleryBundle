@@ -19,4 +19,10 @@
 {% block content %}
     <twig:c975LGallery:Gallery:Navigation categoriesCount="{{ categoriesCount }}"/>
     <twig:c975LGallery:Gallery:Categories categories="{{ categories }}"/>
+
+    {# The galleries as the list the page prints, each leading to its own #}
+    {% set jsonLd = gallery_index_json_ld(categories|map(category => {name: category.title, url: url('gallery_category', {category: category.slug})})) %}
+    {% if jsonLd %}
+        <script type="application/ld+json">{{ jsonLd|raw }}</script>
+    {% endif %}
 {% endblock %}

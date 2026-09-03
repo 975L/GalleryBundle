@@ -36,6 +36,7 @@ See it in action at [bundles.975l.com/pages/gallery-bundle](https://bundles.975l
 - A catch-all "Non classé" category is created lazily so an imported media always has one, even without a real one to attach it to.
 - One category of the site can be turned into **the gallery of the last additions**: it holds no media of its own and shows what every other category received on its last days of upload, whatever gallery each photo landed in - as a public page, as a block, and as a back-office screen where a whole upload session is credited, downloaded or trashed in one go (see [the automatic galleries](#the-automatic-galleries)).
 - A public front-office viewer (index → category → media), browsed entirely in the stored (medium) resolution, with circular previous/next navigation whose neighbouring images are preloaded in the background so switching medias never shows a blank image while it loads. The high resolution opens in a lightbox over the image, fetched only when the visitor asks for it (see [browsing and the lightbox](#browsing-and-the-lightbox)).
+- Structured data on the three public pages: a photograph is published as an `ImageObject` carrying its credit, its copyright and the page a print is bought on - the properties an image search draws its "Licensable" badge from (see [structured data](#structured-data)).
 - Two block kinds contributed to UiBundle, so a gallery can be shown on any page composed in the back office instead of only under its own routes (see [blocks](#blocks-defined-by-this-bundle)).
 - A category owns UiBundle blocks of its own, giving it an editorial heading above its grid (see [category headings](#composing-a-categorys-heading)).
 - A category carries a rich-text summary, printed above its grid and reused as the page's social/search metas (see [summary](#a-categorys-summary)).
@@ -826,9 +827,11 @@ On top of the generic block system provided by [UiBundle](https://github.com/975
 | `gallery_categories` | `label.category_gallery` | Every category, one thumbnail each, as on `/gallery`. Takes an optional maximum. |
 | `gallery_medias` | `label.category_gallery` | One category's photos and videos, as on `/gallery/{category}`. Takes the category, an optional maximum, whether to draw them at random, and whether to show a link to the full category. |
 
-Both are `cacheable: false`: they resolve their content live through `gallery_block_*()` (`Twig\Extension\GalleryBlockExtension`), so a block never goes stale against the media library - what a Block stores is *what* to show (a category slug, a maximum), never the medias themselves. The slug is stored rather than the id, this bundle's natural key everywhere else, so a block survives an export/import to another site the same way a category does; a block pointing at a category deleted or renamed since renders nothing at all rather than an empty grid.
+Both resolve their content live through `gallery_block_*()` (`Twig\Extension\GalleryBlockExtension`), so a block never goes stale against the media library - what a Block stores is *what* to show (a category slug, a maximum), never the medias themselves. The slug is stored rather than the id, this bundle's natural key everywhere else, so a block survives an export/import to another site the same way a category does; a block pointing at a category deleted or renamed since renders nothing at all rather than an empty grid.
 
-Being uncached is also what makes the random draw worth having: with "draw them at random" ticked, the maximum keeps that many medias out of the whole category, drawn again at every render - so a "our latest photos" section placed on a home page shows a different selection at each visit.
+Both are `cacheable: true` all the same, their entries carrying the tag `Service\GalleryBlockCacheTagProvider` applies and `Listener\GalleryCacheInvalidationListener` drops - on a gallery renamed or set aside, a photograph added, hidden or moved, and on the settings the blocks are drawn from (the automatic galleries' four entries, `gallery-route-prefix` and `gallery-thumbnail-whole`). UiBundle only ever invalidates the Block that was edited, and knows nothing of what these two kinds query at render time, which is what this listener is for. Nothing is dropped before the flush is over, so a rollback never empties the cache for a change that was undone.
+
+Three cases decline the entry and render live instead, a cache entry never expiring: a block with "draw them at random" ticked, which an entry would freeze into one single draw; the gallery of the last additions, whose photographs leave it as the days go by with nothing saved to drop the entry on; and the listing, for as long as a gallery has no cover of its own, its tile being drawn at random too.
 
 ### A category's summary
 
@@ -1390,6 +1393,48 @@ it states — the same docblock naming every other bundle's block, so a range is
 recopied here. Nothing is derived from the site's own data, so a project is worth following on a site
 already full of galleries, and worth replaying once done (see ConfigBundle's README,
 "Contributing guided projects from other bundles").
+
+---
+
+## Structured data
+
+The three public pages publish a schema.org graph as JSON-LD, built by `GallerySnippetBuilder` and rendered by a
+Twig function rather than by a template of the bundle - so overriding `gallery/media.html.twig` in your app keeps
+the markup by calling the same function.
+
+A photograph is an `ImageObject` and a video a `VideoObject`, the still then being the thumbnail and its own file
+the content - a video framed from a platform having no file of the site's own, it names its player as `embedUrl`
+instead. Beside the name, the caption and the file, four properties are what an image search reads a licence
+from: `creator` and `creditText` from the credit typed in the back office, `copyrightNotice` from the
+rights-reserved box, and `acquireLicensePage` - the photograph's own page, stated only where the page actually
+prints an offer for it, since that is where the print is ordered. Those are the properties Google's
+**Licensable** badge is drawn from, which is a link to where the photo is bought, printed under it in image
+results.
+
+A gallery is an `ImageGallery` listing the photographs the page was served with, and the index an `ItemList` of
+the galleries. Neither carries an `offers` node: what a print costs belongs to whoever sells it, and ShopBundle
+is the one place of the ecosystem emitting one.
+
+The whole of what `gallery/media.html.twig` does, to be reproduced as is by an app overriding it - the two files
+are read off the media rather than assumed, and each url is only built where there is a file to build it from,
+`asset(null)` returning the base path and not an empty string:
+
+```twig
+{% set printAvailable = gallery_print_available(media) %}
+{% set contentFile = media.video ? media.videoFilename : media.filename %}
+{% set thumbnailFile = media.video ? media.filename : media.thumbnailFilename %}
+{% set jsonLd = gallery_media_json_ld(
+    media,
+    contentFile ? absolute_url(asset(contentFile)) : null,
+    thumbnailFile ? absolute_url(asset(thumbnailFile)) : null,
+    url('gallery_media', {category: category.slug, slug: media.slug}),
+    printAvailable,
+    media.embedUrl
+) %}
+{% if jsonLd %}
+    <script type="application/ld+json">{{ jsonLd|raw }}</script>
+{% endif %}
+```
 
 ---
 
