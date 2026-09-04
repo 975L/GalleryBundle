@@ -1,5 +1,13 @@
 # ChangeLog
 
+## v1.14.1
+
+A shared config drawer is no longer this bundle's to label
+
+- **`ConfigsJsonTest` only requires a `label.group_*` for a group absent from `Config::GROUPS`** (04/09/2026)
+- Drops `testEveryGroupIsTranslatedInEveryLocale`, superseded by that check (04/09/2026)
+- The test file is back to the shape the seven other bundles carry (04/09/2026)
+
 ## v1.14.0
 
 Photographs describe themselves to a search engine
