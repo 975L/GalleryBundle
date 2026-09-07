@@ -18,6 +18,7 @@ use c975L\GalleryBundle\Repository\GalleryPrintFormatRepository;
 use c975L\GalleryBundle\Service\PrintCatalogueImporter;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\TestCase;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 // Seeding a print catalogue from the lab's range, once and only once
 class PrintCatalogueImporterTest extends TestCase
@@ -83,6 +84,57 @@ class PrintCatalogueImporterTest extends TestCase
         $this->assertTrue($report->unchecked);
     }
 
+    // The catalogue ships an id, the column holds a sentence, and the sentence is the customer's language - not the admin's
+    public function testTheDescriptionIsWrittenInTheSitesLanguage(): void
+    {
+        $this->importer()->import();
+
+        $this->assertSame('Un papier mat (fr)', $this->persisted[0]->getPaperDescription());
+        $this->assertSame(240, $this->persisted[1]->getDpi());
+    }
+
+    // A row still reading what an earlier release shipped in English is brought up to the sentence the catalogue ships now - reached through its sku, whatever the shop renamed it
+    public function testARowStillCarryingTheShippedSentenceIsRewritten(): void
+    {
+        $existing = new GalleryPrintFormat()->setSlug('a-name-of-its-own')->setSku('GLOBAL-FAP-8X8')->setPaperDescription('Un papier mat (en)');
+        $report = $this->importer([$existing])->import();
+
+        $this->assertSame(1, $report->refreshed);
+        $this->assertSame('Un papier mat (fr)', $existing->getPaperDescription());
+    }
+
+    // The sentence the admin wrote is the shop's, and the shop's words are never overwritten
+    public function testASentenceTheAdminWroteIsLeftAlone(): void
+    {
+        $existing = new GalleryPrintFormat()->setSlug('mat-20x20')->setPaperDescription('Our own words');
+        $report = $this->importer([$existing])->import();
+
+        $this->assertSame(0, $report->refreshed);
+        $this->assertSame('Our own words', $existing->getPaperDescription());
+    }
+
+    // A resolution left at the default is brought to what the catalogue now says for that size; one the admin set is kept
+    public function testTheResolutionIsRefreshedOnlyWhereStillAtTheDefault(): void
+    {
+        $untouched = new GalleryPrintFormat()->setSlug('mat-30x30')->setPaperDescription('Un papier mat (fr)');
+        $chosen = new GalleryPrintFormat()->setSlug('mat-20x20')->setDpi(150)->setPaperDescription('Un papier mat (fr)');
+        $report = $this->importer([$untouched, $chosen])->import();
+
+        $this->assertSame(1, $report->refreshed);
+        $this->assertSame(240, $untouched->getDpi());
+        $this->assertSame(150, $chosen->getDpi());
+    }
+
+    // Run twice, the second run has nothing left to bring up to date
+    public function testASecondRunRefreshesNothing(): void
+    {
+        $this->importer()->import();
+        $report = $this->importer($this->persisted)->import();
+
+        $this->assertSame(0, $report->imported);
+        $this->assertSame(0, $report->refreshed);
+    }
+
     public function testASiteWhoseLabProposesNoRangeImportsNothing(): void
     {
         $report = $this->importer([], [], 'another-lab')->import();
@@ -111,8 +163,8 @@ class PrintCatalogueImporterTest extends TestCase
             public function getEntries(): array
             {
                 return [
-                    new PrintCatalogueEntry('mat-20x20', '20 x 20 cm', 20, 20, 'GLOBAL-FAP-8X8', 5500, 10),
-                    new PrintCatalogueEntry('mat-30x30', '30 x 30 cm', 30, 30, 'GLOBAL-FAP-12X12', 10000, 20),
+                    new PrintCatalogueEntry('mat-20x20', '20 x 20 cm', 20, 20, 'GLOBAL-FAP-8X8', 'Matte', 'print_paper.matte', 5500, 10),
+                    new PrintCatalogueEntry('mat-30x30', '30 x 30 cm', 30, 30, 'GLOBAL-FAP-12X12', 'Matte', 'print_paper.matte', 10000, 20, 240),
                 ];
             }
 
@@ -133,6 +185,10 @@ class PrintCatalogueImporterTest extends TestCase
             $this->persisted[] = $entity;
         });
 
-        return new PrintCatalogueImporter([$catalogue], $configService, $repository, $entityManager);
+        // Answers the id in whichever locale it is asked in, so the test reads which one the importer chose
+        $translator = $this->createStub(TranslatorInterface::class);
+        $translator->method('trans')->willReturnCallback(static fn (string $id, array $parameters, ?string $domain, ?string $locale): string => 'print_paper.matte' === $id ? sprintf('Un papier mat (%s)', $locale) : $id);
+
+        return new PrintCatalogueImporter([$catalogue], $configService, $repository, $entityManager, $translator, 'fr');
     }
 }

@@ -48,10 +48,10 @@ class GalleryGuidedProjectProviderTest extends TestCase
         $projects = $this->createProvider()->getGuidedProjects();
 
         $this->assertSame(
-            ['gallery-creation', 'gallery-medias-arrangement', 'gallery-medias-move', 'gallery-media-detail', 'gallery-trash', 'gallery-medias-recovery', 'gallery-latest', 'gallery-print-setup'],
+            ['gallery-creation', 'gallery-medias-arrangement', 'gallery-medias-move', 'gallery-media-detail', 'gallery-trash', 'gallery-medias-recovery', 'gallery-latest', 'gallery-library-sorting', 'gallery-print-setup'],
             array_column($projects, 'slug')
         );
-        $this->assertSame([5010, 5020, 5025, 5030, 5040, 5050, 5060, 5070], array_column($projects, 'order'));
+        $this->assertSame([5010, 5020, 5025, 5030, 5040, 5050, 5060, 5065, 5070], array_column($projects, 'order'));
     }
 
     // The two print screens are hidden from the menu on a site that does not sell prints (see MenuProvider), and a parcours walking a screen with no way in reads as a broken one
@@ -112,14 +112,14 @@ class GalleryGuidedProjectProviderTest extends TestCase
         }
     }
 
-    // The categories are the single sidebar entry of the galleries, so every parcours about them opens there - the print one opening on the formats instead, which is where a shop is written
+    // Every parcours about a gallery opens on the categories - the sorting one on the contact sheet of the whole library, which no gallery's screen can stand for, and the print one on the formats, which is where a shop is written
     public function testEveryProjectOpensOnTheScreenItWalks(): void
     {
         $controllers = [];
         $this->createProvider($controllers)->getGuidedProjects();
 
         $this->assertSame(
-            [...array_fill(0, 7, 'GalleryCategoryCrudController'), 'GalleryPrintFormatCrudController'],
+            [...array_fill(0, 7, 'GalleryCategoryCrudController'), 'GalleryMediaCrudController', 'GalleryPrintFormatCrudController'],
             array_map(static fn (string $fqcn): string => basename(str_replace('\\', '/', $fqcn)), $controllers)
         );
     }
@@ -161,25 +161,68 @@ class GalleryGuidedProjectProviderTest extends TestCase
     // A marker renamed in the template would leave its step highlighting nothing at all, the panel going on showing itself
     public function testEveryDataAttributeHighlightedExistsInTheTemplates(): void
     {
-        $templates = '';
-        foreach (glob(\dirname(__DIR__, 2) . '/templates/management/*.twig') as $template) {
-            $templates .= file_get_contents($template);
-        }
-
         $attributes = [];
-        foreach ($this->createProvider()->getGuidedProjects() as $project) {
-            foreach ($project['steps'] as $step) {
-                if (isset($step['highlight']) && preg_match('/^\[(data-[a-z-]+)/', $step['highlight'], $matches)) {
-                    $attributes[] = $matches[1];
-                }
+        foreach ($this->highlights() as $highlight) {
+            if (preg_match('/^\[(data-[a-z-]+)/', $highlight, $matches)) {
+                $attributes[] = $matches[1];
             }
         }
 
         $this->assertNotEmpty($attributes);
 
+        $templates = $this->templates(\dirname(__DIR__, 2) . '/templates/management/*.twig');
         foreach ($attributes as $attribute) {
             $this->assertStringContainsString($attribute, $templates, sprintf('No management template carries "%s" anymore', $attribute));
         }
+    }
+
+    // Two steps of the library parcours point at EasyAdmin's own chrome rather than at markup this bundle writes, and renamed at a version bump they would highlight nothing - selectors of the "action-<crudActionName>" shape are left out, EasyAdmin building those from the action names the controllers declare
+    public function testEveryClassHighlightedExistsInTheBundleOrEasyAdminTemplates(): void
+    {
+        $classes = [];
+        foreach ($this->highlights() as $highlight) {
+            foreach (['/^\.([a-z][a-z0-9_-]*)$/', '/\.([a-z][a-z0-9_-]*)$/'] as $pattern) {
+                if (preg_match($pattern, $highlight, $matches) && !preg_match('/^action-[a-zA-Z]+$/', $matches[1])) {
+                    $classes[] = $matches[1];
+                    break;
+                }
+            }
+        }
+
+        $this->assertNotEmpty($classes);
+
+        $templates = $this->templates(\dirname(__DIR__, 2) . '/templates/management/*.twig')
+            . $this->templates(\dirname(__DIR__, 2) . '/vendor/easycorp/easyadmin-bundle/templates/*.twig')
+            . $this->templates(\dirname(__DIR__, 2) . '/vendor/easycorp/easyadmin-bundle/templates/crud/*.twig');
+
+        foreach ($classes as $class) {
+            $this->assertStringContainsString($class, $templates, sprintf('Neither this bundle nor EasyAdmin carries "%s" anymore', $class));
+        }
+    }
+
+    // Every "highlight" the parcours declare, whichever screen they walk
+    private function highlights(): array
+    {
+        $highlights = [];
+        foreach ($this->createProvider()->getGuidedProjects() as $project) {
+            foreach ($project['steps'] as $step) {
+                if (isset($step['highlight'])) {
+                    $highlights[] = $step['highlight'];
+                }
+            }
+        }
+
+        return $highlights;
+    }
+
+    private function templates(string $pattern): string
+    {
+        $contents = '';
+        foreach (glob($pattern) as $template) {
+            $contents .= file_get_contents($template);
+        }
+
+        return $contents;
     }
 
     // A label or description with no translation reads as its own key in the panel, in whichever locale it is missing from

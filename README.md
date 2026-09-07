@@ -22,7 +22,7 @@ See it in action at [bundles.975l.com/pages/gallery-bundle](https://bundles.975l
 ## Contents
 
 - **Setup** — [requirements](#requirements) · [installation](#installation) · [configuration](#load-the-configuration) · [routes](#enable-routes) · [assets](#install-assets) · [theme](#install-the-theme)
-- **Using it** — [public routes](#public-routes) · [linking from a menu](#linking-a-gallery-from-a-menu) · [the automatic galleries](#the-automatic-galleries) · [renaming a category](#renaming-a-category) · [deleting a gallery](#deleting-a-gallery) · [masking a gallery](#masking-a-gallery) · [selling prints](#selling-prints) · [uploading a batch](#uploading-a-batch) · [renaming a media](#renaming-a-media) · [a media's caption](#a-medias-caption) · [fields of your own](#fields-of-your-own) · [browsing and the lightbox](#browsing-and-the-lightbox) · [editing from the public pages](#editing-from-the-public-pages) · [blocks](#blocks-defined-by-this-bundle) · [category summary](#a-categorys-summary) · [share image](#the-image-a-shared-page-carries) · [category headings](#composing-a-categorys-heading) · [theme tokens](#theme) · [videos](#videos) · [trashing a selection](#trashing-a-selection-of-medias) · [credits / rights on a selection](#applying-credits-or-rights-to-a-selection) · [moving a selection](#moving-a-selection-to-another-gallery) · [downloading a selection](#downloading-a-selections-files) · [export / import categories](#export--import-categories) · [sitemap and health check](#sitemap-and-health-check) · [describing the gallery index](#describing-the-gallery-index) · [backup](#backup) · [what's new](#whats-new) · [guided projects](#guided-projects)
+- **Using it** — [public routes](#public-routes) · [linking from a menu](#linking-a-gallery-from-a-menu) · [the automatic galleries](#the-automatic-galleries) · [renaming a category](#renaming-a-category) · [deleting a gallery](#deleting-a-gallery) · [masking a gallery](#masking-a-gallery) · [selling prints](#selling-prints) · [the whole library at once](#the-whole-library-at-once) · [uploading a batch](#uploading-a-batch) · [renaming a media](#renaming-a-media) · [a media's caption](#a-medias-caption) · [fields of your own](#fields-of-your-own) · [browsing and the lightbox](#browsing-and-the-lightbox) · [editing from the public pages](#editing-from-the-public-pages) · [blocks](#blocks-defined-by-this-bundle) · [category summary](#a-categorys-summary) · [share image](#the-image-a-shared-page-carries) · [category headings](#composing-a-categorys-heading) · [theme tokens](#theme) · [videos](#videos) · [trashing a selection](#trashing-a-selection-of-medias) · [credits / rights on a selection](#applying-credits-or-rights-to-a-selection) · [moving a selection](#moving-a-selection-to-another-gallery) · [downloading a selection](#downloading-a-selections-files) · [export / import categories](#export--import-categories) · [sitemap and health check](#sitemap-and-health-check) · [describing the gallery index](#describing-the-gallery-index) · [backup](#backup) · [what's new](#whats-new) · [guided projects](#guided-projects)
 - **Operating** — [likes on a photo](#likes-on-a-photo) · [seeding a demo gallery](#seeding-a-demo-gallery) · [bringing an existing gallery in](#bringing-an-existing-gallery-in) · [upload ceilings](#upload-ceilings) · [AI agent skills](#ai-agent-skills)
 
 ## Features
@@ -31,7 +31,7 @@ See it in action at [bundles.975l.com/pages/gallery-bundle](https://bundles.975l
 - `GalleryCategory` → `GalleryMedia`: the category is the top-level unit, a site's galleries being its categories - no container above them.
 - Bulk upload: pick every file at once from the category they belong to, with a title root, credits and rights-reserved applied to the whole batch, retouched one media at a time afterwards. The same batch is offered on the category creation form, so a category is created with its medias in one go. Optionally, the untouched originals are kept outside the document root (see [uploading a batch](#uploading-a-batch)). The screen counts the megabytes as they leave and then says the files are being processed, a batch being minutes of waiting.
 - Three derivatives generated automatically per uploaded image (thumbnail / medium / highres), all three holding the whole photo, via UiBundle's `VichImageResizeListener` and the `VichMultiSizeImageInterface` contract - naming and resizing stay centralized in UiBundle, this bundle only declares the target sizes and how its grids frame them (see [Thumbnail framing](#thumbnail-framing)).
-- One EasyAdmin menu entry ("Gallery", opening the categories, with their media count); a category's medias are listed under its own edit form, each thumbnail opening the media it stands for, and medias are added from the category itself.
+- Two EasyAdmin menu entries: "Galerie", opening the categories with their media count, where a category's medias are listed under its own edit form and added from the category itself - and "Médias", the contact sheet of the whole library, every gallery's photographs in one filterable grid saying which are masked, which are on sale and what visitors liked (see [the whole library at once](#the-whole-library-at-once)).
 - Each media in that list carries a checkbox, so a selection of them goes to the trash in one go instead of one edit screen at a time (see [trashing a selection](#trashing-a-selection-of-medias)), or given the same credits and rights at once (see [credits / rights on a selection](#applying-credits-or-rights-to-a-selection)), or moved into another gallery with everything they carry (see [moving a selection](#moving-a-selection-to-another-gallery)), or their files handed back as one zip (see [downloading a selection](#downloading-a-selections-files)).
 - A catch-all "Non classé" category is created lazily so an imported media always has one, even without a real one to attach it to.
 - One category of the site can be turned into **the gallery of the last additions**: it holds no media of its own and shows what every other category received on its last days of upload, whatever gallery each photo landed in - as a public page, as a block, and as a back-office screen where a whole upload session is credited, downloaded or trashed in one go (see [the automatic galleries](#the-automatic-galleries)).
@@ -48,7 +48,7 @@ See it in action at [bundles.975l.com/pages/gallery-bundle](https://bundles.975l
 - The gallery index and each category offered as a SiteBundle menu target, so a navbar links straight to one of the site's galleries (see [linking a gallery from a menu](#linking-a-gallery-from-a-menu))
 - Categories can be exported/imported as a zip (heading blocks, medias and files bundled in), plugging into ConfigBundle's **Export sync (everything)** dashboard shortcut and **Import content** screen.
 - The two upload roots declared to the backup, via ConfigBundle's `BackupPathProviderInterface`, mirrored offsite rather than tarred (see [backup](#backup))
-- Eight replayable guided projects contributed to the dashboard, via ConfigBundle's `GuidedProjectProviderInterface`, walking a gallery's creation, its medias' arrangement, a media's own screen, the trash and the way back out of it, the files handed back as an archive, the gallery of the latest additions, and the opening of the print shop (see [guided projects](#guided-projects))
+- Nine replayable guided projects contributed to the dashboard, via ConfigBundle's `GuidedProjectProviderInterface`, walking a gallery's creation, its medias' arrangement, a media's own screen, the trash and the way back out of it, the files handed back as an archive, the gallery of the latest additions, the sorting of the whole library, and the opening of the print shop (see [guided projects](#guided-projects))
 - Photographs can be **sold as prints**, behind one setting: a catalogue of sizes and prices, an order plugged into PaymentBundle's basket, and a lab that prints and ships to the customer directly - nothing transiting through the shopkeeper. A photograph can be offered as a limited edition, the bundle holding the register so the last copy cannot be sold twice, and drawing the certificate of authenticity to sign, with a qr code to its public verification page.
 - A photograph can be **hidden** from every public page without being deleted, and hiding it or putting it on sale applies to a whole selection at once.
 - A whole gallery can be **hidden** the same way: it leaves the index, the blocks, the menus and the sitemap, its photographs leave the automatic galleries with it, and everything stays in the back office to be shown again (see [masking a gallery](#masking-a-gallery)).
@@ -398,16 +398,25 @@ renaming a format in the back office never renames it at the printer.
 Filling that catalogue by hand is fifteen fields an admin has no way of guessing, and one wrong sku is an
 order refused after it was paid — so **Import the lab's catalogue** writes it from what the configured lab
 actually prints: the five shapes a photograph comes in — square, 3:2, 4:3, 16:9 and the ISO sizes — three
-of each, on four papers, two for everyday prints and the two cottons an art print is sold on, smooth and
-textured. Short of everything the lab prints, on purpose: a hundred lines to sort through is how a shop
-ends up publishing none of them, and a size wanted and not there is one row to add by hand. The action is
-idempotent on the slug and on the sku alike: run it again after an update to pick up what the range has
-gained, and it touches nothing already there.
+of each, four of the square, on four papers, two for everyday prints and the two cottons an art print is sold
+on, smooth and textured. Short of everything the lab prints, on purpose: a hundred lines to sort through is
+how a shop ends up publishing none of them, and a size wanted and not there is one row to add by hand. The
+action is idempotent on the slug and on the sku alike: run it again after an update to pick up what the range
+has gained. On the rows already there it touches only what the bundle itself shipped and has since changed —
+a paper's description still reading as an earlier release wrote it, a dpi still at the default — and never a
+sentence the admin rewrote or a resolution the admin set.
+
+**Each line carries its dpi, by its size**: 300 up to 30 cm on the long edge, 240 up to 40, 200 beyond. A
+print read in the hand and one hung on a wall are not looked at from the same distance, and asking 300 dpi
+of a 45 cm sheet refuses a 4000-pixel square that prints on it perfectly well.
 
 **The sizes are shown under the paper they are printed on**, not as one flat list: a format carries `paper` and
 `paperDescription`, and the offer under a photograph draws one heading per paper with the sentence saying what
 that paper is for. Twelve near-identical lines whose price climbs for no stated reason is a visitor hesitating
-instead of buying. A format naming no paper falls into a single unnamed group, which draws the flat list.
+instead of buying. A format naming no paper falls into a single unnamed group, which draws the flat list. The
+shipped catalogue gives that sentence as a translation id (`print_paper.*` in the `gallery` domain, in English,
+French and Spanish), and the import writes it in the site's default locale — the customer's language, not the
+one the back-office was opened in. A catalogue shipping a plain sentence instead is written as is.
 
 **Everything arrives unpublished**, at a placeholder price on a plain curve. The sizes and the references
 are the lab's business and are shipped; the prices are the shop's, and the ones in the bundle are there so
@@ -532,6 +541,39 @@ A lab is a `Contract\PrintFulfilmentInterface`. Write the class, and there is no
 implementation is collected through `gallery.print_fulfilment` and picked by name from
 `gallery-print-provider`. `Service\Fulfilment\ProdigiFulfilment` ships, `ManualFulfilment` is the fallback
 for a site printing at home or at the shop on the corner.
+
+### The whole library at once
+
+A gallery's own screen answers "what is in this gallery". It never answers "which photographs are on sale",
+"which ones did I mask" or "what did visitors like", which are questions asked of the whole library — so
+`GalleryMediaCrudController` lists it: **Médias**, next to **Galerie** in the sidebar, every gallery's
+photographs in one grid.
+
+The same grid, drawn from the same tile as a category's own (`_gallery_media_tile.html.twig`), so a thumbnail
+says the same thing on both screens. Under each one:
+
+| Badge | Read as |
+| --- | --- |
+| **Masquée** | Off every public page, still whole in the back office |
+| **En vente** | Offered to the buyers (`printable`) |
+| **Édition de n** | A numbered edition, an open one printing without end and showing no number |
+| **♥ n** | How many visitors liked the photograph, where `gallery-rating` is on |
+
+The likes are counted once for the whole grid by `Service\GalleryMediaLikeCounter` — one read, never one per
+thumbnail — and not read at all on a site that shows no heart.
+
+Above the grid, EasyAdmin's own filters and search: by gallery (the automatic ones left out, holding no media
+of their own), by sale, by masking, by rights reserved, and a search running over the title, the caption and
+the credits — not over the filename or the slug, which no one types looking for a photograph. The trash is
+left out on both sides: a media in it, and every media of a gallery in it.
+
+Clicking a thumbnail opens the media's edit form, the only screen a media has. Nothing is arranged, made a
+cover or selected here — a photograph's position belongs to the gallery holding it, and the selection actions
+live on that gallery's own screen (see [trashing a selection](#trashing-a-selection-of-medias)).
+
+The two ways in are told apart by one parameter: a media screen opened from a gallery carries its `category`,
+and leaving it comes back to that gallery. Without it — the sidebar entry, the files health check — the
+contact sheet is what answers.
 
 ### Uploading a batch
 
@@ -1352,7 +1394,7 @@ pages, not which class carries it — the ChangeLog is where the code's history 
 
 ### Guided projects
 
-`GalleryGuidedProjectProvider` (ConfigBundle's `GuidedProjectProviderInterface`) contributes eight replayable
+`GalleryGuidedProjectProvider` (ConfigBundle's `GuidedProjectProviderInterface`) contributes nine replayable
 exercises to the dashboard's "Guided projects" panel: **creating a gallery** with its first photographs in
 one go — the creation form carries the whole batch, which is the only screen doing both —, **arranging a
 gallery's medias** on its own edit screen, where the order, the cover and the batch edits all save as they
@@ -1361,16 +1403,18 @@ answering, **filling in a media's own screen**, where a caption is written and a
 gallery aside and bringing it back**, which walks the trash and stops before the permanent deletion — held
 one role higher, so a step highlighting it would point at a button an editor never sees —, **getting the
 photo files back** as one archive, and **the gallery of the latest additions**, the one gallery arranged by
-nobody, and **opening the print shop**, which imports the lab's range, prices a format and publishes it.
+nobody, **sorting the whole library** from the contact sheet, where the badges say what is masked and what
+is on sale without a photograph being opened, and **opening the print shop**, which imports the lab's range,
+prices a format and publishes it.
 Nothing to register — the provider is picked up automatically.
 
 The print one is only offered where `gallery-print-enabled` is on, exactly as its two screens are: a
 parcours walking a screen with no way into it reads as a broken one.
 
-Only the opening step of each carries an `url`, the seven gallery ones sending the user to the categories,
-the single sidebar entry of the whole feature — which states `site-role-editor` itself, the bar its own
-screen sits at, rather than taking the admin default every entry used to be given — and the print one to
-the formats, which is where a shop is written. From there the panel walks that screen, highlighting the
+Only the opening step of each carries an `url`, the eight gallery ones sending the user to the categories
+or, for the sorting one, to the library's contact sheet — the two sidebar entries of the feature, both
+stating `site-role-editor` themselves, the bar their own screens sit at, rather than taking the admin
+default every entry used to be given — and the print one to the formats, which is where a shop is written. From there the panel walks that screen, highlighting the
 button or the field they are meant to use next — one they click themselves, which brings the panel back on
 that very step:
 

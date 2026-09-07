@@ -322,7 +322,7 @@
 
                     <div class="management-media-grid">
                         {% for media in group.medias %}
-                            {{ include(tile, {media: media, edit_url: media_edit_urls[media.id]|default(''), sortable: false, owner: true, cover_media_id: null}, with_context: false) }}
+                            {{ include(tile, {media: media, edit_url: media_edit_urls[media.id]|default(''), sortable: false, owner: true, cover_media_id: null, selectable: true, likes: media_likes[media.id]|default(0)}, with_context: false) }}
                         {% endfor %}
                     </div>
                 {% endfor %}
@@ -330,7 +330,7 @@
                 {# An automatic gallery's medias belong to other categories, so they are neither arranged nor made a cover here, and each names the gallery it actually sits in #}
                 <div class="management-media-grid"{% if not automatic %} data-gallery-media-sort-target="grid"{% endif %}>
                     {% for media in medias %}
-                        {{ include(tile, {media: media, edit_url: media_edit_urls[media.id]|default(''), sortable: sortable, owner: automatic, cover_media_id: category.coverMedia ? category.coverMedia.id : null}, with_context: false) }}
+                        {{ include(tile, {media: media, edit_url: media_edit_urls[media.id]|default(''), sortable: sortable, owner: automatic, cover_media_id: category.coverMedia ? category.coverMedia.id : null, selectable: true, likes: media_likes[media.id]|default(0)}, with_context: false) }}
                     {% endfor %}
                 </div>
             {% endif %}

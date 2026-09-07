@@ -27,11 +27,8 @@ interface PrintCatalogueProviderInterface
     // The driver this catalogue belongs to, matching PrintFulfilmentInterface::getName() - the importer offers the catalogue of the lab the site actually prints at and no other
     public function getName(): string;
 
-    /**
-     * The catalogue itself, in the order it should be read.
-     *
-     * @return list<PrintCatalogueEntry>
-     */
+    // The catalogue itself, in the order it should be read - a paper's description given as a translation id of the gallery domain, which the importer resolves in the site's language, or as a plain sentence it then writes as is
+    /** @return list<PrintCatalogueEntry> */
     public function getEntries(): array;
 
     /**

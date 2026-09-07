@@ -13,6 +13,7 @@ namespace c975L\GalleryBundle\Management;
 use c975L\ConfigBundle\Management\GuidedProjectProviderInterface;
 use c975L\ConfigBundle\Service\ConfigServiceInterface;
 use c975L\GalleryBundle\Controller\Management\GalleryCategoryCrudController;
+use c975L\GalleryBundle\Controller\Management\GalleryMediaCrudController;
 use c975L\GalleryBundle\Controller\Management\GalleryPrintFormatCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGeneratorInterface;
@@ -36,6 +37,7 @@ class GalleryGuidedProjectProvider implements GuidedProjectProviderInterface
             $this->trashProject(),
             $this->mediasRecoveryProject(),
             $this->latestGalleryProject(),
+            $this->librarySortingProject(),
         ];
 
         // Offered only where the screens it walks are, the print ones being hidden from the menu on a site that does not sell prints (see MenuProvider)
@@ -416,6 +418,51 @@ class GalleryGuidedProjectProvider implements GuidedProjectProviderInterface
         ];
     }
 
+    // Sorting a library is not composing a gallery: what is asked here is asked of every photograph at once, which is the one thing a gallery's own screen cannot answer (see GalleryMediaCrudController)
+    private function librarySortingProject(): array
+    {
+        return [
+            'slug' => 'gallery-library-sorting',
+            'label' => 'label.guided_project_gallery_library_sorting',
+            'description' => 'description.guided_project_gallery_library_sorting',
+            'translation_domain' => 'gallery',
+            'order' => 5065,
+            'role' => $this->roleNeeded(),
+            'steps' => [
+                [
+                    'label' => 'label.guided_step_gallery_library_sorting_open',
+                    'description' => 'description.guided_step_gallery_library_sorting_open',
+                    'narration' => 'narration.guided_step_gallery_library_sorting_open',
+                    'url' => $this->mediaIndexUrl(),
+                ],
+                [
+                    'label' => 'label.guided_step_gallery_library_sorting_badges',
+                    'description' => 'description.guided_step_gallery_library_sorting_badges',
+                    'narration' => 'narration.guided_step_gallery_library_sorting_badges',
+                    // The first thumbnail of the sheet, which is also what the last step opens
+                    'highlight' => '.management-media-grid__item',
+                ],
+                [
+                    'label' => 'label.guided_step_gallery_library_sorting_filters',
+                    'description' => 'description.guided_step_gallery_library_sorting_filters',
+                    'narration' => 'narration.guided_step_gallery_library_sorting_filters',
+                    'highlight' => '.action-filters-button',
+                ],
+                [
+                    'label' => 'label.guided_step_gallery_library_sorting_search',
+                    'description' => 'description.guided_step_gallery_library_sorting_search',
+                    'narration' => 'narration.guided_step_gallery_library_sorting_search',
+                    'highlight' => '.form-action-search',
+                ],
+                [
+                    'label' => 'label.guided_step_gallery_library_sorting_done',
+                    'description' => 'description.guided_step_gallery_library_sorting_done',
+                    'narration' => 'narration.guided_step_gallery_library_sorting_done',
+                ],
+            ],
+        ];
+    }
+
     // The only parcours not opening on the galleries: what is for sale is decided on the formats screen, and a photograph is only ticked "printable" once a format exists to sell it in
     private function printSetupProject(): array
     {
@@ -473,10 +520,16 @@ class GalleryGuidedProjectProvider implements GuidedProjectProviderInterface
         return (string) $this->configService->get('site-role-editor');
     }
 
-    // Every project about the galleries opens on the categories, the single sidebar entry of the whole feature (see MenuProvider)
+    // Every project about a gallery opens on the categories, the sidebar entry a gallery is composed from (see MenuProvider)
     private function indexUrl(): string
     {
         return $this->crudIndexUrl(GalleryCategoryCrudController::class);
+    }
+
+    // The contact sheet of the whole library, the one screen reading across the galleries - carrying no category, which is what tells it apart from a gallery's own listing (see GalleryMediaCrudController::index)
+    private function mediaIndexUrl(): string
+    {
+        return $this->crudIndexUrl(GalleryMediaCrudController::class);
     }
 
     // Where the print parcours opens instead: the formats are what a shop writes first, an order screen having nothing to show until something has been sold

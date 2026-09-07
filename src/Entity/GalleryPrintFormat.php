@@ -68,7 +68,7 @@ class GalleryPrintFormat implements \Stringable
     #[ORM\Column(length: 100, nullable: true)]
     private ?string $paper = null;
 
-    // The sentence under that heading - what this paper is for, in the shop's own words. A visitor asked to pay half again for cotton has to be told what the cotton does
+    // The sentence under that heading - what this paper is for, written by the import in the site's language and the shop's to rewrite. A visitor asked to pay half again for cotton has to be told what the cotton does
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $paperDescription = null;
 

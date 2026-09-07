@@ -1,5 +1,20 @@
 [
     {
+        "date": "2026-09-07",
+        "description": [
+            {
+                "en": "A new \"Medias\" entry gathers every photograph of the site in one sheet, all galleries at once - the screen a sorting pass is made from. Under each thumbnail you read what you would otherwise have to open it for: whether it is masked, whether it is on sale and in how many copies, and how many visitors liked it. The filters above single out one gallery, what is on sale, what is masked, and the search looks through the titles, the captions and the credits. Those same badges now appear on each gallery's own grid",
+                "fr": "Une nouvelle entrée « Médias » réunit toutes les photographies du site sur une seule planche, galeries confondues — l'écran depuis lequel se fait un tri. Sous chaque vignette se lit ce qu'il fallait sinon l'ouvrir pour savoir : si elle est masquée, si elle est en vente et en combien d'exemplaires, et combien de visiteurs l'ont aimée. Les filtres au-dessus isolent une galerie, ce qui est en vente, ce qui est masqué, et la recherche parcourt les titres, les légendes et les crédits. Ces mêmes pastilles apparaissent désormais sur la grille de chaque galerie",
+                "es": "Una nueva entrada «Medias» reúne todas las fotografías del sitio en una sola hoja, todas las galerías a la vez — la pantalla desde la que se hace una selección. Bajo cada miniatura se lee lo que de otro modo habría que abrirla para saber: si está oculta, si está en venta y en cuántos ejemplares, y cuántos visitantes le dieron me gusta. Los filtros de arriba aíslan una galería, lo que está en venta, lo que está oculto, y la búsqueda recorre los títulos, los pies de foto y los créditos. Esas mismas etiquetas aparecen ahora en la cuadrícula de cada galería"
+            },
+            {
+                "en": "The print catalogue imported from Prodigi gains the 45 × 45 cm square on every paper, and each size now comes with the resolution it is looked at from: 300 dpi in the hand, 200 on a wall - so a 4000-pixel square is offered at 40 and 45 cm instead of stopping at 30. The sentences describing the papers arrive in the site's language. Run the import again: it adds the new sizes and rewrites the descriptions and resolutions still as they were shipped, without touching what you wrote or set yourself",
+                "fr": "Le catalogue de tirages importé de Prodigi gagne le carré 45 × 45 cm sur chaque papier, et chaque taille vient désormais avec la résolution à laquelle on la regarde : 300 dpi en main, 200 au mur — un carré de 4000 pixels est ainsi proposé en 40 et 45 cm au lieu de s'arrêter à 30. Les phrases décrivant les papiers arrivent dans la langue du site. Relancez l'import : il ajoute les nouvelles tailles et réécrit les descriptions et résolutions restées telles que livrées, sans toucher à ce que vous avez écrit ou réglé vous-même",
+                "es": "El catálogo de copias importado de Prodigi gana el cuadrado de 45 × 45 cm en cada papel, y cada tamaño llega ahora con la resolución a la que se mira: 300 dpi en la mano, 200 en la pared — así un cuadrado de 4000 píxeles se ofrece en 40 y 45 cm en lugar de detenerse en 30. Las frases que describen los papeles llegan en el idioma del sitio. Vuelva a lanzar la importación: añade los nuevos tamaños y reescribe las descripciones y resoluciones que seguían tal como se entregaron, sin tocar lo que usted escribió o ajustó"
+            }
+        ]
+    },
+    {
         "date": "2026-09-03",
         "description": [
             {

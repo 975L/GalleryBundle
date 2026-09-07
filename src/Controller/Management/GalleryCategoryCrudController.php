@@ -27,6 +27,7 @@ use c975L\GalleryBundle\Service\GalleryCustomizationRegistry;
 use c975L\GalleryBundle\Service\GalleryLatestProvider;
 use c975L\GalleryBundle\Service\GalleryMediaArchiver;
 use c975L\GalleryBundle\Service\GalleryMediaFactory;
+use c975L\GalleryBundle\Service\GalleryMediaLikeCounter;
 use c975L\GalleryBundle\Service\GalleryMediaMover;
 use c975L\GalleryBundle\Service\GalleryUrlRedirector;
 use c975L\GalleryBundle\Service\UploadLimits;
@@ -83,8 +84,7 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 use function Symfony\Component\Translation\t;
 
-// The single EasyAdmin menu entry for the whole gallery feature (see this bundle's own MenuProvider), mounted on /gallery rather than the /gallery-category the class name would give: a site's galleries are its categories, so this screen is the gallery
-// It lists the categories alone, never the medias - a category's medias are shown on its edit screen, each opening the media edit form (see GalleryMediaCrudController, which has no listing of its own)
+// The gallery feature's first EasyAdmin menu entry (see this bundle's own MenuProvider), the library's contact sheet sitting next to it, mounted on /gallery rather than the /gallery-category the class name would give: a site's galleries are its categories, so this screen is the gallery, and it lists the categories alone, a category's medias being shown on its edit screen (see GalleryMediaCrudController, whose own index reads the library across every gallery instead)
 #[AdminRoute(path: '/gallery', name: 'gallery')]
 class GalleryCategoryCrudController extends AbstractCrudController
 {
@@ -124,6 +124,7 @@ class GalleryCategoryCrudController extends AbstractCrudController
         private readonly GalleryAutomaticProvider $automaticProvider,
         private readonly GalleryLatestProvider $latestProvider,
         private readonly GalleryCustomizationRegistry $customizationRegistry,
+        private readonly GalleryMediaLikeCounter $likeCounter,
     ) {
     }
 
@@ -176,9 +177,7 @@ class GalleryCategoryCrudController extends AbstractCrudController
             ->linkToCrudAction('exportSelection'));
         $actions->setPermission('exportSelection', $this->roleNeeded());
 
-        // Medias are only ever added from the category they belong to (NEW is disabled on GalleryMediaCrudController, which has no upload button of its own): the category is what this link carries, and the upload screen shows it without letting it be changed
-        // Icon-only among the index's row buttons. The edit screen has no action of its own: up in the toolbar the button sits above the blocks collection, whose own "add" button is then the one clicked to add a media - it is rendered down with the medias instead (see configureResponseParameters and gallery_category_edit.html.twig)
-        // Never on the automatic gallery: it displays medias it doesn't hold, so an upload made from it would land in a category that shows none of its own
+        // Medias are only ever added from the category they belong to (NEW is disabled on GalleryMediaCrudController, whose contact sheet reads the library and never feeds it), so this link carries the category and the upload screen shows it unchangeable; icon-only among the index's row buttons and rendered down with the medias on the edit screen rather than in the toolbar, where it would sit above the blocks collection (see configureResponseParameters and gallery_category_edit.html.twig); never on the automatic gallery, which displays medias it doesn't hold
         $uploadMediasAction = Action::new('uploadMedias', t('label.gallery_upload_medias', [], 'gallery'), 'fas fa-upload')
             ->linkToUrl(fn (GalleryCategory $category): string => $this->uploadMediasUrl($category))
             ->displayIf(static fn (GalleryCategory $category): bool => !$category->isAutomatic());
@@ -811,6 +810,9 @@ class GalleryCategoryCrudController extends AbstractCrudController
             }
 
             $responseParameters->set('medias', $medias);
+
+            // The likes drawn under each thumbnail, counted once for the whole grid by the very service the library's contact sheet asks (see GalleryMediaLikeCounter and GalleryMediaCrudController) - a photograph says the same thing on both screens
+            $responseParameters->set('media_likes', $this->likeCounter->count($medias));
 
             // The galleries the medias toolbar offers to move a selection into - the same list the media's own edit form offers (see moveTarget), minus the one being looked at, which is where they already are
             $responseParameters->set('move_targets', array_values(array_filter(

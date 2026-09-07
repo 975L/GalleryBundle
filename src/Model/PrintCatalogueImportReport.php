@@ -24,6 +24,8 @@ readonly class PrintCatalogueImportReport
         public int $alreadyPresent,
         public array $unknownSkus,
         public bool $unchecked,
+        // Rows already there whose shipped sentence or resolution was brought up to date - counted apart from the imports, an admin reading "nothing to import" while forty rows changed being told a lie
+        public int $refreshed = 0,
     ) {
     }
 }

@@ -106,6 +106,10 @@
                 <source>description.guided_project_gallery_latest</source>
                 <target>One gallery holds no photo of its own: it gathers what the others have just received.</target>
             </trans-unit>
+            <trans-unit id="pRXGL2n">
+                <source>description.guided_project_gallery_library_sorting</source>
+                <target>Go through every photograph of the site from one screen: the ones on sale, the masked ones, the ones visitors liked.</target>
+            </trans-unit>
             <trans-unit id="TPdR3Kw">
                 <source>description.guided_project_gallery_media_detail</source>
                 <target>Caption, credits, and the video a media can open on.</target>
@@ -173,6 +177,26 @@
             <trans-unit id="i4vmOwe">
                 <source>description.guided_step_gallery_latest_selection</source>
                 <target>Credits, rights, download and move to trash act on the checked photos where they actually sit - which is how a whole day's upload is credited in one go.</target>
+            </trans-unit>
+            <trans-unit id="tEl1wBS">
+                <source>description.guided_step_gallery_library_sorting_badges</source>
+                <target>Under each thumbnail: masked, on sale, the edition size, and how many visitors liked it. Enough to sort without opening a single photograph.</target>
+            </trans-unit>
+            <trans-unit id="D4PA3R6">
+                <source>description.guided_step_gallery_library_sorting_done</source>
+                <target>A thumbnail opens the photograph to retouch it. The order of the photos and the selection stay on the screen of the gallery holding them.</target>
+            </trans-unit>
+            <trans-unit id="nTDHGkf">
+                <source>description.guided_step_gallery_library_sorting_filters</source>
+                <target>By gallery, by sale, by masking, by rights reserved. This is how what is offered to the buyers is read at a glance.</target>
+            </trans-unit>
+            <trans-unit id="GAKvqHF">
+                <source>description.guided_step_gallery_library_sorting_open</source>
+                <target>In the left-hand column, under "Gallery". Every photograph of the site is gathered there, all galleries at once.</target>
+            </trans-unit>
+            <trans-unit id="KuytYBP">
+                <source>description.guided_step_gallery_library_sorting_search</source>
+                <target>The search runs over the titles, the captions and the credits - not the filenames, which nobody types looking for a photograph.</target>
             </trans-unit>
             <trans-unit id="iqexrio">
                 <source>description.guided_step_gallery_media_detail_category</source>
@@ -394,6 +418,10 @@
                 <source>flash.print_catalogue_nothing_to_import</source>
                 <target>Nothing to import: your catalogue already holds every format the lab proposes.</target>
             </trans-unit>
+            <trans-unit id="VTeVq8A">
+                <source>flash.print_catalogue_refreshed</source>
+                <target>%count% format(s) already there brought up to date: the paper's description or its resolution, as the catalogue now ships them.</target>
+            </trans-unit>
             <trans-unit id="6OJbprz">
                 <source>flash.print_catalogue_unchecked</source>
                 <target>The references could not be checked with the lab (no API key, or the service could not be reached). Check them before publishing.</target>
@@ -614,6 +642,10 @@
                 <source>label.gallery_media_description_help</source>
                 <target>The caption read under the media on its page — leave it empty when there is nothing to say</target>
             </trans-unit>
+            <trans-unit id="OAtTKpM">
+                <source>label.gallery_media_edition_of</source>
+                <target>Edition of %count%</target>
+            </trans-unit>
             <trans-unit id="9M0_OVl">
                 <source>label.gallery_media_edition_size</source>
                 <target>Edition size</target>
@@ -621,6 +653,14 @@
             <trans-unit id="yrrXk1E">
                 <source>label.gallery_media_hidden</source>
                 <target>Hidden</target>
+            </trans-unit>
+            <trans-unit id="qnXVBQB">
+                <source>label.gallery_media_likes</source>
+                <target>%count% likes</target>
+            </trans-unit>
+            <trans-unit id="biQ727w">
+                <source>label.gallery_media_on_sale</source>
+                <target>On sale</target>
             </trans-unit>
             <trans-unit id="PIdz2k_">
                 <source>label.gallery_media_printable</source>
@@ -934,6 +974,10 @@
                 <source>label.guided_project_gallery_latest</source>
                 <target>The gallery of the latest additions</target>
             </trans-unit>
+            <trans-unit id="gHWL00H">
+                <source>label.guided_project_gallery_library_sorting</source>
+                <target>Sort the whole library</target>
+            </trans-unit>
             <trans-unit id="vUEEKrm">
                 <source>label.guided_project_gallery_media_detail</source>
                 <target>Retouch a media</target>
@@ -1005,6 +1049,26 @@
             <trans-unit id="f.iiB8l">
                 <source>label.guided_step_gallery_latest_selection</source>
                 <target>Work on an upload session</target>
+            </trans-unit>
+            <trans-unit id="wSrbBiE">
+                <source>label.guided_step_gallery_library_sorting_badges</source>
+                <target>Read the badges</target>
+            </trans-unit>
+            <trans-unit id="QGmWhXe">
+                <source>label.guided_step_gallery_library_sorting_done</source>
+                <target>That is all</target>
+            </trans-unit>
+            <trans-unit id="fgBbByj">
+                <source>label.guided_step_gallery_library_sorting_filters</source>
+                <target>Filter</target>
+            </trans-unit>
+            <trans-unit id="4hVNcWZ">
+                <source>label.guided_step_gallery_library_sorting_open</source>
+                <target>Open "Medias"</target>
+            </trans-unit>
+            <trans-unit id="m4RzVfu">
+                <source>label.guided_step_gallery_library_sorting_search</source>
+                <target>Search a subject</target>
             </trans-unit>
             <trans-unit id="XHZrQIt">
                 <source>label.guided_step_gallery_media_detail_category</source>
@@ -1197,6 +1261,14 @@
             <trans-unit id="p9AVN3s">
                 <source>label.info_gallery_media</source>
                 <target>Change this media's file, caption, credits, type or position, or move it to another category.</target>
+            </trans-unit>
+            <trans-unit id="b1rhBEw">
+                <source>label.info_gallery_medias</source>
+                <target>Every photograph on the site, all galleries at once: what is on sale, what is masked, what visitors liked. Filter by gallery, by sale or by masking, and click a thumbnail to open it.</target>
+            </trans-unit>
+            <trans-unit id="ewKlD_G">
+                <source>label.info_gallery_medias_empty</source>
+                <target>No photograph matches these filters.</target>
             </trans-unit>
             <trans-unit id="8u5Nm4A">
                 <source>label.info_gallery_watermark</source>
@@ -1413,6 +1485,22 @@
             <trans-unit id="ZIbme0L">
                 <source>label.title</source>
                 <target>Title</target>
+            </trans-unit>
+            <trans-unit id="djuVZpi">
+                <source>print_paper.german_etching</source>
+                <target>A velvety-textured 100% cotton rag, whose grain is what black and white, architecture and matter are printed on. The signed print.</target>
+            </trans-unit>
+            <trans-unit id="cEj6yZ5">
+                <source>print_paper.lustre</source>
+                <target>A satin photographic paper, its slight pearl holding saturated colour - the everyday print, and the one a photograph of a vehicle, a flower or a graffiti is best served by.</target>
+            </trans-unit>
+            <trans-unit id="cGMKkg8">
+                <source>print_paper.matte</source>
+                <target>A matte art paper with no shine at all, so nothing of the image is lost to a reflection - the plain frame-ready print.</target>
+            </trans-unit>
+            <trans-unit id="DibaQIb">
+                <source>print_paper.photo_rag</source>
+                <target>A smooth 100% cotton rag, the safest of the fine art papers: it flatters fine detail and betrays no subject. The one to take when hesitating.</target>
             </trans-unit>
         </body>
     </file>

@@ -1,0 +1,39 @@
+{% extends '@EasyAdmin/crud/index.html.twig' %}
+
+{# The contact sheet of the whole library: every gallery's photographs in one grid, which is what a triage pass reads where a category's own grid only answers "what is in this gallery" - drawn as thumbnails rather than EasyAdmin's table, with only "main" overridden so the search box, the filters and the paginator stay where they are, the same move UiBundle's media library makes (see @c975LUi/management/media_index.html.twig) #}
+{% block main %}
+    <p>{{ ('label.info_gallery_medias'|trans({}, 'gallery')) }}</p>
+
+    <div class="management-media-grid">
+        {% for entity in entities %}
+            {% if entity.isAccessible %}
+                {% set media = entity.instance %}
+                {# The very tile a category's edit screen draws, so a photograph says the same thing on both screens (see _gallery_media_tile.html.twig) - nothing arranged or made a cover here, the position of a photograph belonging to the gallery holding it, and nothing selected either, this screen carrying no form for a selection to post into #}
+                {{ include('@c975LGallery/management/_gallery_media_tile.html.twig', {
+                    media: media,
+                    edit_url: entity.defaultActionUrl,
+                    sortable: false,
+                    owner: true,
+                    cover_media_id: null,
+                    selectable: false,
+                    likes: media_likes[media.id]|default(0)
+                }, with_context: false) }}
+            {% endif %}
+        {% endfor %}
+    </div>
+
+    {% if entities|length > 0 %}
+        <div class="content-panel-footer without-padding without-border">
+            {{ include(ea.templatePath('crud/paginator'), {render_detailed_pagination: true}) }}
+        </div>
+    {% else %}
+        <p>{{ ('label.info_gallery_medias_empty'|trans({}, 'gallery')) }}</p>
+    {% endif %}
+
+    {{ include('@EasyAdmin/crud/includes/_action_confirmation_modal.html.twig', with_context: false) }}
+
+    {# The "Filters" button is drawn by the page_actions block this template leaves alone, but the modal it opens lives in main, so overriding main without it leaves the button pointing at nothing - "filters|length" rather than EasyAdmin's own "has_filters", which is set inside the very block replaced here #}
+    {% if filters|length > 0 %}
+        {{ include('@EasyAdmin/crud/includes/_filters_modal.html.twig') }}
+    {% endif %}
+{% endblock main %}

@@ -13,10 +13,11 @@ namespace c975L\GalleryBundle\Management;
 use c975L\ConfigBundle\Management\MenuProviderInterface;
 use c975L\ConfigBundle\Service\ConfigServiceInterface;
 use c975L\GalleryBundle\Controller\Management\GalleryCategoryCrudController;
+use c975L\GalleryBundle\Controller\Management\GalleryMediaCrudController;
 use c975L\GalleryBundle\Controller\Management\GalleryPrintFormatCrudController;
 use c975L\GalleryBundle\Controller\Management\GalleryPrintOrderCrudController;
 
-// One entry for the whole feature: it opens the categories, which are the site's galleries, each holding its own medias and videos (see GalleryCategoryCrudController) - the media CRUD edits one media at a time and has nothing to list on its own
+// Two entries: the galleries, which is where a gallery is composed and its own medias are arranged (see GalleryCategoryCrudController), and the whole library read across them all - the contact sheet a triage pass works from, which no single gallery's screen can be (see GalleryMediaCrudController)
 class MenuProvider implements MenuProviderInterface
 {
     public function __construct(
@@ -44,6 +45,17 @@ class MenuProvider implements MenuProviderInterface
                 // The very text the categories screen opens on (see gallery_category_index.html.twig), reused as-is for the onboarding tour rather than written again for it
                 'description' => 'label.info_gallery_category',
                 // The bar GalleryCategoryCrudController sets on its own index (see its roleNeeded()) - a gallery is content like any other
+                'role' => $this->configService->get('site-role-editor'),
+            ],
+            // Every gallery's photographs in one grid, filtered and searched - what is on sale, what is masked, what visitors liked, read across the whole library rather than one gallery at a time
+            'gallery_media' => [
+                'controller' => GalleryMediaCrudController::class,
+                'label' => 'label.gallery_medias',
+                'narration' => 'narration.gallery_medias',
+                'translation_domain' => 'gallery',
+                'icon' => 'fas fa-photo-film',
+                'description' => 'label.info_gallery_medias',
+                // The same bar the galleries entry sits behind, both screens stating it themselves (see GalleryMediaCrudController::roleNeeded)
                 'role' => $this->configService->get('site-role-editor'),
             ],
         ];

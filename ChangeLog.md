@@ -1,5 +1,26 @@
 # ChangeLog
 
+## v1.15.0
+
+The whole library reads as one contact sheet
+
+- **`GalleryMediaCrudController` lists every gallery's medias on its index**, which used to redirect (07/09/2026)
+- The redirect stays for a request carrying a `category`, so a gallery's own screens come back to it (07/09/2026)
+- **New `management/gallery_media_index.html.twig`**, drawing that index as a grid of thumbnails (07/09/2026)
+- Filters on the gallery, the sale, the masking and the rights, search on the title, the caption and the credits (07/09/2026)
+- The trash is left out, a media's own and its gallery's alike (07/09/2026)
+- **Each thumbnail now carries what it is worth reading without opening it**: masked, on sale, edition size, likes (07/09/2026)
+- The same badges on a gallery's own grid, both screens drawing the same tile (07/09/2026)
+- **New `Service\GalleryMediaLikeCounter`**, counting a whole grid's likes in one read and none at all where `gallery-rating` is off (07/09/2026)
+- **New `gallery_media` menu entry**, next to the galleries one (07/09/2026)
+- The contact sheet states `site-role-editor` itself, as the categories screen does (07/09/2026)
+- **New `gallery-library-sorting` guided project**, walking that sheet (07/09/2026)
+- **`ProdigiCatalogue` adds the 45 × 45 cm square on the four papers** (07/09/2026)
+- **New `PrintCatalogueEntry::$dpi`**, set by the size in the Prodigi range (07/09/2026)
+- **The paper descriptions ship as `print_paper.*` translation ids**, en, fr and es (07/09/2026)
+- **`PrintCatalogueImporter` refreshes the rows still as shipped**, counted in `PrintCatalogueImportReport::$refreshed` (07/09/2026)
+- `PrintCatalogueEntry::toFormat()` takes the resolved description (07/09/2026)
+
 ## v1.14.1
 
 A shared config drawer is no longer this bundle's to label

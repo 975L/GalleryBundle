@@ -6,6 +6,10 @@
                 <source>narration.gallery</source>
                 <target>« Galerie » tient les galeries du site et leurs photos. Mettre une galerie à la corbeille ne fait que la retirer du site : le bouton au-dessus de la liste montre ce qui y attend, et l'y reprend.</target>
             </trans-unit>
+            <trans-unit id="aZ.cWRr">
+                <source>narration.gallery_medias</source>
+                <target>Dans la colonne de gauche, ouvrez « Médias » : toutes les photographies du site y sont réunies, galeries confondues. Les filtres au-dessus de la planche isolent celles qui sont en vente, celles qui sont masquées, celles d’une galerie donnée.</target>
+            </trans-unit>
             <trans-unit id="BfIWVkl">
                 <source>narration.guided_step_gallery_creation_done</source>
                 <target>Votre galerie est en ligne. Elle n'a rien à publier : elle est visible dès qu'elle existe, et le bouton « voir sur le site » l'ouvre.</target>
@@ -53,6 +57,26 @@
             <trans-unit id="psakJ1d">
                 <source>narration.guided_step_gallery_latest_selection</source>
                 <target>Travaillez sur une séance d'envoi entière : les crédits, les droits, le téléchargement et la mise à la corbeille agissent sur les photos cochées là où elles se trouvent. C'est ainsi qu'une journée entière d'envois se crédite en une fois.</target>
+            </trans-unit>
+            <trans-unit id="ldd2Eo5">
+                <source>narration.guided_step_gallery_library_sorting_badges</source>
+                <target>Regardez sous une vignette : les pastilles disent si la photographie est masquée, si elle est en vente, en combien d'exemplaires, et combien de visiteurs l'ont aimée. Vous triez sans en ouvrir une seule.</target>
+            </trans-unit>
+            <trans-unit id="Li2fjI9">
+                <source>narration.guided_step_gallery_library_sorting_done</source>
+                <target>Voilà. Une vignette ouvre la photographie pour la retoucher. Ranger les photos dans l'ordre et agir sur une sélection restent, eux, sur l'écran de la galerie qui les détient.</target>
+            </trans-unit>
+            <trans-unit id="5edCz_N">
+                <source>narration.guided_step_gallery_library_sorting_filters</source>
+                <target>Le bouton « Filtres », au-dessus de la planche, ouvre les quatre questions : quelle galerie, en vente ou non, masquée ou non, droits réservés ou non.</target>
+            </trans-unit>
+            <trans-unit id="wz38pX1">
+                <source>narration.guided_step_gallery_library_sorting_open</source>
+                <target>Le panneau vous emmène sur « Médias », dans la colonne de gauche, sous « Galerie ». Toutes les photographies du site y sont réunies, quelle que soit la galerie qui les détient.</target>
+            </trans-unit>
+            <trans-unit id="LHweaSJ">
+                <source>narration.guided_step_gallery_library_sorting_search</source>
+                <target>Le champ de recherche, en haut, parcourt les titres, les légendes et les crédits. Pas les noms de fichiers : personne ne les tape pour retrouver une photo.</target>
             </trans-unit>
             <trans-unit id="opbMRuM">
                 <source>narration.guided_step_gallery_media_detail_category</source>

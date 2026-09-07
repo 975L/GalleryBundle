@@ -84,7 +84,7 @@ class GalleryPrintFormatCrudController extends AbstractCrudController
         ;
     }
 
-    // Writes the lines the lab confirms it prints, and says what it did - run again after a bundle update, it adds what the catalogue has gained and touches nothing else
+    // Writes the lines the lab confirms it prints, and says what it did - run again after a bundle update, it adds what the catalogue has gained and brings the rows still as shipped up to date, nothing else
     #[AdminRoute('/import-catalogue')]
     public function importPrintCatalogue(): RedirectResponse
     {
@@ -92,8 +92,12 @@ class GalleryPrintFormatCrudController extends AbstractCrudController
 
         if ($report->imported > 0) {
             $this->addFlash('success', $this->translator->trans('flash.print_catalogue_imported', ['%count%' => $report->imported], 'gallery'));
-        } else {
+        } elseif (0 === $report->refreshed) {
             $this->addFlash('info', $this->translator->trans('flash.print_catalogue_nothing_to_import', [], 'gallery'));
+        }
+
+        if ($report->refreshed > 0) {
+            $this->addFlash('success', $this->translator->trans('flash.print_catalogue_refreshed', ['%count%' => $report->refreshed], 'gallery'));
         }
 
         // Said out loud rather than left to be discovered: the rows were written on references nobody confirmed, and the first order is where an unknown one would surface

@@ -12,6 +12,7 @@ namespace c975L\GalleryBundle\Tests\Management;
 
 use c975L\ConfigBundle\Service\ConfigServiceInterface;
 use c975L\GalleryBundle\Controller\Management\GalleryCategoryCrudController;
+use c975L\GalleryBundle\Controller\Management\GalleryMediaCrudController;
 use c975L\GalleryBundle\Management\MenuProvider;
 use PHPUnit\Framework\TestCase;
 
@@ -42,17 +43,26 @@ class MenuProviderTest extends TestCase
         $this->assertSame(['label' => 'label.management', 'translation_domain' => 'site'], $provider->getMenuSection());
     }
 
-    // One entry for the whole feature, opening the categories, which are the site's galleries - the media CRUD edits one media at a time and has nothing to list on its own
-    public function testGetMenusReturnsOnlyTheCategoryCrudEntry(): void
+    // Two entries: the galleries, where a gallery is composed and its own medias arranged, and the whole library read across them all
+    public function testGetMenusReturnsTheCategoryAndTheLibraryEntries(): void
     {
         $provider = $this->createProvider();
 
         $menus = $provider->getMenus();
 
-        $this->assertCount(1, $menus);
+        $this->assertCount(2, $menus);
         $this->assertSame(GalleryCategoryCrudController::class, $menus['gallery']['controller']);
         $this->assertSame('label.gallery', $menus['gallery']['label']);
         $this->assertSame('gallery', $menus['gallery']['translation_domain']);
+        $this->assertSame(GalleryMediaCrudController::class, $menus['gallery_media']['controller']);
+        $this->assertSame('label.gallery_medias', $menus['gallery_media']['label']);
+        $this->assertSame('gallery', $menus['gallery_media']['translation_domain']);
+    }
+
+    // The contact sheet is content like the galleries are, and its own screen states the same bar (see GalleryMediaCrudController::roleNeeded)
+    public function testTheLibraryEntryNamesTheEditorBarToo(): void
+    {
+        $this->assertSame('ROLE_EDITOR', $this->createProvider()->getMenus()['gallery_media']['role']);
     }
 
     // Without it the entry's onboarding step shows its label and nothing else - the key is the categories screen's own opening text, not one written for the tour

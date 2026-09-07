@@ -206,6 +206,31 @@ where it really sits, cover included. What the owning category alone carries is 
 button, no drag to reorder, no cover radio, no trash view. The media CRUD's category picker leaves out
 the automatic and the trashed galleries.
 
+## The library's contact sheet
+
+`GalleryMediaCrudController::index()` answers two screens, told apart by one query parameter:
+
+- **with `category`** — every media screen opened from a gallery carries it along — it redirects to that
+  gallery's edit screen, where its medias are listed. Unchanged.
+- **without it** — the `gallery_media` sidebar entry, the files health check — it renders **the contact
+  sheet of the whole library**: every gallery's photographs in one grid, `crud/index` overridden with
+  `templates/management/gallery_media_index.html.twig`, the same tile a category's own grid draws.
+
+`createIndexQueryBuilder()` leaves out the trash on both sides — the media's own flag and its gallery's,
+trashing a category flagging the category alone. `configureFilters()` offers the gallery (automatic and
+trashed ones excluded, as the category picker does), `printable`, `hidden` and `rightsReserved`; the search
+is pinned to `title`, `description` and `credits`.
+
+Overriding `crud/index` replaces EasyAdmin's `main` block, and the filters modal is rendered inside it while
+the button opening it comes from `page_actions`: `gallery_media_index.html.twig` therefore includes
+`@EasyAdmin/crud/includes/_filters_modal.html.twig` itself, under `filters|length > 0`, or the button throws.
+
+**The tile is the single place a thumbnail's badges are drawn** (`_gallery_media_tile.html.twig`): masked,
+on sale, edition size, likes. Both screens hand it `likes`, counted for the whole grid by
+`Service\GalleryMediaLikeCounter` — one `RatingRepository::getAggregates()`, and none at all where
+`gallery-rating` is off. `selectable` is what turns the selection box on: the category screen has a form
+for it to post into, the contact sheet has none.
+
 ## Showing a gallery outside its own routes
 
 Two block kinds are contributed to UiBundle (declared in `config/services.yaml`), so a gallery goes on
@@ -395,9 +420,10 @@ A `theme-` slug is compiled into a `--c975l-color-gallery-*` custom property by 
 expression that follows a light or a dark gallery rather than a fixed color.
 
 The gallery back office sits behind ConfigBundle's `site-role-editor` setting, except the two permanent
-deletions, held at `site-role-admin` (see *Deleting takes two steps*). The sidebar entry states that same
-bar (`MenuProvider`, `'role'` key), so an editor reaches the galleries instead of seeing no entry at all —
-read by `c975l/core-bundle` `^1.14.0` and up, earlier ones giving every entry the admin bar.
+deletions, held at `site-role-admin` (see *Deleting takes two steps*). Both sidebar entries state that same
+bar (`MenuProvider`, `'role'` key) and so do the screens themselves (`setPermission(Action::INDEX, ...)` on
+each CRUD), so an editor reaches them instead of seeing no entry at all — read by `c975l/core-bundle`
+`^1.14.0` and up, earlier ones giving every entry the admin bar.
 
 ## Selling prints
 
@@ -414,8 +440,13 @@ consignment. `GalleryPrintCopy` is **the register**: one row per print.
 **The catalogue is imported rather than typed** where the lab publishes its range: a driver answering
 `PrintCatalogueProviderInterface` (`ProdigiCatalogue` is the shipped one) hands `PrintCatalogueImporter`
 the sizes, papers and skus, and the **Import the catalogue** action of `GalleryPrintFormatCrudController`
-writes them unpublished and unpriced — the prices are the shop's, never the lab's. The action is only
-drawn where a driver answers, a shop printing by hand writing its formats itself.
+writes them unpublished and unpriced — the prices are the shop's, never the lab's. Each entry carries its
+dpi by its size (300 up to 30 cm on the long edge, 240 up to 40, 200 beyond) and its paper's description as
+a `print_paper.*` translation id, written in the site's default locale at import. Run again, the importer
+adds what the range gained and refreshes only what is still as shipped — a description still in the
+earlier English, a dpi still at the default — never a sentence or a resolution the admin set
+(`PrintCatalogueImportReport::$refreshed`). The action is only drawn where a driver answers, a shop
+printing by hand writing its formats itself.
 
 `GalleryMedia` carries `printable` (on offer), `hidden` (kept out of every public page without being
 deleted, filtered in the repository and 404 in the controller) and `editionSize` (null for an open
@@ -565,6 +596,9 @@ publishes no graph for a media with neither a file to name nor a player to frame
   gallery wants — the first stays a real column, the second belongs to the bundle (a caption did, hence
   `GalleryMedia::$description`).
 - **Do not query a media by slug alone** — a slug is unique only within its category.
+- **Do not override EasyAdmin's `main` block without carrying its modals over.** A CRUD declaring filters
+  keeps its "Filters" button from `page_actions` while the modal it targets lives in `main`; drop it and the
+  button throws on the first click.
 - **Do not raise or lower an announced edition's size.** `settleEdition()` refuses it: the rows are
   already written and a certificate already says "3 / 10". Open a new edition instead.
 - **Do not read a photograph, a format or the site's name when drawing a certificate.** Everything the
@@ -585,6 +619,10 @@ publishes no graph for a media with neither a file to name nor a player to frame
 - **Do not have a fixture provider empty a table** — a demo site keeps its own content in those very tables.
 - **Do not list categories or medias with `findAll()` / `findBy()`.** Those see the trash; use
   `findAllOrdered()` and `GalleryMediaRepository::findByCategory()`, which do not.
+- **Do not count a grid's likes one thumbnail at a time.** `GalleryMediaLikeCounter::count()` reads them
+  for the whole page in one query, and reads nothing where the site shows no heart.
+- **Do not add a listing action to the contact sheet.** A photograph's position and the actions on a
+  selection belong to the gallery holding it, whose own screen carries the form they post into.
 - **Do not remove a media row without dropping its ratings.** Nothing cascades them; go through
   `RatingRepository::deleteForOwners('gallery_media', $ids)` after the flush (see *Deleting takes two steps*).
 - **Do not call `remove()` on a category or a media**, and do not write a soft-delete flag of your own.

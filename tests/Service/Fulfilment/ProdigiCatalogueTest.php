@@ -72,6 +72,40 @@ class ProdigiCatalogueTest extends TestCase
         }
     }
 
+    // The sentence is shipped as an id and written in the customer's language: every id has to exist in every locale, and fit the column once rendered
+    public function testEveryPaperIsDescribedInEveryLocaleWithinTheColumn(): void
+    {
+        $ids = array_unique(array_map(static fn (PrintCatalogueEntry $entry): string => $entry->paperDescription, $this->catalogue()->getEntries()));
+
+        foreach (['en', 'fr', 'es'] as $locale) {
+            $sentences = [];
+
+            foreach (simplexml_load_file(\dirname(__DIR__, 3) . '/translations/gallery.' . $locale . '.xlf')->file->body->{'trans-unit'} as $unit) {
+                $sentences[(string) $unit->source] = (string) $unit->target;
+            }
+
+            foreach ($ids as $id) {
+                $this->assertArrayHasKey($id, $sentences, $locale);
+                $this->assertLessThanOrEqual(255, \strlen($sentences[$id]), $id . ' ' . $locale);
+            }
+        }
+    }
+
+    // A 4000-pixel square prints at 40 cm and hangs at 45 without showing a pixel, and asking 300 dpi of it would refuse both: the resolution follows the size
+    public function testTheResolutionFollowsTheSize(): void
+    {
+        $dpi = [];
+
+        foreach ($this->catalogue()->getEntries() as $entry) {
+            $dpi[$entry->slug] = $entry->dpi;
+        }
+
+        $this->assertSame(300, $dpi['photo-rag-30x30']);
+        $this->assertSame(240, $dpi['photo-rag-40x40']);
+        $this->assertSame(200, $dpi['photo-rag-45x45']);
+        $this->assertSame(200, $dpi['photo-rag-51x91']);
+    }
+
     // One paper is one heading and one sentence: two wordings of the same paper would draw it twice, under two headings a visitor reads as two papers
     public function testAPaperIsDescribedTheSameWayOnEveryLineThatUsesIt(): void
     {

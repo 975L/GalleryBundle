@@ -1,6 +1,4 @@
-{# One tile of the medias grid, included by gallery_category_edit.html.twig - the grid is drawn once per day on the automatic gallery and once for the whole category everywhere else, which is the only reason this markup lives on its own #}
-{# Rendered without the ambient context: everything it reads is passed in, so the two callers hand it exactly what a tile needs and nothing else #}
-{# "sortable" is what turns the drag handle and the cover radio on: a trashed media is neither arranged nor made a cover, and an automatic gallery's medias are arranged in the category that actually holds them #}
+{# One tile of the medias grid, included by gallery_category_edit.html.twig and by gallery_media_index.html.twig so a thumbnail says the same thing on both screens, rendered without the ambient context, everything it reads being passed in: "sortable" turns the drag handle and the cover radio on, a trashed media being neither arranged nor made a cover, where "selectable" turns the selection box on, posting into the toolbar's form a category's edit screen carries and the contact sheet has not, defaulted to true so a site having copied the category screen does not lose its boxes to a key it never heard of #}
 <div class="text-center{{ sortable ? ' ui-sort-grabbable' : '' }}"
     data-media-id="{{ media.id }}"
     {% if sortable %}data-gallery-media-sort-target="item"{% endif %}>
@@ -38,6 +36,27 @@
         <p class="text-center small text-muted mb-1">{{ media.category.title }}</p>
     {% endif %}
 
+    {# What a triage pass reads off a thumbnail without opening it - masked or not, on sale and in how many copies, and how many visitors liked it, the likes being handed in rather than counted here, one query answering for the whole grid (see GalleryMediaLikeCounter, asked once per grid by both callers) and 0 on a site that shows no heart at all #}
+    {% if media.hidden or media.printable or likes|default(0) > 0 %}
+        <p class="text-center small mb-1">
+            {% if media.hidden %}
+                <span class="badge bg-secondary">{{ ('label.gallery_media_hidden'|trans({}, 'gallery')) }}</span>
+            {% endif %}
+            {% if media.printable %}
+                <span class="badge bg-success">{{ ('label.gallery_media_on_sale'|trans({}, 'gallery')) }}</span>
+            {% endif %}
+            {# Only a numbered edition has a size to show, an open one printing without end (see GalleryMedia::$editionSize) #}
+            {% if media.printable and media.editionSize %}
+                <span class="badge bg-light text-dark">{{ ('label.gallery_media_edition_of'|trans({'%count%': media.editionSize}, 'gallery')) }}</span>
+            {% endif %}
+            {% if likes|default(0) > 0 %}
+                <span class="badge bg-light text-dark" aria-label="{{ ('label.gallery_media_likes'|trans({'%count%': likes}, 'gallery')) }}">
+                    <i class="fa fa-heart" aria-hidden="true"></i> {{ likes }}
+                </span>
+            {% endif %}
+        </p>
+    {% endif %}
+
     {# Same labelled bar as the selection one below, the radio group spanning the whole grid: a category is represented by one media, or by a random one #}
     {# The attribute tells the grid's radios apart from the "random" one up in the toolbar, which shares their name - it is the first of them the guided project points at (see GalleryGuidedProjectProvider) #}
     {% if sortable %}
@@ -55,14 +74,16 @@
     {% endif %}
 
     {# A labelled bar rather than a bare box: under a 150px thumbnail a checkbox on its own reads as an artefact of the image, and the whole bar is the click target #}
-    <label class="d-flex align-items-center justify-content-center gap-2 p-1 border rounded ui-check-label">
-        <input type="checkbox"
-            class="form-check-input m-0 ui-check-lg"
-            name="mediaIds[]"
-            value="{{ media.id }}"
-            aria-label="{{ ('label.gallery_select_media'|trans({'%media%': media.title}, 'gallery')) }}"
-            data-gallery-media-selection-target="checkbox"
-            data-action="gallery-media-selection#update">
-        <span class="small">{{ ('action.select'|trans({}, 'gallery')) }}</span>
-    </label>
+    {% if selectable|default(true) %}
+        <label class="d-flex align-items-center justify-content-center gap-2 p-1 border rounded ui-check-label">
+            <input type="checkbox"
+                class="form-check-input m-0 ui-check-lg"
+                name="mediaIds[]"
+                value="{{ media.id }}"
+                aria-label="{{ ('label.gallery_select_media'|trans({'%media%': media.title}, 'gallery')) }}"
+                data-gallery-media-selection-target="checkbox"
+                data-action="gallery-media-selection#update">
+            <span class="small">{{ ('action.select'|trans({}, 'gallery')) }}</span>
+        </label>
+    {% endif %}
 </div>

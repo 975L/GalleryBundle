@@ -106,6 +106,10 @@
                 <source>description.guided_project_gallery_latest</source>
                 <target>Une galerie ne porte aucune photo à elle : elle rassemble ce que les autres viennent de recevoir.</target>
             </trans-unit>
+            <trans-unit id="pRXGL2n">
+                <source>description.guided_project_gallery_library_sorting</source>
+                <target>Passer en revue toutes les photographies du site d'un seul écran : celles qui sont en vente, celles qui sont masquées, celles que les visiteurs ont aimées.</target>
+            </trans-unit>
             <trans-unit id="TPdR3Kw">
                 <source>description.guided_project_gallery_media_detail</source>
                 <target>Légende, crédits, et la vidéo sur laquelle un média peut s'ouvrir.</target>
@@ -173,6 +177,26 @@
             <trans-unit id="i4vmOwe">
                 <source>description.guided_step_gallery_latest_selection</source>
                 <target>Les crédits, les droits, le téléchargement et la mise à la corbeille agissent sur les photos cochées là où elles se trouvent - c'est ainsi qu'une journée entière d'envois se crédite en une fois.</target>
+            </trans-unit>
+            <trans-unit id="tEl1wBS">
+                <source>description.guided_step_gallery_library_sorting_badges</source>
+                <target>Sous chaque vignette : masquée, en vente, la taille de l'édition, et le nombre de visiteurs qui l'ont aimée. De quoi trier sans ouvrir une seule photographie.</target>
+            </trans-unit>
+            <trans-unit id="D4PA3R6">
+                <source>description.guided_step_gallery_library_sorting_done</source>
+                <target>Une vignette ouvre la photographie pour la retoucher. L'ordre des photos et la sélection restent sur l'écran de la galerie qui les détient.</target>
+            </trans-unit>
+            <trans-unit id="nTDHGkf">
+                <source>description.guided_step_gallery_library_sorting_filters</source>
+                <target>Par galerie, par mise en vente, par masquage, par droits réservés. C'est ainsi que l'on voit d'un coup ce qui est proposé aux acheteurs.</target>
+            </trans-unit>
+            <trans-unit id="GAKvqHF">
+                <source>description.guided_step_gallery_library_sorting_open</source>
+                <target>Dans la colonne de gauche, sous « Galerie ». Toutes les photographies du site s'y trouvent réunies, galeries confondues.</target>
+            </trans-unit>
+            <trans-unit id="KuytYBP">
+                <source>description.guided_step_gallery_library_sorting_search</source>
+                <target>La recherche parcourt les titres, les légendes et les crédits — pas les noms de fichiers, que personne ne tape pour retrouver une photo.</target>
             </trans-unit>
             <trans-unit id="iqexrio">
                 <source>description.guided_step_gallery_media_detail_category</source>
@@ -394,6 +418,10 @@
                 <source>flash.print_catalogue_nothing_to_import</source>
                 <target>Rien à importer : votre catalogue contient déjà tous les formats proposés par le laboratoire.</target>
             </trans-unit>
+            <trans-unit id="VTeVq8A">
+                <source>flash.print_catalogue_refreshed</source>
+                <target>%count% format(s) déjà présents mis à jour : description du papier ou résolution, telles que le catalogue les livre désormais.</target>
+            </trans-unit>
             <trans-unit id="6OJbprz">
                 <source>flash.print_catalogue_unchecked</source>
                 <target>Les références n'ont pas pu être vérifiées auprès du laboratoire (clé d'API absente ou service injoignable). Vérifiez-les avant de publier.</target>
@@ -614,6 +642,10 @@
                 <source>label.gallery_media_description_help</source>
                 <target>La légende lue sous le média sur sa page — laissez vide s'il n'y a rien à dire</target>
             </trans-unit>
+            <trans-unit id="OAtTKpM">
+                <source>label.gallery_media_edition_of</source>
+                <target>Édition de %count%</target>
+            </trans-unit>
             <trans-unit id="9M0_OVl">
                 <source>label.gallery_media_edition_size</source>
                 <target>Taille de l'édition</target>
@@ -621,6 +653,14 @@
             <trans-unit id="yrrXk1E">
                 <source>label.gallery_media_hidden</source>
                 <target>Masquée</target>
+            </trans-unit>
+            <trans-unit id="qnXVBQB">
+                <source>label.gallery_media_likes</source>
+                <target>%count% j'aime</target>
+            </trans-unit>
+            <trans-unit id="biQ727w">
+                <source>label.gallery_media_on_sale</source>
+                <target>En vente</target>
             </trans-unit>
             <trans-unit id="PIdz2k_">
                 <source>label.gallery_media_printable</source>
@@ -934,6 +974,10 @@
                 <source>label.guided_project_gallery_latest</source>
                 <target>La galerie des derniers ajouts</target>
             </trans-unit>
+            <trans-unit id="gHWL00H">
+                <source>label.guided_project_gallery_library_sorting</source>
+                <target>Trier toute la photothèque</target>
+            </trans-unit>
             <trans-unit id="vUEEKrm">
                 <source>label.guided_project_gallery_media_detail</source>
                 <target>Retoucher un média</target>
@@ -1005,6 +1049,26 @@
             <trans-unit id="f.iiB8l">
                 <source>label.guided_step_gallery_latest_selection</source>
                 <target>Travaillez sur une séance d'envoi</target>
+            </trans-unit>
+            <trans-unit id="wSrbBiE">
+                <source>label.guided_step_gallery_library_sorting_badges</source>
+                <target>Lisez les pastilles</target>
+            </trans-unit>
+            <trans-unit id="QGmWhXe">
+                <source>label.guided_step_gallery_library_sorting_done</source>
+                <target>C'est tout</target>
+            </trans-unit>
+            <trans-unit id="fgBbByj">
+                <source>label.guided_step_gallery_library_sorting_filters</source>
+                <target>Filtrez</target>
+            </trans-unit>
+            <trans-unit id="4hVNcWZ">
+                <source>label.guided_step_gallery_library_sorting_open</source>
+                <target>Ouvrez « Médias »</target>
+            </trans-unit>
+            <trans-unit id="m4RzVfu">
+                <source>label.guided_step_gallery_library_sorting_search</source>
+                <target>Cherchez un sujet</target>
             </trans-unit>
             <trans-unit id="XHZrQIt">
                 <source>label.guided_step_gallery_media_detail_category</source>
@@ -1197,6 +1261,14 @@
             <trans-unit id="p9AVN3s">
                 <source>label.info_gallery_media</source>
                 <target>Modifiez le fichier, la légende, les crédits, le type ou la position de ce média, ou déplacez-le dans une autre catégorie.</target>
+            </trans-unit>
+            <trans-unit id="b1rhBEw">
+                <source>label.info_gallery_medias</source>
+                <target>Toutes les photographies du site, galeries confondues : ce qui est en vente, ce qui est masqué, ce que les visiteurs ont aimé. Filtrez par galerie, par mise en vente ou par masquage, et cliquez une vignette pour l'ouvrir.</target>
+            </trans-unit>
+            <trans-unit id="ewKlD_G">
+                <source>label.info_gallery_medias_empty</source>
+                <target>Aucune photographie ne correspond à ces filtres.</target>
             </trans-unit>
             <trans-unit id="8u5Nm4A">
                 <source>label.info_gallery_watermark</source>
@@ -1413,6 +1485,22 @@
             <trans-unit id="ZIbme0L">
                 <source>label.title</source>
                 <target>Titre</target>
+            </trans-unit>
+            <trans-unit id="djuVZpi">
+                <source>print_paper.german_etching</source>
+                <target>Un chiffon 100 % coton au grain velouté, sur lequel s'impriment le noir et blanc, l'architecture et la matière. Le tirage signé.</target>
+            </trans-unit>
+            <trans-unit id="cEj6yZ5">
+                <source>print_paper.lustre</source>
+                <target>Un papier photo satiné, dont le léger nacré tient les couleurs saturées : le tirage de tous les jours, et celui qui sert le mieux une photo de véhicule, de fleur ou de graffiti.</target>
+            </trans-unit>
+            <trans-unit id="cGMKkg8">
+                <source>print_paper.matte</source>
+                <target>Un papier d'art mat, sans aucun reflet, pour que rien de l'image ne se perde dans une brillance : le tirage sobre, prêt à encadrer.</target>
+            </trans-unit>
+            <trans-unit id="DibaQIb">
+                <source>print_paper.photo_rag</source>
+                <target>Un chiffon 100 % coton lisse, le plus sûr des papiers d'art : il flatte le détail fin et ne trahit aucun sujet. Celui à prendre quand on hésite.</target>
             </trans-unit>
         </body>
     </file>

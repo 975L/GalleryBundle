@@ -14,8 +14,10 @@ use c975L\ConfigBundle\Service\ConfigServiceInterface;
 use c975L\GalleryBundle\Entity\GalleryCategory;
 use c975L\GalleryBundle\Entity\GalleryMedia;
 use c975L\GalleryBundle\Field\GalleryDataField;
+use c975L\GalleryBundle\Repository\GalleryCategoryRepository;
 use c975L\GalleryBundle\Repository\GalleryPrintCopyRepository;
 use c975L\GalleryBundle\Service\GalleryCustomizationRegistry;
+use c975L\GalleryBundle\Service\GalleryMediaLikeCounter;
 use c975L\GalleryBundle\Service\GalleryMediaMover;
 use c975L\GalleryBundle\Service\GalleryMediaSlugger;
 use c975L\GalleryBundle\Service\GalleryUrlRedirector;
@@ -23,13 +25,17 @@ use c975L\GalleryBundle\Service\UploadLimits;
 use c975L\UiBundle\Contract\VichWatermarkableInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\QueryBuilder;
+use EasyCorp\Bundle\EasyAdminBundle\Collection\FieldCollection;
+use EasyCorp\Bundle\EasyAdminBundle\Collection\FilterCollection;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Filters;
 use EasyCorp\Bundle\EasyAdminBundle\Config\KeyValueStore;
 use EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Dto\EntityDto;
+use EasyCorp\Bundle\EasyAdminBundle\Dto\SearchDto;
 use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\BooleanField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ChoiceField;
@@ -39,6 +45,8 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\SlugField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextareaField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\UrlField;
+use EasyCorp\Bundle\EasyAdminBundle\Filter\BooleanFilter;
+use EasyCorp\Bundle\EasyAdminBundle\Filter\EntityFilter;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGeneratorInterface;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
@@ -53,7 +61,7 @@ use Vich\UploaderBundle\Form\Type\VichImageType;
 
 use function Symfony\Component\Translation\t;
 
-// Edits one media at a time, and nothing else: it has no listing of its own and no sidebar entry, a media being reached from the category holding it (see GalleryCategoryCrudController, the single menu entry for the whole gallery feature)
+// Edits one media at a time, and lists the whole library on its index - the contact sheet of every gallery at once, which is what a triage pass reads where a category's own grid only answers "what is in this gallery" (see GalleryCategoryCrudController, still listing a category's medias on its edit screen), the two being the same grid drawn from the same tile (see _gallery_media_tile.html.twig)
 class GalleryMediaCrudController extends AbstractCrudController
 {
     public function __construct(
@@ -66,6 +74,7 @@ class GalleryMediaCrudController extends AbstractCrudController
         private readonly UploadLimits $uploadLimits,
         private readonly GalleryCustomizationRegistry $customizationRegistry,
         private readonly GalleryPrintCopyRepository $printCopyRepository,
+        private readonly GalleryMediaLikeCounter $likeCounter,
     ) {
     }
 
@@ -87,44 +96,111 @@ class GalleryMediaCrudController extends AbstractCrudController
             ->setEntityLabelInSingular(t('label.gallery_media', [], 'gallery'))
             ->setEntityLabelInPlural(t('label.gallery_medias', [], 'gallery'))
             ->setEntityPermission($this->roleNeeded())
+            // Newest first, on the one column carrying an index of its own (see GalleryMedia) - a library is read from what has just come in, where a category's own grid is read in the order an admin arranged it
+            ->setDefaultSort(['createdAt' => 'DESC'])
+            // Named rather than left to EasyAdmin, which searches every text column there is - a filename and a slug would answer for words no admin typed looking for them
+            ->setSearchFields(['title', 'description', 'credits'])
+            // The same grid of thumbnails a category's edit screen draws, rather than a table of rows: a contact sheet is read as images (see gallery_media_index.html.twig, and UiBundle's media library, which overrides its own index for the same reason)
+            ->overrideTemplate('crud/index', '@c975LGallery/management/gallery_media_index.html.twig')
             ->overrideTemplate('crud/edit', '@c975LGallery/management/gallery_media_edit.html.twig')
         ;
     }
 
-    // There is no all-medias listing: a category's medias are shown on that category's own edit screen (see GalleryCategoryCrudController), which is where every redirect EasyAdmin sends here lands instead - after a save, after a delete, and for anyone reaching the url by hand
-    // The category is read from the query string, which the media screens carry along from the link that opened them (AdminUrlGenerator keeps the current parameters), so the admin returns to the category worked on rather than to the top of the list
+    // What the contact sheet leaves out: the trash on both sides - a media in it, and every media of a gallery in it, trashing a category flagging the category alone; hidden medias stay in, as they do in a category's own grid, an admin having to see what he has masked
+    #[\Override]
+    public function createIndexQueryBuilder(SearchDto $searchDto, EntityDto $entityDto, FieldCollection $fields, FilterCollection $filters): QueryBuilder
+    {
+        return parent::createIndexQueryBuilder($searchDto, $entityDto, $fields, $filters)
+            ->andWhere('entity.isDeleted = false')
+            ->innerJoin('entity.category', 'sheetCategory')
+            ->andWhere('sheetCategory.isDeleted = false')
+        ;
+    }
+
+    // The three questions a triage pass asks of a library - which gallery, on sale or not, masked or not - plus the rights, applied to a selection often enough to be looked for afterwards, the automatic galleries being left out of the category filter as they are out of the media's own category field (see GalleryAutomaticProvider)
+    #[\Override]
+    public function configureFilters(Filters $filters): Filters
+    {
+        return $filters
+            ->add(EntityFilter::new('category', t('label.gallery_category', [], 'gallery'))
+                ->setFormTypeOption('value_type_options.query_builder', static fn (GalleryCategoryRepository $repository): QueryBuilder => $repository
+                    ->createQueryBuilder('c')
+                    ->andWhere('c.automaticKind IS NULL')
+                    ->andWhere('c.isDeleted = false')
+                    // Alphabetically, as every other list of the galleries is (see GalleryCategoryRepository::findAllOrdered) - a category carries no rank of its own, only its medias do
+                    ->orderBy('c.title', 'ASC')))
+            ->add(BooleanFilter::new('printable', t('label.gallery_media_printable', [], 'gallery')))
+            ->add(BooleanFilter::new('hidden', t('label.gallery_media_hidden', [], 'gallery')))
+            ->add(BooleanFilter::new('rightsReserved', t('label.rights_reserved', [], 'gallery')))
+        ;
+    }
+
+    // The likes of the medias the page shows, counted once for the whole page and by the very service a category's own grid asks (see GalleryMediaLikeCounter)
+    #[\Override]
+    public function configureResponseParameters(KeyValueStore $responseParameters): KeyValueStore
+    {
+        if (Crud::PAGE_INDEX !== $responseParameters->get('pageName')) {
+            return $responseParameters;
+        }
+
+        $responseParameters->set('media_likes', $this->likeCounter->count($this->shownMedias($responseParameters->get('entities'))));
+
+        return $responseParameters;
+    }
+
+    // The medias the page actually draws, read off the dtos EasyAdmin hands the template
+    /** @return list<GalleryMedia> */
+    private function shownMedias(mixed $entities): array
+    {
+        if (!is_iterable($entities)) {
+            return [];
+        }
+
+        $medias = [];
+        foreach ($entities as $entityDto) {
+            $instance = $entityDto instanceof EntityDto ? $entityDto->getInstance() : null;
+            if ($instance instanceof GalleryMedia) {
+                $medias[] = $instance;
+            }
+        }
+
+        return $medias;
+    }
+
+    // Answers two different screens, and the "category" parameter is what tells them apart - carried along by the media screens from the link that opened them (AdminUrlGenerator keeps the current parameters), it sends a save, a delete or a cancel started from a gallery back to that gallery's edit screen, where without it the request came from the sidebar entry and the contact sheet of the whole library answers instead, filtered and searched (see configureFilters)
     #[\Override]
     public function index(AdminContext $context): KeyValueStore | Response
     {
         $categoryId = $context->getRequest()->query->getInt('category');
+        if ($categoryId < 1) {
+            return parent::index($context);
+        }
 
-        $url = $this->adminUrlGenerator
+        return $this->redirect($this->adminUrlGenerator
             ->setController(GalleryCategoryCrudController::class)
             ->unset('category')
-        ;
-
-        $url = $categoryId > 0
-            ? $url->setAction(Action::EDIT)->setEntityId($categoryId)
-            : $url->setAction(Action::INDEX);
-
-        return $this->redirect($url->generateUrl());
+            ->setAction(Action::EDIT)
+            ->setEntityId($categoryId)
+            ->generateUrl());
     }
 
     #[\Override]
     public function configureActions(Actions $actions): Actions
     {
-        // Lets the admin back out of an edit without saving - mirrors EasyAdmin's own built-in actions (linkToCrudAction targeting INDEX, same as Action::INDEX itself), which redirects to the category above
+        // Lets the admin back out of an edit without saving - mirrors EasyAdmin's own built-in actions (linkToCrudAction targeting INDEX, same as Action::INDEX itself), which redirects to the category the media was reached from, or to the library's contact sheet when none is carried
         $cancelAction = Action::new('cancel', $this->translator->trans('action.cancel', [], 'EasyAdminBundle'), 'fa fa-times')
             ->linkToCrudAction(Action::INDEX)
             ->addCssClass('btn btn-secondary');
 
         return $actions
+            // The contact sheet is a screen of its own since the index stopped redirecting, so it states the same bar its sidebar entry announces (see MenuProvider)
+            ->setPermission(Action::INDEX, $this->roleNeeded())
             ->setPermission(Action::EDIT, $this->roleNeeded())
             ->setPermission(Action::DELETE, $this->roleNeeded())
             // Medias are only ever created in bulk, from a category's own "add medias" action (see GalleryCategoryCrudController) - never one at a time, and never from here, where no category is picked
             ->disable(Action::NEW)
             ->add(Crud::PAGE_EDIT, $cancelAction)
-            // The edit form is the only screen a media has, so it carries its own delete button - there is no listing left to offer one
+            // The edit form carries its own delete button: the contact sheet its index draws offers no row action at all, a thumbnail being the link to the form and nothing else (see gallery_media_index.html.twig)
             ->add(Crud::PAGE_EDIT, Action::DELETE)
             // Detail adds no information beyond what edit already shows
             ->disable(Action::DETAIL)

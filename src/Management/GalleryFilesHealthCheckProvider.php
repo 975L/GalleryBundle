@@ -74,6 +74,7 @@ class GalleryFilesHealthCheckProvider extends AbstractDeclaredFilesHealthCheckPr
     private function editUrl(GalleryMedia $media): ?string
     {
         return null === $media->getId() ? null : $this->adminUrlGenerator
+            // No category carried, unlike every other link to a media's form: a defect is reported on the photograph and not on the gallery it sits in, so leaving the form lands on the library's contact sheet (see GalleryMediaCrudController::index())
             ->unsetAll()
             ->setController(GalleryMediaCrudController::class)
             ->setAction(Action::EDIT)

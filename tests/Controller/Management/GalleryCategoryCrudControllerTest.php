@@ -26,6 +26,7 @@ use c975L\GalleryBundle\Service\GalleryCustomizationRegistry;
 use c975L\GalleryBundle\Service\GalleryLatestProvider;
 use c975L\GalleryBundle\Service\GalleryMediaArchiver;
 use c975L\GalleryBundle\Service\GalleryMediaFactory;
+use c975L\GalleryBundle\Service\GalleryMediaLikeCounter;
 use c975L\GalleryBundle\Service\GalleryMediaMover;
 use c975L\GalleryBundle\Service\GalleryMediaSlugger;
 use c975L\GalleryBundle\Service\GalleryUrlRedirector;
@@ -205,6 +206,7 @@ class GalleryCategoryCrudControllerTest extends TestCase
             $services['automaticProvider'],
             $services['latestProvider'],
             $services['customizationRegistry'],
+            new GalleryMediaLikeCounter($this->createConfigService(), $this->createStub(RatingRepository::class)),
         );
     }
 

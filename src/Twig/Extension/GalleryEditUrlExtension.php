@@ -34,7 +34,7 @@ class GalleryEditUrlExtension
         return $this->editUrl(GalleryCategoryCrudController::class, $category->getId());
     }
 
-    // The category is carried along the way every media screen carries it: it is where the media CRUD comes back to after a save, a delete or a cancel (see GalleryMediaCrudController::index())
+    // The category is carried along the way every media screen carries it: it is what sends the media CRUD back to the gallery after a save, a delete or a cancel, rather than to the library's contact sheet (see GalleryMediaCrudController::index())
     #[AsTwigFunction('gallery_media_edit_url')]
     public function getMediaEditUrl(GalleryMedia $media): ?string
     {

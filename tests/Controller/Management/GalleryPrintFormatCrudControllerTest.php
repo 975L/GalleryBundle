@@ -43,6 +43,15 @@ class GalleryPrintFormatCrudControllerTest extends TestCase
         $this->assertSame([], $session->getFlashBag()->get('success'));
     }
 
+    // Forty rows changed is not "nothing to do": the refresh is counted on its own, and the "nothing to import" is kept for a run that changed nothing at all
+    public function testARefreshedCatalogueIsReportedWithoutSayingNothingWasDone(): void
+    {
+        $session = $this->import(new PrintCatalogueImportReport(0, 12, [], false, 40));
+
+        $this->assertSame(['flash.print_catalogue_refreshed'], $session->getFlashBag()->get('success'));
+        $this->assertSame([], $session->getFlashBag()->get('info'));
+    }
+
     // The rows were written on references nobody confirmed: an unknown one would otherwise surface at the lab, on a print somebody has paid for
     public function testAnUncheckedImportIsSaidOutLoud(): void
     {

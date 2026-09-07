@@ -6,6 +6,10 @@
                 <source>narration.gallery</source>
                 <target>"Gallery" holds the galleries of the site and their photos. Moving a gallery to the trash only takes it off the site: the button above the list shows what waits there, and takes it back.</target>
             </trans-unit>
+            <trans-unit id="aZ.cWRr">
+                <source>narration.gallery_medias</source>
+                <target>In the left-hand column, open "Medias": every photograph on the site is gathered there, all galleries at once. The filters above the sheet single out the ones on sale, the masked ones, the ones of a given gallery.</target>
+            </trans-unit>
             <trans-unit id="BfIWVkl">
                 <source>narration.guided_step_gallery_creation_done</source>
                 <target>Your gallery is online. It has nothing to publish: it is visible the moment it exists, and the view on site button opens it.</target>
@@ -53,6 +57,26 @@
             <trans-unit id="psakJ1d">
                 <source>narration.guided_step_gallery_latest_selection</source>
                 <target>Work on a whole upload session: credits, rights, download and move to trash act on the checked photos where they actually sit. That is how a whole day's upload is credited in one go.</target>
+            </trans-unit>
+            <trans-unit id="ldd2Eo5">
+                <source>narration.guided_step_gallery_library_sorting_badges</source>
+                <target>Look under a thumbnail: the badges say whether the photograph is masked, whether it is on sale and in how many copies, and how many visitors liked it. You sort without opening a single one.</target>
+            </trans-unit>
+            <trans-unit id="Li2fjI9">
+                <source>narration.guided_step_gallery_library_sorting_done</source>
+                <target>That is it. A thumbnail opens the photograph to retouch it. Putting the photos in order and acting on a selection stay on the screen of the gallery holding them.</target>
+            </trans-unit>
+            <trans-unit id="5edCz_N">
+                <source>narration.guided_step_gallery_library_sorting_filters</source>
+                <target>The "Filters" button, above the sheet, opens the four questions: which gallery, on sale or not, masked or not, rights reserved or not.</target>
+            </trans-unit>
+            <trans-unit id="wz38pX1">
+                <source>narration.guided_step_gallery_library_sorting_open</source>
+                <target>The panel takes you to "Medias", in the left-hand column, under "Gallery". Every photograph of the site is gathered there, whichever gallery holds it.</target>
+            </trans-unit>
+            <trans-unit id="LHweaSJ">
+                <source>narration.guided_step_gallery_library_sorting_search</source>
+                <target>The search box, at the top, runs over the titles, the captions and the credits. Not the filenames: nobody types those looking for a photograph.</target>
             </trans-unit>
             <trans-unit id="opbMRuM">
                 <source>narration.guided_step_gallery_media_detail_category</source>

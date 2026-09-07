@@ -20,17 +20,20 @@ use c975L\GalleryBundle\Entity\GalleryCategory;
 use c975L\GalleryBundle\Entity\GalleryMedia;
 use c975L\GalleryBundle\Repository\GalleryPrintCopyRepository;
 use c975L\GalleryBundle\Service\GalleryCustomizationRegistry;
+use c975L\GalleryBundle\Service\GalleryMediaLikeCounter;
 use c975L\GalleryBundle\Service\GalleryMediaMover;
 use c975L\GalleryBundle\Service\GalleryMediaSlugger;
 use c975L\GalleryBundle\Service\GalleryUrlRedirector;
 use c975L\GalleryBundle\Service\UploadLimits;
 use c975L\UiBundle\Contract\VichWatermarkableInterface;
+use c975L\UiBundle\Repository\RatingRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\ORM\UnitOfWork;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Filters;
 use EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext;
 use EasyCorp\Bundle\EasyAdminBundle\Context\RequestContext;
 use EasyCorp\Bundle\EasyAdminBundle\Dto\FieldDto;
@@ -68,19 +71,26 @@ class GalleryMediaCrudControllerTest extends TestCase
     ): GalleryMediaCrudController {
         $translator = $this->createStub(TranslatorInterface::class);
         $translator->method('trans')->willReturnArgument(0);
+        // Defaulted once each rather than at every use: the mover and the redirector must be handed the very same repository, not two stubs of it
+        $adminUrlGenerator ??= $this->createAdminUrlGenerator();
+        $redirectRepository ??= $this->createRedirectRepository();
+        $customizationRegistry ??= new GalleryCustomizationRegistry([]);
+        $printCopyRepository ??= $this->createStub(GalleryPrintCopyRepository::class);
 
         return new GalleryMediaCrudController(
-            $adminUrlGenerator ?? $this->createAdminUrlGenerator(),
+            $adminUrlGenerator,
             $translator,
             new GalleryMediaSlugger(new AsciiSlugger()),
-            $this->createMediaMover($redirectRepository ?? $this->createRedirectRepository()),
-            new GalleryUrlRedirector($redirectRepository ?? $this->createRedirectRepository()),
+            $this->createMediaMover($redirectRepository),
+            new GalleryUrlRedirector($redirectRepository),
             $this->createConfigService(),
             // Fixed ceilings rather than the machine's own php.ini, so the video field's limit is the same on every runner
             new UploadLimits('20', '64M', '128M'),
-            $customizationRegistry ?? new GalleryCustomizationRegistry([]),
+            $customizationRegistry,
             // Only reached by the tests that save an edition: what it writes is the register of a numbered edition, and only the first time one is announced (see GalleryMediaCrudController::settleEdition)
-            $printCopyRepository ?? $this->createStub(GalleryPrintCopyRepository::class),
+            $printCopyRepository,
+            // Only reached by the index, where the badge under each thumbnail says how many visitors liked the photograph
+            new GalleryMediaLikeCounter($this->createConfigService(), $this->createStub(RatingRepository::class)),
         );
     }
 
@@ -186,21 +196,40 @@ class GalleryMediaCrudControllerTest extends TestCase
         $this->assertSame('/management/gallery/4/edit', $response->getTargetUrl());
     }
 
-    // Reached by hand, without a category to go back to, the whole gallery is the next best landing
-    public function testIndexRedirectsToTheCategoryListingWithoutACategory(): void
+    // Without a category the request came from the sidebar and the contact sheet answers, no redirect being built at all - "setController" and not "generateUrl" because it is the first call of the redirecting branch, reached before a mock chain without willReturnSelf() hands back a null and swallows the difference, and what the call itself throws on EasyAdmin's own index says nothing about the branch taken
+    public function testIndexDrawsTheContactSheetWithoutACategory(): void
     {
         $adminUrlGenerator = $this->createMock(AdminUrlGeneratorInterface::class);
-        $adminUrlGenerator->method('setController')->willReturnSelf();
-        $adminUrlGenerator->method('unset')->willReturnSelf();
-        $adminUrlGenerator->expects($this->once())->method('setAction')->with(Action::INDEX)->willReturnSelf();
-        $adminUrlGenerator->expects($this->never())->method('setEntityId');
-        $adminUrlGenerator->method('generateUrl')->willReturn('/management/gallery');
+        $adminUrlGenerator->expects($this->never())->method('setController');
 
         $context = AdminContext::forTesting(requestContext: RequestContext::forTesting(Request::create('/management/gallery-media')));
 
-        $response = $this->createController($adminUrlGenerator)->index($context);
+        try {
+            $this->createController($adminUrlGenerator)->index($context);
+        } catch (\Throwable) {
+        }
+    }
 
-        $this->assertSame('/management/gallery', $response->getTargetUrl());
+    // --- configureCrud / configureFilters ----------------------------------------------------------------
+
+    // The contact sheet is a grid of thumbnails, not EasyAdmin's table - and it searches the three fields an admin actually types into, never the filename or the slug
+    public function testConfigureCrudDrawsTheIndexAsAGridAndSearchesTheWrittenFieldsOnly(): void
+    {
+        $dto = $this->createController()->configureCrud(Crud::new())->getAsDto();
+
+        $this->assertSame('@c975LGallery/management/gallery_media_index.html.twig', $dto->getOverriddenTemplates()['crud/index']);
+        $this->assertSame(['title', 'description', 'credits'], $dto->getSearchFields());
+    }
+
+    // The three questions a triage pass asks of a library - which gallery, on sale or not, masked or not - plus the rights applied to a selection
+    public function testConfigureFiltersOffersTheGalleryTheSaleTheMaskingAndTheRights(): void
+    {
+        $filters = $this->createController()->configureFilters(Filters::new())->getAsDto();
+
+        $this->assertNotNull($filters->getFilter('category'));
+        $this->assertNotNull($filters->getFilter('printable'));
+        $this->assertNotNull($filters->getFilter('hidden'));
+        $this->assertNotNull($filters->getFilter('rightsReserved'));
     }
 
     // --- configureActions --------------------------------------------------------------------------------
@@ -225,6 +254,16 @@ class GalleryMediaCrudControllerTest extends TestCase
         $this->assertNotNull($editActions->getAction(Crud::PAGE_EDIT, 'cancel'));
         // The edit form is the only screen a media has, so it carries its own delete button
         $this->assertNotNull($editActions->getAction(Crud::PAGE_EDIT, Action::DELETE));
+    }
+
+    // The contact sheet is a screen an admin lands on from the sidebar, so it states the same bar its menu entry announces - the categories screen next to it says the same (see GalleryCategoryCrudController)
+    public function testConfigureActionsPutsTheEditorRoleOnTheContactSheetAsWellAsOnEditAndDelete(): void
+    {
+        $permissions = $this->createController()->configureActions(Actions::new())->getAsDto(null)->getActionPermissions();
+
+        $this->assertSame('ROLE_EDITOR', $permissions[Action::INDEX]);
+        $this->assertSame('ROLE_EDITOR', $permissions[Action::EDIT]);
+        $this->assertSame('ROLE_EDITOR', $permissions[Action::DELETE]);
     }
 
     // --- configureFields -----------------------------------------------------------------------------------
