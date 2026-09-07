@@ -1,5 +1,16 @@
 # ChangeLog
 
+## v1.15.1
+
+The qa chain picks up the two checks it left to the push gate
+
+- **`composer qa` chains `mess` and `lizard`** (07/09/2026)
+- `mess` reports how many files PDepend could not parse (07/09/2026)
+- `phpmd.xml.dist` drops `NPathComplexity` (07/09/2026)
+- `.gitignore` takes `.phpmd-report.log` (07/09/2026)
+- `phpunit.xml.dist` sets `failOnNotice` (07/09/2026)
+- Descriptions for the `audit-deps` and `rector` scripts (07/09/2026)
+
 ## v1.15.0
 
 The whole library reads as one contact sheet
