@@ -1,5 +1,13 @@
 # ChangeLog
 
+## v1.16.0
+
+An ecosystem cannot hold two majors of the same uploader
+
+- **`vich/uploader-bundle` moves from `^2.9` to `^3.0`** (08/09/2026)
+- **`c975l/core-bundle` moves from `^1.21` to `^1.25`** (08/09/2026)
+- The README reads both constraints, UPGRADE the move they ask for (08/09/2026)
+
 ## v1.15.2
 
 The CI runs the two checks the qa chain took on

@@ -1,5 +1,17 @@
 # UPGRADE
 
+## v1.16.0
+
+### An ecosystem cannot hold two majors of the same uploader
+
+**`vich/uploader-bundle` moves to `^3.0` and `c975l/core-bundle` to `^1.25`.** The two Vich majors cannot be
+installed side by side, so every c975L bundle a site pulls moves in the same `composer update` - one still pinned
+to `^2.9` leaves no resolvable set.
+
+**This bundle needs nothing of you beyond that update.** It declares no namer and no storage of its own, only
+`Mapping\Attribute` on its entities, which 3.0 leaves untouched. A namer or a storage *you* wrote follows the move
+CoreBundle's own `UPGRADE.md` describes for v1.25.0.
+
 ## v1.13.0
 
 ### The print shop runs from the lab's catalogue to the letterbox

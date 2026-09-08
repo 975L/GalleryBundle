@@ -61,10 +61,10 @@ See it in action at [bundles.975l.com/pages/gallery-bundle](https://bundles.975l
 
 - PHP >= 8.4
 - Symfony ^8.0
-- [c975L/CoreBundle](https://github.com/975L/CoreBundle) in `^1.21` — ConfigBundle and UiBundle ship as the single `c975l/core-bundle` package, so requiring this bundle pulls both (Vich naming/resizing, EasyAdmin form-theme conventions, stylesheet registry, page layout fallback, menu provider, scaffold, sitemap and health checks). `^1.21` is what reads the role a menu entry states and the narration a guided step is spoken with, without which the gallery's own sidebar entry falls back on the admin bar and an editor never sees it
+- [c975L/CoreBundle](https://github.com/975L/CoreBundle) in `^1.25` — ConfigBundle and UiBundle ship as the single `c975l/core-bundle` package, so requiring this bundle pulls both (Vich naming/resizing, EasyAdmin form-theme conventions, stylesheet registry, page layout fallback, menu provider, scaffold, sitemap and health checks). `^1.25` is what overrides VichUploader 3.0's storage and namer, without which the derivatives are named by Vich's own rule
 - Doctrine ORM
 - EasyAdmin
-- VichUploader Bundle
+- VichUploader Bundle in `^3.0`
 - `symfony/expression-language`, which the public routes' condition is evaluated with (see [public routes](#public-routes)) — pulled in by Composer
 - [c975L/PaymentBundle](https://github.com/975L/PaymentBundle) in `^6.7` — the one basket a print is bought through. Required rather than suggested so the print shop is there to be switched on, instead of being a feature nobody knows exists
 - `endroid/qr-code` in `^6` — the qr code of a certificate and of a gallery
