@@ -1,5 +1,13 @@
 # ChangeLog
 
+## v1.15.2
+
+The CI runs the two checks the qa chain took on
+
+- **The CI workflow runs `mess` and `lizard`** (08/09/2026)
+- `bin/ci.sh` installs phpmd with the other quality tools (08/09/2026)
+- Lizard is pinned to 1.17.31, the version Codacy runs (08/09/2026)
+
 ## v1.15.1
 
 The qa chain picks up the two checks it left to the push gate
