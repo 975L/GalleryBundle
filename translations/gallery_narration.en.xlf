@@ -4,7 +4,7 @@
         <body>
             <trans-unit id="63yZFT3">
                 <source>narration.gallery</source>
-                <target>"Gallery" holds the galleries of the site and their photos. Moving a gallery to the trash only takes it off the site: the button above the list shows what waits there, and takes it back.</target>
+                <target>"Categories", under the "Gallery" heading, holds the galleries of the site and their photos. Moving a gallery to the trash only takes it off the site: the button above the list shows what waits there, and takes it back.</target>
             </trans-unit>
             <trans-unit id="aZ.cWRr">
                 <source>narration.gallery_medias</source>

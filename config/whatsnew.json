@@ -1,5 +1,15 @@
 [
     {
+        "date": "2026-09-09",
+        "description": [
+            {
+                "en": "The gallery screens now gather under their own \"Gallery\" heading in the back office menu, instead of being scattered through the general management section: the galleries, listed as \"Categories\", the \"Medias\" sheet, and the print screens when the shop is on",
+                "fr": "Les écrans de la galerie se regroupent désormais sous leur propre rubrique « Galerie » dans le menu du back-office, au lieu d'être dispersés dans la section de gestion générale : les galeries, listées sous « Catégories », la planche « Médias », et les écrans de tirages lorsque la boutique est activée",
+                "es": "Las pantallas de la galería se agrupan ahora bajo su propio apartado «Galería» en el menú del back-office, en lugar de estar dispersas en la sección de gestión general: las galerías, listadas como «Categorías», la hoja «Medias», y las pantallas de copias cuando la tienda está activada"
+            }
+        ]
+    },
+    {
         "date": "2026-09-07",
         "description": [
             {

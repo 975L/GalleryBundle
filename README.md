@@ -31,7 +31,7 @@ See it in action at [bundles.975l.com/pages/gallery-bundle](https://bundles.975l
 - `GalleryCategory` → `GalleryMedia`: the category is the top-level unit, a site's galleries being its categories - no container above them.
 - Bulk upload: pick every file at once from the category they belong to, with a title root, credits and rights-reserved applied to the whole batch, retouched one media at a time afterwards. The same batch is offered on the category creation form, so a category is created with its medias in one go. Optionally, the untouched originals are kept outside the document root (see [uploading a batch](#uploading-a-batch)). The screen counts the megabytes as they leave and then says the files are being processed, a batch being minutes of waiting.
 - Three derivatives generated automatically per uploaded image (thumbnail / medium / highres), all three holding the whole photo, via UiBundle's `VichImageResizeListener` and the `VichMultiSizeImageInterface` contract - naming and resizing stay centralized in UiBundle, this bundle only declares the target sizes and how its grids frame them (see [Thumbnail framing](#thumbnail-framing)).
-- Two EasyAdmin menu entries: "Galerie", opening the categories with their media count, where a category's medias are listed under its own edit form and added from the category itself - and "Médias", the contact sheet of the whole library, every gallery's photographs in one filterable grid saying which are masked, which are on sale and what visitors liked (see [the whole library at once](#the-whole-library-at-once)).
+- Its own **Galerie** section in the EasyAdmin sidebar, holding two entries: "Catégories", opening the galleries with their media count, where a category's medias are listed under its own edit form and added from the category itself - and "Médias", the contact sheet of the whole library, every gallery's photographs in one filterable grid saying which are masked, which are on sale and what visitors liked (see [the whole library at once](#the-whole-library-at-once)).
 - Each media in that list carries a checkbox, so a selection of them goes to the trash in one go instead of one edit screen at a time (see [trashing a selection](#trashing-a-selection-of-medias)), or given the same credits and rights at once (see [credits / rights on a selection](#applying-credits-or-rights-to-a-selection)), or moved into another gallery with everything they carry (see [moving a selection](#moving-a-selection-to-another-gallery)), or their files handed back as one zip (see [downloading a selection](#downloading-a-selections-files)).
 - A catch-all "Non classé" category is created lazily so an imported media always has one, even without a real one to attach it to.
 - One category of the site can be turned into **the gallery of the last additions**: it holds no media of its own and shows what every other category received on its last days of upload, whatever gallery each photo landed in - as a public page, as a block, and as a back-office screen where a whole upload session is credited, downloaded or trashed in one go (see [the automatic galleries](#the-automatic-galleries)).
@@ -546,8 +546,8 @@ for a site printing at home or at the shop on the corner.
 
 A gallery's own screen answers "what is in this gallery". It never answers "which photographs are on sale",
 "which ones did I mask" or "what did visitors like", which are questions asked of the whole library — so
-`GalleryMediaCrudController` lists it: **Médias**, next to **Galerie** in the sidebar, every gallery's
-photographs in one grid.
+`GalleryMediaCrudController` lists it: **Médias**, next to **Catégories** under the sidebar's **Galerie**
+section, every gallery's photographs in one grid.
 
 The same grid, drawn from the same tile as a category's own (`_gallery_media_tile.html.twig`), so a thumbnail
 says the same thing on both screens. Under each one:
@@ -1532,7 +1532,7 @@ category back has VichUploader's removal listener take the stored files off the 
 A site arriving with its photos in a folder tree — served by a hand-rolled `Symfony\Finder` listing, by
 another gallery bundle, by anything — brings them in through the back office, one category at a time:
 
-1. create the category — **Gallery** in the menu, then **Add**,
+1. create the category — **Galerie › Catégories** in the menu, then **Add**,
 2. on that category's own row, click **Add media** and select the whole folder at once in the file picker —
    the field takes as many files as you give it, credits and rights-reserved applying to the batch and
    retouchable one at a time afterwards,

@@ -530,7 +530,9 @@ reaches the payment webhook.
   `findAllOrdered()` is memoized for the request (`ResetInterface`), its callers knowing nothing of
   each other.
 
-What the bundle already contributes to the dashboard, so you do not have to: `MenuProvider`,
+What the bundle already contributes to the dashboard, so you do not have to: `MenuProvider` (its own
+**Galerie** sidebar section, holding the `gallery` and `gallery_media` entries, rather than the shared
+"management" one),
 `LinkableRouteProvider` (the index and each category offered as a SiteBundle menu target),
 `GallerySitemapProvider`, `GalleryUrlMetadataProvider`, `GalleryFilesHealthCheckProvider` (kind
 `files-gallery`, reporting every media whose image or self-hosted video is gone from the server),

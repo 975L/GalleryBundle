@@ -1,5 +1,14 @@
 # ChangeLog
 
+## v1.17.1
+
+The gallery gathers under its own sidebar section
+
+- **`MenuProvider` returns the gallery's own section** rather than the shared "management" one (09/09/2026)
+- The categories entry is labelled `label.gallery_categories` (09/09/2026)
+- `narration.gallery` names the renamed entry and its section (09/09/2026)
+- `eslint.config.mjs` takes `sessionStorage`, aligned on CoreBundle's (09/09/2026)
+
 ## v1.17.0
 
 The zoom this bundle invented becomes everyone's

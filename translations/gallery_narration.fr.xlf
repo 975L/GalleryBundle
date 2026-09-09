@@ -4,7 +4,7 @@
         <body>
             <trans-unit id="63yZFT3">
                 <source>narration.gallery</source>
-                <target>« Galerie » tient les galeries du site et leurs photos. Mettre une galerie à la corbeille ne fait que la retirer du site : le bouton au-dessus de la liste montre ce qui y attend, et l'y reprend.</target>
+                <target>« Catégories », sous la rubrique « Galerie », tient les galeries du site et leurs photos. Mettre une galerie à la corbeille ne fait que la retirer du site : le bouton au-dessus de la liste montre ce qui y attend, et l'y reprend.</target>
             </trans-unit>
             <trans-unit id="aZ.cWRr">
                 <source>narration.gallery_medias</source>

@@ -35,12 +35,12 @@ class MenuProviderTest extends TestCase
         $this->assertSame('ROLE_EDITOR', $this->createProvider()->getMenus()['gallery']['role']);
     }
 
-    // Shared with ConfigBundle's/SiteBundle's/UiBundle's own MenuProvider so all merge into one section
-    public function testGetMenuSectionMatchesTheSharedManagementSection(): void
+    // Its own header rather than the shared "management" one: MenuBuilder groups sections on "domain.label", so the gallery's screens gather under their own caption instead of stretching the section every core bundle already fills
+    public function testGetMenuSectionIsTheGallerysOwn(): void
     {
         $provider = $this->createProvider();
 
-        $this->assertSame(['label' => 'label.management', 'translation_domain' => 'site'], $provider->getMenuSection());
+        $this->assertSame(['label' => 'label.gallery', 'translation_domain' => 'gallery'], $provider->getMenuSection());
     }
 
     // Two entries: the galleries, where a gallery is composed and its own medias arranged, and the whole library read across them all
@@ -52,7 +52,7 @@ class MenuProviderTest extends TestCase
 
         $this->assertCount(2, $menus);
         $this->assertSame(GalleryCategoryCrudController::class, $menus['gallery']['controller']);
-        $this->assertSame('label.gallery', $menus['gallery']['label']);
+        $this->assertSame('label.gallery_categories', $menus['gallery']['label']);
         $this->assertSame('gallery', $menus['gallery']['translation_domain']);
         $this->assertSame(GalleryMediaCrudController::class, $menus['gallery_media']['controller']);
         $this->assertSame('label.gallery_medias', $menus['gallery_media']['label']);

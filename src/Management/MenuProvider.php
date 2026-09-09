@@ -28,8 +28,8 @@ class MenuProvider implements MenuProviderInterface
     public function getMenuSection(): array
     {
         return [
-            'label' => 'label.management',
-            'translation_domain' => 'site',
+            'label' => 'label.gallery',
+            'translation_domain' => 'gallery',
         ];
     }
 
@@ -38,7 +38,7 @@ class MenuProvider implements MenuProviderInterface
         $menus = [
             'gallery' => [
                 'controller' => GalleryCategoryCrudController::class,
-                'label' => 'label.gallery',
+                'label' => 'label.gallery_categories',
                 'narration' => 'narration.gallery',
                 'translation_domain' => 'gallery',
                 'icon' => 'fas fa-images',
