@@ -12,67 +12,10 @@ namespace c975L\GalleryBundle\Tests\Assets;
 
 use PHPUnit\Framework\Attributes\Group;
 
-// The three controllers a media page mounts together: gallery-lightbox, gallery-media-preload and gallery-media-protect
-// Each of them is about something a browser does rather than about a value: a native <dialog> really opening, a file really being fetched ahead of time, and a gesture really being refused. Read as text they are three one-liners; the questions worth asking - is the high resolution fetched before it is asked for, and is it fetched twice - are only answerable from what the browser actually requested
+// The two controllers a media page mounts of its own - gallery-media-preload and gallery-media-protect, the zoom having moved to UiBundle's ImageZoomBehaviourTest - each about something a browser does rather than about a value: read as text they are one-liners, and the question worth asking, is the neighbour fetched before it is asked for, is only answerable from what the browser actually requested
 #[Group('browser')]
 class GalleryViewingBehaviourTest extends JsCase
 {
-    // Browsing a category stays on the stored files, and the heavy one is only ever fetched for the media the visitor asks to see
-    public function testTheHighResolutionIsOnlyFetchedWhenItIsAskedFor(): void
-    {
-        $opened = $this->media(
-            'const before = image().getAttribute("src");
-             link().click();
-
-             return { before, after: image().getAttribute("src"), open: dialog().open };'
-        );
-
-        $this->assertNull($opened['before'], 'The high resolution is fetched for a media nobody has asked to enlarge, over a page already carrying its medium file.');
-        $this->assertStringEndsWith('/haute-definition.jpg', (string) $opened['after'], 'Opening the lightbox does not put the high resolution in it.');
-        $this->assertTrue($opened['open'], 'The lightbox was never opened.');
-    }
-
-    // The link is a real one, pointing at the file itself, so it still opens the high resolution when this script does not run
-    public function testTheLinkIsFollowedByTheLightboxRatherThanByTheBrowser(): void
-    {
-        $this->assertTrue(
-            (bool) $this->media(
-                'let prevented = false;
-                 link().addEventListener("click", (event) => { prevented = event.defaultPrevented; });
-                 link().click();
-
-                 return prevented;'
-            ),
-            'Opening a media navigates to the file itself, leaving the page and its arrows behind.'
-        );
-    }
-
-    // Assigned on the first opening only, the browser cache serving the next ones
-    public function testTheSourceIsAssignedOnceAndNotOnEveryOpening(): void
-    {
-        $reopened = $this->media(
-            'link().click();
-             const first = image().getAttribute("src");
-             image().addEventListener("load", () => { window.__loads = (window.__loads ?? 0) + 1; });
-             dialog().click();
-             link().click();
-
-             return { first, second: image().getAttribute("src"), open: dialog().open };'
-        );
-
-        $this->assertSame($reopened['first'], $reopened['second'], 'The source is written again on every opening, which a browser answers with a request of its own.');
-        $this->assertTrue($reopened['open'], 'The lightbox cannot be reopened once it has been closed.');
-    }
-
-    // Anything clicked inside closes it - the image and the backdrop alike, which is why there is no close button
-    public function testClickingAnywhereInTheLightboxClosesIt(): void
-    {
-        $closed = $this->media('link().click(); const open = dialog().open; image().click(); return { open, after: dialog().open };');
-
-        $this->assertTrue($closed['open']);
-        $this->assertFalse($closed['after'], 'Clicking the image leaves the lightbox open, and there is no close button to leave by.');
-    }
-
     // Warmed while the current media is being looked at, so clicking prev or next does not show a blank while it loads
     public function testTheNeighboursAreFetchedWhileTheCurrentMediaIsBeingLookedAt(): void
     {
@@ -115,9 +58,7 @@ class GalleryViewingBehaviourTest extends JsCase
 
     private function media(string $probe, bool $neighbours = true): mixed
     {
-        $preamble = 'const link = () => root.querySelector("a.gallery-lightbox__link");
-             const dialog = () => root.querySelector("[data-gallery-lightbox-target=dialog]");
-             const image = () => root.querySelector("[data-gallery-lightbox-target=image]");
+        $preamble = 'const image = () => root.querySelector(".gallery-media-display");
              // What the browser really went and asked for, which is the only thing a warmed cache leaves behind
              const fetched = () => performance.getEntriesByType("resource").map((entry) => entry.name).filter((name) => name.includes("?precedent") || name.includes("?suivant")); ';
 
@@ -136,7 +77,6 @@ class GalleryViewingBehaviourTest extends JsCase
     private function controllers(): array
     {
         return [
-            'gallery-lightbox' => 'gallery-lightbox',
             'gallery-media-preload' => 'gallery-media-preload',
             'gallery-media-protect' => 'gallery-media-protect',
         ];
@@ -147,13 +87,10 @@ class GalleryViewingBehaviourTest extends JsCase
     {
         return sprintf(
             '<div class="gallery-media-container"
-                data-controller="gallery-media-preload gallery-lightbox gallery-media-protect"
+                data-controller="gallery-media-preload gallery-media-protect"
                 data-action="contextmenu->gallery-media-protect#block dragstart->gallery-media-protect#block"
                 %s>
-                <a class="gallery-lightbox__link" href="/media/haute-definition.jpg" data-action="gallery-lightbox#open"><img src="data:image/gif;base64,R0lGODlhAQABAAAAACw=" alt=""></a>
-                <dialog class="gallery-lightbox" data-gallery-lightbox-target="dialog" data-action="click->gallery-lightbox#close">
-                    <img class="gallery-lightbox__image" data-gallery-lightbox-target="image" alt="Une photo">
-                </dialog>
+                <img class="media gallery-media-display" src="data:image/gif;base64,R0lGODlhAQABAAAAACw=" alt="Une photo">
             </div>
             <p class="gallery-media-caption">Le lac au petit matin</p>',
             $neighbours

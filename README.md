@@ -61,7 +61,7 @@ See it in action at [bundles.975l.com/pages/gallery-bundle](https://bundles.975l
 
 - PHP >= 8.4
 - Symfony ^8.0
-- [c975L/CoreBundle](https://github.com/975L/CoreBundle) in `^1.25` — ConfigBundle and UiBundle ship as the single `c975l/core-bundle` package, so requiring this bundle pulls both (Vich naming/resizing, EasyAdmin form-theme conventions, stylesheet registry, page layout fallback, menu provider, scaffold, sitemap and health checks). `^1.25` is what overrides VichUploader 3.0's storage and namer, without which the derivatives are named by Vich's own rule
+- [c975L/CoreBundle](https://github.com/975L/CoreBundle) in `^1.26` — ConfigBundle and UiBundle ship as the single `c975l/core-bundle` package, so requiring this bundle pulls both (Vich naming/resizing, EasyAdmin form-theme conventions, stylesheet registry, page layout fallback, menu provider, scaffold, sitemap and health checks). `^1.25` is what overrides VichUploader 3.0's storage and namer, without which the derivatives are named by Vich's own rule, and `^1.26` what ships the `Image:Zoom` the media page opens its high resolution with
 - Doctrine ORM
 - EasyAdmin
 - VichUploader Bundle in `^3.0`
@@ -120,8 +120,8 @@ php bin/console assets:install --symlink
 ```
 
 Nothing to register by hand, front or back. The bundle ships two Stimulus entrypoints, each starting its
-own app: `controllers.js` for the public pages (previous/next preloading, the high-resolution lightbox,
-the right click/drag blocking) and `controllers-admin.js` for the back office (the upload screen's batch
+own app: `controllers.js` for the public pages (previous/next preloading, the right click/drag blocking)
+and `controllers-admin.js` for the back office (the upload screen's batch
 check, see [upload ceilings](#upload-ceilings)). Both are auto-registered through UiBundle's script
 registry, and their `importmap.php` entries are written by `ImportmapProvider` the first time you
 `composer update` after installing the bundle — `php bin/console c975l:config:check-importmap` reports
@@ -781,12 +781,14 @@ The previous/next arrows are **revealed by the pointer**, sitting on the photo, 
 for: they fade in when the pointer enters the media, and a keyboard focus reveals them just as well. On a
 touch screen, where a first tap would be spent making them appear, they simply stay on.
 
-The lightbox is a native `<dialog>` (`assets/js/gallery-lightbox.js`): its backdrop, its escape key and
-its focus trap are the browser's own, no library involved. It closes on a click anywhere inside it as
-well, which is why it carries no close button: a cross in the corner would only cover a part of the very
-image it was opened to show. What opens it is a real link pointing at the high-resolution file, which the
-controller intercepts: without javascript the file is still reachable, and the zoom is keyboard-operable
-for free.
+The lightbox is **UiBundle's own** `<twig:c975LUi:Image:Zoom>`, which this bundle wrote first and handed
+over so a planche or any other picture could open the same way: `Gallery:Lightbox` names the two files and
+the words the link is announced with, and nothing more. The gesture itself is unchanged - a native
+`<dialog>`, so its backdrop, its escape key and its focus trap are the browser's own, no library involved.
+It closes on a click anywhere inside it as well, which is why it carries no close button: a cross in the
+corner would only cover a part of the very image it was opened to show. What opens it is a real link
+pointing at the high-resolution file, which UiBundle's controller intercepts: without javascript the file
+is still reachable, and the zoom is keyboard-operable for free.
 
 The right click and the drag are blocked on the grids and on the media page
 (`assets/js/gallery-media-protect.js`), with the touch long-press neutralized in CSS. **This is a
@@ -1002,7 +1004,8 @@ a token of its own. The image is `border-box` there, so the mount is taken off t
 than added to it — added, it would run past a `max-height` the dialog clips at. Worth knowing on a `light`
 gallery, whose ink is near-black against a lightbox backdrop that is near-black too: the mount is there,
 but barely read. A design wanting it seen on both grounds gives the lightbox a color of its own, the
-`--gallery-media-frame-color` token being overridable under the `.gallery-lightbox__image` selector.
+`--gallery-media-frame-color` token being overridable under the `.gallery-media-container .image-zoom__image`
+selector - UiBundle's image, framed here by this gallery's mount alone.
 
 Hovering a thumbnail bounces it, with UiBundle's own `bounceHorizontal` — reused rather than redefined,
 its `animations.min.css` being served on every page. `--gallery-thumb-hover-animation` holds the whole

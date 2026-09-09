@@ -1,5 +1,17 @@
 # ChangeLog
 
+## v1.17.0
+
+The zoom this bundle invented becomes everyone's
+
+- **`c975l/core-bundle` moves from `^1.25` to `^1.26`**, which is what ships `Image:Zoom` (09/09/2026)
+- **The lightbox moves to UiBundle** as `<twig:c975LUi:Image:Zoom>`: `Gallery:Lightbox` now hands it the two files and the words the link is announced with, and no longer writes the markup itself (08/09/2026) [BC-Break]
+- Removed `.gallery-media-zoom`, `.gallery-lightbox` and `.gallery-lightbox__image`, the mount of the opened high resolution moving to `.gallery-media-container .image-zoom__image` (09/09/2026) [BC-Break]
+- `assets/js/gallery-lightbox.js` deleted, the media page mounting `gallery-media-preload` and `gallery-media-protect` alone - the zoom carries its own controller now (08/09/2026) [BC-Break]
+- Its four behaviour tests move with it, to UiBundle's `ImageZoomBehaviourTest` (08/09/2026)
+- `--gallery-lightbox-max-width`, `-max-height` and `-backdrop` are kept and handed to UiBundle's own tokens on `.gallery-media-container`: a site that overrode them keeps overriding the same three names, and a picture zooming elsewhere on the page is not framed by this gallery's settings (08/09/2026)
+- The passe-partout stays here, being this gallery's own and no other picture's (08/09/2026)
+
 ## v1.16.0
 
 An ecosystem cannot hold two majors of the same uploader

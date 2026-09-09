@@ -26,7 +26,7 @@
     <twig:c975LGallery:Gallery:Navigation category="{{ browsedFrom ?? category }}" categoriesCount="{{ categoriesCount }}" current="{{ (media.video ? 'label.gallery_video' : 'label.gallery_media')|trans({}, 'gallery') }}"/>
     {# Right click and drag are blocked here too, the lightbox being a child of this container #}
     <div class="gallery-media-container"
-        data-controller="gallery-media-preload gallery-lightbox gallery-media-protect{{ editUrl ? ' blockEditOverlay' : '' }}"
+        data-controller="gallery-media-preload gallery-media-protect{{ editUrl ? ' blockEditOverlay' : '' }}"
         data-action="contextmenu->gallery-media-protect#block dragstart->gallery-media-protect#block"
         {% if editUrl %}data-edit-label="{{ 'label.edit'|trans({}, 'ui') }}" data-block-edit-url="{{ editUrl }}"{% endif %}
         data-previous-url="{{ asset(previousNext.previous.filename) }}"

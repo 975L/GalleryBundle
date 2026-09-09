@@ -196,8 +196,11 @@
     margin-bottom: 0;
 }
 
-// The media (or the player) and the two arrows overlaying it
+// The media (or the player) and the two arrows overlaying it. This gallery's own three measures are handed here to the zoom that reads them, on the container rather than on :root - a page may hold a picture zooming beside a gallery, and that one is not framed by this gallery's settings
 .gallery-media-container {
+    --image-zoom-max-width: var(--gallery-lightbox-max-width);
+    --image-zoom-max-height: var(--gallery-lightbox-max-height);
+    --image-zoom-backdrop: var(--gallery-lightbox-backdrop);
     position: relative;
     display: block;
     margin: 0 auto;
@@ -210,12 +213,6 @@
     margin: 0 auto;
     padding: 0;
     border: var(--gallery-media-frame-width) solid var(--gallery-media-frame-color);
-}
-
-// The link wrapping the displayed media - it opens the lightbox rather than a page, which the cursor is the only thing to announce
-.gallery-media-zoom {
-    display: block;
-    cursor: zoom-in;
 }
 
 // Shaped as a button rather than a bare glyph - the padding is tighter sideways than vertically, which is what makes the standing rectangle a chevron sits in
@@ -309,34 +306,15 @@
     margin-top: var(--gallery-rating-margin-top);
 }
 
-// The high resolution, over the page rather than on a page of its own. A native <dialog>, so the backdrop, the escape key and the focus trap are the browser's own - the rules below only undo the frame a dialog is drawn with, a media needing none
-.gallery-lightbox {
-    max-width: var(--gallery-lightbox-max-width);
-    max-height: var(--gallery-lightbox-max-height);
-    padding: 0;
-    border: 0;
-    background: transparent;
-    overflow: hidden;
-}
-
-.gallery-lightbox::backdrop {
-    background: var(--gallery-lightbox-backdrop);
-}
-
-// Capped by the dialog's own measure, and framed with the same passe-partout as the media on the page - border-box, so the mount is taken off that measure rather than added to it, the dialog clipping whatever runs past
-.gallery-lightbox__image {
-    display: block;
-    box-sizing: border-box;
-    max-width: 100%;
-    max-height: var(--gallery-lightbox-max-height);
+// The dialog, its backdrop and the two cursors are UiBundle's own (see _image-zoom.scss, which the zoom moved to): what stays here is the passe-partout, framed with the same mount as the media on the page and border-box, so it is taken off the dialog's measure rather than added to it, the dialog clipping whatever runs past
+.gallery-media-container .image-zoom__image {
     border: var(--gallery-media-frame-width) solid var(--gallery-media-frame-color);
-    cursor: zoom-out;
 }
 
 // The long press is the touch equivalent of the right click, and dragging the file out is the other way off the page - both are blocked here, the context menu itself in gallery-media-protect.js
 .gallery-thumb img,
 .gallery-media-display,
-.gallery-lightbox__image {
+.gallery-media-container .image-zoom__image {
     user-select: none;
     -webkit-touch-callout: none;
     -webkit-user-drag: none;

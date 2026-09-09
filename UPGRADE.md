@@ -1,5 +1,24 @@
 # UPGRADE
 
+## v1.17
+
+### The zoom this bundle invented becomes everyone's
+
+**`c975l/core-bundle` moves to `^1.26`, in the same `composer update`.** The lightbox is now UiBundle's
+`<twig:c975LUi:Image:Zoom>`, which `^1.25` does not ship: installing this version against a CoreBundle left
+behind leaves every media page on an « Unable to find component » fatal.
+
+**An override of `templates/components/Gallery/Lightbox.html.twig` is to be rewritten.** The component no
+longer writes the markup, it names the two files and the words the link is announced with, and hands them to
+`c975LUi:Image:Zoom`. A copy of the old body keeps a `data-action="gallery-lightbox#open"` no controller
+listens to any more: the link stops being intercepted and the click leaves the page for the raw file.
+
+**Three classes and one Stimulus controller are gone**: `.gallery-media-zoom`, `.gallery-lightbox`,
+`.gallery-lightbox__image` and the `gallery-lightbox` identifier, along with `assets/js/gallery-lightbox.js`.
+A stylesheet colouring the mount of the opened high resolution moves to
+`.gallery-media-container .image-zoom__image`. `--gallery-lightbox-max-width`, `-max-height` and `-backdrop`
+are kept and handed to UiBundle's own tokens, so a site that overrode them keeps overriding the same three names.
+
 ## v1.16.0
 
 ### An ecosystem cannot hold two majors of the same uploader

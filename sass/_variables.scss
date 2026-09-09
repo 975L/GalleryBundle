@@ -27,7 +27,7 @@
     /* Measure of the media page - the stored (medium) file, the only one a page ever shows */
     --gallery-media-max-width: 800px;
 
-    /* The lightbox the high resolution opens in, over the page */
+    /* The lightbox the high resolution opens in, over the page. The gesture is UiBundle's since the zoom moved there, and these three are handed to its own tokens on the media container (see _gallery.scss) - a site that overrode them keeps overriding the same three names */
     --gallery-lightbox-max-width: 95vw;
     --gallery-lightbox-max-height: 95vh;
     --gallery-lightbox-backdrop: var(--c975l-color-gallery-backdrop, rgba(0, 0, 0, 0.9));

@@ -15,7 +15,7 @@ use PHPUnit\Framework\TestCase;
 
 class ScriptProviderTest extends TestCase
 {
-    // The front-office (previous/next preload, lightbox, right-click blocking) Stimulus controllers must be advertised under their AssetMapper import name
+    // The front-office (previous/next preload, right-click blocking) Stimulus controllers must be advertised under their AssetMapper import name - the zoom carries its own, UiBundle registering it
     public function testGetScriptsReturnsFrontControllersAsset(): void
     {
         $provider = new ScriptProvider();

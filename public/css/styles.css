@@ -24,7 +24,7 @@
   --gallery-thumb-background: transparent;
   /* Measure of the media page - the stored (medium) file, the only one a page ever shows */
   --gallery-media-max-width: 800px;
-  /* The lightbox the high resolution opens in, over the page */
+  /* The lightbox the high resolution opens in, over the page. The gesture is UiBundle's since the zoom moved there, and these three are handed to its own tokens on the media container (see _gallery.scss) - a site that overrode them keeps overriding the same three names */
   --gallery-lightbox-max-width: 95vw;
   --gallery-lightbox-max-height: 95vh;
   --gallery-lightbox-backdrop: var(--c975l-color-gallery-backdrop, rgba(0, 0, 0, 0.9));
@@ -265,6 +265,9 @@
 }
 
 .gallery-media-container {
+  --image-zoom-max-width: var(--gallery-lightbox-max-width);
+  --image-zoom-max-height: var(--gallery-lightbox-max-height);
+  --image-zoom-backdrop: var(--gallery-lightbox-backdrop);
   position: relative;
   display: block;
   margin: 0 auto;
@@ -277,11 +280,6 @@
   margin: 0 auto;
   padding: 0;
   border: var(--gallery-media-frame-width) solid var(--gallery-media-frame-color);
-}
-
-.gallery-media-zoom {
-  display: block;
-  cursor: zoom-in;
 }
 
 .gallery-media-nav {
@@ -363,31 +361,13 @@
   margin-top: var(--gallery-rating-margin-top);
 }
 
-.gallery-lightbox {
-  max-width: var(--gallery-lightbox-max-width);
-  max-height: var(--gallery-lightbox-max-height);
-  padding: 0;
-  border: 0;
-  background: transparent;
-  overflow: hidden;
-}
-
-.gallery-lightbox::backdrop {
-  background: var(--gallery-lightbox-backdrop);
-}
-
-.gallery-lightbox__image {
-  display: block;
-  box-sizing: border-box;
-  max-width: 100%;
-  max-height: var(--gallery-lightbox-max-height);
+.gallery-media-container .image-zoom__image {
   border: var(--gallery-media-frame-width) solid var(--gallery-media-frame-color);
-  cursor: zoom-out;
 }
 
 .gallery-thumb img,
 .gallery-media-display,
-.gallery-lightbox__image {
+.gallery-media-container .image-zoom__image {
   user-select: none;
   -webkit-touch-callout: none;
   -webkit-user-drag: none;
