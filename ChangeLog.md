@@ -1,5 +1,11 @@
 # ChangeLog
 
+## v1.17.2
+
+The gallery section carries its own icon
+
+- The **Galerie** section carries the `fas fa-camera` icon (10/09/2026)
+
 ## v1.17.1
 
 The gallery gathers under its own sidebar section

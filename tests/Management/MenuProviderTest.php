@@ -40,7 +40,7 @@ class MenuProviderTest extends TestCase
     {
         $provider = $this->createProvider();
 
-        $this->assertSame(['label' => 'label.gallery', 'translation_domain' => 'gallery'], $provider->getMenuSection());
+        $this->assertSame(['label' => 'label.gallery', 'translation_domain' => 'gallery', 'icon' => 'fas fa-camera'], $provider->getMenuSection());
     }
 
     // Two entries: the galleries, where a gallery is composed and its own medias arranged, and the whole library read across them all

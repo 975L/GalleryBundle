@@ -30,6 +30,7 @@ class MenuProvider implements MenuProviderInterface
         return [
             'label' => 'label.gallery',
             'translation_domain' => 'gallery',
+            'icon' => 'fas fa-camera',
         ];
     }
 
