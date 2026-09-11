@@ -146,7 +146,7 @@ Copies `assets/styles/themes/gallery.css` into the app, where it is owned from t
 | Route | URL | Description |
 | --- | --- | --- |
 | `gallery_index` | `/gallery` | Gallery index, one thumbnail per category |
-| `gallery_category` | `/gallery/{category}` | Category grid, photos and videos alike |
+| `gallery_category` | `/gallery/{category}` | Category grid, photos and videos alike, growing as the visitor scrolls (`?p=`) |
 | `gallery_media` | `/gallery/{category}/{slug}` | Media: photo in medium resolution, or video embed |
 | `gallery_print_certificate` | `/certificate/{certificate}` | Public check page of one numbered print (see [selling prints](#selling-prints)) |
 | `gallery_print_file` | `/gallery-print-file/{copy}` | The print file, fetched by the lab through a signed url |
@@ -776,6 +776,12 @@ A visitor browses one resolution only, the stored (medium) file: the index, the 
 all serve it, and the previous/next arrows move from one to the next without ever loading a heavier file.
 The high resolution has no page of its own — it opens in a lightbox over the image, and is only fetched
 the first time the visitor asks for it, so a run through a category costs what its medium files cost.
+
+A category's **grid grows as the visitor scrolls**, `GalleryController::MEDIAS_PER_PAGE` (60) thumbnails at a
+time: UiBundle's infinite scroll fetches the page the **Load more media** link points to (`?p=2`, `?p=3`…)
+and appends its thumbnails, the counter under the grid saying how many are shown so far. Without javascript,
+and for a crawler, that link is an ordinary link to the next page; a page past the last one answers 404.
+Medias sharing a position are ordered by id, so no photograph shows twice or goes missing between two pages.
 
 The **breadcrumb** opening every page says how much each level holds — the number of categories beside the
 gallery's own label, the number of medias beside a category's title — so a visitor reads the size of what
@@ -1491,8 +1497,9 @@ prints an offer for it, since that is where the print is ordered. Those are the 
 **Licensable** badge is drawn from, which is a link to where the photo is bought, printed under it in image
 results.
 
-A gallery is an `ImageGallery` listing the photographs the page was served with, and the index an `ItemList` of
-the galleries. Neither carries an `offers` node: what a print costs belongs to whoever sells it, and ShopBundle
+A gallery is an `ImageGallery` listing the photographs the page was served with - a page after the first
+numbering them from where the previous one stopped, through the fourth argument of `gallery_json_ld()` - and
+the index an `ItemList` of the galleries. Neither carries an `offers` node: what a print costs belongs to whoever sells it, and ShopBundle
 is the one place of the ecosystem emitting one.
 
 The whole of what `gallery/media.html.twig` does, to be reproduced as is by an app overriding it - the two files

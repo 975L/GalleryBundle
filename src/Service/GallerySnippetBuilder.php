@@ -39,9 +39,10 @@ class GallerySnippetBuilder
 
     // The gallery itself, as the collection of photographs it is: the medias are listed in the order the page prints them, each leading to its own page
     /**
-     * @param list<array{name: string, url: string}> $items the photographs the page shows, in reading order
+     * @param list<array{name: string, url: string}> $items  the photographs the page shows, in reading order
+     * @param int                                    $offset how many photographs the pages before this one showed, which the positions start after
      */
-    public function buildGallery(GalleryCategory $category, array $items = [], ?string $url = null): array
+    public function buildGallery(GalleryCategory $category, array $items = [], ?string $url = null, int $offset = 0): array
     {
         $name = trim((string) $category->getTitle());
 
@@ -56,7 +57,7 @@ class GallerySnippetBuilder
             'url' => trim((string) $url),
             // The sentence the gallery is shared with, which is the only prose it carries (see GalleryCategory::$summarySocialNetwork)
             'description' => $this->plainText($category->getSummarySocialNetwork()),
-            'mainEntity' => $this->itemList($items),
+            'mainEntity' => $this->itemList($items, $offset),
         ]);
     }
 
@@ -139,11 +140,12 @@ class GallerySnippetBuilder
 
     /**
      * @param list<array{name: string, url: string}> $items
+     * @param int                                    $offset the entries the pages before this one listed, which the positions start after
      */
-    private function itemList(array $items): array
+    private function itemList(array $items, int $offset = 0): array
     {
         $elements = [];
-        $position = 0;
+        $position = $offset;
 
         foreach ($items as $item) {
             $name = trim($item['name']);

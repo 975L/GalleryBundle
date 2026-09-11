@@ -1354,6 +1354,10 @@
                 <source>label.info_print_orders</source>
                 <target>Las copias pedidas, las que imprime el laboratorio y las que esperan su firma</target>
             </trans-unit>
+            <trans-unit id="knMSD8.">
+                <source>label.load_more</source>
+                <target>Ver más medios</target>
+            </trans-unit>
             <trans-unit id="Rfi.GLm">
                 <source>label.position</source>
                 <target>Posición</target>

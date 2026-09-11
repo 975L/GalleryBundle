@@ -29,7 +29,7 @@ class GalleryMediaRepository extends ServiceEntityRepository
     /** @return GalleryMedia[] */
     public function findByCategory(GalleryCategory $category): array
     {
-        return $this->findBy(['category' => $category, 'isDeleted' => false], ['position' => 'ASC']);
+        return $this->findBy(['category' => $category, 'isDeleted' => false], ['position' => 'ASC', 'id' => 'ASC']);
     }
 
     // The same list, hidden medias left out too - what every public read asks for, the back-office grid keeping findByCategory() above so an admin still sees what he has masked
@@ -74,6 +74,8 @@ class GalleryMediaRepository extends ServiceEntityRepository
             ->andWhere('m.hidden = false')
             ->setParameter('categories', $categories)
             ->orderBy('m.position', \SortDirection::Ascending)
+            // Ties broken by id, as findAdjacent() and findEdge() do: each page of the grid is a read of its own, and a tie left to the database could list a photograph twice and another never
+            ->addOrderBy('m.id', \SortDirection::Ascending)
             ->getQuery()
             ->getResult()
         ;

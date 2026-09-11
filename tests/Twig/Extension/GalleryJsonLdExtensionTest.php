@@ -72,6 +72,16 @@ class GalleryJsonLdExtensionTest extends TestCase
         $this->assertSame('ItemList', json_decode($this->extension()->indexJsonLd($items), true)['@type']);
     }
 
+    // A page after the first numbers its photographs from where the pages before it stopped, the offset travelling through the function as it is given
+    public function testTheOffsetReachesTheGalleryPositions(): void
+    {
+        $items = [['name' => 'Le lac', 'url' => 'https://example.org/galerie/montagne/lac']];
+
+        $snippet = json_decode($this->extension()->galleryJsonLd($this->category(), $items, 'https://example.org/galerie/montagne', 60), true);
+
+        $this->assertSame(61, $snippet['mainEntity']['itemListElement'][0]['position']);
+    }
+
     // Nothing to publish is an empty string and not "[]", the template testing it before opening its <script>
     public function testNothingToPublishIsAnEmptyString(): void
     {

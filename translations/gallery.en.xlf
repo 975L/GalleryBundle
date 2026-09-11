@@ -1354,6 +1354,10 @@
                 <source>label.info_print_orders</source>
                 <target>The prints ordered, those the lab is printing and those waiting for your signature</target>
             </trans-unit>
+            <trans-unit id="knMSD8.">
+                <source>label.load_more</source>
+                <target>Load more media</target>
+            </trans-unit>
             <trans-unit id="Rfi.GLm">
                 <source>label.position</source>
                 <target>Position</target>

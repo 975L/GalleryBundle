@@ -35,9 +35,9 @@ class GalleryJsonLdExtension
      * @param list<array{name: string, url: string}> $items
      */
     #[AsTwigFunction('gallery_json_ld', isSafe: ['html'])]
-    public function galleryJsonLd(GalleryCategory $category, array $items = [], ?string $url = null): string
+    public function galleryJsonLd(GalleryCategory $category, array $items = [], ?string $url = null, int $offset = 0): string
     {
-        return $this->snippetBuilder->buildJson($this->snippetBuilder->buildGallery($category, $items, $url));
+        return $this->snippetBuilder->buildJson($this->snippetBuilder->buildGallery($category, $items, $url, $offset));
     }
 
     /**

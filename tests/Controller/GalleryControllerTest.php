@@ -19,9 +19,11 @@ use c975L\GalleryBundle\Repository\GalleryMediaRepository;
 use c975L\GalleryBundle\Service\GalleryAutomaticProvider;
 use c975L\GalleryBundle\Service\GalleryTranslatedLocales;
 use c975L\GalleryBundle\Service\GalleryTranslator;
+use c975L\UiBundle\Service\Paginator;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\DependencyInjection\Container;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\GoneHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -43,6 +45,7 @@ class GalleryControllerTest extends TestCase
             $this->createStub(GalleryTranslatedLocales::class),
             $this->createStub(GalleryTranslator::class),
             $this->createNegotiator(),
+            new Paginator(new RequestStack()),
         );
 
         $twig = $this->createStub(Environment::class);
@@ -101,6 +104,7 @@ class GalleryControllerTest extends TestCase
             $this->createStub(GalleryTranslatedLocales::class),
             $this->createStub(GalleryTranslator::class),
             $this->createNegotiator(),
+            new Paginator(new RequestStack()),
         );
         $container = new Container();
         $container->set('twig', $twig);
@@ -135,6 +139,7 @@ class GalleryControllerTest extends TestCase
             $this->createStub(GalleryTranslatedLocales::class),
             $this->createStub(GalleryTranslator::class),
             $this->createNegotiator(),
+            new Paginator(new RequestStack()),
         );
         $container = new Container();
         $container->set('twig', $twig);
@@ -176,7 +181,62 @@ class GalleryControllerTest extends TestCase
         $this->assertSame(200, $response->getStatusCode());
         $this->assertSame($category, $capturedParameters['category']);
         $this->assertSame(4, $capturedParameters['categoriesCount']);
-        $this->assertSame($medias, $capturedParameters['medias']);
+        $this->assertSame($medias, iterator_to_array($capturedParameters['medias']));
+    }
+
+    // The grid is served one page at a time and grows as the visitor scrolls: the page asked for is the slice handed over, the total still counting the whole gallery
+    public function testCategoryServesThePageOfMediasItIsAskedFor(): void
+    {
+        $medias = array_map(static fn (): GalleryMedia => new GalleryMedia(), range(1, GalleryController::MEDIAS_PER_PAGE + 5));
+
+        $categoryRepository = $this->createStub(GalleryCategoryRepository::class);
+        $categoryRepository->method('findOneBySlug')->willReturn(new GalleryCategory()->setSlug('voyages'));
+
+        $twig = $this->createStub(Environment::class);
+        $capturedParameters = null;
+        $twig->method('render')->willReturnCallback(
+            function (string $view, array $parameters = []) use (&$capturedParameters): string {
+                $capturedParameters = $parameters;
+
+                return $view;
+            }
+        );
+
+        $controller = $this->createController($categoryRepository, null, $this->createAutomaticProvider($medias));
+        $container = new Container();
+        $container->set('twig', $twig);
+        $controller->setContainer($container);
+
+        $controller->category('voyages', new Request(['p' => '2']));
+
+        $this->assertSame(2, $capturedParameters['medias']->getCurrentPageNumber());
+        $this->assertSame(array_slice($medias, GalleryController::MEDIAS_PER_PAGE), iterator_to_array($capturedParameters['medias']));
+        $this->assertSame(GalleryController::MEDIAS_PER_PAGE + 5, $capturedParameters['medias']->getTotalItemCount());
+    }
+
+    // An old link to a page the gallery no longer reaches answers 404, rather than an empty grid a crawler would index
+    public function testCategoryAnswersNotFoundPastItsLastPage(): void
+    {
+        $medias = array_map(static fn (): GalleryMedia => new GalleryMedia(), range(1, GalleryController::MEDIAS_PER_PAGE + 5));
+
+        $categoryRepository = $this->createStub(GalleryCategoryRepository::class);
+        $categoryRepository->method('findOneBySlug')->willReturn(new GalleryCategory()->setSlug('voyages'));
+
+        $controller = $this->createController($categoryRepository, null, $this->createAutomaticProvider($medias));
+
+        $this->expectException(NotFoundHttpException::class);
+        $controller->category('voyages', new Request(['p' => '3']));
+    }
+
+    // A gallery without any photograph still has its first page, which answers 200 on an empty grid
+    public function testCategoryWithoutMediasServesItsFirstPage(): void
+    {
+        $categoryRepository = $this->createStub(GalleryCategoryRepository::class);
+        $categoryRepository->method('findOneBySlug')->willReturn(new GalleryCategory()->setSlug('voyages'));
+
+        $controller = $this->createController($categoryRepository);
+
+        $this->assertSame(200, $controller->category('voyages', new Request())->getStatusCode());
     }
 
     // The automatic gallery is served by this very route and this very template: only its list comes from the last days of additions instead of from a relation it has none of
@@ -209,7 +269,7 @@ class GalleryControllerTest extends TestCase
 
         $controller->category('latest', new Request());
 
-        $this->assertSame($latest, $capturedParameters['medias']);
+        $this->assertSame($latest, iterator_to_array($capturedParameters['medias']));
     }
 
     // Opened from the last additions, a photo is walked among them: the neighbours come from that list and the trail leads back to it, the url staying the media's own

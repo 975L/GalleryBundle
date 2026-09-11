@@ -145,6 +145,20 @@ class GallerySnippetBuilderTest extends TestCase
         );
     }
 
+    // The second page of a grid growing on scroll numbers its photographs from where the first one stopped, not from 1 again
+    public function testAGalleryPageNumbersItsPhotographsAfterThePagesBeforeIt(): void
+    {
+        $snippet = $this->builder()->buildGallery(
+            $this->category(),
+            [['name' => 'Le lac', 'url' => 'https://example.org/galerie/montagne/lac']],
+            'https://example.org/galerie/montagne',
+            60,
+        );
+
+        $this->assertSame(1, $snippet['mainEntity']['numberOfItems']);
+        $this->assertSame(61, $snippet['mainEntity']['itemListElement'][0]['position']);
+    }
+
     // A list whose positions skip one is malformed, so an entry pointing nowhere is dropped rather than numbered
     public function testAnEntryWithNothingToPointAtIsLeftOutOfTheList(): void
     {

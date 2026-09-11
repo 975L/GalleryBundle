@@ -1,5 +1,20 @@
 # ChangeLog
 
+## v1.19.0
+
+The category grid grows as the visitor scrolls
+
+- **The category grid grows as the visitor scrolls**, through UiBundle's infinite scroll (11/09/2026)
+- `GalleryController::MEDIAS_PER_PAGE` serves 60 medias a page, read from `?p=` (11/09/2026)
+- `category.html.twig` receives `medias` as a UiBundle `Pagination` instead of an array (11/09/2026) [BC-Break]
+- A category page past its last one answers 404 (11/09/2026)
+- The grid's counter shows the thumbnails on screen (11/09/2026)
+- The `Medias` component takes `infinite`, marking the grid the scroll appends to (11/09/2026)
+- `gallery_json_ld()` takes an `$offset`, a page's positions following the pages before it (11/09/2026)
+- Medias sharing a position are ordered by id, on the site and in the back office (11/09/2026)
+- Added `label.load_more` (11/09/2026)
+- Extended `GalleryControllerTest`, `GallerySnippetBuilderTest` and `GalleryJsonLdExtensionTest` (11/09/2026)
+
 ## v1.18.1
 
 Sort directions pass Doctrine's SortDirection enum

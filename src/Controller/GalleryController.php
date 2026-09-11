@@ -19,6 +19,7 @@ use c975L\GalleryBundle\Routing\GalleryRoutePrefix;
 use c975L\GalleryBundle\Service\GalleryAutomaticProvider;
 use c975L\GalleryBundle\Service\GalleryTranslatedLocales;
 use c975L\GalleryBundle\Service\GalleryTranslator;
+use c975L\UiBundle\Service\Paginator;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -32,6 +33,9 @@ class GalleryController extends AbstractController
 {
     private const string PREFIX_CONDITION = "service('" . GalleryRoutePrefix::ALIAS . "').matches(params['" . GalleryRoutePrefix::PARAMETER . "'])";
 
+    // The thumbnails a category page is served with, the next ones being appended as the visitor scrolls (see UiBundle's infinite-scroll.js) - ten rows of the 150px grid on a desktop, which fills a tall screen before the link below it is reached
+    public const int MEDIAS_PER_PAGE = 60;
+
     public function __construct(
         private readonly GalleryAutomaticProvider $automaticProvider,
         private readonly GalleryCategoryRepository $categoryRepository,
@@ -39,6 +43,7 @@ class GalleryController extends AbstractController
         private readonly GalleryTranslatedLocales $translatedLocales,
         private readonly GalleryTranslator $galleryTranslator,
         private readonly LocalizedRouteNegotiator $negotiator,
+        private readonly Paginator $paginator,
     ) {
     }
 
@@ -88,11 +93,21 @@ class GalleryController extends AbstractController
         // An automatic gallery is rendered by this very template, from this very route: it is a category like the others, only its list is gathered instead of being read from a relation it has none of (see GalleryAutomaticProvider)
         $this->automaticProvider->hydrate([$category]);
 
-        $medias = $this->automaticProvider->getMedias($category);
+        // Cut into the pages the grid grows by as the visitor scrolls (see category.html.twig) - read whole all the same, an automatic gallery's list being gathered rather than queried
+        $medias = $this->paginator->paginate(
+            $this->automaticProvider->getMedias($category),
+            $this->paginator->getPage($request->query),
+            self::MEDIAS_PER_PAGE
+        );
 
-        // The gallery and the photographs it holds, in the language being read (see GalleryTranslator::apply)
+        // A page past the last one is a link that outlived the photographs it listed, not an empty page to serve
+        if ($medias->getCurrentPageNumber() > $medias->getPageCount()) {
+            throw $this->createNotFoundException();
+        }
+
+        // The gallery and the photographs this page shows, in the language being read (see GalleryTranslator::apply)
         $this->galleryTranslator->apply([$category]);
-        $this->galleryTranslator->apply($medias);
+        $this->galleryTranslator->apply(iterator_to_array($medias));
 
         // The breadcrumb's home link carries the same count as on the index, counted here rather than listed, the page having no use for the categories themselves
         return $this->negotiator->vary($request, $this->render('@c975LGallery/gallery/category.html.twig', [

@@ -27,17 +27,37 @@
     {% endif %}
     {# Editorial heading composed in the back-office, with any of UiBundle's block kinds - renders nothing when the category has none #}
     <twig:c975LUi:Blocks:Blocks blocks="{{ category.blocks }}"/>
-    {# UiBundle's own wrapper class: display:contents, so it hosts the hover button's attributes without taking any part in the grid's layout #}
-    <div class="block-editable"{% if editUrl %} data-controller="blockEditOverlay" data-edit-label="{{ 'label.edit'|trans({}, 'ui') }}" data-block-edit-url="{{ editUrl }}"{% endif %}>
-        <twig:c975LGallery:Gallery:Medias category="{{ category }}" medias="{{ medias }}"/>
+    {# The grid grows instead of turning pages: UiBundle's controller fetches the page the link below already points to and appends its thumbnails. Nothing here is written for it alone - without javascript, and for a crawler, that link is the ordinary link to the next page it looks like #}
+    <div id="medias" data-controller="infiniteScroll">
+        {# UiBundle's own wrapper class: display:contents, so it hosts the hover button's attributes without taking any part in the grid's layout #}
+        <div class="block-editable"{% if editUrl %} data-controller="blockEditOverlay" data-edit-label="{{ 'label.edit'|trans({}, 'ui') }}" data-block-edit-url="{{ editUrl }}"{% endif %}>
+            <twig:c975LGallery:Gallery:Medias category="{{ category }}" medias="{{ medias }}" infinite="true"/>
+        </div>
+
+        <div class="text-center">
+            {% if medias.getTotalItemCount > medias.getItemNumberPerPage %}
+                {# What the grid shows so far, which is what UiBundle's controller counts as it appends - a visitor landing on page 3 reads the thumbnails in front of them, not their rank #}
+                <p aria-live="polite">{{ 'label.gallery_medias'|trans({}, 'gallery') }} <span data-infiniteScroll-target="count">{{ medias|length }}</span> / {{ medias.getTotalItemCount }}</p>
+            {% endif %}
+            {% if medias.getCurrentPageNumber < medias.getPageCount %}
+                {# The paginator's own query is reused rather than rebuilt: the "from" or the language the visitor came with stays in it #}
+                <a
+                    href="{{ path(medias.route, medias.query({'p': medias.getCurrentPageNumber + 1})) }}#medias"
+                    rel="next"
+                    class="btn btn-secondary"
+                    data-infiniteScroll-target="next"
+                    data-action="click->infiniteScroll#load"
+                >{{ 'label.load_more'|trans({}, 'gallery') }}</a>
+            {% endif %}
+        </div>
     </div>
 
-    {# The gallery as the collection it is, listing the photographs this page was served with - the next page publishes its own (see GallerySnippetBuilder) #}
-    {# Each entry is addressed under the gallery filing it rather than the one being walked through: an automatic gallery shows photographs of other categories, and GalleryController::media resolves a media within the category its url names #}
+    {# The gallery as the collection it is, listing the photographs this page was served with - the next page publishes its own, numbering them from where this one stopped (see GallerySnippetBuilder). Each entry is addressed under the gallery filing it rather than the one being walked through: an automatic gallery shows photographs of other categories, and GalleryController::media resolves a media within the category its url names #}
     {% set jsonLd = gallery_json_ld(
         category,
         medias|map(media => {name: media.title|default(category.title), url: absolute_url(localized_path('gallery_media', {category: media.category.slug, slug: media.slug}))}),
-        absolute_url(localized_path('gallery_category', {category: category.slug}))
+        absolute_url(localized_path('gallery_category', {category: category.slug})),
+        (medias.getCurrentPageNumber - 1) * medias.getItemNumberPerPage
     ) %}
     {% if jsonLd %}
         <script type="application/ld+json">{{ jsonLd|raw }}</script>

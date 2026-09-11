@@ -5,8 +5,8 @@
 {% endif %}
 {# Only the automatic gallery sends a visitor to a photo it doesn't hold, so it is the only grid whose links say where they were clicked from #}
 {% set from = category.automatic ? category.slug : null %}
-{# Right click and drag are blocked on the grid rather than on each thumbnail, one controller instead of one per media #}
-<div class="flex-center gallery-grid"
+{# Right click and drag are blocked on the grid rather than on each thumbnail, one controller instead of one per media. "infinite" marks the grid for UiBundle's infiniteScroll controller, which reads the page it fetches through this very attribute - only the category page's grid grows, a media block keeping the selection it was given #}
+<div class="flex-center gallery-grid"{% if infinite|default(false) %} data-infiniteScroll-target="list"{% endif %}
     data-controller="gallery-media-protect"
     data-action="contextmenu->gallery-media-protect#block dragstart->gallery-media-protect#block">
     {% for media in medias %}
