@@ -88,13 +88,13 @@ class GalleryCategory implements HasBlocksInterface, TrashableInterface, \String
     private ?array $loadedMedias = null;
 
     #[ORM\OneToMany(mappedBy: 'category', targetEntity: GalleryMedia::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
-    #[ORM\OrderBy(['position' => 'ASC'])]
+    #[ORM\OrderBy(['position' => \SortDirection::Ascending])]
     private Collection $medias;
 
     // Editorial heading composed in the back-office and rendered above the grid (see gallery/category.html.twig), so a category can introduce its medias with any of UiBundle's block kinds instead of only ever being a wall of thumbnails
     #[ORM\ManyToMany(targetEntity: Block::class, cascade: ['persist', 'remove'])]
     #[ORM\JoinTable(name: 'gallery_category_block')]
-    #[ORM\OrderBy(['position' => 'ASC'])]
+    #[ORM\OrderBy(['position' => \SortDirection::Ascending])]
     private Collection $blocks;
 
     public function __construct()

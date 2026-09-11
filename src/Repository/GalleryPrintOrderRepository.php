@@ -50,7 +50,7 @@ class GalleryPrintOrderRepository extends ServiceEntityRepository
             ->andWhere('o.state IN (:states)')
             ->andWhere('o.reference IS NOT NULL')
             ->setParameter('states', GalleryPrintOrder::STATES_HELD_BY_LAB)
-            ->orderBy('o.sentAt', 'ASC')
+            ->orderBy('o.sentAt', \SortDirection::Ascending)
             ->getQuery()
             ->getResult()
         ;

@@ -74,7 +74,7 @@ class GalleryCategoryRepository extends ServiceEntityRepository implements Reset
             ->addSelect('m')
             ->andWhere('c.isDeleted = false')
             ->andWhere('c.hidden = false')
-            ->orderBy('c.title', 'ASC')
+            ->orderBy('c.title', \SortDirection::Ascending)
             ->getQuery()
             ->getResult()
         ;

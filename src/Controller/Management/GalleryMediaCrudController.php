@@ -138,7 +138,7 @@ class GalleryMediaCrudController extends AbstractCrudController
                     ->andWhere('c.automaticKind IS NULL')
                     ->andWhere('c.isDeleted = false')
                     // Alphabetically, as every other list of the galleries is (see GalleryCategoryRepository::findAllOrdered) - a category carries no rank of its own, only its medias do
-                    ->orderBy('c.title', 'ASC')))
+                    ->orderBy('c.title', \SortDirection::Ascending)))
             ->add(BooleanFilter::new('printable', t('label.gallery_media_printable', [], 'gallery')))
             ->add(BooleanFilter::new('hidden', t('label.gallery_media_hidden', [], 'gallery')))
             ->add(BooleanFilter::new('rightsReserved', t('label.rights_reserved', [], 'gallery')))

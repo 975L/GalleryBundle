@@ -73,7 +73,7 @@ class GalleryMediaRepository extends ServiceEntityRepository
             // A hidden media is off every public page while staying whole in the back-office - the trash is where what is being removed goes, this is where what is kept and not shown stays
             ->andWhere('m.hidden = false')
             ->setParameter('categories', $categories)
-            ->orderBy('m.position', 'ASC')
+            ->orderBy('m.position', \SortDirection::Ascending)
             ->getQuery()
             ->getResult()
         ;
@@ -89,7 +89,7 @@ class GalleryMediaRepository extends ServiceEntityRepository
             // Parenthesised by hand: andWhere() joins with AND without bracketing what it is given, and an unbracketed OR would bind looser than it and let the trash back in
             ->andWhere('(m.filename IS NOT NULL AND m.filename != :empty) OR (m.videoFilename IS NOT NULL AND m.videoFilename != :empty)')
             ->setParameter('empty', '')
-            ->orderBy('m.filename', 'ASC')
+            ->orderBy('m.filename', \SortDirection::Ascending)
             ->getQuery()
             ->getResult()
         ;
@@ -134,8 +134,8 @@ class GalleryMediaRepository extends ServiceEntityRepository
             ->andWhere('c.isDeleted = false')
             ->andWhere('c.hidden = false')
             ->andWhere('c.automaticKind IS NULL')
-            ->orderBy('m.createdAt', 'DESC')
-            ->addOrderBy('m.id', 'DESC')
+            ->orderBy('m.createdAt', \SortDirection::Descending)
+            ->addOrderBy('m.id', \SortDirection::Descending)
             ->setMaxResults($limit)
         ;
 
@@ -166,9 +166,9 @@ class GalleryMediaRepository extends ServiceEntityRepository
             ->andWhere('c.hidden = false')
             ->andWhere('c.automaticKind IS NULL')
             ->setParameter('image', GalleryMedia::MEDIA_TYPE_IMAGE)
-            ->orderBy('m.position', 'ASC')
-            ->addOrderBy('m.createdAt', 'DESC')
-            ->addOrderBy('m.id', 'DESC')
+            ->orderBy('m.position', \SortDirection::Ascending)
+            ->addOrderBy('m.createdAt', \SortDirection::Descending)
+            ->addOrderBy('m.id', \SortDirection::Descending)
             ->setMaxResults($max)
             ->getQuery()
             ->getResult()
@@ -209,10 +209,10 @@ class GalleryMediaRepository extends ServiceEntityRepository
 
         if ('next' === $direction) {
             $qb->andWhere('p.position > :position OR (p.position = :position AND p.id > :id)')
-                ->orderBy('p.position', 'ASC')->addOrderBy('p.id', 'ASC');
+                ->orderBy('p.position', \SortDirection::Ascending)->addOrderBy('p.id', \SortDirection::Ascending);
         } else {
             $qb->andWhere('p.position < :position OR (p.position = :position AND p.id < :id)')
-                ->orderBy('p.position', 'DESC')->addOrderBy('p.id', 'DESC');
+                ->orderBy('p.position', \SortDirection::Descending)->addOrderBy('p.id', \SortDirection::Descending);
         }
 
         return $qb->getQuery()->getOneOrNullResult();
@@ -229,9 +229,9 @@ class GalleryMediaRepository extends ServiceEntityRepository
         ;
 
         if ('first' === $edge) {
-            $qb->orderBy('p.position', 'ASC')->addOrderBy('p.id', 'ASC');
+            $qb->orderBy('p.position', \SortDirection::Ascending)->addOrderBy('p.id', \SortDirection::Ascending);
         } else {
-            $qb->orderBy('p.position', 'DESC')->addOrderBy('p.id', 'DESC');
+            $qb->orderBy('p.position', \SortDirection::Descending)->addOrderBy('p.id', \SortDirection::Descending);
         }
 
         return $qb->getQuery()->getOneOrNullResult();

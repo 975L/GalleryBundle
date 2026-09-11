@@ -30,8 +30,8 @@ class GalleryPrintFormatRepository extends ServiceEntityRepository
     {
         return $this->createQueryBuilder('f')
             ->andWhere('f.published = true')
-            ->orderBy('f.position', 'ASC')
-            ->addOrderBy('f.widthCm', 'ASC')
+            ->orderBy('f.position', \SortDirection::Ascending)
+            ->addOrderBy('f.widthCm', \SortDirection::Ascending)
             ->getQuery()
             ->getResult()
         ;

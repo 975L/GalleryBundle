@@ -20,7 +20,7 @@
         "php": ">=8.4",
         "c975l/core-bundle": "^1.28.0",
         "c975l/payment-bundle": "^6.7",
-        "doctrine/orm": "^3.6",
+        "doctrine/orm": "^3.7",
         "easycorp/easyadmin-bundle": "^5.1",
         "endroid/qr-code": "^6",
         "ext-zip": "*",
@@ -38,6 +38,8 @@
     "require-dev": {
         "chrome-php/chrome": "^1.16",
         "doctrine/doctrine-fixtures-bundle": "^4.3",
+        "phpstan/phpstan": "^2.2",
+        "phpstan/phpstan-deprecation-rules": "^2.0",
         "phpunit/phpunit": "^13.2",
         "symfony/browser-kit": "^8.0",
         "symfony/css-selector": "^8.0",

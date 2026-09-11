@@ -1,5 +1,15 @@
 # ChangeLog
 
+## v1.18.1
+
+Sort directions pass Doctrine's SortDirection enum
+
+- Query and mapping orderings pass `\SortDirection` instead of `'ASC'`/`'DESC'` (11/09/2026)
+- PHPStan reports deprecated calls through `phpstan-deprecation-rules` (11/09/2026)
+- PHPStan moves to `require-dev`, out of the CI's installed tools (11/09/2026)
+- PHPUnit sees Doctrine's deprecations through `DOCTRINE_DEPRECATIONS=trigger` (11/09/2026)
+- Requires `doctrine/orm` `^3.7` (11/09/2026)
+
 ## v1.18.0
 
 The gallery is read in every language the site declares
