@@ -11,6 +11,7 @@
 namespace c975L\GalleryBundle\Tests\Controller\Management;
 
 use c975L\ConfigBundle\Entity\Redirect;
+use c975L\ConfigBundle\Management\ContentLocaleScreen;
 use c975L\ConfigBundle\Repository\RedirectRepository;
 use c975L\ConfigBundle\Service\ConfigServiceInterface;
 use c975L\ConfigBundle\Service\Export\ContentExporter;
@@ -29,6 +30,7 @@ use c975L\GalleryBundle\Service\GalleryMediaFactory;
 use c975L\GalleryBundle\Service\GalleryMediaLikeCounter;
 use c975L\GalleryBundle\Service\GalleryMediaMover;
 use c975L\GalleryBundle\Service\GalleryMediaSlugger;
+use c975L\GalleryBundle\Service\GalleryTranslator;
 use c975L\GalleryBundle\Service\GalleryUrlRedirector;
 use c975L\GalleryBundle\Service\UploadLimits;
 use c975L\UiBundle\Contract\VichWatermarkableInterface;
@@ -180,34 +182,46 @@ class GalleryCategoryCrudControllerTest extends TestCase
             'customizationRegistry' => $customizationRegistry,
         ]) + $this->defaultControllerServices($galleryCategoryRepository);
 
+        // Named rather than positional: this constructor is a list of twenty-three services kept in alphabetical order, and one more of them landing in the middle of it would otherwise shift every argument below
         return new GalleryCategoryCrudController(
-            $services['categoryRepository'],
-            new AsciiSlugger(),
-            $translator,
-            $this->createAdminUrlGenerator(),
-            $services['contentExporter'],
-            $services['exportProvider'],
-            $this->createStub(AdminContextProviderInterface::class),
-            $this->createStub(BlockMoveRowAttrBuilder::class),
-            new GalleryMediaFactory(new GalleryMediaSlugger(new AsciiSlugger())),
-            new GalleryMediaMover(
+            adminContextProvider: $this->createStub(AdminContextProviderInterface::class),
+            adminUrlGenerator: $this->createAdminUrlGenerator(),
+            blockMoveRowAttrBuilder: $this->createStub(BlockMoveRowAttrBuilder::class),
+            configService: $this->createConfigService(),
+            contentExporter: $services['contentExporter'],
+            contentLocaleScreen: $this->createContentLocaleScreen(),
+            csrfTokenManager: $this->createCsrfTokenManager(true),
+            automaticProvider: $services['automaticProvider'],
+            galleryCategoryRepository: $services['categoryRepository'],
+            customizationRegistry: $services['customizationRegistry'],
+            galleryExportProvider: $services['exportProvider'],
+            latestProvider: $services['latestProvider'],
+            galleryMediaArchiver: $services['mediaArchiver'],
+            galleryMediaFactory: new GalleryMediaFactory(new GalleryMediaSlugger(new AsciiSlugger())),
+            likeCounter: new GalleryMediaLikeCounter($this->createConfigService(), $this->createStub(RatingRepository::class)),
+            galleryMediaMover: new GalleryMediaMover(
                 new GalleryMediaSlugger(new AsciiSlugger()),
                 new GalleryUrlRedirector($services['redirectRepository']),
                 $this->createUrlGenerator(),
                 sys_get_temp_dir(),
             ),
-            new UploadLimits(),
-            new GalleryUrlRedirector($services['redirectRepository']),
-            $this->createConfigService(),
-            $services['requestStack'],
-            $services['mediaRepository'],
-            $this->createCsrfTokenManager(true),
-            $services['mediaArchiver'],
-            $services['automaticProvider'],
-            $services['latestProvider'],
-            $services['customizationRegistry'],
-            new GalleryMediaLikeCounter($this->createConfigService(), $this->createStub(RatingRepository::class)),
+            galleryMediaRepository: $services['mediaRepository'],
+            galleryTranslator: $this->createStub(GalleryTranslator::class),
+            urlRedirector: new GalleryUrlRedirector($services['redirectRepository']),
+            requestStack: $services['requestStack'],
+            slugger: new AsciiSlugger(),
+            translator: $translator,
+            uploadLimits: new UploadLimits(),
         );
+    }
+
+    // Action is final and cannot be doubled, so the stub hands a real one back - where it links to is ContentLocaleScreen's own business
+    private function createContentLocaleScreen(): ContentLocaleScreen
+    {
+        $contentLocaleScreen = $this->createStub(ContentLocaleScreen::class);
+        $contentLocaleScreen->method('action')->willReturnCallback(static fn (string $name): Action => Action::new($name)->linkToUrl('#'));
+
+        return $contentLocaleScreen;
     }
 
     // The collaborators a test says nothing about, the export provider reading the very repository the caller may have handed over
@@ -1753,6 +1767,22 @@ class GalleryCategoryCrudControllerTest extends TestCase
         $this->assertNotNull($editAction);
         $this->assertSame('action.view_on_site', $editAction->getLabel()->getMessage());
         $this->assertSame('gallery', $editAction->getLabel()->getDomain());
+    }
+
+    // The language screen opened straight from the row, icon-only like the buttons it sits next to (see ContentLocaleCrudTrait::translateAction())
+    public function testConfigureActionsOpensTheLanguageScreenFromEachRow(): void
+    {
+        $actions = $this->createController()->configureActions(
+            Actions::new()
+                ->add(Crud::PAGE_INDEX, Action::EDIT)
+                ->add(Crud::PAGE_INDEX, Action::DELETE)
+        );
+
+        $translate = $actions->getAsDto(Crud::PAGE_INDEX)->getAction(Crud::PAGE_INDEX, 'translate');
+
+        $this->assertNotNull($translate);
+        $this->assertFalse($translate->getLabel());
+        $this->assertArrayHasKey('title', $translate->getHtmlAttributes());
     }
 
     // The edit screen's toolbar sits above the blocks collection, so an upload button there left "Add a UiBlock" as the one under the hand of an admin meaning to add a media - it is rendered down with the medias instead (see gallery_category_edit.html.twig)

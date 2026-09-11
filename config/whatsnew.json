@@ -1,5 +1,15 @@
 [
     {
+        "date": "2026-09-11",
+        "description": [
+            {
+                "en": "Galleries, photographs and print formats can now be translated into every language your site offers: a \"Translate\" button in the galleries and print formats lists opens the language screen, and tabs at the top of each form switch from one language to another. Visitors reading your site in another language see the gallery in that language, and a new guided project walks you through translating a gallery",
+                "fr": "Les galeries, les photos et les formats de tirage se traduisent désormais dans toutes les langues de votre site : un bouton « Traduire » dans les listes des galeries et des formats ouvre l'écran de langue, et des onglets en haut de chaque formulaire passent d'une langue à l'autre. Les visiteurs qui lisent votre site dans une autre langue voient la galerie dans cette langue, et un nouveau projet guidé vous accompagne pour traduire une galerie",
+                "es": "Las galerías, las fotografías y los formatos de copia se traducen ahora a todos los idiomas de su sitio: un botón «Traducir» en las listas de galerías y de formatos abre la pantalla de idioma, y unas pestañas en la parte superior de cada formulario pasan de un idioma a otro. Los visitantes que leen su sitio en otro idioma ven la galería en ese idioma, y un nuevo proyecto guiado le acompaña para traducir una galería"
+            }
+        ]
+    },
+    {
         "date": "2026-09-09",
         "description": [
             {

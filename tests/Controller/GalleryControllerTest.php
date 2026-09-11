@@ -10,15 +10,19 @@
 
 namespace c975L\GalleryBundle\Tests\Controller;
 
+use c975L\ConfigBundle\Service\LocalizedRouteNegotiator;
 use c975L\GalleryBundle\Controller\GalleryController;
 use c975L\GalleryBundle\Entity\GalleryCategory;
 use c975L\GalleryBundle\Entity\GalleryMedia;
 use c975L\GalleryBundle\Repository\GalleryCategoryRepository;
 use c975L\GalleryBundle\Repository\GalleryMediaRepository;
 use c975L\GalleryBundle\Service\GalleryAutomaticProvider;
+use c975L\GalleryBundle\Service\GalleryTranslatedLocales;
+use c975L\GalleryBundle\Service\GalleryTranslator;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\DependencyInjection\Container;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\GoneHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Attribute\Route;
@@ -33,9 +37,12 @@ class GalleryControllerTest extends TestCase
         ?GalleryAutomaticProvider $automaticProvider = null,
     ): GalleryController {
         $controller = new GalleryController(
+            $automaticProvider ?? $this->createAutomaticProvider(),
             $categoryRepository ?? $this->createStub(GalleryCategoryRepository::class),
             $mediaRepository ?? $this->createStub(GalleryMediaRepository::class),
-            $automaticProvider ?? $this->createAutomaticProvider(),
+            $this->createStub(GalleryTranslatedLocales::class),
+            $this->createStub(GalleryTranslator::class),
+            $this->createNegotiator(),
         );
 
         $twig = $this->createStub(Environment::class);
@@ -65,7 +72,7 @@ class GalleryControllerTest extends TestCase
 
         $controller = $this->createController(categoryRepository: $categoryRepository);
 
-        $response = $controller->index();
+        $response = $controller->index(new Request());
 
         $this->assertSame(200, $response->getStatusCode());
         $this->assertSame('@c975LGallery/gallery/index.html.twig', $response->getContent());
@@ -88,15 +95,18 @@ class GalleryControllerTest extends TestCase
         );
 
         $controller = new GalleryController(
+            $this->createAutomaticProvider(),
             $categoryRepository,
             $this->createStub(GalleryMediaRepository::class),
-            $this->createAutomaticProvider(),
+            $this->createStub(GalleryTranslatedLocales::class),
+            $this->createStub(GalleryTranslator::class),
+            $this->createNegotiator(),
         );
         $container = new Container();
         $container->set('twig', $twig);
         $controller->setContainer($container);
 
-        $controller->index();
+        $controller->index(new Request());
 
         $this->assertSame([], $capturedParameters['categories']);
     }
@@ -119,15 +129,18 @@ class GalleryControllerTest extends TestCase
         );
 
         $controller = new GalleryController(
+            $this->createAutomaticProvider(),
             $categoryRepository,
             $this->createStub(GalleryMediaRepository::class),
-            $this->createAutomaticProvider(),
+            $this->createStub(GalleryTranslatedLocales::class),
+            $this->createStub(GalleryTranslator::class),
+            $this->createNegotiator(),
         );
         $container = new Container();
         $container->set('twig', $twig);
         $controller->setContainer($container);
 
-        $controller->index();
+        $controller->index(new Request());
 
         $this->assertSame(2, $capturedParameters['categoriesCount']);
     }
@@ -153,12 +166,12 @@ class GalleryControllerTest extends TestCase
         );
 
         // An ordinary gallery's medias come from the coordinator too, which reads them off the category itself (see GalleryAutomaticProvider::getMedias)
-        $controller = new GalleryController($categoryRepository, $mediaRepository, $this->createAutomaticProvider($medias));
+        $controller = $this->createController($categoryRepository, $mediaRepository, $this->createAutomaticProvider($medias));
         $container = new Container();
         $container->set('twig', $twig);
         $controller->setContainer($container);
 
-        $response = $controller->category('voyages');
+        $response = $controller->category('voyages', new Request());
 
         $this->assertSame(200, $response->getStatusCode());
         $this->assertSame($category, $capturedParameters['category']);
@@ -189,12 +202,12 @@ class GalleryControllerTest extends TestCase
             }
         );
 
-        $controller = new GalleryController($categoryRepository, $mediaRepository, $automaticProvider);
+        $controller = $this->createController($categoryRepository, $mediaRepository, $automaticProvider);
         $container = new Container();
         $container->set('twig', $twig);
         $controller->setContainer($container);
 
-        $controller->category('latest');
+        $controller->category('latest', new Request());
 
         $this->assertSame($latest, $capturedParameters['medias']);
     }
@@ -310,7 +323,7 @@ class GalleryControllerTest extends TestCase
             }
         );
 
-        $controller = new GalleryController($categoryRepository, $mediaRepository, $automaticProvider);
+        $controller = $this->createController($categoryRepository, $mediaRepository, $automaticProvider);
         $container = new Container();
         $container->set('twig', $twig);
         $controller->setContainer($container);
@@ -328,7 +341,7 @@ class GalleryControllerTest extends TestCase
         $controller = $this->createController(categoryRepository: $categoryRepository);
 
         $this->expectException(NotFoundHttpException::class);
-        $controller->category('unknown');
+        $controller->category('unknown', new Request());
     }
 
     // A category in the trash says the url held something and no longer does, rather than the 404 a crawler retries for months - the same answer SiteBundle serves for a trashed Page, and one that only lasts as long as the category can still be restored
@@ -343,7 +356,7 @@ class GalleryControllerTest extends TestCase
         $controller = $this->createController(categoryRepository: $categoryRepository);
 
         $this->expectException(GoneHttpException::class);
-        $controller->category('voyages');
+        $controller->category('voyages', new Request());
     }
 
     // A masked gallery answers 404 and not 410, exactly as a masked media does: masking is reversible, where 410 tells a crawler the url is gone for good
@@ -357,7 +370,7 @@ class GalleryControllerTest extends TestCase
         $controller = $this->createController(categoryRepository: $categoryRepository);
 
         $this->expectException(NotFoundHttpException::class);
-        $controller->category('voyages');
+        $controller->category('voyages', new Request());
     }
 
     // The photographs of a masked gallery are off the site with it, their own page being resolved through their category's
@@ -422,7 +435,7 @@ class GalleryControllerTest extends TestCase
             }
         );
 
-        $controller = new GalleryController($categoryRepository, $mediaRepository, $this->createAutomaticProvider());
+        $controller = $this->createController($categoryRepository, $mediaRepository, $this->createAutomaticProvider());
         $container = new Container();
         $container->set('twig', $twig);
         $controller->setContainer($container);
@@ -488,5 +501,16 @@ class GalleryControllerTest extends TestCase
 
         $this->assertNotEmpty($routes, 'No route was read, this test no longer checks anything.');
         $this->assertSame([], array_values(array_filter($routes, static fn (string $path): bool => str_ends_with($path, '/hr'))));
+    }
+
+    // The negotiator as a screen answering in one language alone meets it: nothing to refuse, nobody to move, and the response handed straight back
+    private function createNegotiator(): LocalizedRouteNegotiator
+    {
+        $negotiator = $this->createStub(LocalizedRouteNegotiator::class);
+        $negotiator->method('isTranslated')->willReturn(true);
+        $negotiator->method('redirectToAskedLanguage')->willReturn(null);
+        $negotiator->method('vary')->willReturnCallback(static fn (Request $request, Response $response): Response => $response);
+
+        return $negotiator;
     }
 }

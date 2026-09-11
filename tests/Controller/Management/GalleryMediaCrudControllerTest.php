@@ -11,6 +11,7 @@
 namespace c975L\GalleryBundle\Tests\Controller\Management;
 
 use c975L\ConfigBundle\Entity\Redirect;
+use c975L\ConfigBundle\Management\ContentLocaleScreen;
 use c975L\ConfigBundle\Repository\RedirectRepository;
 use c975L\ConfigBundle\Service\ConfigServiceInterface;
 use c975L\GalleryBundle\Contract\GalleryCustomizationProviderInterface;
@@ -23,6 +24,7 @@ use c975L\GalleryBundle\Service\GalleryCustomizationRegistry;
 use c975L\GalleryBundle\Service\GalleryMediaLikeCounter;
 use c975L\GalleryBundle\Service\GalleryMediaMover;
 use c975L\GalleryBundle\Service\GalleryMediaSlugger;
+use c975L\GalleryBundle\Service\GalleryTranslator;
 use c975L\GalleryBundle\Service\GalleryUrlRedirector;
 use c975L\GalleryBundle\Service\UploadLimits;
 use c975L\UiBundle\Contract\VichWatermarkableInterface;
@@ -36,6 +38,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Filters;
 use EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext;
 use EasyCorp\Bundle\EasyAdminBundle\Context\RequestContext;
+use EasyCorp\Bundle\EasyAdminBundle\Contracts\Provider\AdminContextProviderInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Dto\FieldDto;
 use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\SlugField;
@@ -77,20 +80,24 @@ class GalleryMediaCrudControllerTest extends TestCase
         $customizationRegistry ??= new GalleryCustomizationRegistry([]);
         $printCopyRepository ??= $this->createStub(GalleryPrintCopyRepository::class);
 
+        // Named rather than positional: this constructor is a list of services kept in alphabetical order, and one more of them landing in the middle of it would otherwise shift every argument below
         return new GalleryMediaCrudController(
-            $adminUrlGenerator,
-            $translator,
-            new GalleryMediaSlugger(new AsciiSlugger()),
-            $this->createMediaMover($redirectRepository),
-            new GalleryUrlRedirector($redirectRepository),
-            $this->createConfigService(),
-            // Fixed ceilings rather than the machine's own php.ini, so the video field's limit is the same on every runner
-            new UploadLimits('20', '64M', '128M'),
-            $customizationRegistry,
-            // Only reached by the tests that save an edition: what it writes is the register of a numbered edition, and only the first time one is announced (see GalleryMediaCrudController::settleEdition)
-            $printCopyRepository,
+            adminContextProvider: $this->createStub(AdminContextProviderInterface::class),
+            adminUrlGenerator: $adminUrlGenerator,
+            configService: $this->createConfigService(),
+            contentLocaleScreen: $this->createStub(ContentLocaleScreen::class),
+            customizationRegistry: $customizationRegistry,
             // Only reached by the index, where the badge under each thumbnail says how many visitors liked the photograph
-            new GalleryMediaLikeCounter($this->createConfigService(), $this->createStub(RatingRepository::class)),
+            likeCounter: new GalleryMediaLikeCounter($this->createConfigService(), $this->createStub(RatingRepository::class)),
+            mediaMover: $this->createMediaMover($redirectRepository),
+            mediaSlugger: new GalleryMediaSlugger(new AsciiSlugger()),
+            // Only reached by the tests that save an edition: what it writes is the register of a numbered edition, and only the first time one is announced (see GalleryMediaCrudController::settleEdition)
+            printCopyRepository: $printCopyRepository,
+            galleryTranslator: $this->createStub(GalleryTranslator::class),
+            urlRedirector: new GalleryUrlRedirector($redirectRepository),
+            translator: $translator,
+            // Fixed ceilings rather than the machine's own php.ini, so the video field's limit is the same on every runner
+            uploadLimits: new UploadLimits('20', '64M', '128M'),
         );
     }
 

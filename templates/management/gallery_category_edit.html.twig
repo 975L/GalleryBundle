@@ -42,6 +42,9 @@
 {% endblock %}
 
 {% block main %}
+    {# The language tabs, and nothing at all on a site declaring a single language (see ConfigBundle's ContentLocaleScreen) #}
+    {{ include('@c975LConfig/management/_content_locale_tabs.html.twig') }}
+
     <p>{{ ('label.info_gallery_category'|trans({}, 'gallery')) }}</p>
 
     {# The cover is picked further down this very screen, and a category with none is shared with one of its photos at random - the two cases where a preview already cached is the wrong one #}

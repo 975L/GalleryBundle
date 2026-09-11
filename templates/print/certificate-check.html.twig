@@ -41,7 +41,7 @@
                 </dl>
 
                 {% if media is not null and media.slug is not null and media.category is not null %}
-                    <a href="{{ path('gallery_media', {'category': media.category.slug, 'slug': media.slug}) }}">{{ media.title }}</a>
+                    <a href="{{ localized_path('gallery_media', {'category': media.category.slug, 'slug': media.slug}) }}">{{ media.title }}</a>
                 {% endif %}
             </div>
         </div>

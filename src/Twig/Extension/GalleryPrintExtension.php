@@ -13,6 +13,7 @@ namespace c975L\GalleryBundle\Twig\Extension;
 use c975L\GalleryBundle\Entity\GalleryMedia;
 use c975L\GalleryBundle\Model\PrintOffer;
 use c975L\GalleryBundle\Service\GalleryPrintService;
+use c975L\GalleryBundle\Service\GalleryTranslator;
 use Twig\Attribute\AsTwigFunction;
 
 /**
@@ -26,6 +27,7 @@ class GalleryPrintExtension
 {
     public function __construct(
         private readonly GalleryPrintService $printService,
+        private readonly GalleryTranslator $galleryTranslator,
     ) {
     }
 
@@ -41,6 +43,9 @@ class GalleryPrintExtension
     public function getOffers(GalleryMedia $media): array
     {
         $offers = $this->printService->getOffers($media);
+
+        // The one place a public page reads a format, so the language being read is laid on here rather than at each of the three that ask - the paper's own name included, which is what the offers are then grouped under (see GalleryTranslator::apply)
+        $this->galleryTranslator->apply(array_map(static fn (PrintOffer $offer) => $offer->format, $offers));
 
         usort($offers, static fn (PrintOffer $a, PrintOffer $b): int => (int) $a->format->getPrice() <=> (int) $b->format->getPrice());
 

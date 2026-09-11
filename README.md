@@ -22,7 +22,7 @@ See it in action at [bundles.975l.com/pages/gallery-bundle](https://bundles.975l
 ## Contents
 
 - **Setup** — [requirements](#requirements) · [installation](#installation) · [configuration](#load-the-configuration) · [routes](#enable-routes) · [assets](#install-assets) · [theme](#install-the-theme)
-- **Using it** — [public routes](#public-routes) · [linking from a menu](#linking-a-gallery-from-a-menu) · [the automatic galleries](#the-automatic-galleries) · [renaming a category](#renaming-a-category) · [deleting a gallery](#deleting-a-gallery) · [masking a gallery](#masking-a-gallery) · [selling prints](#selling-prints) · [the whole library at once](#the-whole-library-at-once) · [uploading a batch](#uploading-a-batch) · [renaming a media](#renaming-a-media) · [a media's caption](#a-medias-caption) · [fields of your own](#fields-of-your-own) · [browsing and the lightbox](#browsing-and-the-lightbox) · [editing from the public pages](#editing-from-the-public-pages) · [blocks](#blocks-defined-by-this-bundle) · [category summary](#a-categorys-summary) · [share image](#the-image-a-shared-page-carries) · [category headings](#composing-a-categorys-heading) · [theme tokens](#theme) · [videos](#videos) · [trashing a selection](#trashing-a-selection-of-medias) · [credits / rights on a selection](#applying-credits-or-rights-to-a-selection) · [moving a selection](#moving-a-selection-to-another-gallery) · [downloading a selection](#downloading-a-selections-files) · [export / import categories](#export--import-categories) · [sitemap and health check](#sitemap-and-health-check) · [describing the gallery index](#describing-the-gallery-index) · [backup](#backup) · [what's new](#whats-new) · [guided projects](#guided-projects)
+- **Using it** — [public routes](#public-routes) · [linking from a menu](#linking-a-gallery-from-a-menu) · [the automatic galleries](#the-automatic-galleries) · [renaming a category](#renaming-a-category) · [deleting a gallery](#deleting-a-gallery) · [masking a gallery](#masking-a-gallery) · [selling prints](#selling-prints) · [the whole library at once](#the-whole-library-at-once) · [uploading a batch](#uploading-a-batch) · [renaming a media](#renaming-a-media) · [a media's caption](#a-medias-caption) · [fields of your own](#fields-of-your-own) · [browsing and the lightbox](#browsing-and-the-lightbox) · [editing from the public pages](#editing-from-the-public-pages) · [blocks](#blocks-defined-by-this-bundle) · [category summary](#a-categorys-summary) · [share image](#the-image-a-shared-page-carries) · [category headings](#composing-a-categorys-heading) · [theme tokens](#theme) · [videos](#videos) · [trashing a selection](#trashing-a-selection-of-medias) · [credits / rights on a selection](#applying-credits-or-rights-to-a-selection) · [moving a selection](#moving-a-selection-to-another-gallery) · [downloading a selection](#downloading-a-selections-files) · [export / import categories](#export--import-categories) · [sitemap and health check](#sitemap-and-health-check) · [describing the gallery index](#describing-the-gallery-index) · [backup](#backup) · [what's new](#whats-new) · [translating a gallery](#translating-a-gallery) · [guided projects](#guided-projects)
 - **Operating** — [likes on a photo](#likes-on-a-photo) · [seeding a demo gallery](#seeding-a-demo-gallery) · [bringing an existing gallery in](#bringing-an-existing-gallery-in) · [upload ceilings](#upload-ceilings) · [AI agent skills](#ai-agent-skills)
 
 ## Features
@@ -48,7 +48,8 @@ See it in action at [bundles.975l.com/pages/gallery-bundle](https://bundles.975l
 - The gallery index and each category offered as a SiteBundle menu target, so a navbar links straight to one of the site's galleries (see [linking a gallery from a menu](#linking-a-gallery-from-a-menu))
 - Categories can be exported/imported as a zip (heading blocks, medias and files bundled in), plugging into ConfigBundle's **Export sync (everything)** dashboard shortcut and **Import content** screen.
 - The two upload roots declared to the backup, via ConfigBundle's `BackupPathProviderInterface`, mirrored offsite rather than tarred (see [backup](#backup))
-- Nine replayable guided projects contributed to the dashboard, via ConfigBundle's `GuidedProjectProviderInterface`, walking a gallery's creation, its medias' arrangement, a media's own screen, the trash and the way back out of it, the files handed back as an archive, the gallery of the latest additions, the sorting of the whole library, and the opening of the print shop (see [guided projects](#guided-projects))
+- Galleries, photographs and print formats are **translated** into every language the site declares, from a language screen per row in the back office, and read in that language on the public pages under `/{_locale}/…` (see [translating a gallery](#translating-a-gallery)).
+- Ten replayable guided projects contributed to the dashboard, via ConfigBundle's `GuidedProjectProviderInterface`, walking a gallery's creation, its medias' arrangement, a media's own screen, a gallery's translation, the trash and the way back out of it, the files handed back as an archive, the gallery of the latest additions, the sorting of the whole library, and the opening of the print shop (see [guided projects](#guided-projects))
 - Photographs can be **sold as prints**, behind one setting: a catalogue of sizes and prices, an order plugged into PaymentBundle's basket, and a lab that prints and ships to the customer directly - nothing transiting through the shopkeeper. A photograph can be offered as a limited edition, the bundle holding the register so the last copy cannot be sold twice, and drawing the certificate of authenticity to sign, with a qr code to its public verification page.
 - A photograph can be **hidden** from every public page without being deleted, and hiding it or putting it on sale applies to a whole selection at once.
 - A whole gallery can be **hidden** the same way: it leaves the index, the blocks, the menus and the sitemap, its photographs leave the automatic galleries with it, and everything stays in the back office to be shown again (see [masking a gallery](#masking-a-gallery)).
@@ -170,6 +171,10 @@ the category route at the site root — as does a prefix not configured at all, 
 always match what the router serves; it does so directly rather than through the generator, the sitemap
 being written from the command line where no request has filled the context. Route *names* never change,
 whatever the prefix.
+
+On a site declaring several languages, each of the three also answers under `/{_locale}/{gallery_prefix}/…`
+(`gallery_index_localized`, `gallery_category_localized`, `gallery_media_localized`), the writing language
+keeping its bare urls — see [translating a gallery](#translating-a-gallery).
 
 The three print routes are deliberately **outside** the prefix: `gallery_print_certificate` is printed on
 paper and has to outlive a rename, and neither `gallery_print_file` nor `gallery_print_callback` is ever
@@ -1395,14 +1400,41 @@ bundle covers; the visitor's own locale applies, English being the fallback:
 Written for the site's owner rather than for a developer: what changed on the screens and on the public
 pages, not which class carries it — the ChangeLog is where the code's history lives.
 
+### Translating a gallery
+
+A gallery, a photograph and a print format are one row in every language: `Service\GalleryTranslator` stores
+what another language says of them beside the row, in UiBundle's `site_translation` table, under the owner
+names `gallery_category`, `gallery_media` and `gallery_print_format`. Only what a visitor reads is translated —
+a category's `title` and `summarySocialNetwork`, a media's `title` and `description`, a format's `label`,
+`paper` and `paperDescription`; slugs, files, SKUs and credits are the same everywhere. A site declaring a
+single language reads none of it. Requires `c975l/core-bundle` `^1.28.0`.
+
+- **Back office** — each of the three edit screens opens on another language with `?contenu=xx`, through
+  ConfigBundle's `ContentLocaleScreen`: tabs above the form switch from one language to another, and a
+  **Translate** action on the galleries and print formats lists opens the first one (the library's contact
+  sheet draws no row action). A language screen offers that language's texts alone, unmapped, the source text
+  between brackets where nothing is written yet, and what it writes is stored on the flush saving the row.
+  `Controller\Management\Trait\ContentLocaleCrudTrait` holds it once for the three controllers.
+- **Public pages** — the three localized routes answer in every language the site declares, translated or not
+  (`Service\GalleryTranslatedLocales`). The controller lays the language over the rows it renders with
+  `GalleryTranslator::apply()`, for that render only — nothing is persisted —, and the gallery blocks and the
+  print offer do the same.
+- **Links** — templates generate `localized_path('gallery_category', {category: slug})` rather than `path()`,
+  and `Service\GalleryLinkLocalizer` rewrites a gallery url stored in a rich text into the language being read.
+- **Deletion** — `Listener\GalleryTranslationPurgeListener` removes a row's translations with the row.
+
+An app overriding a public template keeps `localized_path`, or its links send a visitor reading another
+language back to the writing one.
+
 ### Guided projects
 
-`GalleryGuidedProjectProvider` (ConfigBundle's `GuidedProjectProviderInterface`) contributes nine replayable
+`GalleryGuidedProjectProvider` (ConfigBundle's `GuidedProjectProviderInterface`) contributes ten replayable
 exercises to the dashboard's "Guided projects" panel: **creating a gallery** with its first photographs in
 one go — the creation form carries the whole batch, which is the only screen doing both —, **arranging a
 gallery's medias** on its own edit screen, where the order, the cover and the batch edits all save as they
 go, **moving photos to another gallery**, where a selection leaves with its files and its old pages keep
-answering, **filling in a media's own screen**, where a caption is written and a video attached, **putting a
+answering, **filling in a media's own screen**, where a caption is written and a video attached, **translating
+a gallery** from its language screen, opened by the list's Translate action, **putting a
 gallery aside and bringing it back**, which walks the trash and stops before the permanent deletion — held
 one role higher, so a step highlighting it would point at a button an editor never sees —, **getting the
 photo files back** as one archive, and **the gallery of the latest additions**, the one gallery arranged by
@@ -1414,7 +1446,7 @@ Nothing to register — the provider is picked up automatically.
 The print one is only offered where `gallery-print-enabled` is on, exactly as its two screens are: a
 parcours walking a screen with no way into it reads as a broken one.
 
-Only the opening step of each carries an `url`, the eight gallery ones sending the user to the categories
+Only the opening step of each carries an `url`, the nine gallery ones sending the user to the categories
 or, for the sorting one, to the library's contact sheet — the two sidebar entries of the feature, both
 stating `site-role-editor` themselves, the bar their own screens sit at, rather than taking the admin
 default every entry used to be given — and the print one to the formats, which is where a shop is written. From there the panel walks that screen, highlighting the
@@ -1423,8 +1455,9 @@ that very step:
 
 | Pointed at | What it is |
 | --- | --- |
-| `.action-new`, `.action-edit`, `.action-saveAndReturn`, `.action-delete`, `.action-trash`, `.action-restore`, `.action-importPrintCatalogue` | EasyAdmin builds an `action-<name>` class from the action's own name — `saveAndReturn`, not `save`. The import one is only drawn where the lab publishes a range, and the step reads as well without the outline |
-| `#GalleryCategory_title`, `#GalleryCategory_titleRoot`, `#GalleryMedia_title`, `#GalleryMedia_category`, `#GalleryMedia_credits`, `#GalleryMedia_externalUrl`, `#GalleryPrintFormat_price`, `#GalleryPrintFormat_published` | plain form fields, pointed at through their rendered id |
+| `.action-new`, `.action-edit`, `.action-saveAndReturn`, `.action-delete`, `.action-trash`, `.action-restore`, `.action-importPrintCatalogue`, `.action-translate` | EasyAdmin builds an `action-<name>` class from the action's own name — `saveAndReturn`, not `save`. The import one is only drawn where the lab publishes a range, the translate one where the site declares several languages, and the step reads as well without the outline |
+| `[data-content-locales]` | the language tabs ConfigBundle draws above an edit screen |
+| `#GalleryCategory_title`, `#GalleryCategory_summarySocialNetwork`, `#GalleryCategory_titleRoot`, `#GalleryMedia_title`, `#GalleryMedia_category`, `#GalleryMedia_credits`, `#GalleryMedia_externalUrl`, `#GalleryPrintFormat_price`, `#GalleryPrintFormat_published` | plain form fields, pointed at through their rendered id |
 | `#GalleryCategory_files` | the batch upload of the creation form |
 | `[data-gallery-upload-medias]`, `[data-gallery-cover-radio]`, `[data-gallery-media-sort-handle]`, `[data-gallery-media-selection-target="toggle"]`, `[data-gallery-download-medias]` | markers carried by this bundle's own templates, the elements having no id of their own |
 | `[data-gallery-move-medias] select`, `[data-gallery-move-medias] input`, `[data-gallery-move-medias] button` | the move group of the medias toolbar, its three controls reached from the marker it carries |
@@ -1433,7 +1466,7 @@ that very step:
 An app overriding `templates/management/gallery_category_edit.html.twig` keeps those `data-` attributes, or
 the steps resting on them point at nothing — they are read as selectors, not as behaviour.
 
-All eight are gated by `site-role-editor`, the same ConfigBundle entry the gallery's management screens sit
+All ten are gated by `site-role-editor`, the same ConfigBundle entry the gallery's management screens sit
 behind: an admin without it is never offered a parcours ending on an access-denied page. Their `order`
 (5010 to 5070) runs the 5000 block `GuidedProjectProviderInterface` reserves this bundle, at the step of 10
 it states — the same docblock naming every other bundle's block, so a range is read there rather than

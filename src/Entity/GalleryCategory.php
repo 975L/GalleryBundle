@@ -108,6 +108,10 @@ class GalleryCategory implements HasBlocksInterface, TrashableInterface, \String
         return $this->title ?? '';
     }
 
+    // What this row says in the language being rendered, laid over the texts below and stored nowhere on the row: unmapped on purpose, Doctrine computing its changeset from the mapped properties and never from these getters, so a screen rendered in English cannot write English over the text the row was written in (see GalleryTranslator, the only thing that sets it)
+    /** @var array<string, string|null>|null */
+    private ?array $translated = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -127,7 +131,7 @@ class GalleryCategory implements HasBlocksInterface, TrashableInterface, \String
 
     public function getTitle(): ?string
     {
-        return $this->title;
+        return $this->translated['title'] ?? $this->title;
     }
 
     public function setTitle(?string $title): self
@@ -139,7 +143,7 @@ class GalleryCategory implements HasBlocksInterface, TrashableInterface, \String
 
     public function getSummarySocialNetwork(): ?string
     {
-        return $this->summarySocialNetwork;
+        return $this->translated['summarySocialNetwork'] ?? $this->summarySocialNetwork;
     }
 
     public function setSummarySocialNetwork(?string $summarySocialNetwork): self
@@ -331,5 +335,22 @@ class GalleryCategory implements HasBlocksInterface, TrashableInterface, \String
         }
 
         return $this;
+    }
+
+    // Lays what a language says over the texts this row was written with, for the render being built and no longer than that - only GalleryTranslator calls it, and only on the front, a form screen having to go on reading the row
+    /** @param array<string, string|null> $values field => value */
+    public function setTranslated(array $values): void
+    {
+        $this->translated = $values;
+    }
+
+    // The text the row itself carries, whatever language is being rendered - what a language screen offers as the thing to translate, and what tells an untouched field from a written one (see GalleryTranslator)
+    public function getUntranslated(string $field): ?string
+    {
+        return match ($field) {
+            'title' => $this->title,
+            'summarySocialNetwork' => $this->summarySocialNetwork,
+            default => null,
+        };
     }
 }

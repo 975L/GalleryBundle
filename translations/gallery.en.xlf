@@ -74,6 +74,10 @@
                 <source>action.select_all</source>
                 <target>Select all</target>
             </trans-unit>
+            <trans-unit id="VOwL1H0">
+                <source>action.translate</source>
+                <target>Translate</target>
+            </trans-unit>
             <trans-unit id="8w7xgsI">
                 <source>action.trash</source>
                 <target>Trash</target>
@@ -129,6 +133,10 @@
             <trans-unit id="tsnfDBM">
                 <source>description.guided_project_gallery_print_setup</source>
                 <target>The formats, their prices, and what to tick for a photograph to be sold.</target>
+            </trans-unit>
+            <trans-unit id="BEHJBXV">
+                <source>description.guided_project_gallery_translation</source>
+                <target>The same gallery said in another language: its title and its summary belong to it, each media being translated from its own screen.</target>
             </trans-unit>
             <trans-unit id="Q1mOGK1">
                 <source>description.guided_project_gallery_trash</source>
@@ -329,6 +337,30 @@
             <trans-unit id="_De1g0e">
                 <source>description.guided_step_gallery_print_setup_published</source>
                 <target>An unpublished format is offered nowhere.</target>
+            </trans-unit>
+            <trans-unit id="SMlsw1z">
+                <source>description.guided_step_gallery_translation_action</source>
+                <target>The button opens the gallery straight into the first language to translate. It only shows where the site declares more than one language.</target>
+            </trans-unit>
+            <trans-unit id="S2ZYlSH">
+                <source>description.guided_step_gallery_translation_done</source>
+                <target>Open its page at that language's address: the translated title stands in for the writing language's own.</target>
+            </trans-unit>
+            <trans-unit id="SQM2iet">
+                <source>description.guided_step_gallery_translation_locale</source>
+                <target>The tabs move from one language to another, the first being the one the gallery was written in.</target>
+            </trans-unit>
+            <trans-unit id="yfbui7q">
+                <source>description.guided_step_gallery_translation_open</source>
+                <target>A translation starts from the list of galleries.</target>
+            </trans-unit>
+            <trans-unit id="qauYGsJ">
+                <source>description.guided_step_gallery_translation_summary</source>
+                <target>The summary shared on social networks is offered between brackets, and Donovan can rephrase it under the field.</target>
+            </trans-unit>
+            <trans-unit id="GqbyPbi">
+                <source>description.guided_step_gallery_translation_title</source>
+                <target>The title between brackets is the writing language's own: it stays shown until something is typed.</target>
             </trans-unit>
             <trans-unit id="vZywfgl">
                 <source>description.guided_step_gallery_trash_delete</source>
@@ -537,6 +569,14 @@
             <trans-unit id="Zb4xuOb">
                 <source>label.description</source>
                 <target>Description</target>
+            </trans-unit>
+            <trans-unit id="LHpZe.c">
+                <source>label.fieldset_this_language</source>
+                <target>In this language (%language%)</target>
+            </trans-unit>
+            <trans-unit id="p8XUdUk">
+                <source>label.fieldset_this_language_help</source>
+                <target>These texts belong to this language alone. Every other field - file, slug, dimensions, price, credits - is the same everywhere and is written on the writing language’s own screen.</target>
             </trans-unit>
             <trans-unit id="DmcAvc0">
                 <source>label.file</source>
@@ -998,6 +1038,10 @@
                 <source>label.guided_project_gallery_print_setup</source>
                 <target>Open the print shop</target>
             </trans-unit>
+            <trans-unit id="RvPgsqV">
+                <source>label.guided_project_gallery_translation</source>
+                <target>Translate a gallery</target>
+            </trans-unit>
             <trans-unit id="zZGX7f.">
                 <source>label.guided_project_gallery_trash</source>
                 <target>Put a gallery aside and bring it back</target>
@@ -1205,6 +1249,34 @@
             <trans-unit id="dXd9cfo">
                 <source>label.guided_step_gallery_print_setup_published</source>
                 <target>Publish the format</target>
+            </trans-unit>
+            <trans-unit id="q6C08E8">
+                <source>label.guided_step_gallery_translation_action</source>
+                <target>Open the language screen</target>
+            </trans-unit>
+            <trans-unit id="uYyNRsl">
+                <source>label.guided_step_gallery_translation_done</source>
+                <target>The gallery reads in that language</target>
+            </trans-unit>
+            <trans-unit id="D1GIGuh">
+                <source>label.guided_step_gallery_translation_locale</source>
+                <target>Choose the language</target>
+            </trans-unit>
+            <trans-unit id="i64OORv">
+                <source>label.guided_step_gallery_translation_open</source>
+                <target>Open your galleries</target>
+            </trans-unit>
+            <trans-unit id="1Gl6BfV">
+                <source>label.guided_step_gallery_translation_save</source>
+                <target>Save</target>
+            </trans-unit>
+            <trans-unit id="yRTuWxF">
+                <source>label.guided_step_gallery_translation_summary</source>
+                <target>Translate the summary</target>
+            </trans-unit>
+            <trans-unit id="uJPLZvG">
+                <source>label.guided_step_gallery_translation_title</source>
+                <target>Translate the title</target>
             </trans-unit>
             <trans-unit id="van4.w.">
                 <source>label.guided_step_gallery_trash_delete</source>

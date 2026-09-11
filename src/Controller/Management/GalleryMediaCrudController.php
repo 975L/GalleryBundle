@@ -10,7 +10,9 @@
 
 namespace c975L\GalleryBundle\Controller\Management;
 
+use c975L\ConfigBundle\Management\ContentLocaleScreen;
 use c975L\ConfigBundle\Service\ConfigServiceInterface;
+use c975L\GalleryBundle\Controller\Management\Trait\ContentLocaleCrudTrait;
 use c975L\GalleryBundle\Entity\GalleryCategory;
 use c975L\GalleryBundle\Entity\GalleryMedia;
 use c975L\GalleryBundle\Field\GalleryDataField;
@@ -20,6 +22,7 @@ use c975L\GalleryBundle\Service\GalleryCustomizationRegistry;
 use c975L\GalleryBundle\Service\GalleryMediaLikeCounter;
 use c975L\GalleryBundle\Service\GalleryMediaMover;
 use c975L\GalleryBundle\Service\GalleryMediaSlugger;
+use c975L\GalleryBundle\Service\GalleryTranslator;
 use c975L\GalleryBundle\Service\GalleryUrlRedirector;
 use c975L\GalleryBundle\Service\UploadLimits;
 use c975L\UiBundle\Contract\VichWatermarkableInterface;
@@ -33,6 +36,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Filters;
 use EasyCorp\Bundle\EasyAdminBundle\Config\KeyValueStore;
 use EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext;
+use EasyCorp\Bundle\EasyAdminBundle\Contracts\Provider\AdminContextProviderInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Dto\EntityDto;
 use EasyCorp\Bundle\EasyAdminBundle\Dto\SearchDto;
@@ -55,6 +59,7 @@ use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Form\FormEvents;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Validator\Constraints\File as FileConstraint;
+use Symfony\Contracts\Translation\TranslatableInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Vich\UploaderBundle\Form\Type\VichFileType;
 use Vich\UploaderBundle\Form\Type\VichImageType;
@@ -64,17 +69,22 @@ use function Symfony\Component\Translation\t;
 // Edits one media at a time, and lists the whole library on its index - the contact sheet of every gallery at once, which is what a triage pass reads where a category's own grid only answers "what is in this gallery" (see GalleryCategoryCrudController, still listing a category's medias on its edit screen), the two being the same grid drawn from the same tile (see _gallery_media_tile.html.twig)
 class GalleryMediaCrudController extends AbstractCrudController
 {
+    use ContentLocaleCrudTrait;
+
     public function __construct(
+        private readonly AdminContextProviderInterface $adminContextProvider,
         private readonly AdminUrlGeneratorInterface $adminUrlGenerator,
-        private readonly TranslatorInterface $translator,
-        private readonly GalleryMediaSlugger $mediaSlugger,
-        private readonly GalleryMediaMover $mediaMover,
-        private readonly GalleryUrlRedirector $urlRedirector,
         private readonly ConfigServiceInterface $configService,
-        private readonly UploadLimits $uploadLimits,
+        private readonly ContentLocaleScreen $contentLocaleScreen,
         private readonly GalleryCustomizationRegistry $customizationRegistry,
-        private readonly GalleryPrintCopyRepository $printCopyRepository,
         private readonly GalleryMediaLikeCounter $likeCounter,
+        private readonly GalleryMediaMover $mediaMover,
+        private readonly GalleryMediaSlugger $mediaSlugger,
+        private readonly GalleryPrintCopyRepository $printCopyRepository,
+        private readonly GalleryTranslator $galleryTranslator,
+        private readonly GalleryUrlRedirector $urlRedirector,
+        private readonly TranslatorInterface $translator,
+        private readonly UploadLimits $uploadLimits,
     ) {
     }
 
@@ -135,10 +145,14 @@ class GalleryMediaCrudController extends AbstractCrudController
         ;
     }
 
-    // The likes of the medias the page shows, counted once for the whole page and by the very service a category's own grid asks (see GalleryMediaLikeCounter)
+    // The likes of the medias the index shows, counted once for the whole page and by the very service a category's own grid asks (see GalleryMediaLikeCounter) - and on the edit screen, the language tabs above the form (see ContentLocaleCrudTrait)
     #[\Override]
     public function configureResponseParameters(KeyValueStore $responseParameters): KeyValueStore
     {
+        if (Crud::PAGE_EDIT === $responseParameters->get('pageName')) {
+            $this->addContentLocaleParameters($responseParameters);
+        }
+
         if (Crud::PAGE_INDEX !== $responseParameters->get('pageName')) {
             return $responseParameters;
         }
@@ -207,10 +221,15 @@ class GalleryMediaCrudController extends AbstractCrudController
         ;
     }
 
+    // The edit form, handing what a language screen wrote over to the translator (see ContentLocaleCrudTrait) and reading the watermark back everywhere else
     #[\Override]
     public function createEditFormBuilder(EntityDto $entityDto, KeyValueStore $formOptions, AdminContext $context): FormBuilderInterface
     {
-        return $this->addWatermark(parent::createEditFormBuilder($entityDto, $formOptions, $context));
+        $formBuilder = parent::createEditFormBuilder($entityDto, $formOptions, $context);
+        $this->stageContentLocale($formBuilder);
+
+        // A language screen carries no watermark field for the listener to read
+        return null !== $this->contentLocale() ? $formBuilder : $this->addWatermark($formBuilder);
     }
 
     // The watermark answered on the form is carried to the media it applies to, the two fields being unmapped (see configureFields) - on submit, so it is in place before the flush that stores the uploaded file and has UiBundle's VichImageResizeListener stamp it
@@ -356,6 +375,12 @@ class GalleryMediaCrudController extends AbstractCrudController
     /** @SuppressWarnings(PHPMD.ExcessiveMethodLength) */
     public function configureFields(string $pageName): iterable
     {
+        // The very same edit screen, opened on another language: what that language says of this row, and nothing else. A file, a slug, a size, a price and the credits are the same in every language and are written on the screen the row was written on (see ContentLocaleScreen)
+        $contentLocale = Crud::PAGE_EDIT === $pageName ? $this->contentLocale() : null;
+        if (null !== $contentLocale) {
+            return $this->translationFields($contentLocale);
+        }
+
         return [
             // Only the galleries that actually show their medias are offered: an automatic gallery holds none of its own (it lists the last additions of the others, see GalleryLatestProvider), and a trashed one would show none - a media moved to either would disappear from every grid, front and back alike
             AssociationField::new('category')
@@ -499,6 +524,32 @@ class GalleryMediaCrudController extends AbstractCrudController
 
             IntegerField::new('position')
                 ->setLabel(t('label.position', [], 'gallery')),
+        ];
+    }
+
+    // What ContentLocaleCrudTrait needs of this screen, so the trait touches no property it did not declare
+    protected function adminContextProvider(): AdminContextProviderInterface
+    {
+        return $this->adminContextProvider;
+    }
+
+    protected function contentLocaleScreen(): ContentLocaleScreen
+    {
+        return $this->contentLocaleScreen;
+    }
+
+    protected function galleryTranslator(): GalleryTranslator
+    {
+        return $this->galleryTranslator;
+    }
+
+    // The labels this screen already gives those fields, so nothing on a language screen is called something else than on the screen the row was written on
+    /** @return array<string, TranslatableInterface> */
+    protected function translationFieldLabels(): array
+    {
+        return [
+            'title' => t('label.title', [], 'gallery'),
+            'description' => t('label.description', [], 'gallery'),
         ];
     }
 }

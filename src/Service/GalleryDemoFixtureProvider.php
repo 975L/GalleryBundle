@@ -12,16 +12,22 @@ namespace c975L\GalleryBundle\Service;
 
 use c975L\GalleryBundle\Entity\GalleryCategory;
 use c975L\GalleryBundle\Entity\GalleryMedia;
+use c975L\UiBundle\Contract\DemoFixtureLinkerInterface;
 use c975L\UiBundle\Contract\DemoFixtureProviderInterface;
 use c975L\UiBundle\Registry\PlaceholderMediaRegistry;
+use c975L\UiBundle\Service\DemoFixtureTranslator;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Vich\UploaderBundle\FileAbstraction\ReplacingFile;
 
 // The gallery a demo site is seeded with, from the very data the block showcase renders (see GallerySampleCatalog) - persisted here, where the showcase only ever builds arrays
-class GalleryDemoFixtureProvider implements DemoFixtureProviderInterface
+class GalleryDemoFixtureProvider implements DemoFixtureLinkerInterface, DemoFixtureProviderInterface
 {
+    // The catalogue every sample text is read from, in the language the site is written in and in each of the others
+    private const string DOMAIN = 'gallery';
+
     public function __construct(
+        private readonly DemoFixtureTranslator $demoFixtureTranslator,
         private readonly GallerySampleCatalog $catalog,
         private readonly TranslatorInterface $translator,
         private readonly PlaceholderMediaRegistry $placeholderMediaRegistry,
@@ -67,8 +73,17 @@ class GalleryDemoFixtureProvider implements DemoFixtureProviderInterface
             // The cover a real category falls back to when none was chosen is a random one of its medias, so naming the first is what a category filled in one go actually shows
             $category->setCoverMedia($category->getMedias()->first() ?: null);
 
+            $this->demoFixtureTranslator->stage($category, GalleryTranslator::OWNER_CATEGORY, self::DOMAIN, ['title' => $spec['title']]);
+
             yield $category;
         }
+    }
+
+    // The very same gallery said in each of the other languages the site declares, its keys being already written there (see DemoFixtureTranslator)
+    /** @return iterable<object> */
+    public function getLinkedDemoFixtures(): iterable
+    {
+        return $this->demoFixtureTranslator->translations();
     }
 
     /**
@@ -88,6 +103,8 @@ class GalleryDemoFixtureProvider implements DemoFixtureProviderInterface
         $media->setCredits($this->trans(GallerySampleCatalog::CREDITS_KEY));
         $media->setPosition($position);
         $media->setFile($file);
+
+        $this->demoFixtureTranslator->stage($media, GalleryTranslator::OWNER_MEDIA, self::DOMAIN, ['title' => $spec['title']]);
 
         return $media;
     }
@@ -113,6 +130,6 @@ class GalleryDemoFixtureProvider implements DemoFixtureProviderInterface
 
     private function trans(string $key): string
     {
-        return $this->translator->trans($key, [], 'gallery');
+        return $this->translator->trans($key, [], self::DOMAIN);
     }
 }

@@ -83,6 +83,10 @@ class GalleryPrintFormat implements \Stringable
         return $this->label ?? (string) $this->slug;
     }
 
+    // What this row says in the language being rendered, laid over the texts below and stored nowhere on the row: unmapped on purpose, Doctrine computing its changeset from the mapped properties and never from these getters, so a screen rendered in English cannot write English over the text the row was written in (see GalleryTranslator, the only thing that sets it)
+    /** @var array<string, string|null>|null */
+    private ?array $translated = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -102,7 +106,7 @@ class GalleryPrintFormat implements \Stringable
 
     public function getLabel(): ?string
     {
-        return $this->label;
+        return $this->translated['label'] ?? $this->label;
     }
 
     public function setLabel(?string $label): self
@@ -186,7 +190,7 @@ class GalleryPrintFormat implements \Stringable
 
     public function getPaper(): ?string
     {
-        return $this->paper;
+        return $this->translated['paper'] ?? $this->paper;
     }
 
     public function setPaper(?string $paper): self
@@ -198,7 +202,7 @@ class GalleryPrintFormat implements \Stringable
 
     public function getPaperDescription(): ?string
     {
-        return $this->paperDescription;
+        return $this->translated['paperDescription'] ?? $this->paperDescription;
     }
 
     public function setPaperDescription(?string $paperDescription): self
@@ -259,5 +263,23 @@ class GalleryPrintFormat implements \Stringable
         $own = $this->getRatio();
 
         return $own > 0.0 && abs($ratio - $own) / $own <= self::RATIO_TOLERANCE;
+    }
+
+    // Lays what a language says over the texts this row was written with, for the render being built and no longer than that - only GalleryTranslator calls it, and only on the front, a form screen having to go on reading the row
+    /** @param array<string, string|null> $values field => value */
+    public function setTranslated(array $values): void
+    {
+        $this->translated = $values;
+    }
+
+    // The text the row itself carries, whatever language is being rendered - what a language screen offers as the thing to translate, and what tells an untouched field from a written one (see GalleryTranslator)
+    public function getUntranslated(string $field): ?string
+    {
+        return match ($field) {
+            'label' => $this->label,
+            'paper' => $this->paper,
+            'paperDescription' => $this->paperDescription,
+            default => null,
+        };
     }
 }

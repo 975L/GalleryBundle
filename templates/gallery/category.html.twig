@@ -36,8 +36,8 @@
     {# Each entry is addressed under the gallery filing it rather than the one being walked through: an automatic gallery shows photographs of other categories, and GalleryController::media resolves a media within the category its url names #}
     {% set jsonLd = gallery_json_ld(
         category,
-        medias|map(media => {name: media.title|default(category.title), url: url('gallery_media', {category: media.category.slug, slug: media.slug})}),
-        url('gallery_category', {category: category.slug})
+        medias|map(media => {name: media.title|default(category.title), url: absolute_url(localized_path('gallery_media', {category: media.category.slug, slug: media.slug}))}),
+        absolute_url(localized_path('gallery_category', {category: category.slug}))
     ) %}
     {% if jsonLd %}
         <script type="application/ld+json">{{ jsonLd|raw }}</script>

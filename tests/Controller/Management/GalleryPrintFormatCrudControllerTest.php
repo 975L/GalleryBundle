@@ -10,10 +10,16 @@
 
 namespace c975L\GalleryBundle\Tests\Controller\Management;
 
+use c975L\ConfigBundle\Management\ContentLocaleScreen;
 use c975L\ConfigBundle\Service\ConfigServiceInterface;
 use c975L\GalleryBundle\Controller\Management\GalleryPrintFormatCrudController;
 use c975L\GalleryBundle\Model\PrintCatalogueImportReport;
+use c975L\GalleryBundle\Service\GalleryTranslator;
 use c975L\GalleryBundle\Service\PrintCatalogueImporter;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
+use EasyCorp\Bundle\EasyAdminBundle\Contracts\Provider\AdminContextProviderInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGeneratorInterface;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\DependencyInjection\Container;
@@ -74,6 +80,17 @@ class GalleryPrintFormatCrudControllerTest extends TestCase
         $this->assertSame('/management/print-formats', $controller->importPrintCatalogue()->getTargetUrl());
     }
 
+    // The language screen is opened from the list whether or not the lab publishes a range, a site printing by hand naming its formats too (see ContentLocaleCrudTrait::translateAction())
+    public function testTheLanguageScreenIsOfferedEvenWithoutACatalogueToImport(): void
+    {
+        $actions = $this->createController(new PrintCatalogueImportReport(0, 0, [], false), $this->createSession())->configureActions(Actions::new());
+
+        $index = $actions->getAsDto(Crud::PAGE_INDEX);
+
+        $this->assertNotNull($index->getAction(Crud::PAGE_INDEX, 'translate'));
+        $this->assertNull($index->getAction(Crud::PAGE_INDEX, 'importPrintCatalogue'));
+    }
+
     private function import(PrintCatalogueImportReport $report): Session
     {
         $session = $this->createSession();
@@ -101,11 +118,19 @@ class GalleryPrintFormatCrudControllerTest extends TestCase
         $container = new Container();
         $container->set('request_stack', new RequestStack([$request]));
 
+        // Action is final and cannot be doubled, so the stub hands a real one back
+        $contentLocaleScreen = $this->createStub(ContentLocaleScreen::class);
+        $contentLocaleScreen->method('action')->willReturnCallback(static fn (string $name): Action => Action::new($name)->linkToUrl('#'));
+
+        // Named rather than positional: this constructor is a list of services kept in alphabetical order, and one more of them landing in the middle of it would otherwise shift every argument below
         $controller = new GalleryPrintFormatCrudController(
-            $this->createStub(ConfigServiceInterface::class),
-            $importer,
-            $translator,
-            $adminUrlGenerator,
+            adminContextProvider: $this->createStub(AdminContextProviderInterface::class),
+            adminUrlGenerator: $adminUrlGenerator,
+            configService: $this->createStub(ConfigServiceInterface::class),
+            contentLocaleScreen: $contentLocaleScreen,
+            galleryTranslator: $this->createStub(GalleryTranslator::class),
+            printCatalogueImporter: $importer,
+            translator: $translator,
         );
         $controller->setContainer($container);
 

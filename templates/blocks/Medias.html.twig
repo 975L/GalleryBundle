@@ -4,6 +4,6 @@
     <twig:c975LGallery:Gallery:Medias category="{{ gallery.category }}" medias="{{ gallery.medias }}" displayTitle="{{ true }}"/>
     {% if displayMore ?? false %}
         {# The category title alone, not "all the <title>": no wording of that shape reads right in every language the bundle ships #}
-        <twig:c975LUi:Button:Button label="{{ gallery.category.title }}" url="{{ path('gallery_category', { category: gallery.category.slug }) }}"/>
+        <twig:c975LUi:Button:Button label="{{ gallery.category.title }}" url="{{ localized_path('gallery_category', { category: gallery.category.slug }) }}"/>
     {% endif %}
 {% endif %}

@@ -1,5 +1,30 @@
 # ChangeLog
 
+## v1.18.0
+
+The gallery is read in every language the site declares
+
+- `CatalogueCompletenessTest` checks every language file of a domain against the bundle's own (10/09/2026)
+- **A gallery, a photograph and a print format are translatable** through `GalleryTranslator` (10/09/2026)
+- Slugs, file names, mime types, SKUs and credits stay untranslated (10/09/2026)
+- **The three public screens answer under `/{_locale}/{gallery_prefix}`** in every language the site declares (10/09/2026)
+- `GalleryTranslatedLocales` holds which languages those screens answer in (10/09/2026)
+- `GalleryLinkLocalizer` rewrites the gallery's stored links into the language being read (10/09/2026)
+- Public templates use `localized_path` instead of `path` (10/09/2026)
+- The previous/next arrows and the JSON-LD urls are localized too (11/09/2026)
+- Gallery blocks and print offers are read in the language being read (10/09/2026)
+- Translated texts are laid over rows for the render only, never persisted (10/09/2026)
+- **The back office gains a language screen per row**, opened with `?contenu=xx` (10/09/2026)
+- `ContentLocaleCrudTrait` shares it between the three CRUD controllers (10/09/2026)
+- A language screen's texts are stored on the flush saving the row (10/09/2026)
+- **The edit screens carry the language tabs**, and the galleries and print formats lists a **Translate** action (11/09/2026)
+- **`gallery-translation` guided project** walks a gallery's translation (11/09/2026)
+- **`GalleryTranslationPurgeListener`** deletes a row's translations with the row (10/09/2026)
+- **A demo site is seeded with its gallery in every declared language** (10/09/2026)
+- SiteBundle's language menu shows on the gallery screens (10/09/2026)
+- The three CRUD constructors list their services alphabetically (10/09/2026)
+- Requires `c975l/core-bundle` `^1.28.0` (10/09/2026)
+
 ## v1.17.2
 
 The gallery section carries its own icon

@@ -14,6 +14,7 @@ use c975L\GalleryBundle\Entity\GalleryCategory;
 use c975L\GalleryBundle\Entity\GalleryMedia;
 use c975L\GalleryBundle\Repository\GalleryCategoryRepository;
 use c975L\GalleryBundle\Service\GalleryAutomaticProvider;
+use c975L\GalleryBundle\Service\GalleryTranslator;
 use Symfony\Contracts\Service\ResetInterface;
 use Twig\Attribute\AsTwigFunction;
 
@@ -24,8 +25,9 @@ class GalleryBlockExtension implements ResetInterface
     private ?array $categories = null;
 
     public function __construct(
-        private readonly GalleryCategoryRepository $categoryRepository,
         private readonly GalleryAutomaticProvider $automaticProvider,
+        private readonly GalleryCategoryRepository $categoryRepository,
+        private readonly GalleryTranslator $galleryTranslator,
     ) {
     }
 
@@ -42,7 +44,12 @@ class GalleryBlockExtension implements ResetInterface
         $ordinary = array_values(array_filter($categories, static fn (GalleryCategory $category): bool => !$category->isAutomatic()));
         $categories = [...$automatic, ...$ordinary];
 
-        return null !== $max ? \array_slice($categories, 0, $max) : $categories;
+        $categories = null !== $max ? \array_slice($categories, 0, $max) : $categories;
+
+        // The language being read laid over the galleries' own names: these are the very rows a page of the site draws its rails from, and without this a gallery rail on "/en/" stayed in the writing language while everything around it turned (see GalleryTranslator::apply)
+        $this->galleryTranslator->apply($categories);
+
+        return $categories;
     }
 
     /**
@@ -67,9 +74,13 @@ class GalleryBlockExtension implements ResetInterface
             shuffle($medias);
         }
 
+        $medias = null !== $max ? \array_slice($medias, 0, $max) : $medias;
+
+        $this->galleryTranslator->apply([$category, ...$medias]);
+
         return [
             'category' => $category,
-            'medias' => null !== $max ? \array_slice($medias, 0, $max) : $medias,
+            'medias' => $medias,
         ];
     }
 

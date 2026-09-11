@@ -3,7 +3,7 @@
 {# Framed like the medias' own grid, the two reading as one gallery - see Media.html.twig #}
 {% set whole = config('gallery-thumbnail-whole') %}
 {# A showcase stand-in carries the url it leads to, its categories living in a demonstration site rather than in this one (see GalleryShowcaseProvider) - a real category has none and keeps its own page. Left empty, Image:Link renders a <span> instead of a link going nowhere #}
-{% set url = category.url ?? path('gallery_category', { category: category.slug }) %}
+{% set url = category.url ?? localized_path('gallery_category', { category: category.slug }) %}
 {% if coverMedia %}
     <div class="gallery-thumb{{ whole ? ' gallery-thumb--whole' : '' }}">
         <twig:c975LUi:Image:Link

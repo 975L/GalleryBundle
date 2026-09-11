@@ -14,6 +14,7 @@ use c975L\GalleryBundle\Entity\GalleryMedia;
 use c975L\GalleryBundle\Entity\GalleryPrintFormat;
 use c975L\GalleryBundle\Model\PrintOffer;
 use c975L\GalleryBundle\Service\GalleryPrintService;
+use c975L\GalleryBundle\Service\GalleryTranslator;
 use c975L\GalleryBundle\Twig\Extension\GalleryPrintExtension;
 use PHPUnit\Framework\TestCase;
 
@@ -87,7 +88,7 @@ class GalleryPrintExtensionTest extends TestCase
         $printService->method('getOffers')->willReturn($offers);
         $printService->method('getRemaining')->willReturn($remaining);
 
-        return new GalleryPrintExtension($printService);
+        return new GalleryPrintExtension($printService, $this->createStub(GalleryTranslator::class));
     }
 
     private function offer(GalleryMedia $media, string $slug, int $price, ?string $paper = null): PrintOffer

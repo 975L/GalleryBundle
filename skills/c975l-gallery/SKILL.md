@@ -1,6 +1,6 @@
 ---
 name: c975l-gallery
-description: "Use this skill when working with photo galleries in a Symfony application built on the c975L ecosystem with c975l/gallery-bundle. Covers categories and medias, the admin-renamable url prefix, the two-step trash, batch upload and the three image derivatives, videos and embeds, the two gallery blocks, theming, and every extension point the bundle offers. Triggers on: GalleryCategory, GalleryMedia, gallery-route-prefix, gallery_index, gallery_category, gallery_media, gallery_categories, gallery_medias, c975l:gallery:rebuild-thumbnails, c975l:gallery:fill-slugs, photo gallery, thumbnail, lightbox, Image:Zoom, image-zoom__image, batch upload, upload progress, passe-partout, trash, restore, delete permanently, 410 Gone, download highres, download originals, GalleryMediaArchiver, move medias, move selection, GalleryMediaMover, moveMedias, files-gallery, health check, automatic gallery, latest additions, GalleryLatestProvider, findOrCreateAutomatic, findLatest, gallery-latest-days, gallery-latest-max, gallery-rating, likes, like a photo, heart, rating, findVisibleByCategories, setLoadedMedias, media caption, media description, GalleryCustomizationProviderInterface, gallery.customization_provider, GalleryDataField, getDataValue, gallery-video-self-hosted-max-height, self-hosted video, portrait video., GallerySampleCatalog, GalleryDemoFixtureProvider, DemoFixtureProviderInterface, demo gallery, ReplacingFile, hidden, hide a gallery, masking, sell prints, print shop, limited edition, editionSize, printable, certificate of authenticity, gallery_print_certificate, gallery_print_file, gallery_print_callback, c975l:gallery:print:sync, GalleryPrintOrderTracker, GalleryMaintenanceTaskProvider, callbackUrl, gallery-print-enabled, gallery-printable-max, gallery-print-provider, gallery-print-sandbox, gallery-print-signature, GalleryPrintFormat, GalleryPrintOrder, GalleryPrintCopy, PrintCopySnapshot, PrintFulfilmentInterface, ProdigiFulfilment, ManualFulfilment, gallery.print_fulfilment, PrintCatalogueProviderInterface, PrintCatalogueImporter, ProdigiCatalogue, import print catalogue, GalleryPrintOrderRepository, claim, gallery-print-edition-hold, shop-currency, gallery-print-setup, BasketItemProviderInterface, CatalogueBasketItemProviderInterface, getCatalogueUrl, continue shopping, AutomaticGalleryInterface, gallery.automatic_gallery, GalleryAutomaticProvider, GalleryPrintableProvider, automaticKind, qr code, GalleryShowcaseProvider, ui-showcase-demo-url, block showcase, block-thumbs, block picker silhouette, ui.management_stylesheet, getManagementStylesheets, GallerySnippetBuilder, GalleryJsonLdExtension, gallery_media_json_ld, gallery_json_ld, gallery_index_json_ld, ImageObject, VideoObject, ImageGallery, acquireLicensePage, creditText, copyrightNotice, embedUrl, GalleryBlockCacheTagProvider, GalleryBlockCacheInvalidator, GalleryCacheInvalidationListener, BlockCacheTagProviderInterface, block cache, cacheable, invalidateTags, gallery-thumbnail-whole."
+description: "Use this skill when working with photo galleries in a Symfony application built on the c975L ecosystem with c975l/gallery-bundle. Covers categories and medias, the admin-renamable url prefix, the two-step trash, batch upload and the three image derivatives, videos and embeds, the two gallery blocks, theming, and every extension point the bundle offers. Triggers on: GalleryCategory, GalleryMedia, gallery-route-prefix, gallery_index, gallery_category, gallery_media, gallery_categories, gallery_medias, c975l:gallery:rebuild-thumbnails, c975l:gallery:fill-slugs, photo gallery, thumbnail, lightbox, Image:Zoom, image-zoom__image, batch upload, upload progress, passe-partout, trash, restore, delete permanently, 410 Gone, download highres, download originals, GalleryMediaArchiver, move medias, move selection, GalleryMediaMover, moveMedias, files-gallery, health check, automatic gallery, latest additions, GalleryLatestProvider, findOrCreateAutomatic, findLatest, gallery-latest-days, gallery-latest-max, gallery-rating, likes, like a photo, heart, rating, findVisibleByCategories, setLoadedMedias, media caption, media description, GalleryCustomizationProviderInterface, gallery.customization_provider, GalleryDataField, getDataValue, gallery-video-self-hosted-max-height, self-hosted video, portrait video., GallerySampleCatalog, GalleryDemoFixtureProvider, DemoFixtureProviderInterface, demo gallery, ReplacingFile, hidden, hide a gallery, masking, sell prints, print shop, limited edition, editionSize, printable, certificate of authenticity, gallery_print_certificate, gallery_print_file, gallery_print_callback, c975l:gallery:print:sync, GalleryPrintOrderTracker, GalleryMaintenanceTaskProvider, callbackUrl, gallery-print-enabled, gallery-printable-max, gallery-print-provider, gallery-print-sandbox, gallery-print-signature, GalleryPrintFormat, GalleryPrintOrder, GalleryPrintCopy, PrintCopySnapshot, PrintFulfilmentInterface, ProdigiFulfilment, ManualFulfilment, gallery.print_fulfilment, PrintCatalogueProviderInterface, PrintCatalogueImporter, ProdigiCatalogue, import print catalogue, GalleryPrintOrderRepository, claim, gallery-print-edition-hold, shop-currency, gallery-print-setup, BasketItemProviderInterface, CatalogueBasketItemProviderInterface, getCatalogueUrl, continue shopping, AutomaticGalleryInterface, gallery.automatic_gallery, GalleryAutomaticProvider, GalleryPrintableProvider, automaticKind, qr code, GalleryShowcaseProvider, ui-showcase-demo-url, block showcase, block-thumbs, block picker silhouette, ui.management_stylesheet, getManagementStylesheets, GallerySnippetBuilder, GalleryJsonLdExtension, gallery_media_json_ld, gallery_json_ld, gallery_index_json_ld, ImageObject, VideoObject, ImageGallery, acquireLicensePage, creditText, copyrightNotice, embedUrl, GalleryBlockCacheTagProvider, GalleryBlockCacheInvalidator, GalleryCacheInvalidationListener, BlockCacheTagProviderInterface, block cache, cacheable, invalidateTags, gallery-thumbnail-whole, translation, translate a gallery, multilingual gallery, GalleryTranslator, GalleryTranslatedLocales, GalleryLinkLocalizer, GalleryTranslationPurgeListener, ContentLocaleCrudTrait, ContentLocaleScreen, contenu, language tabs, localized_path, gallery_index_localized, gallery_category_localized, gallery_media_localized, gallery-translation, site_translation."
 ---
 
 # c975L GalleryBundle
@@ -10,7 +10,7 @@ description: "Use this skill when working with photo galleries in a Symfony appl
 **Package:** `c975l/gallery-bundle` · **Namespace:** `c975L\GalleryBundle\` · **Twig namespace:** `@c975LGallery` · **Translation domain:** `gallery`
 
 **Key source paths** (relative to the package root):
-`src/Controller/GalleryController.php`, `src/Contract/`, `src/Entity/`, `src/Field/`, `src/Model/`, `src/Repository/`, `src/Routing/GalleryRoutePrefix.php`, `src/Listener/`, `src/Service/`, `src/Service/Fulfilment/`, `src/Twig/Extension/`, `src/Management/`, `src/Form/Block/`, `templates/gallery/`, `templates/print/`, `templates/components/Gallery/`, `templates/blocks/`, `config/configs.json`, `config/services.yaml`
+`src/Controller/GalleryController.php`, `src/Controller/Management/Trait/`, `src/Contract/`, `src/Entity/`, `src/Field/`, `src/Model/`, `src/Repository/`, `src/Routing/GalleryRoutePrefix.php`, `src/Listener/`, `src/Service/`, `src/Service/Fulfilment/`, `src/Twig/Extension/`, `src/Management/`, `src/Form/Block/`, `templates/gallery/`, `templates/print/`, `templates/components/Gallery/`, `templates/blocks/`, `config/configs.json`, `config/services.yaml`
 
 **Related documentation:** this package's `README.md` is the exhaustive reference — every section named below is an anchor in it. The ecosystem's own rules (database-backed configuration, blocks, media library, management contributions) live in `c975l/core-bundle`.
 
@@ -133,12 +133,13 @@ cannot *be* the path: the three routes are declared as `/{gallery_prefix}/…` a
 one. `Listener\GalleryRoutePrefixListener` puts the same value in the router's request context, which
 is where the generator takes the missing parameter from.
 
-**Generate urls, never write them.** The route parameter is filled for you:
+**Generate urls, never write them.** The route parameter is filled for you, and `localized_path` keeps a
+visitor in the language they are reading (see *Translation*):
 
 ```twig
-{{ path('gallery_index') }}
-{{ path('gallery_category', { category: category.slug }) }}
-{{ path('gallery_media', { category: category.slug, slug: media.slug }) }}
+{{ localized_path('gallery_index') }}
+{{ localized_path('gallery_category', { category: category.slug }) }}
+{{ localized_path('gallery_media', { category: category.slug, slug: media.slug }) }}
 ```
 
 Route *names* never change, whatever the prefix. Renaming the prefix breaks the previously indexed
@@ -567,6 +568,32 @@ half of where its file lands (see `GalleryMedia::getVichMediaPath()`).
 Only the categories are yielded, their medias following through the cascade so Vich takes their files
 and derivatives off the disk with them.
 
+## Translation
+
+Requires `c975l/core-bundle` `^1.28.0`. A category, a media and a print format are **one row in every language**:
+`Service\GalleryTranslator` stores the other languages beside the row in UiBundle's `site_translation`, under
+`GalleryTranslator::OWNER_CATEGORY` / `OWNER_MEDIA` / `OWNER_PRINT_FORMAT`. Only `CATEGORY_FIELDS` (`title`,
+`summarySocialNetwork`), `MEDIA_FIELDS` (`title`, `description`) and `PRINT_FORMAT_FIELDS` (`label`, `paper`,
+`paperDescription`) are translated — slugs, files, SKUs and credits never are. Nothing is read on a site
+declaring one language (`isActive()`).
+
+- **Public side** — `GalleryController` doubles its three routes as `gallery_index_localized`,
+  `gallery_category_localized` and `gallery_media_localized` under `/{_locale}/{gallery_prefix}`, answering in
+  every language `Service\GalleryTranslatedLocales::all()` returns. What is rendered is handed to
+  `GalleryTranslator::apply()`, which calls each row's `setTranslated()` so its getters read that language
+  for the render; `getUntranslated()` still hands back the row's own text. `GalleryBlockExtension` and
+  `GalleryPrintExtension::getOffers()` apply it too. `Service\GalleryLinkLocalizer` rewrites gallery urls
+  stored in rich text.
+- **Back office** — `Controller\Management\Trait\ContentLocaleCrudTrait` gives the three CRUD controllers a
+  language screen through ConfigBundle's `ContentLocaleScreen` (`?contenu=xx`): `translationFields()` for
+  `configureFields()`, `addContentLocaleParameters()` for the tabs, `stageContentLocale()` for the edit form,
+  and `translateAction()` on the galleries and print formats indexes. The edit templates include
+  `@c975LConfig/management/_content_locale_tabs.html.twig`. A language screen submits the translated texts
+  alone, so `GalleryCategoryCrudController::createEditFormBuilder()` skips the slug normalizer and the blocks
+  listener there, and `GalleryMediaCrudController` skips the watermark listener.
+- **Deletion** — `Listener\GalleryTranslationPurgeListener` drops a row's translations on its removal.
+- The `gallery-translation` guided project walks a gallery's translation.
+
 ## Structured data
 
 The three public pages publish a schema.org graph, built by `Service\GallerySnippetBuilder` and rendered by the
@@ -592,7 +619,14 @@ publishes no graph for a media with neither a file to name nor a player to frame
 - **Do not copy the old `Lightbox` body into an override.** Its Stimulus controller, `.gallery-media-zoom`, `.gallery-lightbox` and `.gallery-lightbox__image` are gone: a copy keeps a `data-action` nobody listens to, and the click leaves the page for the raw file. Override the component and keep handing `c975LUi:Image:Zoom` its five props.
 - **Do not emit an `offers` node from this bundle** — what a print costs belongs to ShopBundle, the one place of the ecosystem publishing one.
 - **Do not hardcode `/gallery`** in a template, a link or a test. The prefix is admin-editable; use
-  `path('gallery_category', {category: slug})`.
+  `localized_path('gallery_category', {category: slug})`.
+- **Do not generate a public gallery url with `path()` in a template.** It sends a visitor reading another
+  language back to the writing one; `localized_path()` keeps them where they are.
+- **Do not call `GalleryTranslator::apply()` on a back-office screen, nor persist what it lays on a row.** The
+  getters then read the translation, and a form built on them would write it over the row's own text.
+- **Do not put `createEditFormBuilder()` or `configureResponseParameters()` in `ContentLocaleCrudTrait`.** A
+  controller's own method shadows a trait's in silence; the controller calls `stageContentLocale()` and
+  `addContentLocaleParameters()` from its own override instead.
 - **Do not add a `.env` variable, a container parameter or a bundle Configuration class** for a
   gallery setting. It goes in `config/configs.json` and is read through `ConfigServiceInterface`.
 - **Do not write an image resizer, a thumbnail command or a Vich naming rule.** Sizes are declared on

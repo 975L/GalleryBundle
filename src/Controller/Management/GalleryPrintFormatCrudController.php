@@ -10,14 +10,21 @@
 
 namespace c975L\GalleryBundle\Controller\Management;
 
+use c975L\ConfigBundle\Management\ContentLocaleScreen;
 use c975L\ConfigBundle\Service\ConfigServiceInterface;
+use c975L\GalleryBundle\Controller\Management\Trait\ContentLocaleCrudTrait;
 use c975L\GalleryBundle\Entity\GalleryPrintFormat;
+use c975L\GalleryBundle\Service\GalleryTranslator;
 use c975L\GalleryBundle\Service\PrintCatalogueImporter;
 use EasyCorp\Bundle\EasyAdminBundle\Attribute\AdminRoute;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
+use EasyCorp\Bundle\EasyAdminBundle\Config\KeyValueStore;
+use EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext;
+use EasyCorp\Bundle\EasyAdminBundle\Contracts\Provider\AdminContextProviderInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
+use EasyCorp\Bundle\EasyAdminBundle\Dto\EntityDto;
 use EasyCorp\Bundle\EasyAdminBundle\Field\BooleanField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IntegerField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\MoneyField;
@@ -25,7 +32,9 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\NumberField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\SlugField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGeneratorInterface;
+use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Contracts\Translation\TranslatableInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 use function Symfony\Component\Translation\t;
@@ -33,11 +42,16 @@ use function Symfony\Component\Translation\t;
 // The print catalogue - the sizes on sale, their prices and what the lab calls them. One screen, because a catalogue is a list an admin reprices and nothing else
 class GalleryPrintFormatCrudController extends AbstractCrudController
 {
+    use ContentLocaleCrudTrait;
+
     public function __construct(
+        private readonly AdminContextProviderInterface $adminContextProvider,
+        private readonly AdminUrlGeneratorInterface $adminUrlGenerator,
         private readonly ConfigServiceInterface $configService,
+        private readonly ContentLocaleScreen $contentLocaleScreen,
+        private readonly GalleryTranslator $galleryTranslator,
         private readonly PrintCatalogueImporter $printCatalogueImporter,
         private readonly TranslatorInterface $translator,
-        private readonly AdminUrlGeneratorInterface $adminUrlGenerator,
     ) {
     }
 
@@ -61,12 +75,17 @@ class GalleryPrintFormatCrudController extends AbstractCrudController
             ->setDefaultSort(['position' => 'ASC'])
             ->showEntityActionsInlined()
             ->overrideTemplate('crud/index', '@c975LGallery/management/gallery_print_format_index.html.twig')
+            // Only there to carry the language tabs above the form (see gallery_print_format_edit.html.twig)
+            ->overrideTemplate('crud/edit', '@c975LGallery/management/gallery_print_format_edit.html.twig')
         ;
     }
 
     #[\Override]
     public function configureActions(Actions $actions): Actions
     {
+        // The language screen, opened straight from the list whether or not the lab publishes a range (see ContentLocaleCrudTrait::translateAction())
+        $actions->add(Crud::PAGE_INDEX, $this->translateAction());
+
         // Only offered where there is something to import: a site printing by hand, or at a lab that publishes no range, is shown a button that would do nothing
         if (null === $this->printCatalogueImporter->getCatalogue()) {
             return $actions;
@@ -115,6 +134,14 @@ class GalleryPrintFormatCrudController extends AbstractCrudController
     #[\Override]
     public function configureFields(string $pageName): iterable
     {
+        // The very same edit screen, opened on another language: what that language says of this row, and nothing else. A file, a slug, a size, a price and the credits are the same in every language and are written on the screen the row was written on (see ContentLocaleScreen)
+        $contentLocale = Crud::PAGE_EDIT === $pageName ? $this->contentLocale() : null;
+        if (null !== $contentLocale) {
+            yield from $this->translationFields($contentLocale);
+
+            return;
+        }
+
         yield SlugField::new('slug', t('label.print_format_slug', [], 'gallery'))
             ->setTargetFieldName('label')
             ->setHelp(t('help.print_format_slug', [], 'gallery'))
@@ -164,5 +191,52 @@ class GalleryPrintFormatCrudController extends AbstractCrudController
         yield IntegerField::new('position', t('label.print_format_position', [], 'gallery'))->hideOnIndex();
 
         yield BooleanField::new('published', t('label.print_format_published', [], 'gallery'));
+    }
+
+    // The language tabs above the edit form (see ContentLocaleCrudTrait), this screen shaping nothing else of its response
+    #[\Override]
+    public function configureResponseParameters(KeyValueStore $responseParameters): KeyValueStore
+    {
+        $responseParameters = parent::configureResponseParameters($responseParameters);
+        $this->addContentLocaleParameters($responseParameters);
+
+        return $responseParameters;
+    }
+
+    // What a language screen wrote, handed over to the translator (see ContentLocaleCrudTrait)
+    #[\Override]
+    public function createEditFormBuilder(EntityDto $entityDto, KeyValueStore $formOptions, AdminContext $context): FormBuilderInterface
+    {
+        $formBuilder = parent::createEditFormBuilder($entityDto, $formOptions, $context);
+        $this->stageContentLocale($formBuilder);
+
+        return $formBuilder;
+    }
+
+    // What ContentLocaleCrudTrait needs of this screen, so the trait touches no property it did not declare
+    protected function adminContextProvider(): AdminContextProviderInterface
+    {
+        return $this->adminContextProvider;
+    }
+
+    protected function contentLocaleScreen(): ContentLocaleScreen
+    {
+        return $this->contentLocaleScreen;
+    }
+
+    protected function galleryTranslator(): GalleryTranslator
+    {
+        return $this->galleryTranslator;
+    }
+
+    // The labels this screen already gives those fields, so nothing on a language screen is called something else than on the screen the row was written on
+    /** @return array<string, TranslatableInterface> */
+    protected function translationFieldLabels(): array
+    {
+        return [
+            'label' => t('label.print_format_label', [], 'gallery'),
+            'paper' => t('label.print_format_paper', [], 'gallery'),
+            'paperDescription' => t('label.print_format_paper_description', [], 'gallery'),
+        ];
     }
 }

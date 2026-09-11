@@ -214,6 +214,34 @@
                 <source>narration.guided_step_gallery_print_setup_published</source>
                 <target>While the box stays unticked, the format exists for you alone. Tick it and it appears under every photograph put up for sale.</target>
             </trans-unit>
+            <trans-unit id="omQnM6i">
+                <source>narration.guided_step_gallery_translation_action</source>
+                <target>This button opens the gallery straight into the first language to translate, without going through the writing screen. It is only there where the site declares more than one language.</target>
+            </trans-unit>
+            <trans-unit id="A7TWm_z">
+                <source>narration.guided_step_gallery_translation_done</source>
+                <target>The gallery reads in that language. Open its page at that language's address: the translated title stands in for the writing language's own.</target>
+            </trans-unit>
+            <trans-unit id="FoJOtsb">
+                <source>narration.guided_step_gallery_translation_locale</source>
+                <target>The tabs move from one language to another. The first is the one the gallery was written in: it is the one serving as the source.</target>
+            </trans-unit>
+            <trans-unit id="vNs7BWa">
+                <source>narration.guided_step_gallery_translation_open</source>
+                <target>The panel takes you to your galleries: a translation starts from this very list.</target>
+            </trans-unit>
+            <trans-unit id="l3Vr0rq">
+                <source>narration.guided_step_gallery_translation_save</source>
+                <target>Save: the translation goes online at once, at that language's own address. Each media is translated from its own screen, the same way.</target>
+            </trans-unit>
+            <trans-unit id="0dBOMxJ">
+                <source>narration.guided_step_gallery_translation_summary</source>
+                <target>The same goes for the summary shared on social networks. Under the field, Donovan can offer you a rephrasing.</target>
+            </trans-unit>
+            <trans-unit id="7o2D4E_">
+                <source>narration.guided_step_gallery_translation_title</source>
+                <target>The title shown between brackets is the writing language's own. It stays as it is until you type something: a half-translated gallery stays readable.</target>
+            </trans-unit>
             <trans-unit id="E66DXJx">
                 <source>narration.guided_step_gallery_trash_delete</source>
                 <target>Take one off the site. The button asks first, then moves the gallery to the trash: its media, its files and its address are all kept, and only its own page answers gone from then on.</target>

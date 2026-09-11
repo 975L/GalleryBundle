@@ -14,6 +14,7 @@ use c975L\GalleryBundle\Entity\GalleryCategory;
 use c975L\GalleryBundle\Entity\GalleryMedia;
 use c975L\GalleryBundle\Repository\GalleryCategoryRepository;
 use c975L\GalleryBundle\Service\GalleryAutomaticProvider;
+use c975L\GalleryBundle\Service\GalleryTranslator;
 use c975L\GalleryBundle\Twig\Extension\GalleryBlockExtension;
 use PHPUnit\Framework\TestCase;
 use Twig\Extension\AttributeExtension;
@@ -143,7 +144,7 @@ class GalleryBlockExtensionTest extends TestCase
             new GalleryCategory()->setSlug('photos'),
             new GalleryCategory()->setSlug('videos'),
         ]);
-        $extension = new GalleryBlockExtension($categoryRepository, $this->createAutomaticProvider());
+        $extension = new GalleryBlockExtension($this->createAutomaticProvider(), $categoryRepository, $this->createStub(GalleryTranslator::class));
 
         $this->assertSame('photos', $extension->getMedias('photos')['category']?->getSlug());
         $this->assertSame('videos', $extension->getMedias('videos')['category']?->getSlug());
@@ -155,7 +156,7 @@ class GalleryBlockExtensionTest extends TestCase
     {
         $categoryRepository = $this->createMock(GalleryCategoryRepository::class);
         $categoryRepository->expects($this->exactly(2))->method('findAllOrdered')->willReturn([]);
-        $extension = new GalleryBlockExtension($categoryRepository, $this->createAutomaticProvider());
+        $extension = new GalleryBlockExtension($this->createAutomaticProvider(), $categoryRepository, $this->createStub(GalleryTranslator::class));
 
         $extension->getCategories();
         $extension->reset();
@@ -171,7 +172,7 @@ class GalleryBlockExtensionTest extends TestCase
         $categoryRepository = $this->createStub(GalleryCategoryRepository::class);
         $categoryRepository->method('findAllOrdered')->willReturn([$category]);
 
-        $gallery = new GalleryBlockExtension($categoryRepository, $this->createAutomaticProvider($latest))->getMedias('latest');
+        $gallery = new GalleryBlockExtension($this->createAutomaticProvider($latest), $categoryRepository, $this->createStub(GalleryTranslator::class))->getMedias('latest');
 
         $this->assertSame($latest, $gallery['medias']);
     }
@@ -182,7 +183,7 @@ class GalleryBlockExtensionTest extends TestCase
         $categoryRepository = $this->createStub(GalleryCategoryRepository::class);
         $categoryRepository->method('findAllOrdered')->willReturn([] !== $categories ? $categories : array_values(array_filter([$category])));
 
-        return new GalleryBlockExtension($categoryRepository, $this->createAutomaticProvider($medias));
+        return new GalleryBlockExtension($this->createAutomaticProvider($medias), $categoryRepository, $this->createStub(GalleryTranslator::class));
     }
 
     // The list every screen listing categories is handed back: the coordinator hands it over as it got it, the automatic galleries being already in it here - and it answers the medias of every category, automatic or not (see GalleryAutomaticProvider::getMedias)

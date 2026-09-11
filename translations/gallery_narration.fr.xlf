@@ -214,6 +214,34 @@
                 <source>narration.guided_step_gallery_print_setup_published</source>
                 <target>Tant que la case reste décochée, le format n'existe que pour vous. Cochez-la et il apparaît sous chaque photo mise en vente.</target>
             </trans-unit>
+            <trans-unit id="omQnM6i">
+                <source>narration.guided_step_gallery_translation_action</source>
+                <target>Ce bouton ouvre la galerie directement dans la première langue à traduire, sans passer par l'écran d'écriture. Il n'est là que si le site déclare plus d'une langue.</target>
+            </trans-unit>
+            <trans-unit id="A7TWm_z">
+                <source>narration.guided_step_gallery_translation_done</source>
+                <target>La galerie se lit dans cette langue. Ouvrez sa page à l'adresse de cette langue : le titre traduit y remplace celui de la langue d'écriture.</target>
+            </trans-unit>
+            <trans-unit id="FoJOtsb">
+                <source>narration.guided_step_gallery_translation_locale</source>
+                <target>Les onglets passent d'une langue à l'autre. La première est celle où la galerie a été écrite : c'est elle qui sert de source.</target>
+            </trans-unit>
+            <trans-unit id="vNs7BWa">
+                <source>narration.guided_step_gallery_translation_open</source>
+                <target>Le panneau vous emmène sur vos galeries : c'est de cette liste que part une traduction.</target>
+            </trans-unit>
+            <trans-unit id="l3Vr0rq">
+                <source>narration.guided_step_gallery_translation_save</source>
+                <target>Enregistrez : la traduction est en ligne aussitôt, à l'adresse de cette langue. Chaque média, lui, se traduit depuis son propre écran, de la même façon.</target>
+            </trans-unit>
+            <trans-unit id="0dBOMxJ">
+                <source>narration.guided_step_gallery_translation_summary</source>
+                <target>Même chose pour le résumé partagé sur les réseaux sociaux. Sous le champ, Donovan peut vous proposer une reformulation.</target>
+            </trans-unit>
+            <trans-unit id="7o2D4E_">
+                <source>narration.guided_step_gallery_translation_title</source>
+                <target>Le titre affiché entre crochets est celui de la langue d'écriture. Il reste tel quel tant que vous n'avez rien saisi : une galerie à moitié traduite reste lisible.</target>
+            </trans-unit>
             <trans-unit id="E66DXJx">
                 <source>narration.guided_step_gallery_trash_delete</source>
                 <target>Retirez-en une du site. Le bouton demande confirmation, puis met la galerie à la corbeille : ses médias, ses fichiers et son adresse sont conservés, et seule sa page répond désormais qu'elle n'existe plus.</target>

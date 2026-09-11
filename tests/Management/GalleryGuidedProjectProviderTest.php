@@ -48,10 +48,10 @@ class GalleryGuidedProjectProviderTest extends TestCase
         $projects = $this->createProvider()->getGuidedProjects();
 
         $this->assertSame(
-            ['gallery-creation', 'gallery-medias-arrangement', 'gallery-medias-move', 'gallery-media-detail', 'gallery-trash', 'gallery-medias-recovery', 'gallery-latest', 'gallery-library-sorting', 'gallery-print-setup'],
+            ['gallery-creation', 'gallery-medias-arrangement', 'gallery-medias-move', 'gallery-media-detail', 'gallery-translation', 'gallery-trash', 'gallery-medias-recovery', 'gallery-latest', 'gallery-library-sorting', 'gallery-print-setup'],
             array_column($projects, 'slug')
         );
-        $this->assertSame([5010, 5020, 5025, 5030, 5040, 5050, 5060, 5065, 5070], array_column($projects, 'order'));
+        $this->assertSame([5010, 5020, 5025, 5030, 5035, 5040, 5050, 5060, 5065, 5070], array_column($projects, 'order'));
     }
 
     // The two print screens are hidden from the menu on a site that does not sell prints (see MenuProvider), and a parcours walking a screen with no way in reads as a broken one
@@ -119,7 +119,7 @@ class GalleryGuidedProjectProviderTest extends TestCase
         $this->createProvider($controllers)->getGuidedProjects();
 
         $this->assertSame(
-            [...array_fill(0, 7, 'GalleryCategoryCrudController'), 'GalleryMediaCrudController', 'GalleryPrintFormatCrudController'],
+            [...array_fill(0, 8, 'GalleryCategoryCrudController'), 'GalleryMediaCrudController', 'GalleryPrintFormatCrudController'],
             array_map(static fn (string $fqcn): string => basename(str_replace('\\', '/', $fqcn)), $controllers)
         );
     }
@@ -137,7 +137,7 @@ class GalleryGuidedProjectProviderTest extends TestCase
             }
         }
 
-        $this->assertCount(2, $saveSteps, 'The creation and the media parcours each walk the user to the save button once');
+        $this->assertCount(3, $saveSteps, 'The creation, the media and the translation parcours each walk the user to the save button once');
 
         foreach ($saveSteps as $step) {
             $this->assertSame('.action-saveAndReturn', $step['highlight']);
@@ -170,7 +170,9 @@ class GalleryGuidedProjectProviderTest extends TestCase
 
         $this->assertNotEmpty($attributes);
 
-        $templates = $this->templates(\dirname(__DIR__, 2) . '/templates/management/*.twig');
+        $templates = $this->templates(\dirname(__DIR__, 2) . '/templates/management/*.twig')
+            // "data-content-locales" is the language tab strip ConfigBundle lays above every edit screen holding a language screen
+            . $this->templates(\dirname(__DIR__, 2) . '/vendor/c975l/core-bundle/ConfigBundle/templates/management/_content_locale_tabs.html.twig');
         foreach ($attributes as $attribute) {
             $this->assertStringContainsString($attribute, $templates, sprintf('No management template carries "%s" anymore', $attribute));
         }

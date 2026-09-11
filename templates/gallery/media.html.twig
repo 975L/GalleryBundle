@@ -65,7 +65,7 @@
         media,
         contentFile ? absolute_url(asset(contentFile)) : null,
         thumbnailFile ? absolute_url(asset(thumbnailFile)) : null,
-        url('gallery_media', {category: category.slug, slug: media.slug}),
+        absolute_url(localized_path('gallery_media', {category: category.slug, slug: media.slug})),
         printAvailable,
         media.embedUrl
     ) %}

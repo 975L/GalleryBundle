@@ -34,6 +34,7 @@ class GalleryGuidedProjectProvider implements GuidedProjectProviderInterface
             $this->mediasArrangementProject(),
             $this->mediasMoveProject(),
             $this->mediaDetailProject(),
+            $this->translationProject(),
             $this->trashProject(),
             $this->mediasRecoveryProject(),
             $this->latestGalleryProject(),
@@ -281,6 +282,64 @@ class GalleryGuidedProjectProvider implements GuidedProjectProviderInterface
                     'label' => 'label.guided_step_gallery_media_detail_done',
                     'description' => 'description.guided_step_gallery_media_detail_done',
                     'narration' => 'narration.guided_step_gallery_media_detail_done',
+                ],
+            ],
+        ];
+    }
+
+    // A gallery is translated once it is composed: the parcours opens its first language screen from the list, the tabs moving between the others - a photograph being translated from its own screen the same way (see ContentLocaleCrudTrait)
+    private function translationProject(): array
+    {
+        return [
+            'slug' => 'gallery-translation',
+            'label' => 'label.guided_project_gallery_translation',
+            'description' => 'description.guided_project_gallery_translation',
+            'translation_domain' => 'gallery',
+            'order' => 5035,
+            'role' => $this->roleNeeded(),
+            'steps' => [
+                [
+                    'label' => 'label.guided_step_gallery_translation_open',
+                    'description' => 'description.guided_step_gallery_translation_open',
+                    'narration' => 'narration.guided_step_gallery_translation_open',
+                    'url' => $this->indexUrl(),
+                ],
+                [
+                    // Shown only where the site declares more than one language, like the tabs it leads to (see ContentLocaleCrudTrait::translateAction())
+                    'label' => 'label.guided_step_gallery_translation_action',
+                    'description' => 'description.guided_step_gallery_translation_action',
+                    'narration' => 'narration.guided_step_gallery_translation_action',
+                    'highlight' => '.action-translate',
+                ],
+                [
+                    // Drawn by ConfigBundle's own tab strip, which is what carries the "?contenu=xx" the language screens are read at
+                    'label' => 'label.guided_step_gallery_translation_locale',
+                    'description' => 'description.guided_step_gallery_translation_locale',
+                    'narration' => 'narration.guided_step_gallery_translation_locale',
+                    'highlight' => '[data-content-locales]',
+                ],
+                [
+                    'label' => 'label.guided_step_gallery_translation_title',
+                    'description' => 'description.guided_step_gallery_translation_title',
+                    'narration' => 'narration.guided_step_gallery_translation_title',
+                    'highlight' => '#GalleryCategory_title',
+                ],
+                [
+                    // A plain textarea on a language screen, Donovan under it, where the writing screen hides its own behind Trix (see ContentLocaleCrudTrait::translationFields())
+                    'label' => 'label.guided_step_gallery_translation_summary',
+                    'description' => 'description.guided_step_gallery_translation_summary',
+                    'narration' => 'narration.guided_step_gallery_translation_summary',
+                    'highlight' => '#GalleryCategory_summarySocialNetwork',
+                ],
+                [
+                    'label' => 'label.guided_step_gallery_translation_save',
+                    'narration' => 'narration.guided_step_gallery_translation_save',
+                    'highlight' => '.action-saveAndReturn',
+                ],
+                [
+                    'label' => 'label.guided_step_gallery_translation_done',
+                    'description' => 'description.guided_step_gallery_translation_done',
+                    'narration' => 'narration.guided_step_gallery_translation_done',
                 ],
             ],
         ];

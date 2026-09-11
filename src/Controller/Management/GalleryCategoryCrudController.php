@@ -10,9 +10,11 @@
 
 namespace c975L\GalleryBundle\Controller\Management;
 
+use c975L\ConfigBundle\Management\ContentLocaleScreen;
 use c975L\ConfigBundle\Management\EasyAdminActionHelper;
 use c975L\ConfigBundle\Service\ConfigServiceInterface;
 use c975L\ConfigBundle\Service\Export\ContentExporter;
+use c975L\GalleryBundle\Controller\Management\Trait\ContentLocaleCrudTrait;
 use c975L\GalleryBundle\Entity\GalleryCategory;
 use c975L\GalleryBundle\Entity\GalleryMedia;
 use c975L\GalleryBundle\Field\GalleryDataField;
@@ -29,6 +31,7 @@ use c975L\GalleryBundle\Service\GalleryMediaArchiver;
 use c975L\GalleryBundle\Service\GalleryMediaFactory;
 use c975L\GalleryBundle\Service\GalleryMediaLikeCounter;
 use c975L\GalleryBundle\Service\GalleryMediaMover;
+use c975L\GalleryBundle\Service\GalleryTranslator;
 use c975L\GalleryBundle\Service\GalleryUrlRedirector;
 use c975L\GalleryBundle\Service\UploadLimits;
 use c975L\UiBundle\Contract\VichWatermarkableInterface;
@@ -80,6 +83,7 @@ use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 use Symfony\Component\String\Slugger\SluggerInterface;
 use Symfony\Component\Validator\Constraints\All;
 use Symfony\Component\Validator\Constraints\Image;
+use Symfony\Contracts\Translation\TranslatableInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 use function Symfony\Component\Translation\t;
@@ -88,6 +92,8 @@ use function Symfony\Component\Translation\t;
 #[AdminRoute(path: '/gallery', name: 'gallery')]
 class GalleryCategoryCrudController extends AbstractCrudController
 {
+    use ContentLocaleCrudTrait;
+
     // Also the token ids the edit template renders in its selection form (see gallery_category_edit.html.twig), which posts to deleteMedias(), editMedias() or saveMediasLayout() depending on the button pressed - one token each, an html form holding a single "_token" field that they would otherwise share
     public const DELETE_MEDIAS_CSRF_TOKEN = 'gallery_media_delete_selection';
     public const EDIT_MEDIAS_CSRF_TOKEN = 'gallery_media_edit_selection';
@@ -104,27 +110,29 @@ class GalleryCategoryCrudController extends AbstractCrudController
     public const MOVE_TARGET_NEW = 'new';
 
     public function __construct(
+        private readonly AdminContextProviderInterface $adminContextProvider,
+        private readonly AdminUrlGenerator $adminUrlGenerator,
+        private readonly BlockMoveRowAttrBuilder $blockMoveRowAttrBuilder,
+        private readonly ConfigServiceInterface $configService,
+        private readonly ContentExporter $contentExporter,
+        private readonly ContentLocaleScreen $contentLocaleScreen,
+        private readonly CsrfTokenManagerInterface $csrfTokenManager,
+        private readonly GalleryAutomaticProvider $automaticProvider,
         private readonly GalleryCategoryRepository $galleryCategoryRepository,
+        private readonly GalleryCustomizationRegistry $customizationRegistry,
+        private readonly GalleryExportProvider $galleryExportProvider,
+        private readonly GalleryLatestProvider $latestProvider,
+        private readonly GalleryMediaArchiver $galleryMediaArchiver,
+        private readonly GalleryMediaFactory $galleryMediaFactory,
+        private readonly GalleryMediaLikeCounter $likeCounter,
+        private readonly GalleryMediaMover $galleryMediaMover,
+        private readonly GalleryMediaRepository $galleryMediaRepository,
+        private readonly GalleryTranslator $galleryTranslator,
+        private readonly GalleryUrlRedirector $urlRedirector,
+        private readonly RequestStack $requestStack,
         private readonly SluggerInterface $slugger,
         private readonly TranslatorInterface $translator,
-        private readonly AdminUrlGenerator $adminUrlGenerator,
-        private readonly ContentExporter $contentExporter,
-        private readonly GalleryExportProvider $galleryExportProvider,
-        private readonly AdminContextProviderInterface $adminContextProvider,
-        private readonly BlockMoveRowAttrBuilder $blockMoveRowAttrBuilder,
-        private readonly GalleryMediaFactory $galleryMediaFactory,
-        private readonly GalleryMediaMover $galleryMediaMover,
         private readonly UploadLimits $uploadLimits,
-        private readonly GalleryUrlRedirector $urlRedirector,
-        private readonly ConfigServiceInterface $configService,
-        private readonly RequestStack $requestStack,
-        private readonly GalleryMediaRepository $galleryMediaRepository,
-        private readonly CsrfTokenManagerInterface $csrfTokenManager,
-        private readonly GalleryMediaArchiver $galleryMediaArchiver,
-        private readonly GalleryAutomaticProvider $automaticProvider,
-        private readonly GalleryLatestProvider $latestProvider,
-        private readonly GalleryCustomizationRegistry $customizationRegistry,
-        private readonly GalleryMediaLikeCounter $likeCounter,
     ) {
     }
 
@@ -216,6 +224,8 @@ class GalleryCategoryCrudController extends AbstractCrudController
             ->add(Crud::PAGE_INDEX, $this->trashAction())
             ->add(Crud::PAGE_INDEX, $viewOnSiteAction)
             ->add(Crud::PAGE_EDIT, $viewOnSiteAction)
+            // The language screen, opened straight from the list (see ContentLocaleCrudTrait::translateAction())
+            ->add(Crud::PAGE_INDEX, $this->translateAction())
             ->add(Crud::PAGE_NEW, $cancelAction)
             ->add(Crud::PAGE_EDIT, $cancelAction)
             // A gallery is dropped from its own screen as a media is from its (see GalleryMediaCrudController), rather than only from the row button one screen above - deleting it takes its medias and its heading blocks along, the association cascading
@@ -236,6 +246,10 @@ class GalleryCategoryCrudController extends AbstractCrudController
             ->update(Crud::PAGE_INDEX, 'viewOnSite', fn (Action $action) => EasyAdminActionHelper::toIconOnly(
                 $action,
                 $this->translator->trans('action.view_on_site', [], 'gallery'),
+            ))
+            ->update(Crud::PAGE_INDEX, 'translate', fn (Action $action) => EasyAdminActionHelper::toIconOnly(
+                $action,
+                $this->translator->trans('action.translate', [], 'gallery'),
             ))
             // The catch-all "Non classé" category must always exist as a fallback for medias uploaded without a real one picked (see GalleryCategoryRepository::findOrCreateUncategorized)
             ->update(Crud::PAGE_INDEX, Action::DELETE, fn (Action $action) => EasyAdminActionHelper::toIconOnly(
@@ -494,7 +508,15 @@ class GalleryCategoryCrudController extends AbstractCrudController
     #[\Override]
     public function createEditFormBuilder(EntityDto $entityDto, KeyValueStore $formOptions, AdminContext $context): FormBuilderInterface
     {
-        $formBuilder = $this->addSlugNormalizer(parent::createEditFormBuilder($entityDto, $formOptions, $context));
+        $formBuilder = parent::createEditFormBuilder($entityDto, $formOptions, $context);
+        $this->stageContentLocale($formBuilder);
+
+        // A language screen submits the translated texts alone: its title would rebuild the slug, and the blocks it never shows would all be pruned
+        if (null !== $this->contentLocale()) {
+            return $formBuilder;
+        }
+
+        $formBuilder = $this->addSlugNormalizer($formBuilder);
 
         $formBuilder->addEventListener(FormEvents::PRE_SUBMIT, static function (FormEvent $event): void {
             $data = $event->getData();
@@ -595,6 +617,12 @@ class GalleryCategoryCrudController extends AbstractCrudController
     #[\Override]
     public function configureFields(string $pageName): iterable
     {
+        // The very same edit screen, opened on another language: what that language says of this row, and nothing else. A file, a slug, a size, a price and the credits are the same in every language and are written on the screen the row was written on (see ContentLocaleScreen)
+        $contentLocale = Crud::PAGE_EDIT === $pageName ? $this->contentLocale() : null;
+        if (null !== $contentLocale) {
+            return $this->translationFields($contentLocale);
+        }
+
         $entity = $this->adminContextProvider->getContext()?->getEntity()?->getInstance();
 
         return [
@@ -781,6 +809,9 @@ class GalleryCategoryCrudController extends AbstractCrudController
         if (Crud::PAGE_EDIT !== $responseParameters->get('pageName')) {
             return $responseParameters;
         }
+
+        // The language tabs above the form (see ContentLocaleCrudTrait)
+        $this->addContentLocaleParameters($responseParameters);
 
         $category = $responseParameters->get('entity')?->getInstance();
         $mediaEditUrls = [];
@@ -1320,5 +1351,31 @@ class GalleryCategoryCrudController extends AbstractCrudController
         $data = $this->galleryExportProvider->serialize($categories);
 
         return $this->contentExporter->export(GalleryImportProvider::KIND, $data['items'], $data['files']);
+    }
+
+    // What ContentLocaleCrudTrait needs of this screen, so the trait touches no property it did not declare
+    protected function adminContextProvider(): AdminContextProviderInterface
+    {
+        return $this->adminContextProvider;
+    }
+
+    protected function contentLocaleScreen(): ContentLocaleScreen
+    {
+        return $this->contentLocaleScreen;
+    }
+
+    protected function galleryTranslator(): GalleryTranslator
+    {
+        return $this->galleryTranslator;
+    }
+
+    // The labels this screen already gives those fields, so nothing on a language screen is called something else than on the screen the row was written on
+    /** @return array<string, TranslatableInterface> */
+    protected function translationFieldLabels(): array
+    {
+        return [
+            'title' => t('label.title', [], 'gallery'),
+            'summarySocialNetwork' => t('label.summary_social_network', [], 'config'),
+        ];
     }
 }

@@ -1,0 +1,275 @@
+<?xml version="1.0"?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+    <file source-language="en" target-language="es" datatype="plaintext" original="gallery_narration.es.xlf">
+        <body>
+            <trans-unit id="63yZFT3">
+                <source>narration.gallery</source>
+                <target>«Categorías», bajo el apartado «Galería», lleva las galerías del sitio y sus fotos. Enviar una galería a la papelera solo la retira del sitio: el botón encima de la lista muestra lo que espera ahí, y la recupera.</target>
+            </trans-unit>
+            <trans-unit id="aZ.cWRr">
+                <source>narration.gallery_medias</source>
+                <target>En la columna de la izquierda, abra «Medios»: todas las fotografías del sitio están reunidas ahí, con todas las galerías juntas. Los filtros encima de la plancha aíslan las que están en venta, las que están ocultas, las de una galería concreta.</target>
+            </trans-unit>
+            <trans-unit id="BfIWVkl">
+                <source>narration.guided_step_gallery_creation_done</source>
+                <target>Su galería está en línea. No tiene nada que publicar: es visible desde que existe, y el botón «ver en el sitio» la abre.</target>
+            </trans-unit>
+            <trans-unit id="BC59ALP">
+                <source>narration.guided_step_gallery_creation_files</source>
+                <target>Elija sus fotos: varios archivos a la vez, cada uno convirtiéndose en un medio de la galería. Los tamaños indicados son lo que acepta el servidor.</target>
+            </trans-unit>
+            <trans-unit id="baen4pJ">
+                <source>narration.guided_step_gallery_creation_new</source>
+                <target>Añada una galería con el botón situado encima de la lista. El formulario de creación lleva también el primer lote de medios: la galería se crea y se llena de una vez.</target>
+            </trans-unit>
+            <trans-unit id="bQOKxCE">
+                <source>narration.guided_step_gallery_creation_open</source>
+                <target>El panel le lleva a sus galerías. Todas las del sitio están listadas aquí, en su orden de visualización.</target>
+            </trans-unit>
+            <trans-unit id="e7HL5pQ">
+                <source>narration.guided_step_gallery_creation_save</source>
+                <target>Guarde con el botón situado en la parte inferior del formulario.</target>
+            </trans-unit>
+            <trans-unit id="yJqrQ8h">
+                <source>narration.guided_step_gallery_creation_title</source>
+                <target>Póngale nombre. El título es lo que muestra el sitio, y la dirección de la galería se construye a partir de él.</target>
+            </trans-unit>
+            <trans-unit id="S6LfiKO">
+                <source>narration.guided_step_gallery_creation_title_root</source>
+                <target>Nombre el lote. Cada medio toma este nombre, numerado; cada uno se retoca después, uno por uno.</target>
+            </trans-unit>
+            <trans-unit id="KFjqSSF">
+                <source>narration.guided_step_gallery_latest_days</source>
+                <target>Un subtítulo por día: los medios añadidos estos últimos días, con todas las galerías juntas, y cada miniatura nombra la galería a la que pertenece realmente.</target>
+            </trans-unit>
+            <trans-unit id="tdJYtj2">
+                <source>narration.guided_step_gallery_latest_done</source>
+                <target>Dos ajustes del grupo galería deciden hasta dónde se remonta: el número de días, y cuántas fotos muestra como máximo. Si la ventana no recoge nada, recurre al último día con alguna incorporación.</target>
+            </trans-unit>
+            <trans-unit id="fpFdxAJ">
+                <source>narration.guided_step_gallery_latest_edit</source>
+                <target>Ábrala. No ofrece envío, ni reordenación, ni portada: no tiene nada propio que organizar.</target>
+            </trans-unit>
+            <trans-unit id="9VAmvHi">
+                <source>narration.guided_step_gallery_latest_open</source>
+                <target>El panel le lleva a sus galerías. «Últimas incorporaciones» está entre ellas, escrita por el sitio la primera vez que se muestra la lista: es una galería como las demás, que se puede renombrar y desplazar.</target>
+            </trans-unit>
+            <trans-unit id="psakJ1d">
+                <source>narration.guided_step_gallery_latest_selection</source>
+                <target>Trabaje sobre toda una sesión de envío: los créditos, los derechos, la descarga y el envío a la papelera actúan sobre las fotos marcadas allí donde se encuentren. Así se acredita de una vez todo un día de envíos.</target>
+            </trans-unit>
+            <trans-unit id="ldd2Eo5">
+                <source>narration.guided_step_gallery_library_sorting_badges</source>
+                <target>Mire debajo de una miniatura: las pastillas dicen si la fotografía está oculta, si está en venta, en cuántos ejemplares, y cuántos visitantes le han dado me gusta. Ordena sin abrir ni una sola.</target>
+            </trans-unit>
+            <trans-unit id="Li2fjI9">
+                <source>narration.guided_step_gallery_library_sorting_done</source>
+                <target>Ya está. Una miniatura abre la fotografía para retocarla. Ordenar las fotos y actuar sobre una selección, en cambio, se quedan en la pantalla de la galería que las contiene.</target>
+            </trans-unit>
+            <trans-unit id="5edCz_N">
+                <source>narration.guided_step_gallery_library_sorting_filters</source>
+                <target>El botón «Filtros», encima de la plancha, abre las cuatro preguntas: qué galería, en venta o no, oculta o no, derechos reservados o no.</target>
+            </trans-unit>
+            <trans-unit id="wz38pX1">
+                <source>narration.guided_step_gallery_library_sorting_open</source>
+                <target>El panel le lleva a «Medios», en la columna de la izquierda, bajo «Galería». Todas las fotografías del sitio están reunidas ahí, sea cual sea la galería que las contiene.</target>
+            </trans-unit>
+            <trans-unit id="LHweaSJ">
+                <source>narration.guided_step_gallery_library_sorting_search</source>
+                <target>El campo de búsqueda, arriba, recorre los títulos, los pies de foto y los créditos. No los nombres de archivo: nadie los escribe para encontrar una foto.</target>
+            </trans-unit>
+            <trans-unit id="opbMRuM">
+                <source>narration.guided_step_gallery_media_detail_category</source>
+                <target>El primer campo es su galería. Cambiarla aquí mueve esta sola foto, y sus archivos la siguen; toda una selección se mueve más bien desde la pantalla de la galería.</target>
+            </trans-unit>
+            <trans-unit id="ssY52a9">
+                <source>narration.guided_step_gallery_media_detail_credits</source>
+                <target>Acredite a su autor: los créditos se muestran con el medio en el sitio, y el mismo valor se escribe sobre toda una selección desde la galería.</target>
+            </trans-unit>
+            <trans-unit id=".RlZo_n">
+                <source>narration.guided_step_gallery_media_detail_done</source>
+                <target>Ya está de vuelta en la galería. La dirección del medio solo se cambia detrás del candado, y la antigua sigue redirigiendo hacia la nueva.</target>
+            </trans-unit>
+            <trans-unit id="B8rq2v1">
+                <source>narration.guided_step_gallery_media_detail_edit</source>
+                <target>Abra la galería: sus medios se listan bajo su formulario.</target>
+            </trans-unit>
+            <trans-unit id="7_HK17h">
+                <source>narration.guided_step_gallery_media_detail_open</source>
+                <target>El panel le lleva a sus galerías: a un medio siempre se llega desde la que lo contiene.</target>
+            </trans-unit>
+            <trans-unit id="azrVJ0G">
+                <source>narration.guided_step_gallery_media_detail_save</source>
+                <target>Guarde con el botón situado en la parte inferior del formulario.</target>
+            </trans-unit>
+            <trans-unit id="Aucfetg">
+                <source>narration.guided_step_gallery_media_detail_thumbnail</source>
+                <target>Haga clic en una miniatura. Abre la única pantalla que tiene un medio, y guardarlo le devolverá aquí.</target>
+            </trans-unit>
+            <trans-unit id="qzDbJuT">
+                <source>narration.guided_step_gallery_media_detail_title</source>
+                <target>Escriba su pie de foto. Se muestra bajo el medio y lo sustituye en voz alta para un lector de pantalla; retocarlo no mueve ninguna dirección.</target>
+            </trans-unit>
+            <trans-unit id="2o.cWMu">
+                <source>narration.guided_step_gallery_media_detail_video</source>
+                <target>Puede adjuntarle un vídeo: pegue la dirección de la página donde lo estaba viendo, la plataforma se lee sola. El campo de abajo envía más bien la copia propia del sitio.</target>
+            </trans-unit>
+            <trans-unit id="nFU0BJA">
+                <source>narration.guided_step_gallery_medias_arrangement_cover</source>
+                <target>Elija la portada, el medio que representa la galería en todas partes donde se muestra. Sin elección, se toma uno al azar cada vez.</target>
+            </trans-unit>
+            <trans-unit id="yvuxFpQ">
+                <source>narration.guided_step_gallery_medias_arrangement_done</source>
+                <target>No hay nada que guardar: el orden y la portada se guardan sobre la marcha. Solo los campos de la galería misma requieren el botón de guardar.</target>
+            </trans-unit>
+            <trans-unit id="1BknBOA">
+                <source>narration.guided_step_gallery_medias_arrangement_edit</source>
+                <target>Abra la galería. Sus medios se listan bajo su formulario, y es ahí donde ocurre todo lo que sigue.</target>
+            </trans-unit>
+            <trans-unit id="hNY4fYo">
+                <source>narration.guided_step_gallery_medias_arrangement_open</source>
+                <target>El panel le lleva a sus galerías. La que hay que organizar es una de ellas, pero no «Últimas incorporaciones», que no contiene ninguna foto propia y no organiza nada.</target>
+            </trans-unit>
+            <trans-unit id="ShP8z4d">
+                <source>narration.guided_step_gallery_medias_arrangement_selection</source>
+                <target>Puede trabajar sobre varios a la vez: marque los medios, luego escriba los mismos créditos en todos, márquelos como derechos reservados, descárguelos en alta resolución o como originales, o muévalos a la papelera de una vez.</target>
+            </trans-unit>
+            <trans-unit id="FCQrz.i">
+                <source>narration.guided_step_gallery_medias_arrangement_sort</source>
+                <target>Reordénelos: arrastre un medio por su asa. El nuevo orden se guarda en el momento en que lo suelta, sin nada que validar.</target>
+            </trans-unit>
+            <trans-unit id="LWZTx.f">
+                <source>narration.guided_step_gallery_medias_arrangement_upload</source>
+                <target>Añada medios, un lote a la vez, siempre desde la galería que los contiene: un medio nunca se crea por sí solo.</target>
+            </trans-unit>
+            <trans-unit id="dwmaPR6">
+                <source>narration.guided_step_gallery_medias_move_done</source>
+                <target>Nada se pierde por el camino: la antigua página de cada foto redirige a su nueva dirección, la galería abandonada cierra el hueco en su orden, y su portada se libera si era una de ellas.</target>
+            </trans-unit>
+            <trans-unit id="_.CTmdP">
+                <source>narration.guided_step_gallery_medias_move_edit</source>
+                <target>Abra la galería: sus medios se listan bajo su formulario, y el desplazamiento se hace desde ahí.</target>
+            </trans-unit>
+            <trans-unit id="G8KTnrR">
+                <source>narration.guided_step_gallery_medias_move_move</source>
+                <target>Mueva la selección. Los archivos siguen a la carpeta propia de la galería de destino, y las fotos se colocan detrás de lo que ya contiene.</target>
+            </trans-unit>
+            <trans-unit id="pGMxKZr">
+                <source>narration.guided_step_gallery_medias_move_open</source>
+                <target>El panel le lleva a sus galerías. Empiece por la que contiene las fotos que quiere mover, no por la que las recibe.</target>
+            </trans-unit>
+            <trans-unit id="3WrUKj.">
+                <source>narration.guided_step_gallery_medias_move_select</source>
+                <target>Marque lo que se va, unas pocas fotos o toda la galería. Se mueven en el orden en que la cuadrícula las muestra.</target>
+            </trans-unit>
+            <trans-unit id="bIjhNq6">
+                <source>narration.guided_step_gallery_medias_move_target</source>
+                <target>Elija la galería de destino. Se ofrece toda galería que contenga fotos propias, salvo la que está mirando y «Últimas incorporaciones», que no contiene ninguna. La última entrada crea una: su nombre se pide justo al lado.</target>
+            </trans-unit>
+            <trans-unit id="OHqxadg">
+                <source>narration.guided_step_gallery_medias_move_title_root</source>
+                <target>Renómbrelas, o no. Si se deja vacía, las fotos conservan los títulos que tenían; si se rellena, se numeran a partir de donde termina la galería de destino, «Coches 12» pasando a «Volvo 3».</target>
+            </trans-unit>
+            <trans-unit id="MKtnc8v">
+                <source>narration.guided_step_gallery_medias_recovery_download</source>
+                <target>Descárguelas: un zip para la selección, con la alta resolución que guarda el sitio, o los originales tal como se enviaron si la galería se configuró para conservarlos. Una selección que supere un gigabyte se rechaza, indicando su tamaño.</target>
+            </trans-unit>
+            <trans-unit id="mftkXWo">
+                <source>narration.guided_step_gallery_medias_recovery_edit</source>
+                <target>Abra la galería: sus medios se listan bajo su formulario.</target>
+            </trans-unit>
+            <trans-unit id="KOULEQC">
+                <source>narration.guided_step_gallery_medias_recovery_open</source>
+                <target>El panel le lleva a sus galerías: los archivos se recuperan desde la que los contiene.</target>
+            </trans-unit>
+            <trans-unit id="_5vpMDm">
+                <source>narration.guided_step_gallery_medias_recovery_select</source>
+                <target>Marque lo que quiera, toda la galería de una vez o solo las pocas fotos que busca.</target>
+            </trans-unit>
+            <trans-unit id="9HsZZTT">
+                <source>narration.guided_step_gallery_medias_recovery_trash</source>
+                <target>Las fotos también tienen una papelera. Cada galería lleva la suya, bajo su formulario en cuanto se pone una foto en ella: se ofrecen las mismas descargas, y «Restaurar» devuelve las fotos a la galería, detrás de las demás.</target>
+            </trans-unit>
+            <trans-unit id="oQrN9MT">
+                <source>narration.guided_step_gallery_print_setup_done</source>
+                <target>Los formatos están listos. Sin embargo, una foto solo se vende si su ficha lleva la casilla «imprimible»: es ahí, medio por medio, donde elige lo que se ofrece para copia.</target>
+            </trans-unit>
+            <trans-unit id="HM3EpkO">
+                <source>narration.guided_step_gallery_print_setup_edit</source>
+                <target>Abra la ficha del formato. Los tamaños y el número de píxeles exigido vienen del laboratorio; lo que sigue viene de usted.</target>
+            </trans-unit>
+            <trans-unit id="By22xyM">
+                <source>narration.guided_step_gallery_print_setup_import</source>
+                <target>El botón solo aparece si el laboratorio configurado publica su catálogo. Crea los formatos con sus tamaños y sus referencias, y deja los precios a cero: son los suyos, no los del laboratorio.</target>
+            </trans-unit>
+            <trans-unit id="3zlqVb5">
+                <source>narration.guided_step_gallery_print_setup_open</source>
+                <target>La venta de copias cabe en esta lista. Cada fila es un tamaño sobre un papel, con su precio; una foto puesta en venta se ofrece en todos los formatos publicados.</target>
+            </trans-unit>
+            <trans-unit id="7uwNWQg">
+                <source>narration.guided_step_gallery_print_setup_price</source>
+                <target>El precio es lo que paga el cliente, todo incluido. El laboratorio le facturará el suyo por su cuenta: la diferencia es su margen.</target>
+            </trans-unit>
+            <trans-unit id="DagUAKX">
+                <source>narration.guided_step_gallery_print_setup_published</source>
+                <target>Mientras la casilla siga sin marcar, el formato solo existe para usted. Márquela y aparecerá bajo cada foto puesta en venta.</target>
+            </trans-unit>
+            <trans-unit id="omQnM6i">
+                <source>narration.guided_step_gallery_translation_action</source>
+                <target>Este botón abre la galería directamente en el primer idioma por traducir, sin pasar por la pantalla de redacción. Solo está si el sitio declara más de un idioma.</target>
+            </trans-unit>
+            <trans-unit id="A7TWm_z">
+                <source>narration.guided_step_gallery_translation_done</source>
+                <target>La galería se lee en ese idioma. Abra su página en la dirección de ese idioma: el título traducido sustituye al del idioma de redacción.</target>
+            </trans-unit>
+            <trans-unit id="FoJOtsb">
+                <source>narration.guided_step_gallery_translation_locale</source>
+                <target>Las pestañas pasan de un idioma a otro. La primera es aquella en la que se escribió la galería: es la que sirve de fuente.</target>
+            </trans-unit>
+            <trans-unit id="vNs7BWa">
+                <source>narration.guided_step_gallery_translation_open</source>
+                <target>El panel le lleva a sus galerías: una traducción empieza precisamente en esta lista.</target>
+            </trans-unit>
+            <trans-unit id="l3Vr0rq">
+                <source>narration.guided_step_gallery_translation_save</source>
+                <target>Guarde: la traducción se publica de inmediato, en la dirección de ese idioma. Cada medio se traduce desde su propia pantalla, de la misma manera.</target>
+            </trans-unit>
+            <trans-unit id="0dBOMxJ">
+                <source>narration.guided_step_gallery_translation_summary</source>
+                <target>Lo mismo vale para el resumen compartido en las redes sociales. Bajo el campo, Donovan puede proponerle una reformulación.</target>
+            </trans-unit>
+            <trans-unit id="7o2D4E_">
+                <source>narration.guided_step_gallery_translation_title</source>
+                <target>El título mostrado entre corchetes es el del idioma de redacción. Permanece igual mientras no escriba nada: una galería traducida a medias sigue siendo legible.</target>
+            </trans-unit>
+            <trans-unit id="E66DXJx">
+                <source>narration.guided_step_gallery_trash_delete</source>
+                <target>Retire una del sitio. El botón pide confirmación y luego mueve la galería a la papelera: sus medios, sus archivos y su dirección se conservan, y solo su página responde a partir de entonces que ya no existe.</target>
+            </trans-unit>
+            <trans-unit id="jkS92Sw">
+                <source>narration.guided_step_gallery_trash_done</source>
+                <target>Nada se pierde con un clic. Tirar una galería definitivamente es el otro botón de la papelera, reservado al administrador: es el único que retira los archivos del servidor.</target>
+            </trans-unit>
+            <trans-unit id="WBdp.7G">
+                <source>narration.guided_step_gallery_trash_open</source>
+                <target>El panel le lleva a sus galerías, las que el sitio muestra en este momento.</target>
+            </trans-unit>
+            <trans-unit id="e0aNsNJ">
+                <source>narration.guided_step_gallery_trash_restore</source>
+                <target>Vuelva a ponerla en línea. Regresa a su sitio, con sus medios y su posición, y su dirección vuelve a responder.</target>
+            </trans-unit>
+            <trans-unit id="uroJAVb">
+                <source>narration.guided_step_gallery_trash_switch</source>
+                <target>Abra la papelera. El botón situado encima de la lista alterna entre las galerías en línea y las apartadas: la misma pantalla, mostrando la otra cara.</target>
+            </trans-unit>
+            <trans-unit id="MdQod4k">
+                <source>narration.print_formats</source>
+                <target>«Formatos de copia» lleva los tamaños ofrecidos a la venta, su precio y la referencia del laboratorio.</target>
+            </trans-unit>
+            <trans-unit id="odCCuWc">
+                <source>narration.print_orders</source>
+                <target>«Pedidos de copias» lista las copias encargadas: las que el laboratorio imprime, y las que esperan su firma.</target>
+            </trans-unit>
+        </body>
+    </file>
+</xliff>

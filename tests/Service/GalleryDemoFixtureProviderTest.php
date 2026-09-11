@@ -11,9 +11,13 @@
 namespace c975L\GalleryBundle\Tests\Service;
 
 use c975L\GalleryBundle\Entity\GalleryCategory;
+use c975L\GalleryBundle\Entity\GalleryMedia;
 use c975L\GalleryBundle\Service\GalleryDemoFixtureProvider;
 use c975L\GalleryBundle\Service\GallerySampleCatalog;
+use c975L\GalleryBundle\Service\GalleryTranslator;
+use c975L\UiBundle\Entity\Translation;
 use c975L\UiBundle\Registry\PlaceholderMediaRegistry;
+use c975L\UiBundle\Service\DemoFixtureTranslator;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Contracts\Translation\TranslatorInterface;
@@ -49,7 +53,7 @@ class GalleryDemoFixtureProviderTest extends TestCase
         $registry = $this->createStub(PlaceholderMediaRegistry::class);
         $registry->method('getImages')->willReturn($images);
 
-        return new GalleryDemoFixtureProvider(new GallerySampleCatalog($registry), $translator, $registry, $this->projectDir);
+        return new GalleryDemoFixtureProvider(new DemoFixtureTranslator($translator, ['fr'], 'fr'), new GallerySampleCatalog($registry), $translator, $registry, $this->projectDir);
     }
 
     /** @return list<GalleryCategory> */
@@ -108,5 +112,54 @@ class GalleryDemoFixtureProviderTest extends TestCase
 
         $this->assertNotSame($this->projectDir . '/public/' . self::IMAGE, $media->getFile()->getPathname());
         $this->assertFileExists($this->projectDir . '/public/' . self::IMAGE);
+    }
+
+    // The dataset says itself in every language the site declares, its catalogue keys read a second time - the categories and the medias hung in them
+    public function testTheSecondPassWritesEveryLanguageOfTheCatalog(): void
+    {
+        $translator = $this->createStub(TranslatorInterface::class);
+        $translator->method('trans')->willReturnCallback(
+            static fn (string $id, array $parameters = [], ?string $domain = null, ?string $locale = null): string => sprintf('%s[%s]', $id, $locale ?? 'fr')
+        );
+
+        $registry = $this->createStub(PlaceholderMediaRegistry::class);
+        $registry->method('getImages')->willReturn([self::IMAGE]);
+
+        $demoFixtureTranslator = new DemoFixtureTranslator($translator, ['fr', 'en'], 'fr');
+        $provider = new GalleryDemoFixtureProvider($demoFixtureTranslator, new GallerySampleCatalog($registry), $translator, $registry, $this->projectDir);
+
+        $identifier = 0;
+        foreach ($provider->getDemoFixtures() as $category) {
+            new \ReflectionProperty(GalleryCategory::class, 'id')->setValue($category, ++$identifier);
+
+            $position = 0;
+            foreach ($category->getMedias() as $media) {
+                $this->temporaryCopies[] = (string) $media->getFile()?->getRealPath();
+                new \ReflectionProperty(GalleryMedia::class, 'id')->setValue($media, $identifier * 100 + ++$position);
+            }
+        }
+
+        $rows = iterator_to_array($provider->getLinkedDemoFixtures(), false);
+
+        $this->assertNotSame([], $rows, 'The demo gallery was not staged for translation at all.');
+        $this->assertSame(['en'], $this->distinct($rows, static fn (Translation $row): string => (string) $row->getLocale()));
+        $this->assertSame(
+            [GalleryTranslator::OWNER_CATEGORY, GalleryTranslator::OWNER_MEDIA],
+            $this->distinct($rows, static fn (Translation $row): string => (string) $row->getOwnerType())
+        );
+    }
+
+    /**
+     * @param list<Translation>             $rows
+     * @param callable(Translation): string $read
+     *
+     * @return list<string>
+     */
+    private function distinct(array $rows, callable $read): array
+    {
+        $values = array_values(array_unique(array_map($read, $rows)));
+        sort($values);
+
+        return $values;
     }
 }
