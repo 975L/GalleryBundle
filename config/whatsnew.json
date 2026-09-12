@@ -1,5 +1,15 @@
 [
     {
+        "date": "2026-09-12",
+        "description": [
+            {
+                "en": "A new guided project walks you through a print order: reading it, printing the certificates of a limited edition, and handing the order to the lab",
+                "fr": "Un nouveau projet guidé vous accompagne pour traiter une commande de tirage : la lire, imprimer les certificats d'une édition limitée, et confier la commande au laboratoire",
+                "es": "Un nuevo proyecto guiado le acompaña para tramitar un pedido de copias: leerlo, imprimir los certificados de una edición limitada y confiar el pedido al laboratorio"
+            }
+        ]
+    },
+    {
         "date": "2026-09-11",
         "description": [
             {

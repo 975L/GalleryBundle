@@ -190,6 +190,26 @@
                 <source>narration.guided_step_gallery_medias_recovery_trash</source>
                 <target>Les photos ont aussi une corbeille. Chaque galerie porte la sienne, sous son formulaire dès qu'une photo y est mise : les mêmes téléchargements y sont offerts, et « Restaurer » rend les photos à la galerie, à la suite des autres.</target>
             </trans-unit>
+            <trans-unit id="3DmJNXI">
+                <source>narration.guided_step_gallery_print_order_certificates</source>
+                <target>Une édition limitée se signe. Le bouton réunit tous les exemplaires numérotés de la commande dans un seul pdf : trois tirages font trois feuilles à signer d’un coup, et non trois téléchargements. Il n’est pas proposé sur une édition ouverte, qui n’a rien à certifier.</target>
+            </trans-unit>
+            <trans-unit id="hAEs6Cr">
+                <source>narration.guided_step_gallery_print_order_detail</source>
+                <target>La fiche porte ce que la liste laisse de côté : les exemplaires et leurs numéros, le laboratoire qui s’en charge, la référence qu’il a donnée à la commande, et, si un envoi a échoué, ses propres mots sur le fichier ou la référence à corriger.</target>
+            </trans-unit>
+            <trans-unit id="sZMOoWH">
+                <source>narration.guided_step_gallery_print_order_done</source>
+                <target>Ensuite, plus rien ne vous est demandé : le laboratoire annonce lui-même son avancement, l’état passant à l’impression puis à l’expédition tout seul. Une commande qui revient refusée reparaît parmi celles qui attendent, et repart du même bouton.</target>
+            </trans-unit>
+            <trans-unit id="rJ44hvM">
+                <source>narration.guided_step_gallery_print_order_open</source>
+                <target>Rien ne se crée ici : une commande est écrite par la caisse, puis par le laboratoire au fil de l’impression. Ce que vous lisez est le registre des ventes, la plus récente en haut, et la couleur de l’état sépare celles qui vous attendent encore de celles qui sont déjà en route.</target>
+            </trans-unit>
+            <trans-unit id="ZvXlutf">
+                <source>narration.guided_step_gallery_print_order_release</source>
+                <target>C’est le seul geste qui fait partir une commande. Il apparaît là où une commande vous attend — une édition signée, ou un envoi que le laboratoire a refusé — et remet la commande dans la file qui parle au laboratoire, la route même que prend seule une édition ouverte payée.</target>
+            </trans-unit>
             <trans-unit id="oQrN9MT">
                 <source>narration.guided_step_gallery_print_setup_done</source>
                 <target>Les formats sont prêts. Une photo ne se vend pourtant que si sa fiche porte la case « imprimable » : c'est là, média par média, que vous choisissez ce qui est offert au tirage.</target>

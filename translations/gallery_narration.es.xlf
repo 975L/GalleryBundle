@@ -190,6 +190,26 @@
                 <source>narration.guided_step_gallery_medias_recovery_trash</source>
                 <target>Las fotos también tienen una papelera. Cada galería lleva la suya, bajo su formulario en cuanto se pone una foto en ella: se ofrecen las mismas descargas, y «Restaurar» devuelve las fotos a la galería, detrás de las demás.</target>
             </trans-unit>
+            <trans-unit id="3DmJNXI">
+                <source>narration.guided_step_gallery_print_order_certificates</source>
+                <target>Una edición limitada se firma. El botón reúne todos los ejemplares numerados del pedido en un solo pdf: tres copias son tres hojas que firmar de una vez, y no tres descargas. No se ofrece en una edición abierta, que no tiene nada que certificar.</target>
+            </trans-unit>
+            <trans-unit id="hAEs6Cr">
+                <source>narration.guided_step_gallery_print_order_detail</source>
+                <target>La ficha recoge lo que la lista deja fuera: los ejemplares y sus números, el laboratorio que se encarga, la referencia que dio al pedido y, si un envío falló, sus propias palabras sobre el archivo o la referencia que hay que corregir.</target>
+            </trans-unit>
+            <trans-unit id="sZMOoWH">
+                <source>narration.guided_step_gallery_print_order_done</source>
+                <target>A partir de ahí no se le pide nada más: el laboratorio anuncia su propio avance, y el estado pasa a impresión y luego a enviado por sí solo. Un pedido que vuelve rechazado reaparece entre los que esperan, y se reenvía desde el mismo botón.</target>
+            </trans-unit>
+            <trans-unit id="rJ44hvM">
+                <source>narration.guided_step_gallery_print_order_open</source>
+                <target>Aquí no se crea nada: un pedido lo escribe la caja y luego el laboratorio a medida que imprime. Lo que lee es el registro de las ventas, el más reciente arriba, y el color del estado separa los que todavía le esperan de los que ya van de camino.</target>
+            </trans-unit>
+            <trans-unit id="ZvXlutf">
+                <source>narration.guided_step_gallery_print_order_release</source>
+                <target>Es el único gesto que hace salir un pedido. Aparece donde un pedido le espera — una edición firmada, o un envío que el laboratorio rechazó — y devuelve el pedido a la cola que habla con el laboratorio, el mismo camino que toma sola una edición abierta pagada.</target>
+            </trans-unit>
             <trans-unit id="oQrN9MT">
                 <source>narration.guided_step_gallery_print_setup_done</source>
                 <target>Los formatos están listos. Sin embargo, una foto solo se vende si su ficha lleva la casilla «imprimible»: es ahí, medio por medio, donde elige lo que se ofrece para copia.</target>

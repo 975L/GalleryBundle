@@ -130,6 +130,10 @@
                 <source>description.guided_project_gallery_medias_recovery</source>
                 <target>The site hands the originals back as one archive, and keeps a trash of its own for the photos.</target>
             </trans-unit>
+            <trans-unit id="GJkJ.cT">
+                <source>description.guided_project_gallery_print_order</source>
+                <target>Reading an order, printing its certificates and sending it to the lab.</target>
+            </trans-unit>
             <trans-unit id="tsnfDBM">
                 <source>description.guided_project_gallery_print_setup</source>
                 <target>The formats, their prices, and what to tick for a photograph to be sold.</target>
@@ -313,6 +317,26 @@
             <trans-unit id="l38qUVs">
                 <source>description.guided_step_gallery_medias_recovery_trash</source>
                 <target>Each gallery carries its own, under its form as soon as a photo is put there: the same downloads are offered, and "Restore" hands the photos back to the gallery at the end of it.</target>
+            </trans-unit>
+            <trans-unit id="cYSQxiw">
+                <source>description.guided_step_gallery_print_order_certificates</source>
+                <target>One sheet per numbered copy, offered only on an order holding a limited edition.</target>
+            </trans-unit>
+            <trans-unit id="5MLWqpr">
+                <source>description.guided_step_gallery_print_order_detail</source>
+                <target>The copies, the lab, its reference, and its own words about a refusal.</target>
+            </trans-unit>
+            <trans-unit id="ozLSjXh">
+                <source>description.guided_step_gallery_print_order_done</source>
+                <target>The state moves on its own from there, up to the shipping.</target>
+            </trans-unit>
+            <trans-unit id="TUyspg9">
+                <source>description.guided_step_gallery_print_order_open</source>
+                <target>Written by the checkout and by the lab: the colour of a state says what still waits for you.</target>
+            </trans-unit>
+            <trans-unit id="Dtye735">
+                <source>description.guided_step_gallery_print_order_release</source>
+                <target>Offered only on an order waiting for you, a refused one included.</target>
             </trans-unit>
             <trans-unit id="vdrMdME">
                 <source>description.guided_step_gallery_print_setup_done</source>
@@ -1034,6 +1058,10 @@
                 <source>label.guided_project_gallery_medias_recovery</source>
                 <target>Get the photo files back</target>
             </trans-unit>
+            <trans-unit id="37g2Fw3">
+                <source>label.guided_project_gallery_print_order</source>
+                <target>Handle a print order</target>
+            </trans-unit>
             <trans-unit id="c1tUhx0">
                 <source>label.guided_project_gallery_print_setup</source>
                 <target>Open the print shop</target>
@@ -1225,6 +1253,26 @@
             <trans-unit id="YCBsgHX">
                 <source>label.guided_step_gallery_medias_recovery_trash</source>
                 <target>The photos have a trash too</target>
+            </trans-unit>
+            <trans-unit id="OBiehmP">
+                <source>label.guided_step_gallery_print_order_certificates</source>
+                <target>Print the certificates</target>
+            </trans-unit>
+            <trans-unit id="fVdQX7k">
+                <source>label.guided_step_gallery_print_order_detail</source>
+                <target>Open an order</target>
+            </trans-unit>
+            <trans-unit id="hi3VdFZ">
+                <source>label.guided_step_gallery_print_order_done</source>
+                <target>The lab takes over</target>
+            </trans-unit>
+            <trans-unit id="lV6IvWA">
+                <source>label.guided_step_gallery_print_order_open</source>
+                <target>The print orders</target>
+            </trans-unit>
+            <trans-unit id="E2Zc6FG">
+                <source>label.guided_step_gallery_print_order_release</source>
+                <target>Send the order to the lab</target>
             </trans-unit>
             <trans-unit id="KDDjH_n">
                 <source>label.guided_step_gallery_print_setup_done</source>

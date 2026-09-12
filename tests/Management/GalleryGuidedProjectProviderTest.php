@@ -48,10 +48,10 @@ class GalleryGuidedProjectProviderTest extends TestCase
         $projects = $this->createProvider()->getGuidedProjects();
 
         $this->assertSame(
-            ['gallery-creation', 'gallery-medias-arrangement', 'gallery-medias-move', 'gallery-media-detail', 'gallery-translation', 'gallery-trash', 'gallery-medias-recovery', 'gallery-latest', 'gallery-library-sorting', 'gallery-print-setup'],
+            ['gallery-creation', 'gallery-medias-arrangement', 'gallery-medias-move', 'gallery-media-detail', 'gallery-translation', 'gallery-trash', 'gallery-medias-recovery', 'gallery-latest', 'gallery-library-sorting', 'gallery-print-setup', 'gallery-print-order'],
             array_column($projects, 'slug')
         );
-        $this->assertSame([5010, 5020, 5025, 5030, 5035, 5040, 5050, 5060, 5065, 5070], array_column($projects, 'order'));
+        $this->assertSame([5010, 5020, 5025, 5030, 5035, 5040, 5050, 5060, 5065, 5070, 5075], array_column($projects, 'order'));
     }
 
     // The two print screens are hidden from the menu on a site that does not sell prints (see MenuProvider), and a parcours walking a screen with no way in reads as a broken one
@@ -61,6 +61,7 @@ class GalleryGuidedProjectProviderTest extends TestCase
         $projects = $this->createProvider($controllers, false)->getGuidedProjects();
 
         $this->assertNotContains('gallery-print-setup', array_column($projects, 'slug'));
+        $this->assertNotContains('gallery-print-order', array_column($projects, 'slug'));
     }
 
     public function testEverySlugIsPrefixedWithTheBundleName(): void
@@ -112,14 +113,14 @@ class GalleryGuidedProjectProviderTest extends TestCase
         }
     }
 
-    // Every parcours about a gallery opens on the categories - the sorting one on the contact sheet of the whole library, which no gallery's screen can stand for, and the print one on the formats, which is where a shop is written
+    // Every parcours about a gallery opens on the categories - the sorting one on the contact sheet of the whole library, which no gallery's screen can stand for, and the print ones on the formats and on the orders, which is where a shop is written and where it is run
     public function testEveryProjectOpensOnTheScreenItWalks(): void
     {
         $controllers = [];
         $this->createProvider($controllers)->getGuidedProjects();
 
         $this->assertSame(
-            [...array_fill(0, 8, 'GalleryCategoryCrudController'), 'GalleryMediaCrudController', 'GalleryPrintFormatCrudController'],
+            [...array_fill(0, 8, 'GalleryCategoryCrudController'), 'GalleryMediaCrudController', 'GalleryPrintFormatCrudController', 'GalleryPrintOrderCrudController'],
             array_map(static fn (string $fqcn): string => basename(str_replace('\\', '/', $fqcn)), $controllers)
         );
     }

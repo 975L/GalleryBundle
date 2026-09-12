@@ -130,6 +130,10 @@
                 <source>description.guided_project_gallery_medias_recovery</source>
                 <target>El sitio devuelve los originales en un solo archivo comprimido, y guarda una papelera propia para las fotos.</target>
             </trans-unit>
+            <trans-unit id="GJkJ.cT">
+                <source>description.guided_project_gallery_print_order</source>
+                <target>Leer un pedido, imprimir sus certificados y enviarlo al laboratorio.</target>
+            </trans-unit>
             <trans-unit id="tsnfDBM">
                 <source>description.guided_project_gallery_print_setup</source>
                 <target>Los formatos, sus precios y lo que hay que marcar para que se venda una fotografía.</target>
@@ -313,6 +317,26 @@
             <trans-unit id="l38qUVs">
                 <source>description.guided_step_gallery_medias_recovery_trash</source>
                 <target>Cada galería lleva la suya, bajo su formulario en cuanto se pone una foto en ella: se ofrecen las mismas descargas, y «Restaurar» devuelve las fotos a la galería, detrás de las demás.</target>
+            </trans-unit>
+            <trans-unit id="cYSQxiw">
+                <source>description.guided_step_gallery_print_order_certificates</source>
+                <target>Una hoja por ejemplar numerado, ofrecida solo en un pedido de edición limitada.</target>
+            </trans-unit>
+            <trans-unit id="5MLWqpr">
+                <source>description.guided_step_gallery_print_order_detail</source>
+                <target>Los ejemplares, el laboratorio, su referencia y sus propias palabras en caso de rechazo.</target>
+            </trans-unit>
+            <trans-unit id="ozLSjXh">
+                <source>description.guided_step_gallery_print_order_done</source>
+                <target>El estado avanza solo a partir de ahí, hasta el envío.</target>
+            </trans-unit>
+            <trans-unit id="TUyspg9">
+                <source>description.guided_step_gallery_print_order_open</source>
+                <target>Escritos por la caja y por el laboratorio: el color de un estado dice lo que todavía le espera.</target>
+            </trans-unit>
+            <trans-unit id="Dtye735">
+                <source>description.guided_step_gallery_print_order_release</source>
+                <target>Ofrecido solo en un pedido que le espera, rechazos incluidos.</target>
             </trans-unit>
             <trans-unit id="vdrMdME">
                 <source>description.guided_step_gallery_print_setup_done</source>
@@ -1034,6 +1058,10 @@
                 <source>label.guided_project_gallery_medias_recovery</source>
                 <target>Recuperar los archivos de las fotos</target>
             </trans-unit>
+            <trans-unit id="37g2Fw3">
+                <source>label.guided_project_gallery_print_order</source>
+                <target>Tramitar un pedido de copias</target>
+            </trans-unit>
             <trans-unit id="c1tUhx0">
                 <source>label.guided_project_gallery_print_setup</source>
                 <target>Abrir la venta de copias</target>
@@ -1225,6 +1253,26 @@
             <trans-unit id="YCBsgHX">
                 <source>label.guided_step_gallery_medias_recovery_trash</source>
                 <target>Las fotos también tienen papelera</target>
+            </trans-unit>
+            <trans-unit id="OBiehmP">
+                <source>label.guided_step_gallery_print_order_certificates</source>
+                <target>Imprimir los certificados</target>
+            </trans-unit>
+            <trans-unit id="fVdQX7k">
+                <source>label.guided_step_gallery_print_order_detail</source>
+                <target>Abrir un pedido</target>
+            </trans-unit>
+            <trans-unit id="hi3VdFZ">
+                <source>label.guided_step_gallery_print_order_done</source>
+                <target>El laboratorio toma el relevo</target>
+            </trans-unit>
+            <trans-unit id="lV6IvWA">
+                <source>label.guided_step_gallery_print_order_open</source>
+                <target>Los pedidos de copias</target>
+            </trans-unit>
+            <trans-unit id="E2Zc6FG">
+                <source>label.guided_step_gallery_print_order_release</source>
+                <target>Enviar el pedido al laboratorio</target>
             </trans-unit>
             <trans-unit id="KDDjH_n">
                 <source>label.guided_step_gallery_print_setup_done</source>

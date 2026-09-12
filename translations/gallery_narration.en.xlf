@@ -190,6 +190,26 @@
                 <source>narration.guided_step_gallery_medias_recovery_trash</source>
                 <target>The photos have a trash too. Each gallery carries its own, under its form as soon as a photo is put there: the same downloads are offered, and "Restore" hands the photos back to the gallery, after the others.</target>
             </trans-unit>
+            <trans-unit id="3DmJNXI">
+                <source>narration.guided_step_gallery_print_order_certificates</source>
+                <target>A limited edition is signed. The button gathers every numbered copy of the order into one pdf, so three prints are three sheets to sign in one go rather than three downloads. It is not offered on an open edition, which has nothing to certify.</target>
+            </trans-unit>
+            <trans-unit id="hAEs6Cr">
+                <source>narration.guided_step_gallery_print_order_detail</source>
+                <target>The detail holds what the list leaves out: the copies and their numbers, the lab handling them, the reference it gave the order, and, where a sending failed, the lab’s own words about the file or the sku to go and fix.</target>
+            </trans-unit>
+            <trans-unit id="sZMOoWH">
+                <source>narration.guided_step_gallery_print_order_done</source>
+                <target>From there nothing more is asked of you: the lab reports its own progress, the state moving to producing and then to shipped on its own. An order that comes back refused reappears as one waiting, and is sent again from the same button.</target>
+            </trans-unit>
+            <trans-unit id="rJ44hvM">
+                <source>narration.guided_step_gallery_print_order_open</source>
+                <target>Nothing is created here: an order is written by the checkout, then by the lab as it prints. What you read is the record of a sale, newest first, and the colour of the state tells the ones still waiting for you from the ones already on their way.</target>
+            </trans-unit>
+            <trans-unit id="ZvXlutf">
+                <source>narration.guided_step_gallery_print_order_release</source>
+                <target>This is the one thing that sends an order on. It is offered where an order waits for you - a signed edition, or a sending the lab refused - and it puts the order back in the queue that talks to the lab, the very road a paid open edition takes on its own.</target>
+            </trans-unit>
             <trans-unit id="oQrN9MT">
                 <source>narration.guided_step_gallery_print_setup_done</source>
                 <target>The formats are ready. A photograph is still only sold if its own screen carries the "printable" box: that is where, media by media, you choose what is offered as a print.</target>

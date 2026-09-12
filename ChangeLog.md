@@ -1,5 +1,15 @@
 # ChangeLog
 
+## v1.19.2
+
+The bundle's Stimulus controllers join the one application of the page
+
+- `controllers.js` and `controllers-admin.js` join the page's shared Stimulus application instead of starting their own (12/09/2026)
+- `c975l/payment-bundle` moves to `^6.9.3`, the first release joining it (12/09/2026)
+- A guided project walks the print orders screen (12/09/2026)
+- `phpmd` leaves the quality gate, the CI workflow and `bin/ci.sh` (12/09/2026)
+- `phpcs.xml.dist` forbids the debug calls and `eval()` phpmd used to report (12/09/2026)
+
 ## v1.19.1
 
 The lustre range drops the sizes printed in Sweden

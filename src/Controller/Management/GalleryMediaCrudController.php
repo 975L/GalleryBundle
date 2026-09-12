@@ -370,9 +370,8 @@ class GalleryMediaCrudController extends AbstractCrudController
         ];
     }
 
-    #[\Override]
     // A declaration of fields, one line per field: its length says how much the screen shows, not how much the method decides
-    /** @SuppressWarnings(PHPMD.ExcessiveMethodLength) */
+    #[\Override]
     public function configureFields(string $pageName): iterable
     {
         // The very same edit screen, opened on another language: what that language says of this row, and nothing else. A file, a slug, a size, a price and the credits are the same in every language and are written on the screen the row was written on (see ContentLocaleScreen)

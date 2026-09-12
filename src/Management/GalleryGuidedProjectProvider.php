@@ -15,6 +15,7 @@ use c975L\ConfigBundle\Service\ConfigServiceInterface;
 use c975L\GalleryBundle\Controller\Management\GalleryCategoryCrudController;
 use c975L\GalleryBundle\Controller\Management\GalleryMediaCrudController;
 use c975L\GalleryBundle\Controller\Management\GalleryPrintFormatCrudController;
+use c975L\GalleryBundle\Controller\Management\GalleryPrintOrderCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGeneratorInterface;
 
@@ -44,6 +45,7 @@ class GalleryGuidedProjectProvider implements GuidedProjectProviderInterface
         // Offered only where the screens it walks are, the print ones being hidden from the menu on a site that does not sell prints (see MenuProvider)
         if (true === $this->configService->get('gallery-print-enabled')) {
             $projects[] = $this->printSetupProject();
+            $projects[] = $this->printOrderProject();
         }
 
         return $projects;
@@ -573,6 +575,52 @@ class GalleryGuidedProjectProvider implements GuidedProjectProviderInterface
         ];
     }
 
+    // What an admin actually does with an order, the rest being written by the checkout and by the lab: the screen offers neither creation nor edition (see GalleryPrintOrderCrudController::configureActions), so the parcours walks the two actions carried by a row
+    private function printOrderProject(): array
+    {
+        return [
+            'slug' => 'gallery-print-order',
+            'label' => 'label.guided_project_gallery_print_order',
+            'description' => 'description.guided_project_gallery_print_order',
+            'translation_domain' => 'gallery',
+            'order' => 5075,
+            'role' => $this->roleNeeded(),
+            'steps' => [
+                [
+                    'label' => 'label.guided_step_gallery_print_order_open',
+                    'description' => 'description.guided_step_gallery_print_order_open',
+                    'narration' => 'narration.guided_step_gallery_print_order_open',
+                    'url' => $this->printOrderIndexUrl(),
+                ],
+                [
+                    'label' => 'label.guided_step_gallery_print_order_detail',
+                    'description' => 'description.guided_step_gallery_print_order_detail',
+                    'narration' => 'narration.guided_step_gallery_print_order_detail',
+                    'highlight' => '.action-detail',
+                ],
+                [
+                    'label' => 'label.guided_step_gallery_print_order_certificates',
+                    'description' => 'description.guided_step_gallery_print_order_certificates',
+                    'narration' => 'narration.guided_step_gallery_print_order_certificates',
+                    // Only there on an order holding a numbered copy (see GalleryPrintOrderCrudController::configureActions); the step reads as well without it, an open edition having nothing to certify
+                    'highlight' => '.action-printCertificates',
+                ],
+                [
+                    'label' => 'label.guided_step_gallery_print_order_release',
+                    'description' => 'description.guided_step_gallery_print_order_release',
+                    'narration' => 'narration.guided_step_gallery_print_order_release',
+                    // Only there on an order waiting for a human, an order on its way to the lab needing nothing
+                    'highlight' => '.action-releaseToLab',
+                ],
+                [
+                    'label' => 'label.guided_step_gallery_print_order_done',
+                    'description' => 'description.guided_step_gallery_print_order_done',
+                    'narration' => 'narration.guided_step_gallery_print_order_done',
+                ],
+            ],
+        ];
+    }
+
     // The role every gallery management screen sits behind, the same ConfigBundle entry its controllers read (see GalleryCategoryCrudController) - a parcours walking screens the user can't open reads as a broken one
     private function roleNeeded(): string
     {
@@ -595,6 +643,11 @@ class GalleryGuidedProjectProvider implements GuidedProjectProviderInterface
     private function printFormatIndexUrl(): string
     {
         return $this->crudIndexUrl(GalleryPrintFormatCrudController::class);
+    }
+
+    private function printOrderIndexUrl(): string
+    {
+        return $this->crudIndexUrl(GalleryPrintOrderCrudController::class);
     }
 
     private function crudIndexUrl(string $controller): string
