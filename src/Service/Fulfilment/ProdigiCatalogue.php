@@ -43,6 +43,7 @@ class ProdigiCatalogue implements PrintCatalogueProviderInterface
     public function getEntries(): array
     {
         return [
+            // The lustre range, short of the A sizes and of 30x40 though the lab prints them: it makes those in Sweden where everything else here comes from Venlo, so a basket mixing the two leaves in two shipments and is charged two carriages - the three other papers cover those sizes from the one place
             $this->line('lustre-20x20', 20, 20, 'GLOBAL-PAP-8X8', self::LUSTRE, 4500, 10),
             $this->line('lustre-30x30', 30, 30, 'GLOBAL-PAP-12X12', self::LUSTRE, 8000, 20),
             $this->line('lustre-40x40', 40, 40, 'GLOBAL-PAP-16X16', self::LUSTRE, 12000, 30),
@@ -51,12 +52,8 @@ class ProdigiCatalogue implements PrintCatalogueProviderInterface
             $this->line('lustre-30x45', 30, 45, 'GLOBAL-PAP-12X18', self::LUSTRE, 10500, 50),
             $this->line('lustre-40x60', 40, 60, 'GLOBAL-PAP-16X24', self::LUSTRE, 16500, 60),
             $this->line('lustre-23x30', 23, 30, 'GLOBAL-PAP-9X12', self::LUSTRE, 6500, 70),
-            $this->line('lustre-30x40', 30, 40, 'GLOBAL-PAP-12X16', self::LUSTRE, 10000, 80),
             $this->line('lustre-45x60', 45, 60, 'GLOBAL-PAP-18X24', self::LUSTRE, 18000, 90),
             $this->line('lustre-51x91', 51, 91, 'GLOBAL-PAP-20X36', self::LUSTRE, 27000, 100),
-            $this->line('lustre-a4', 21, 30, 'GLOBAL-PAP-A4', self::LUSTRE, 6000, 110),
-            $this->line('lustre-a3', 30, 42, 'GLOBAL-PAP-A3', self::LUSTRE, 10000, 120),
-            $this->line('lustre-a2', 42, 59, 'GLOBAL-PAP-A2', self::LUSTRE, 17000, 130),
             $this->line('mat-20x20', 20, 20, 'GLOBAL-FAP-8X8', self::MATTE, 5500, 140),
             $this->line('mat-30x30', 30, 30, 'GLOBAL-FAP-12X12', self::MATTE, 10000, 150),
             $this->line('mat-40x40', 40, 40, 'GLOBAL-FAP-16X16', self::MATTE, 15000, 160),

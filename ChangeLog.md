@@ -1,5 +1,12 @@
 # ChangeLog
 
+## v1.19.1
+
+The lustre range drops the sizes printed in Sweden
+
+- `ProdigiCatalogue` no longer ships `lustre-30x40`, `lustre-a4`, `lustre-a3` and `lustre-a2` (12/09/2026)
+- The four formats a shop already imported stay, to be deactivated by hand (12/09/2026)
+
 ## v1.19.0
 
 The category grid grows as the visitor scrolls
