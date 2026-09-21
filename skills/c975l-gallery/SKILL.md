@@ -663,6 +663,8 @@ publishes no graph for a media with neither a file to name nor a player to frame
   conditional `UPDATE` — a replayed callback would otherwise post the shipping letter twice.
 - **Do not print a price with a hardcoded currency.** Read `shop-currency`, as
   `templates/print/_offer.html.twig` and PaymentBundle's own basket templates do.
+- **Do not render `<twig:c975LPayment:Basket:Navbar/>` in a gallery template.** UiBundle's layout places it
+  once on every page (`c975l/core-bundle` `^1.31`); a second one is never filled. `Basket:Message` stays.
 - **Do not send the catalogue slug to a lab, nor the web derivative as a print file.** The frozen sku is
   what a lab knows, and `GalleryPrintFileBuilder` composes from the untouched original.
 - **Do not hand VichUploader a plain `File`** when seeding a media — `UploadHandler::hasUploadedFile()`

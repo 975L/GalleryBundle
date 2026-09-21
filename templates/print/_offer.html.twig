@@ -71,8 +71,7 @@
             <p class="gallery-print__edition">{{ 'label.print_edition_sold_out'|trans }}</p>
         {% endif %}
 
-        {# What the click answers with, both drawn by PaymentBundle: the line saying the print was added, and the bar carrying the count, the total and the way to the basket - without them the button fills the basket in silence #}
+        {# What the click answers with, drawn by PaymentBundle: the line saying the print was added - the bar carrying the count, the total and the way to the basket being placed once by UiBundle's layout, a second one here never filled #}
         <twig:c975LPayment:Basket:Message/>
-        <twig:c975LPayment:Basket:Navbar/>
     </div>
 {% endif %}

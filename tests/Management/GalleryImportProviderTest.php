@@ -25,6 +25,7 @@ use c975L\UiBundle\Video\VideoPlatform;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\String\Slugger\AsciiSlugger;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class GalleryImportProviderTest extends TestCase
 {
@@ -85,7 +86,7 @@ class GalleryImportProviderTest extends TestCase
             $em,
             $this->createCategoryRepository($existingCategory, $automaticCategory),
             new GalleryMediaSlugger(new AsciiSlugger()),
-            new BlockDataImporter($em, $this->createStub(FormBlockDependencyRegistry::class)),
+            new BlockDataImporter($em, $this->createStub(FormBlockDependencyRegistry::class), $this->createStub(ValidatorInterface::class)),
             $ratingRepository ?? $this->createStub(RatingRepository::class),
             $projectDir ?? sys_get_temp_dir(),
         );

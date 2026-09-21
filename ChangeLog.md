@@ -1,5 +1,12 @@
 # ChangeLog
 
+## v1.19.3
+
+The print offer no longer draws a basket bar of its own
+
+- `print/_offer` no longer emits `Basket:Navbar` (21/09/2026)
+- `c975l/core-bundle` moves to `^1.31.0` (21/09/2026)
+
 ## v1.19.2
 
 The bundle's Stimulus controllers join the one application of the page

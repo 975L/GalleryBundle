@@ -12,24 +12,18 @@ namespace c975L\GalleryBundle\Tests\Template;
 
 use PHPUnit\Framework\TestCase;
 
-/**
- * The print offer shown under a photograph, and what it answers a click with.
- *
- * The button hands the line to PaymentBundle's basket controller, whose message and bar are drawn by
- * components of that bundle: a page carrying the button without them fills the basket in silence, which
- * is what the offer looked like as long as those two were only ever rendered by the shop's own pages.
- */
+// The print offer under a photograph: its button needs PaymentBundle's message beside it, the basket bar being UiBundle's layout's
 class GalleryPrintOfferTest extends TestCase
 {
     private const string OFFER = 'templates/print/_offer.html.twig';
 
-    // The line saying the print was added and the bar carrying the count, the total and the way to the basket
+    // The line saying the print was added, the bar being UiBundle's layout's: a second one on the page is never filled
     public function testTheClickIsAnsweredWhateverElseTheSiteInstalled(): void
     {
         $offer = $this->read(self::OFFER);
 
         $this->assertStringContainsString('<twig:c975LPayment:Basket:Message/>', $offer);
-        $this->assertStringContainsString('<twig:c975LPayment:Basket:Navbar/>', $offer);
+        $this->assertStringNotContainsString('<twig:c975LPayment:Basket:Navbar/>', $offer);
     }
 
     // The edition, said to the basket controller the way it reads it on a shop's own buttons: nothing is ordered past what is left
