@@ -27,19 +27,25 @@ class GalleryGuidedProjectProviderTest extends TestCase
             return $generator;
         });
         $generator->method('setAction')->willReturnSelf();
+        $generator->method('set')->willReturnSelf();
         $generator->method('generateUrl')->willReturn('/management/gallery');
 
         return $generator;
     }
 
-    private function createProvider(array &$controllers = [], bool $printEnabled = true): GalleryGuidedProjectProvider
+    private function createProvider(array &$controllers = [], bool $printEnabled = true, bool $socialInstalled = true): GalleryGuidedProjectProvider
     {
         $configService = $this->createStub(ConfigServiceInterface::class);
         $configService->method('get')->willReturnCallback(
-            static fn (string $slug): mixed => 'gallery-print-enabled' === $slug ? $printEnabled : 'ROLE_EDITOR',
+            static fn (string $slug): mixed => match ($slug) {
+                'gallery-print-enabled' => $printEnabled,
+                'site-role-admin' => 'ROLE_ADMIN',
+                default => 'ROLE_EDITOR',
+            },
         );
+        $bundles = $socialInstalled ? ['c975LSocialBundle' => 'c975L\\SocialBundle\\c975LSocialBundle'] : [];
 
-        return new GalleryGuidedProjectProvider($this->createAdminUrlGenerator($controllers), $configService);
+        return new GalleryGuidedProjectProvider($this->createAdminUrlGenerator($controllers), $configService, $bundles);
     }
 
     // The 5000 block GuidedProjectProviderInterface reserves this bundle, at the step of 10 it states
@@ -48,10 +54,10 @@ class GalleryGuidedProjectProviderTest extends TestCase
         $projects = $this->createProvider()->getGuidedProjects();
 
         $this->assertSame(
-            ['gallery-creation', 'gallery-medias-arrangement', 'gallery-medias-move', 'gallery-media-detail', 'gallery-translation', 'gallery-trash', 'gallery-medias-recovery', 'gallery-latest', 'gallery-library-sorting', 'gallery-print-setup', 'gallery-print-order'],
+            ['gallery-creation', 'gallery-medias-arrangement', 'gallery-medias-move', 'gallery-media-detail', 'gallery-translation', 'gallery-trash', 'gallery-medias-recovery', 'gallery-latest', 'gallery-library-sorting', 'gallery-print-setup', 'gallery-print-order', 'gallery-social'],
             array_column($projects, 'slug')
         );
-        $this->assertSame([5010, 5020, 5025, 5030, 5035, 5040, 5050, 5060, 5065, 5070, 5075], array_column($projects, 'order'));
+        $this->assertSame([5010, 5020, 5025, 5030, 5035, 5040, 5050, 5060, 5065, 5070, 5075, 5080], array_column($projects, 'order'));
     }
 
     // The two print screens are hidden from the menu on a site that does not sell prints (see MenuProvider), and a parcours walking a screen with no way in reads as a broken one
@@ -62,6 +68,14 @@ class GalleryGuidedProjectProviderTest extends TestCase
 
         $this->assertNotContains('gallery-print-setup', array_column($projects, 'slug'));
         $this->assertNotContains('gallery-print-order', array_column($projects, 'slug'));
+    }
+
+    // The publication order means nothing where SocialBundle is not there to publish
+    public function testTheSocialProjectIsOnlyOfferedWhereSocialBundleIsInstalled(): void
+    {
+        $projects = $this->createProvider(socialInstalled: false)->getGuidedProjects();
+
+        $this->assertNotContains('gallery-social', array_column($projects, 'slug'));
     }
 
     public function testEverySlugIsPrefixedWithTheBundleName(): void
@@ -79,11 +93,11 @@ class GalleryGuidedProjectProviderTest extends TestCase
         }
     }
 
-    // Every gallery screen sits behind the site's editor role, so a parcours walking them is dropped for anybody else
-    public function testEveryProjectCarriesTheEditorRole(): void
+    // Every gallery screen sits behind the site's editor role, so a parcours walking them is dropped for anybody else - the social one walking ConfigBundle's screen, held at the admin's
+    public function testEveryProjectCarriesTheRoleOfTheScreenItWalks(): void
     {
         foreach ($this->createProvider()->getGuidedProjects() as $project) {
-            $this->assertSame('ROLE_EDITOR', $project['role']);
+            $this->assertSame('gallery-social' === $project['slug'] ? 'ROLE_ADMIN' : 'ROLE_EDITOR', $project['role']);
         }
     }
 
@@ -113,14 +127,14 @@ class GalleryGuidedProjectProviderTest extends TestCase
         }
     }
 
-    // Every parcours about a gallery opens on the categories - the sorting one on the contact sheet of the whole library, which no gallery's screen can stand for, and the print ones on the formats and on the orders, which is where a shop is written and where it is run
+    // Every parcours about a gallery opens on the categories - the sorting one on the contact sheet of the whole library, which no gallery's screen can stand for, and the print ones on the formats and on the orders, which is where a shop is written and where it is run, and the social one on the settings
     public function testEveryProjectOpensOnTheScreenItWalks(): void
     {
         $controllers = [];
         $this->createProvider($controllers)->getGuidedProjects();
 
         $this->assertSame(
-            [...array_fill(0, 8, 'GalleryCategoryCrudController'), 'GalleryMediaCrudController', 'GalleryPrintFormatCrudController', 'GalleryPrintOrderCrudController'],
+            [...array_fill(0, 8, 'GalleryCategoryCrudController'), 'GalleryMediaCrudController', 'GalleryPrintFormatCrudController', 'GalleryPrintOrderCrudController', 'ConfigCrudController'],
             array_map(static fn (string $fqcn): string => basename(str_replace('\\', '/', $fqcn)), $controllers)
         );
     }
@@ -138,7 +152,7 @@ class GalleryGuidedProjectProviderTest extends TestCase
             }
         }
 
-        $this->assertCount(3, $saveSteps, 'The creation, the media and the translation parcours each walk the user to the save button once');
+        $this->assertCount(4, $saveSteps, 'The creation, the media, the translation and the social parcours each walk the user to the save button once');
 
         foreach ($saveSteps as $step) {
             $this->assertSame('.action-saveAndReturn', $step['highlight']);

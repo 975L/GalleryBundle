@@ -54,6 +54,10 @@
                 <source>description.gallery_route_prefix</source>
                 <target>Primer segmento de las URL públicas de la galería, p. ej. "gallery" para /gallery/mi-categoria. El cambio es inmediato, pero las URL anteriores devuelven una página no encontrada: prevea una redirección si estaban indexadas. Vacío, se aplica el prefijo "gallery".</target>
             </trans-unit>
+            <trans-unit id="hoSnkz2">
+                <source>description.gallery_social_order</source>
+                <target>random: una foto elegida al azar entre las que aún no se han publicado en las redes. oldest: de la más antigua a la más reciente.</target>
+            </trans-unit>
             <trans-unit id="vqewYAX">
                 <source>description.gallery_style</source>
                 <target>Estilo predefinido de la galería, aplicado al índice, a las categorías y a cada medio: "light" (página casi blanca) o "dark" (página casi negra). El estilo redefine los colores del sitio solo para esas páginas —fondo, texto, títulos, enlaces, barra de navegación y pie incluidos— y prevalece sobre el modo oscuro del sitio. Vacío, la galería toma los colores del sitio, como antes.</target>
@@ -149,6 +153,10 @@
             <trans-unit id="lbaVu72">
                 <source>label.gallery_route_prefix</source>
                 <target>Prefijo de las URL de la galería</target>
+            </trans-unit>
+            <trans-unit id="3yib2AK">
+                <source>label.gallery_social_order</source>
+                <target>Orden de publicación de las fotos</target>
             </trans-unit>
             <trans-unit id="dSr2Xm2">
                 <source>label.gallery_style</source>

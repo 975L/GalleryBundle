@@ -1,5 +1,15 @@
 # ChangeLog
 
+## v1.20.0
+
+The photographs are handed to SocialBundle's publication
+
+- Adds `GallerySocialContentSource`, one photograph at a time for SocialBundle (23/09/2026)
+- Adds the `gallery-social-order` setting, `random` or `oldest` (23/09/2026)
+- Adds the `gallery-social` guided project, offered where SocialBundle is installed (23/09/2026)
+- The route provider declares the `gallery_galleries` cache tag (23/09/2026)
+- Requires `c975l/core-bundle` `^1.33.0` (23/09/2026)
+
 ## v1.19.3
 
 The print offer no longer draws a basket bar of its own

@@ -10,6 +10,7 @@
 
 namespace c975L\GalleryBundle\Management;
 
+use c975L\ConfigBundle\Controller\Management\ConfigCrudController;
 use c975L\ConfigBundle\Management\GuidedProjectProviderInterface;
 use c975L\ConfigBundle\Service\ConfigServiceInterface;
 use c975L\GalleryBundle\Controller\Management\GalleryCategoryCrudController;
@@ -18,6 +19,7 @@ use c975L\GalleryBundle\Controller\Management\GalleryPrintFormatCrudController;
 use c975L\GalleryBundle\Controller\Management\GalleryPrintOrderCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGeneratorInterface;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
 // This bundle's guided projects, running the 5000 block GuidedProjectProviderInterface reserves them - the same docblock stating every other bundle's, so a range is read there rather than recopied here. Only the opening step of each carries an url: from there the parcours walks the screen the user has been sent to, highlighting the button or the field they are meant to use next - one they click themselves, which brings the panel back on that very step (see ConfigBundle's assets/js/guided-project.js)
 class GalleryGuidedProjectProvider implements GuidedProjectProviderInterface
@@ -25,6 +27,8 @@ class GalleryGuidedProjectProvider implements GuidedProjectProviderInterface
     public function __construct(
         private readonly AdminUrlGeneratorInterface $adminUrlGenerator,
         private readonly ConfigServiceInterface $configService,
+        #[Autowire(param: 'kernel.bundles')]
+        private readonly array $bundles = [],
     ) {
     }
 
@@ -46,6 +50,11 @@ class GalleryGuidedProjectProvider implements GuidedProjectProviderInterface
         if (true === $this->configService->get('gallery-print-enabled')) {
             $projects[] = $this->printSetupProject();
             $projects[] = $this->printOrderProject();
+        }
+
+        // The order only matters where SocialBundle is there to publish (see GallerySocialContentSource)
+        if (isset($this->bundles['c975LSocialBundle'])) {
+            $projects[] = $this->socialProject();
         }
 
         return $projects;
@@ -616,6 +625,57 @@ class GalleryGuidedProjectProvider implements GuidedProjectProviderInterface
                     'label' => 'label.guided_step_gallery_print_order_done',
                     'description' => 'description.guided_step_gallery_print_order_done',
                     'narration' => 'narration.guided_step_gallery_print_order_done',
+                ],
+            ],
+        ];
+    }
+
+    // The one parcours opening on ConfigBundle's screen: what the gallery hands SocialBundle is a single setting, the publication itself being SocialBundle's to walk
+    private function socialProject(): array
+    {
+        return [
+            'slug' => 'gallery-social',
+            'label' => 'label.guided_project_gallery_social',
+            'description' => 'description.guided_project_gallery_social',
+            'translation_domain' => 'gallery',
+            'order' => 5080,
+            // The bar ConfigCrudController sets on its own index and edit
+            'role' => (string) $this->configService->get('site-role-admin'),
+            'steps' => [
+                [
+                    'label' => 'label.guided_step_gallery_social_open',
+                    'description' => 'description.guided_step_gallery_social_open',
+                    'narration' => 'narration.guided_step_gallery_social_open',
+                    // Straight onto the entry: the "gallery" group, searched down to its one row
+                    'url' => $this->adminUrlGenerator
+                        ->unsetAll()
+                        ->setController(ConfigCrudController::class)
+                        ->setAction(Action::INDEX)
+                        ->set('group', 'gallery')
+                        ->set('query', 'gallery-social-order')
+                        ->generateUrl(),
+                ],
+                [
+                    'label' => 'label.guided_step_gallery_social_entry',
+                    'description' => 'description.guided_step_gallery_social_entry',
+                    'narration' => 'narration.guided_step_gallery_social_entry',
+                    'highlight' => '.action-edit',
+                ],
+                [
+                    'label' => 'label.guided_step_gallery_social_value',
+                    'description' => 'description.guided_step_gallery_social_value',
+                    'narration' => 'narration.guided_step_gallery_social_value',
+                    'highlight' => '#Config_value',
+                ],
+                [
+                    'label' => 'label.guided_step_gallery_social_save',
+                    'narration' => 'narration.guided_step_gallery_social_save',
+                    'highlight' => '.action-saveAndReturn',
+                ],
+                [
+                    'label' => 'label.guided_step_gallery_social_done',
+                    'description' => 'description.guided_step_gallery_social_done',
+                    'narration' => 'narration.guided_step_gallery_social_done',
                 ],
             ],
         ];

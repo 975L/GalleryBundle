@@ -234,6 +234,26 @@
                 <source>narration.guided_step_gallery_print_setup_published</source>
                 <target>Mientras la casilla siga sin marcar, el formato solo existe para usted. Márquela y aparecerá bajo cada foto puesta en venta.</target>
             </trans-unit>
+            <trans-unit id="Ag8_NhW">
+                <source>narration.guided_step_gallery_social_done</source>
+                <target>El resto se ajusta en el módulo de redes sociales: las redes donde publicar, el ritmo, la plantilla del mensaje. Una foto retirada del sitio mientras tanto nunca se publica.</target>
+            </trans-unit>
+            <trans-unit id="UEMXI2U">
+                <source>narration.guided_step_gallery_social_entry</source>
+                <target>Abra este ajuste para modificarlo.</target>
+            </trans-unit>
+            <trans-unit id="cGzg2xs">
+                <source>narration.guided_step_gallery_social_open</source>
+                <target>La galería no publica nada por sí misma: en cada publicación, el módulo de redes sociales le pide una foto. Lo que le entrega depende de un único ajuste, este.</target>
+            </trans-unit>
+            <trans-unit id="Gookkmq">
+                <source>narration.guided_step_gallery_social_save</source>
+                <target>Guarde: el cambio se aplica desde la próxima publicación.</target>
+            </trans-unit>
+            <trans-unit id="mjujFCm">
+                <source>narration.guided_step_gallery_social_value</source>
+                <target>Al azar, la galería reserva una sorpresa a quien la sigue día tras día; en orden, despliega su archivo de la más antigua a la más reciente. En ambos casos, una foto ya publicada nunca vuelve a salir.</target>
+            </trans-unit>
             <trans-unit id="omQnM6i">
                 <source>narration.guided_step_gallery_translation_action</source>
                 <target>Este botón abre la galería directamente en el primer idioma por traducir, sin pasar por la pantalla de redacción. Solo está si el sitio declara más de un idioma.</target>

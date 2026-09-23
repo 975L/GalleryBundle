@@ -54,6 +54,10 @@
                 <source>description.gallery_route_prefix</source>
                 <target>First segment of the gallery's public urls, e.g. "gallery" for /gallery/my-category. A change applies straight away, but the previous urls then return a not found page: set up a redirect if they were indexed. Left empty, the "gallery" prefix applies.</target>
             </trans-unit>
+            <trans-unit id="hoSnkz2">
+                <source>description.gallery_social_order</source>
+                <target>random: a photograph drawn at random among the ones not posted yet on the networks. oldest: from the oldest to the most recent.</target>
+            </trans-unit>
             <trans-unit id="vqewYAX">
                 <source>description.gallery_style</source>
                 <target>Ready-made style of the gallery, applied to the index, the categories and each media: "light" (near-white page) or "dark" (near-black page). The style redefines the site's own colors for those pages alone - background, text, titles, links, navbar and footer included - and wins over the site's dark mode. Left empty, the gallery takes the site's own colors, as before.</target>
@@ -149,6 +153,10 @@
             <trans-unit id="lbaVu72">
                 <source>label.gallery_route_prefix</source>
                 <target>Gallery url prefix</target>
+            </trans-unit>
+            <trans-unit id="3yib2AK">
+                <source>label.gallery_social_order</source>
+                <target>Order in which photographs are posted</target>
             </trans-unit>
             <trans-unit id="dSr2Xm2">
                 <source>label.gallery_style</source>

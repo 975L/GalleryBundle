@@ -10,13 +10,15 @@
 
 namespace c975L\GalleryBundle\Management;
 
+use c975L\ConfigBundle\Management\LinkableRouteCacheTagsInterface;
 use c975L\ConfigBundle\Management\LinkableRouteProviderInterface;
 use c975L\GalleryBundle\Repository\GalleryCategoryRepository;
+use c975L\GalleryBundle\Service\GalleryBlockCacheInvalidator;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 // Exposes the public viewer as SiteBundle Menu targets (navbar/footer): the index listing every gallery, and one entry per category - the categories being the site's galleries, a menu item usually points straight at one of them
 // Nothing is stored but the target itself: the url is generated at render time (see MenuExtension), so renaming the route prefix in the dashboard or a category's slug in the CRUD leaves no menu item behind
-class LinkableRouteProvider implements LinkableRouteProviderInterface
+class LinkableRouteProvider implements LinkableRouteProviderInterface, LinkableRouteCacheTagsInterface
 {
     // What a category entry is keyed on, its id following - the menu item stores it as "route:gallery_category.12"
     public const CATEGORY_PREFIX = 'gallery_category.';
@@ -53,5 +55,11 @@ class LinkableRouteProvider implements LinkableRouteProviderInterface
         }
 
         return $routes;
+    }
+
+    // The entries stand for rows of this bundle, emptied with them by a category saved (see GalleryCacheInvalidationListener)
+    public function getLinkableRouteCacheTags(): array
+    {
+        return [GalleryBlockCacheInvalidator::CACHE_TAG_GALLERIES];
     }
 }

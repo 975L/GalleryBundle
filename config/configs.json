@@ -271,5 +271,20 @@
         "group": "gallery",
         "severity": null,
         "description": "description.gallery_print_signature"
+    },
+    {
+        "label": "label.gallery_social_order",
+        "slug": "gallery-social-order",
+        "sensitive": false,
+        "restricted": false,
+        "value": "random",
+        "kind": "choice",
+        "choices": [
+            "random",
+            "oldest"
+        ],
+        "group": "gallery",
+        "severity": null,
+        "description": "description.gallery_social_order"
     }
 ]

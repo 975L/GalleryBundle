@@ -22,7 +22,7 @@ See it in action at [bundles.975l.com/pages/gallery-bundle](https://bundles.975l
 ## Contents
 
 - **Setup** — [requirements](#requirements) · [installation](#installation) · [configuration](#load-the-configuration) · [routes](#enable-routes) · [assets](#install-assets) · [theme](#install-the-theme)
-- **Using it** — [public routes](#public-routes) · [linking from a menu](#linking-a-gallery-from-a-menu) · [the automatic galleries](#the-automatic-galleries) · [renaming a category](#renaming-a-category) · [deleting a gallery](#deleting-a-gallery) · [masking a gallery](#masking-a-gallery) · [selling prints](#selling-prints) · [the whole library at once](#the-whole-library-at-once) · [uploading a batch](#uploading-a-batch) · [renaming a media](#renaming-a-media) · [a media's caption](#a-medias-caption) · [fields of your own](#fields-of-your-own) · [browsing and the lightbox](#browsing-and-the-lightbox) · [editing from the public pages](#editing-from-the-public-pages) · [blocks](#blocks-defined-by-this-bundle) · [category summary](#a-categorys-summary) · [share image](#the-image-a-shared-page-carries) · [category headings](#composing-a-categorys-heading) · [theme tokens](#theme) · [videos](#videos) · [trashing a selection](#trashing-a-selection-of-medias) · [credits / rights on a selection](#applying-credits-or-rights-to-a-selection) · [moving a selection](#moving-a-selection-to-another-gallery) · [downloading a selection](#downloading-a-selections-files) · [export / import categories](#export--import-categories) · [sitemap and health check](#sitemap-and-health-check) · [describing the gallery index](#describing-the-gallery-index) · [backup](#backup) · [what's new](#whats-new) · [translating a gallery](#translating-a-gallery) · [guided projects](#guided-projects)
+- **Using it** — [public routes](#public-routes) · [linking from a menu](#linking-a-gallery-from-a-menu) · [the automatic galleries](#the-automatic-galleries) · [renaming a category](#renaming-a-category) · [deleting a gallery](#deleting-a-gallery) · [masking a gallery](#masking-a-gallery) · [selling prints](#selling-prints) · [the whole library at once](#the-whole-library-at-once) · [uploading a batch](#uploading-a-batch) · [renaming a media](#renaming-a-media) · [a media's caption](#a-medias-caption) · [fields of your own](#fields-of-your-own) · [browsing and the lightbox](#browsing-and-the-lightbox) · [editing from the public pages](#editing-from-the-public-pages) · [blocks](#blocks-defined-by-this-bundle) · [category summary](#a-categorys-summary) · [share image](#the-image-a-shared-page-carries) · [category headings](#composing-a-categorys-heading) · [theme tokens](#theme) · [videos](#videos) · [trashing a selection](#trashing-a-selection-of-medias) · [credits / rights on a selection](#applying-credits-or-rights-to-a-selection) · [moving a selection](#moving-a-selection-to-another-gallery) · [downloading a selection](#downloading-a-selections-files) · [export / import categories](#export--import-categories) · [publishing on the social networks](#publishing-on-the-social-networks) · [sitemap and health check](#sitemap-and-health-check) · [describing the gallery index](#describing-the-gallery-index) · [backup](#backup) · [what's new](#whats-new) · [translating a gallery](#translating-a-gallery) · [guided projects](#guided-projects)
 - **Operating** — [likes on a photo](#likes-on-a-photo) · [seeding a demo gallery](#seeding-a-demo-gallery) · [bringing an existing gallery in](#bringing-an-existing-gallery-in) · [upload ceilings](#upload-ceilings) · [AI agent skills](#ai-agent-skills)
 
 ## Features
@@ -49,7 +49,8 @@ See it in action at [bundles.975l.com/pages/gallery-bundle](https://bundles.975l
 - Categories can be exported/imported as a zip (heading blocks, medias and files bundled in), plugging into ConfigBundle's **Export sync (everything)** dashboard shortcut and **Import content** screen.
 - The two upload roots declared to the backup, via ConfigBundle's `BackupPathProviderInterface`, mirrored offsite rather than tarred (see [backup](#backup))
 - Galleries, photographs and print formats are **translated** into every language the site declares, from a language screen per row in the back office, and read in that language on the public pages under `/{_locale}/…` (see [translating a gallery](#translating-a-gallery)).
-- Eleven replayable guided projects contributed to the dashboard, via ConfigBundle's `GuidedProjectProviderInterface`, walking a gallery's creation, its medias' arrangement, a media's own screen, a gallery's translation, the trash and the way back out of it, the files handed back as an archive, the gallery of the latest additions, the sorting of the whole library, the opening of the print shop, and the handling of a print order (see [guided projects](#guided-projects))
+- Twelve replayable guided projects contributed to the dashboard, via ConfigBundle's `GuidedProjectProviderInterface`, walking a gallery's creation, its medias' arrangement, a media's own screen, a gallery's translation, the trash and the way back out of it, the files handed back as an archive, the gallery of the latest additions, the sorting of the whole library, the opening of the print shop, the handling of a print order, and the order the photographs go out on the social networks in (see [guided projects](#guided-projects))
+- The photographs handed to SocialBundle's publication, one at a time, at random or oldest first, never the same twice (see [publishing on the social networks](#publishing-on-the-social-networks))
 - Photographs can be **sold as prints**, behind one setting: a catalogue of sizes and prices, an order plugged into PaymentBundle's basket, and a lab that prints and ships to the customer directly - nothing transiting through the shopkeeper. A photograph can be offered as a limited edition, the bundle holding the register so the last copy cannot be sold twice, and drawing the certificate of authenticity to sign, with a qr code to its public verification page.
 - A photograph can be **hidden** from every public page without being deleted, and hiding it or putting it on sale applies to a whole selection at once.
 - A whole gallery can be **hidden** the same way: it leaves the index, the blocks, the menus and the sitemap, its photographs leave the automatic galleries with it, and everything stays in the back office to be shown again (see [masking a gallery](#masking-a-gallery)).
@@ -215,6 +216,9 @@ A category entry is keyed on the category's **id**, so renaming the category, ch
 renaming the route prefix leaves no menu item behind: only the target is stored, the url being generated
 at each render and the label read from the category's own title. Deleting a category simply drops its
 items from the rendered menu, as it does for any target that no longer resolves.
+
+The entries are tagged `gallery_galleries` (ConfigBundle's `LinkableRouteCacheTagsInterface`, `c975l/core-bundle`
+`^1.33`), so a menu item pointing at a gallery is cached, and emptied with it whenever a category is saved.
 
 The item's own **label** field overrides that title, for a category whose name is too long to sit in a
 navbar.
@@ -1300,6 +1304,22 @@ archived files already carry the signature in their pixels, and the import asks 
 a second one over the first. That is also why the derivatives are archived rather than rebuilt from the
 kept original, which is copied aside before any signature is laid.
 
+### Publishing on the social networks
+
+With `c975l/social-bundle` installed, `Service\GallerySocialContentSource` (UiBundle's
+`SocialContentSourceInterface`, source type `gallery_media`) hands its publication one photograph at a
+time: an image with a file of its own, in a gallery neither trashed, hidden nor automatic. What went out
+where is SocialBundle's to record, and a photograph is never offered twice. Nothing to register.
+
+| Entry | Default | What it decides |
+| --- | --- | --- |
+| `gallery-social-order` | `random` | `random` draws among the photographs not published yet, `oldest` takes them from the oldest to the newest |
+
+The link and the image are absolute, built on `site-url`: the publication runs from a console, with no
+request to take the host from, and nothing is handed over while that entry is empty. The link reads the
+configured [route prefix](#public-routes) for the same reason. A photograph taken off the site between the
+post being prepared and published is not published.
+
 ### Sitemap and health check
 
 The urls are declared by `GallerySitemapProvider` (ConfigBundle's `SitemapProviderInterface`): the `/gallery`
@@ -1434,7 +1454,7 @@ language back to the writing one.
 
 ### Guided projects
 
-`GalleryGuidedProjectProvider` (ConfigBundle's `GuidedProjectProviderInterface`) contributes eleven replayable
+`GalleryGuidedProjectProvider` (ConfigBundle's `GuidedProjectProviderInterface`) contributes twelve replayable
 exercises to the dashboard's "Guided projects" panel: **creating a gallery** with its first photographs in
 one go — the creation form carries the whole batch, which is the only screen doing both —, **arranging a
 gallery's medias** on its own edit screen, where the order, the cover and the batch edits all save as they
@@ -1446,17 +1466,19 @@ one role higher, so a step highlighting it would point at a button an editor nev
 photo files back** as one archive, and **the gallery of the latest additions**, the one gallery arranged by
 nobody, **sorting the whole library** from the contact sheet, where the badges say what is masked and what
 is on sale without a photograph being opened, **opening the print shop**, which imports the lab's range,
-prices a format and publishes it, and **handling a print order**, which reads an order, prints the
-certificates of a limited edition and hands the order to the lab.
+prices a format and publishes it, **handling a print order**, which reads an order, prints the
+certificates of a limited edition and hands the order to the lab, and **publishing the photographs on the
+social networks**, which opens ConfigBundle's settings on `gallery-social-order`.
 Nothing to register — the provider is picked up automatically.
 
 The two print ones are only offered where `gallery-print-enabled` is on, exactly as their screens are: a
-parcours walking a screen with no way into it reads as a broken one.
+parcours walking a screen with no way into it reads as a broken one. The social one, likewise, only where
+SocialBundle is installed, the order meaning nothing without it.
 
 Only the opening step of each carries an `url`, the nine gallery ones sending the user to the categories
 or, for the sorting one, to the library's contact sheet — the two sidebar entries of the feature, both
 stating `site-role-editor` themselves, the bar their own screens sit at, rather than taking the admin
-default every entry used to be given — and the print ones to the formats and to the orders, which is where a shop is written and where it is run. From there the panel walks that screen, highlighting the
+default every entry used to be given — and the print ones to the formats and to the orders, which is where a shop is written and where it is run, and the social one to the settings, filtered down to its entry. From there the panel walks that screen, highlighting the
 button or the field they are meant to use next — one they click themselves, which brings the panel back on
 that very step:
 
@@ -1466,6 +1488,7 @@ that very step:
 | `[data-content-locales]` | the language tabs ConfigBundle draws above an edit screen |
 | `#GalleryCategory_title`, `#GalleryCategory_summarySocialNetwork`, `#GalleryCategory_titleRoot`, `#GalleryMedia_title`, `#GalleryMedia_category`, `#GalleryMedia_credits`, `#GalleryMedia_externalUrl`, `#GalleryPrintFormat_price`, `#GalleryPrintFormat_published` | plain form fields, pointed at through their rendered id |
 | `#GalleryCategory_files` | the batch upload of the creation form |
+| `#Config_value` | the value field of ConfigBundle's own edit screen |
 | `[data-gallery-upload-medias]`, `[data-gallery-cover-radio]`, `[data-gallery-media-sort-handle]`, `[data-gallery-media-selection-target="toggle"]`, `[data-gallery-download-medias]` | markers carried by this bundle's own templates, the elements having no id of their own |
 | `[data-gallery-move-medias] select`, `[data-gallery-move-medias] input`, `[data-gallery-move-medias] button` | the move group of the medias toolbar, its three controls reached from the marker it carries |
 | `.management-media-grid`, `.management-media-grid__item` | the medias grid, and a thumbnail of it opening the media it stands for |
@@ -1473,9 +1496,10 @@ that very step:
 An app overriding `templates/management/gallery_category_edit.html.twig` keeps those `data-` attributes, or
 the steps resting on them point at nothing — they are read as selectors, not as behaviour.
 
-All eleven are gated by `site-role-editor`, the same ConfigBundle entry the gallery's management screens sit
-behind: an admin without it is never offered a parcours ending on an access-denied page. Their `order`
-(5010 to 5075) runs the 5000 block `GuidedProjectProviderInterface` reserves this bundle, at the step of 10
+Eleven are gated by `site-role-editor`, the same ConfigBundle entry the gallery's management screens sit
+behind: an admin without it is never offered a parcours ending on an access-denied page. The social one is
+gated by `site-role-admin`, the bar of the settings screen it opens. Their `order`
+(5010 to 5080) runs the 5000 block `GuidedProjectProviderInterface` reserves this bundle, at the step of 10
 it states — the same docblock naming every other bundle's block, so a range is read there rather than
 recopied here. Nothing is derived from the site's own data, so a project is worth following on a site
 already full of galleries, and worth replaying once done (see ConfigBundle's README,

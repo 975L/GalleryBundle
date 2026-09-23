@@ -234,6 +234,26 @@
                 <source>narration.guided_step_gallery_print_setup_published</source>
                 <target>Tant que la case reste décochée, le format n'existe que pour vous. Cochez-la et il apparaît sous chaque photo mise en vente.</target>
             </trans-unit>
+            <trans-unit id="Ag8_NhW">
+                <source>narration.guided_step_gallery_social_done</source>
+                <target>Le reste se règle dans le module des réseaux sociaux : les réseaux où publier, le rythme, le modèle du message. Une photo retirée du site entre-temps n’est jamais publiée.</target>
+            </trans-unit>
+            <trans-unit id="UEMXI2U">
+                <source>narration.guided_step_gallery_social_entry</source>
+                <target>Ouvrez ce réglage pour le modifier.</target>
+            </trans-unit>
+            <trans-unit id="cGzg2xs">
+                <source>narration.guided_step_gallery_social_open</source>
+                <target>La galerie ne publie rien elle-même : à chaque publication, le module des réseaux sociaux lui demande une photo. Ce qu’elle lui donne dépend d’un seul réglage, celui-ci.</target>
+            </trans-unit>
+            <trans-unit id="Gookkmq">
+                <source>narration.guided_step_gallery_social_save</source>
+                <target>Enregistrez : le changement vaut dès la prochaine publication.</target>
+            </trans-unit>
+            <trans-unit id="mjujFCm">
+                <source>narration.guided_step_gallery_social_value</source>
+                <target>Au hasard, la galerie réserve une surprise à qui la suit jour après jour ; dans l’ordre, elle déroule ses archives de la plus ancienne à la plus récente. Dans les deux cas, une photo déjà publiée ne repart jamais.</target>
+            </trans-unit>
             <trans-unit id="omQnM6i">
                 <source>narration.guided_step_gallery_translation_action</source>
                 <target>Ce bouton ouvre la galerie directement dans la première langue à traduire, sans passer par l'écran d'écriture. Il n'est là que si le site déclare plus d'une langue.</target>

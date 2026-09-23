@@ -234,6 +234,26 @@
                 <source>narration.guided_step_gallery_print_setup_published</source>
                 <target>While the box stays unticked, the format exists for you alone. Tick it and it appears under every photograph put up for sale.</target>
             </trans-unit>
+            <trans-unit id="Ag8_NhW">
+                <source>narration.guided_step_gallery_social_done</source>
+                <target>The rest is set in the social networks module: the networks to publish on, the pace, the message template. A photograph taken off the site in the meantime is never published.</target>
+            </trans-unit>
+            <trans-unit id="UEMXI2U">
+                <source>narration.guided_step_gallery_social_entry</source>
+                <target>Open this setting to change it.</target>
+            </trans-unit>
+            <trans-unit id="cGzg2xs">
+                <source>narration.guided_step_gallery_social_open</source>
+                <target>The gallery publishes nothing by itself: at each publication, the social networks module asks it for a photograph. What it hands over depends on a single setting, this one.</target>
+            </trans-unit>
+            <trans-unit id="Gookkmq">
+                <source>narration.guided_step_gallery_social_save</source>
+                <target>Save: the change applies from the next publication.</target>
+            </trans-unit>
+            <trans-unit id="mjujFCm">
+                <source>narration.guided_step_gallery_social_value</source>
+                <target>At random, the gallery keeps a surprise for whoever follows it day after day; in order, it unrolls its archive from the oldest to the newest. Either way, a photograph already published never goes out again.</target>
+            </trans-unit>
             <trans-unit id="omQnM6i">
                 <source>narration.guided_step_gallery_translation_action</source>
                 <target>This button opens the gallery straight into the first language to translate, without going through the writing screen. It is only there where the site declares more than one language.</target>

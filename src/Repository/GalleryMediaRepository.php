@@ -13,6 +13,7 @@ namespace c975L\GalleryBundle\Repository;
 use c975L\GalleryBundle\Entity\GalleryCategory;
 use c975L\GalleryBundle\Entity\GalleryMedia;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -146,6 +147,63 @@ class GalleryMediaRepository extends ServiceEntityRepository
         }
 
         return $qb->getQuery()->getResult();
+    }
+
+    // The oldest photograph never posted on the social networks, null once all of them were - oldest first, so a newly added photograph waits its turn rather than cutting in (see GallerySocialContentSource)
+    /** @param list<string> $excludedIds */
+    public function findNextToPost(array $excludedIds): ?GalleryMedia
+    {
+        return $this->postableQuery($excludedIds)
+            ->orderBy('m.createdAt', \SortDirection::Ascending)
+            ->addOrderBy('m.id', \SortDirection::Ascending)
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
+    // The ids of every photograph not posted yet, for a draw at random among them - loading the photographs themselves to pick one would read the whole library
+    /**
+     * @param list<string> $excludedIds
+     *
+     * @return list<int>
+     */
+    public function findPostableIds(array $excludedIds): array
+    {
+        return array_map(intval(...), $this->postableQuery($excludedIds)->select('m.id')->getQuery()->getSingleColumnResult());
+    }
+
+    // One photograph read again when its post is published, null once it can no longer be: a gallery masked since the post was prepared takes it off the networks too
+    public function findPostable(int $id): ?GalleryMedia
+    {
+        return $this->postableQuery()
+            ->andWhere('m.id = :id')
+            ->setParameter('id', $id)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
+    // What may go on the social networks, minus the ids already posted: left out for the reasons latestMedias() leaves them out, plus what carries no image file of its own to post - a video, an embed
+    /** @param list<string> $excludedIds */
+    private function postableQuery(array $excludedIds = []): QueryBuilder
+    {
+        $qb = $this->createQueryBuilder('m')
+            ->innerJoin('m.category', 'c')
+            ->addSelect('c')
+            ->where('m.isDeleted = false')
+            ->andWhere('m.hidden = false')
+            ->andWhere('m.mediaType = :image')
+            ->andWhere('m.filename IS NOT NULL')
+            ->andWhere('c.isDeleted = false')
+            ->andWhere('c.hidden = false')
+            ->andWhere('c.automaticKind IS NULL')
+            ->setParameter('image', GalleryMedia::MEDIA_TYPE_IMAGE)
+        ;
+
+        if ([] !== $excludedIds) {
+            $qb->andWhere('m.id NOT IN (:excluded)')->setParameter('excluded', array_map(intval(...), $excludedIds));
+        }
+
+        return $qb;
     }
 
     // The photographs on sale as prints, whatever category they landed in - what the automatic gallery of the prints shows (see GalleryPrintableProvider)

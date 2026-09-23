@@ -13,6 +13,7 @@ namespace c975L\GalleryBundle\Tests\Management;
 use c975L\GalleryBundle\Entity\GalleryCategory;
 use c975L\GalleryBundle\Management\LinkableRouteProvider;
 use c975L\GalleryBundle\Repository\GalleryCategoryRepository;
+use c975L\GalleryBundle\Service\GalleryBlockCacheInvalidator;
 use PHPUnit\Framework\TestCase;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
@@ -80,5 +81,11 @@ class LinkableRouteProviderTest extends TestCase
         $routes = $this->createProvider([$this->createCategory(12, 'paysages-de-montagne', 'Paysages de montagne')])->getLinkableRoutes();
 
         $this->assertArrayHasKey(LinkableRouteProvider::CATEGORY_PREFIX . '12', $routes);
+    }
+
+    // The tag a saved category empties, so a menu item pointing at a gallery is cached and emptied with it
+    public function testTheEntriesAreTaggedWithTheGalleries(): void
+    {
+        $this->assertSame([GalleryBlockCacheInvalidator::CACHE_TAG_GALLERIES], $this->createProvider([])->getLinkableRouteCacheTags());
     }
 }

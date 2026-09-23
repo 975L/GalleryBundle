@@ -138,6 +138,10 @@
                 <source>description.guided_project_gallery_print_setup</source>
                 <target>The formats, their prices, and what to tick for a photograph to be sold.</target>
             </trans-unit>
+            <trans-unit id="ZCbafSH">
+                <source>description.guided_project_gallery_social</source>
+                <target>Choose the order in which the photographs go out on social networks.</target>
+            </trans-unit>
             <trans-unit id="BEHJBXV">
                 <source>description.guided_project_gallery_translation</source>
                 <target>The same gallery said in another language: its title and its summary belong to it, each media being translated from its own screen.</target>
@@ -361,6 +365,22 @@
             <trans-unit id="_De1g0e">
                 <source>description.guided_step_gallery_print_setup_published</source>
                 <target>An unpublished format is offered nowhere.</target>
+            </trans-unit>
+            <trans-unit id="mtSCDaj">
+                <source>description.guided_step_gallery_social_done</source>
+                <target>The networks and the pace are set on the social networks side.</target>
+            </trans-unit>
+            <trans-unit id="mnsoh7Y">
+                <source>description.guided_step_gallery_social_entry</source>
+                <target>The edit button, at the end of the row.</target>
+            </trans-unit>
+            <trans-unit id="OLNxgmG">
+                <source>description.guided_step_gallery_social_open</source>
+                <target>Among the gallery settings, the order the photographs are published in.</target>
+            </trans-unit>
+            <trans-unit id="mVZR8fn">
+                <source>description.guided_step_gallery_social_value</source>
+                <target>random: drawn among the photographs not published yet. oldest: from the oldest to the newest.</target>
             </trans-unit>
             <trans-unit id="SMlsw1z">
                 <source>description.guided_step_gallery_translation_action</source>
@@ -1066,6 +1086,10 @@
                 <source>label.guided_project_gallery_print_setup</source>
                 <target>Open the print shop</target>
             </trans-unit>
+            <trans-unit id="6WDA_k1">
+                <source>label.guided_project_gallery_social</source>
+                <target>Publish the photographs on social networks</target>
+            </trans-unit>
             <trans-unit id="RvPgsqV">
                 <source>label.guided_project_gallery_translation</source>
                 <target>Translate a gallery</target>
@@ -1297,6 +1321,26 @@
             <trans-unit id="dXd9cfo">
                 <source>label.guided_step_gallery_print_setup_published</source>
                 <target>Publish the format</target>
+            </trans-unit>
+            <trans-unit id="DURR9LZ">
+                <source>label.guided_step_gallery_social_done</source>
+                <target>The social networks take over</target>
+            </trans-unit>
+            <trans-unit id="pQHuT8T">
+                <source>label.guided_step_gallery_social_entry</source>
+                <target>Edit the setting</target>
+            </trans-unit>
+            <trans-unit id="plEGRwB">
+                <source>label.guided_step_gallery_social_open</source>
+                <target>The publication setting</target>
+            </trans-unit>
+            <trans-unit id="_g645l4">
+                <source>label.guided_step_gallery_social_save</source>
+                <target>Save</target>
+            </trans-unit>
+            <trans-unit id="H4I7wgs">
+                <source>label.guided_step_gallery_social_value</source>
+                <target>Choose the order</target>
             </trans-unit>
             <trans-unit id="q6C08E8">
                 <source>label.guided_step_gallery_translation_action</source>
