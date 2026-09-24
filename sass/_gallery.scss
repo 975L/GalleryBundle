@@ -122,9 +122,9 @@
     background: var(--gallery-thumb-background);
 }
 
-// Marks an entry opening on a player rather than on a still - the thumbnail itself is a plain image, so nothing else would tell the two apart before the visitor clicks
+// Marks an entry opening on a player rather than on a still - the thumbnail itself is a plain image, so nothing else would tell the two apart before the visitor clicks. The glyph is interpolated so the compiled CSS keeps its escape and stays ASCII, compiled without @charset like every c975L stylesheet
 .gallery-thumb--video::after {
-    content: "\25B6";
+    content: #{"\"\\25B6\""};
     position: absolute;
     right: 0.5em;
     bottom: 0.5em;

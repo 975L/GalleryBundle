@@ -1,5 +1,11 @@
 # ChangeLog
 
+## v1.20.1
+
+The compiled stylesheet stays ASCII, without @charset
+
+- The video thumbnail's glyph is interpolated, keeping its escape in the compiled CSS (24/09/2026)
+
 ## v1.20.0
 
 The photographs are handed to SocialBundle's publication
