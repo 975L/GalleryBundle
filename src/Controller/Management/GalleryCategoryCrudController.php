@@ -39,8 +39,10 @@ use c975L\UiBundle\Entity\Block;
 use c975L\UiBundle\Form\BlockType;
 use c975L\UiBundle\Form\TrixEditorType;
 use c975L\UiBundle\Form\Util\CollectionReconciler;
+use c975L\UiBundle\Model\QrCodeOptions;
 use c975L\UiBundle\Repository\RatingRepository;
 use c975L\UiBundle\Service\BlockMoveRowAttrBuilder;
+use c975L\UiBundle\Service\QrCodeGenerator;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\EntityManagerInterface;
@@ -66,7 +68,6 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\SlugField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextareaField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
-use Endroid\QrCode\Builder\Builder;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
@@ -1310,17 +1311,9 @@ class GalleryCategoryCrudController extends AbstractCrudController
         return new JsonResponse(['saved' => true]);
     }
 
-    /**
-     * Draws the qr code of the gallery's public page, shown on its edit screen (see gallery_category_edit.html.twig).
-     *
-     * Same shape as the one SiteBundle draws for a page: generated on the fly rather than stored, a code being nothing
-     * but its url and a stored one being a file to regenerate the day the slug changes.
-     *
-     * Built on 'site-url' and not on the current request, which is the back-office's - what is printed on a flyer has to
-     * be the address the public reaches, not the one an admin happens to be logged into.
-     */
+    // Draws the qr code of the gallery's public page shown on its edit screen, generated on the fly and built on 'site-url' rather than the back-office's request, as what is printed has to reach the public
     #[AdminRoute('/{entityId}/qrcode')]
-    public function qrcode(AdminContext $context): Response
+    public function qrcode(AdminContext $context, QrCodeGenerator $qrCodeGenerator): Response
     {
         $this->denyAccessUnlessGranted($this->roleNeeded());
 
@@ -1328,9 +1321,7 @@ class GalleryCategoryCrudController extends AbstractCrudController
         $url = rtrim((string) $this->configService->get('site-url'), '/')
             . $this->generateUrl('gallery_category', ['category' => $category->getSlug()]);
 
-        $result = new Builder()->build(data: $url, size: 250, margin: 10);
-
-        return new Response($result->getString(), Response::HTTP_OK, ['Content-Type' => $result->getMimeType()]);
+        return $qrCodeGenerator->response($qrCodeGenerator->generate($url, new QrCodeOptions(size: 250, margin: 10)), $context->getRequest());
     }
 
     // Exports the checked categories (with their gallery and medias, real files bundled in the archive) as a downloadable zip, meant to be re-uploaded elsewhere via ConfigBundle's ContentImportController (see GalleryImportProvider) - restricted to ROLE_ADMIN, see configureActions()

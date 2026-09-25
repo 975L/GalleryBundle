@@ -12,7 +12,8 @@ namespace c975L\GalleryBundle\Service;
 
 use c975L\GalleryBundle\Entity\GalleryPrintCopy;
 use c975L\UiBundle\Contract\PdfGeneratorInterface;
-use Endroid\QrCode\Builder\Builder;
+use c975L\UiBundle\Model\QrCodeOptions;
+use c975L\UiBundle\Service\QrCodeGenerator;
 use Imagine\Gd\Imagine;
 use Imagine\Image\Box;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
@@ -33,6 +34,7 @@ class GalleryCertificateService
 {
     public function __construct(
         private readonly PdfGeneratorInterface $pdfGenerator,
+        private readonly QrCodeGenerator $qrCodeGenerator,
         private readonly UrlGeneratorInterface $urlGenerator,
         #[Autowire(param: 'kernel.project_dir')]
         private readonly string $projectDir,
@@ -119,16 +121,10 @@ class GalleryCertificateService
         }
     }
 
-    /**
-     * The verification address drawn as a qr code, inlined as a data uri.
-     *
-     * Inlined rather than linked: the certificate is rendered outside any request the pdf engine could follow, and a
-     * sheet whose image failed to load is a sheet that goes out with a hole in it. It sits next to the address written
-     * in full, which is what stays readable when the code is scuffed or the scanner is a human being with a keyboard.
-     */
+    // The verification address drawn as a qr code, inlined as a data uri since the pdf engine renders outside any request it could follow
     private function getQrCode(string $url): string
     {
-        return new Builder()->build(data: $url, size: 220, margin: 6)->getDataUri();
+        return $this->qrCodeGenerator->generate($url, new QrCodeOptions(size: 220, margin: 6))->getDataUri();
     }
 
     // What the qr code printed on the certificate points at, and the only address at which a number can be checked

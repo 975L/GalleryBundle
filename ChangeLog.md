@@ -1,5 +1,17 @@
 # ChangeLog
 
+## v1.20.4
+
+QR codes are drawn by UiBundle's QrCodeGenerator
+
+- The README opens on its bundle page, tutorials, block kinds and live demo with its back-office (25/09/2026)
+- The license badge links to `main` rather than `master` (25/09/2026)
+- The dead `/pages/block-gallery` link gives way to the bundle's own block page (25/09/2026)
+- Rector declares the annotations-to-attributes sets with `withAttributesSets()` (25/09/2026)
+- The qr codes are drawn by UiBundle's `QrCodeGenerator` (25/09/2026)
+- Requires `c975l/core-bundle` ^1.38.0 (25/09/2026)
+- `endroid/qr-code` is no longer a direct dependency (25/09/2026)
+
 ## v1.20.3
 
 Print orders no longer count as an unused feature

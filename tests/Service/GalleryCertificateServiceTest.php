@@ -14,7 +14,10 @@ use c975L\GalleryBundle\Entity\GalleryMedia;
 use c975L\GalleryBundle\Entity\GalleryPrintCopy;
 use c975L\GalleryBundle\Service\GalleryCertificateService;
 use c975L\UiBundle\Contract\PdfGeneratorInterface;
+use c975L\UiBundle\Service\QrCodeGenerator;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Cache\Adapter\ArrayAdapter;
+use Symfony\Component\Cache\Adapter\TagAwareAdapter;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 // The sheet that is signed by hand and posted. What is drawn and what is refused matters as much as the drawing: a certificate for a print that is not numbered would certify nothing
@@ -84,7 +87,7 @@ class GalleryCertificateServiceTest extends TestCase
             static fn (string $route, array $parameters): string => 'https://example.org/certificate/' . $parameters['certificate'],
         );
 
-        return new GalleryCertificateService($pdfGenerator, $urlGenerator, sys_get_temp_dir());
+        return new GalleryCertificateService($pdfGenerator, new QrCodeGenerator(new TagAwareAdapter(new ArrayAdapter())), $urlGenerator, sys_get_temp_dir());
     }
 
     private function sold(int $number, string $token): GalleryPrintCopy
