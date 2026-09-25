@@ -1,5 +1,11 @@
 # ChangeLog
 
+## v1.20.2
+
+The CI sets up Python with setup-python v6
+
+- Bumps `actions/setup-python` to v6 in the CI (25/09/2026)
+
 ## v1.20.1
 
 The compiled stylesheet stays ASCII, without @charset
