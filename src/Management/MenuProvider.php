@@ -65,6 +65,8 @@ class MenuProvider implements MenuProviderInterface
         if (true === $this->configService->get('gallery-print-enabled')) {
             $menus['gallery_print_order'] = [
                 'controller' => GalleryPrintOrderCrudController::class,
+                // Lists what happened rather than what an admin makes: empty, it is no feature left unused (see UnusedFeatureBuilder)
+                'creatable' => false,
                 'label' => 'label.print_orders',
                 'narration' => 'narration.print_orders',
                 'translation_domain' => 'gallery',

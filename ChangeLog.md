@@ -1,5 +1,11 @@
 # ChangeLog
 
+## v1.20.3
+
+Print orders no longer count as an unused feature
+
+- The print orders menu is declared non-creatable (25/09/2026)
+
 ## v1.20.2
 
 The CI sets up Python with setup-python v6
