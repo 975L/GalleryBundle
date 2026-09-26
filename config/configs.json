@@ -75,6 +75,17 @@
         "description": "description.gallery_latest_max"
     },
     {
+        "label": "label.gallery_license_url",
+        "slug": "gallery-license-url",
+        "sensitive": false,
+        "restricted": false,
+        "value": null,
+        "kind": "text",
+        "group": "gallery",
+        "severity": null,
+        "description": "description.gallery_license_url"
+    },
+    {
         "label": "label.theme_color_gallery_frame",
         "slug": "theme-color-gallery-frame",
         "sensitive": false,

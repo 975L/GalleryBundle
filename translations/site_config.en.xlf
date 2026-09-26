@@ -14,6 +14,10 @@
                 <source>description.gallery_latest_max</source>
                 <target>Maximum number of medias the automatic gallery shows. It guards the day a whole library came in at once - a migration, an import - which would otherwise fill the page with thousands of thumbnails. Past it, only the most recent ones are shown. Empty or below 1, the gallery is closed.</target>
             </trans-unit>
+            <trans-unit id="FEm_w1D">
+                <source>description.gallery_license_url</source>
+                <target>Address of the page telling how the site's photographs may be used (all rights reserved, a Creative Commons licence, a request through the contact form…), a path of the site such as /pages/photo-licence or a full url. It is published in each photograph's structured data ("license"), and as the page a licence is acquired on ("acquireLicensePage") when the photograph is not offered as a print: it is what Google reads to show the "Licensable" badge in Google Images. Empty, nothing is published.</target>
+            </trans-unit>
             <trans-unit id="bj8kKWN">
                 <source>description.gallery_print_api_key</source>
                 <target>The key the lab issued, which authenticates every order sent. Not needed with "manual". Filling it in does not open the shop: the "Print sales" box is what does that.</target>
@@ -113,6 +117,10 @@
             <trans-unit id="paiRW9j">
                 <source>label.gallery_latest_max</source>
                 <target>Automatic gallery: maximum number of medias</target>
+            </trans-unit>
+            <trans-unit id="OV5vUuM">
+                <source>label.gallery_license_url</source>
+                <target>Gallery: photographs terms of use page</target>
             </trans-unit>
             <trans-unit id="xRNwvo0">
                 <source>label.gallery_print_api_key</source>

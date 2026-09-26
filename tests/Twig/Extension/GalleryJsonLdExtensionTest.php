@@ -10,11 +10,15 @@
 
 namespace c975L\GalleryBundle\Tests\Twig\Extension;
 
+use c975L\ConfigBundle\Service\ConfigServiceInterface;
 use c975L\GalleryBundle\Entity\GalleryCategory;
 use c975L\GalleryBundle\Entity\GalleryMedia;
 use c975L\GalleryBundle\Service\GallerySnippetBuilder;
 use c975L\GalleryBundle\Twig\Extension\GalleryJsonLdExtension;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\HttpFoundation\UrlHelper;
 use Twig\Attribute\AsTwigFunction;
 use Twig\Extension\AttributeExtension;
 
@@ -64,6 +68,15 @@ class GalleryJsonLdExtensionTest extends TestCase
         $this->assertSame('https://example.org/galerie/montagne/lac', $snippet['acquireLicensePage']);
     }
 
+    // The terms page is typed as a path of the site and published as the absolute url schema.org reads
+    public function testTheTermsPageIsPublishedAbsolute(): void
+    {
+        $snippet = json_decode($this->extension('/pages/licence')->mediaJsonLd($this->media(), 'https://example.org/lac.webp'), true);
+
+        $this->assertSame('https://example.org/pages/licence', $snippet['license']);
+        $this->assertSame('https://example.org/pages/licence', $snippet['acquireLicensePage']);
+    }
+
     public function testAGalleryAndTheIndexAreHandedOverEncoded(): void
     {
         $items = [['name' => 'Le lac', 'url' => 'https://example.org/galerie/montagne/lac']];
@@ -89,9 +102,14 @@ class GalleryJsonLdExtensionTest extends TestCase
         $this->assertSame('', $this->extension()->indexJsonLd([]));
     }
 
-    private function extension(): GalleryJsonLdExtension
+    private function extension(?string $licenseUrl = null): GalleryJsonLdExtension
     {
-        return new GalleryJsonLdExtension(new GallerySnippetBuilder());
+        $configService = $this->createStub(ConfigServiceInterface::class);
+        $configService->method('get')->willReturn($licenseUrl);
+
+        $requestStack = new RequestStack([Request::create('https://example.org/galerie/montagne/lac')]);
+
+        return new GalleryJsonLdExtension(new GallerySnippetBuilder(), $configService, new UrlHelper($requestStack));
     }
 
     private function media(): GalleryMedia

@@ -78,6 +78,31 @@ class GallerySnippetBuilderTest extends TestCase
         $this->assertArrayNotHasKey('acquireLicensePage', $snippet);
     }
 
+    // The terms page is the licence of every photograph, and where one is asked for when no print is sold
+    public function testAPhotographNotForSaleNamesTheTermsPageAsItsLicence(): void
+    {
+        $snippet = $this->builder()->buildMedia($this->media(), 'https://example.org/lac.webp', null, 'https://example.org/galerie/montagne/lac', false, null, 'https://example.org/pages/licence');
+
+        $this->assertSame('https://example.org/pages/licence', $snippet['license']);
+        $this->assertSame('https://example.org/pages/licence', $snippet['acquireLicensePage']);
+    }
+
+    // A print sold on the page is still the licence acquired there, the terms staying the licence itself
+    public function testAPrintablePhotographKeepsItsOwnPageToAcquireTheLicence(): void
+    {
+        $snippet = $this->builder()->buildMedia($this->media()->setPrintable(true), 'https://example.org/lac.webp', null, 'https://example.org/galerie/montagne/lac', true, null, 'https://example.org/pages/licence');
+
+        $this->assertSame('https://example.org/pages/licence', $snippet['license']);
+        $this->assertSame('https://example.org/galerie/montagne/lac', $snippet['acquireLicensePage']);
+    }
+
+    public function testAPhotographWithoutATermsPagePublishesNoLicence(): void
+    {
+        $snippet = $this->builder()->buildMedia($this->media(), 'https://example.org/lac.webp', null, null, false, null, '  ');
+
+        $this->assertArrayNotHasKey('license', $snippet);
+    }
+
     // A video is read as a video: its own file is the content, the still is the thumbnail, and the date it was filed is an upload date
     public function testAVideoIsPublishedAsAVideoObject(): void
     {

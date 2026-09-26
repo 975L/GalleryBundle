@@ -18,9 +18,8 @@ use c975L\GalleryBundle\Entity\GalleryMedia;
 // No offers node here: what a print costs belongs to whoever sells it (see ShopBundle, the one place of the ecosystem emitting one), and this graph only says where the page offering it is.
 class GallerySnippetBuilder
 {
-    // $contentUrl, $thumbnailUrl and $url are resolved by the caller, only a template turning a stored file into an absolute url
-    // $printAvailable is the offer the page itself prints under the photograph (see gallery_print_available()), handed over rather than asked again: it is the only thing "acquireLicensePage" may name, and a second reading of the shop would answer a different question than the one the visitor is looking at
-    public function buildMedia(GalleryMedia $media, ?string $contentUrl = null, ?string $thumbnailUrl = null, ?string $url = null, bool $printAvailable = false, ?string $embedUrl = null): array
+    // The urls ($contentUrl, $thumbnailUrl, $url, $licenseUrl from config "gallery-license-url") come absolute from the caller. $printAvailable is the offer the page itself prints (see gallery_print_available()), handed over rather than asked again so the graph answers what the visitor is looking at
+    public function buildMedia(GalleryMedia $media, ?string $contentUrl = null, ?string $thumbnailUrl = null, ?string $url = null, bool $printAvailable = false, ?string $embedUrl = null, ?string $licenseUrl = null): array
     {
         $contentUrl = trim((string) $contentUrl);
         // Only a video is framed, so an image handed a player url publishes none rather than an ImageObject with nothing to name
@@ -33,7 +32,7 @@ class GallerySnippetBuilder
 
         return $this->clean([
             '@context' => 'https://schema.org',
-            ...$this->media($media, $contentUrl, $thumbnailUrl, $url, $printAvailable, $embedUrl),
+            ...$this->media($media, $contentUrl, $thumbnailUrl, $url, $printAvailable, $embedUrl, trim((string) $licenseUrl)),
         ]);
     }
 
@@ -85,7 +84,7 @@ class GallerySnippetBuilder
     }
 
     // A video is a type of its own rather than an image carrying a file: an image search reads none of a video's own properties off an ImageObject, and the still is its thumbnail, never its content
-    private function media(GalleryMedia $media, string $contentUrl, ?string $thumbnailUrl, ?string $url, bool $printAvailable, string $embedUrl): array
+    private function media(GalleryMedia $media, string $contentUrl, ?string $thumbnailUrl, ?string $url, bool $printAvailable, string $embedUrl, string $licenseUrl): array
     {
         $video = $media->isVideo();
         $published = $media->getCreatedAt()?->format('Y-m-d') ?? '';
@@ -105,8 +104,9 @@ class GallerySnippetBuilder
             'creator' => $this->creator($media),
             'creditText' => trim((string) $media->getCredits()),
             'copyrightNotice' => $this->copyrightNotice($media),
-            // Where the licence is acquired, which is this very page: it is where the print is ordered (see print/_offer.html.twig), and it is what earns the licensable badge in an image search
-            'acquireLicensePage' => $printAvailable ? trim((string) $url) : '',
+            // The terms the photograph is used under, and where a licence is acquired: this very page when a print is ordered on it (see print/_offer.html.twig), the terms page otherwise, which is where a visitor learns how to ask
+            'license' => $licenseUrl,
+            'acquireLicensePage' => $printAvailable ? trim((string) $url) : $licenseUrl,
         ];
     }
 

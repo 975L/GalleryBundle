@@ -14,6 +14,10 @@
                 <source>description.gallery_latest_max</source>
                 <target>Número máximo de medios que muestra la galería automática. Protege el día en que entró toda una fototeca de una vez - una migración, una importación - que si no llenaría la página con miles de miniaturas. Más allá, solo se muestran los más recientes. Vacío o por debajo de 1, la galería se cierra.</target>
             </trans-unit>
+            <trans-unit id="FEm_w1D">
+                <source>description.gallery_license_url</source>
+                <target>Dirección de la página que indica cómo pueden usarse las fotos del sitio (todos los derechos reservados, una licencia Creative Commons, una solicitud mediante el formulario de contacto…), una ruta del sitio como /pages/licencia-fotos o una url completa. Se publica en los datos estructurados de cada foto ("license"), y como página donde obtener una licencia ("acquireLicensePage") cuando la foto no se ofrece como impresión: es lo que Google lee para mostrar la insignia "Con licencia" en Google Imágenes. Vacío, no se publica nada.</target>
+            </trans-unit>
             <trans-unit id="bj8kKWN">
                 <source>description.gallery_print_api_key</source>
                 <target>Clave facilitada por el laboratorio, que autentica cada pedido enviado. No es necesaria con «manual». Rellenarla no abre la tienda: eso lo hace la casilla «Venta de copias».</target>
@@ -113,6 +117,10 @@
             <trans-unit id="paiRW9j">
                 <source>label.gallery_latest_max</source>
                 <target>Galería automática: número máximo de medios</target>
+            </trans-unit>
+            <trans-unit id="OV5vUuM">
+                <source>label.gallery_license_url</source>
+                <target>Galería: página de condiciones de uso de las fotos</target>
             </trans-unit>
             <trans-unit id="xRNwvo0">
                 <source>label.gallery_print_api_key</source>

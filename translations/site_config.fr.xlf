@@ -14,6 +14,10 @@
                 <source>description.gallery_latest_max</source>
                 <target>Nombre maximal de médias affichés par la galerie automatique. Il protège la journée où toute une photothèque est entrée d'un coup - reprise, import - qui remplirait sinon la page de milliers de vignettes. Au-delà, seuls les plus récents sont montrés. Vide ou en dessous de 1, la galerie est fermée.</target>
             </trans-unit>
+            <trans-unit id="FEm_w1D">
+                <source>description.gallery_license_url</source>
+                <target>Adresse de la page qui dit comment les photos du site peuvent être utilisées (droits réservés, licence Creative Commons, demande par le formulaire de contact…), un chemin du site comme /pages/licence-photos ou une url complète. Elle est publiée dans les données structurées de chaque photo ("license"), et comme page où obtenir une licence ("acquireLicensePage") quand la photo n'est pas proposée en tirage : c'est ce que Google lit pour afficher le badge « Licence » dans Google Images. Vide, rien n'est publié.</target>
+            </trans-unit>
             <trans-unit id="bj8kKWN">
                 <source>description.gallery_print_api_key</source>
                 <target>Clé fournie par le laboratoire, qui authentifie chaque commande envoyée. Inutile avec « manual ». La renseigner n'ouvre pas la boutique : c'est la case « Vente de tirages » qui le fait.</target>
@@ -113,6 +117,10 @@
             <trans-unit id="paiRW9j">
                 <source>label.gallery_latest_max</source>
                 <target>Galerie automatique : nombre maximal de médias</target>
+            </trans-unit>
+            <trans-unit id="OV5vUuM">
+                <source>label.gallery_license_url</source>
+                <target>Galerie : page des conditions d'utilisation des photos</target>
             </trans-unit>
             <trans-unit id="xRNwvo0">
                 <source>label.gallery_print_api_key</source>

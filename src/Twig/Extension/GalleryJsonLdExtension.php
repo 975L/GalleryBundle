@@ -10,23 +10,28 @@
 
 namespace c975L\GalleryBundle\Twig\Extension;
 
+use c975L\ConfigBundle\Service\ConfigServiceInterface;
 use c975L\GalleryBundle\Entity\GalleryCategory;
 use c975L\GalleryBundle\Entity\GalleryMedia;
 use c975L\GalleryBundle\Service\GallerySnippetBuilder;
+use Symfony\Component\HttpFoundation\UrlHelper;
 use Twig\Attribute\AsTwigFunction;
 
 // A Twig function rather than a template of the bundle, on the model of BookBundle's book_json_ld(): the markup belongs to the bundle, the theme to the site, and a site overriding gallery/media.html.twig keeps its structured data by calling the same function
 class GalleryJsonLdExtension
 {
-    public function __construct(private readonly GallerySnippetBuilder $snippetBuilder)
-    {
+    public function __construct(
+        private readonly GallerySnippetBuilder $snippetBuilder,
+        private readonly ConfigServiceInterface $configService,
+        private readonly UrlHelper $urlHelper,
+    ) {
     }
 
     // Returns the <script type="application/ld+json"> payload for a photograph's page, empty when there is neither a file to name nor a player to frame
     #[AsTwigFunction('gallery_media_json_ld', isSafe: ['html'])]
     public function mediaJsonLd(GalleryMedia $media, ?string $contentUrl = null, ?string $thumbnailUrl = null, ?string $url = null, bool $printAvailable = false, ?string $embedUrl = null): string
     {
-        return $this->snippetBuilder->buildJson($this->snippetBuilder->buildMedia($media, $contentUrl, $thumbnailUrl, $url, $printAvailable, $embedUrl));
+        return $this->snippetBuilder->buildJson($this->snippetBuilder->buildMedia($media, $contentUrl, $thumbnailUrl, $url, $printAvailable, $embedUrl, $this->licenseUrl()));
     }
 
     /**
@@ -49,5 +54,13 @@ class GalleryJsonLdExtension
     public function indexJsonLd(array $items = []): string
     {
         return $this->snippetBuilder->buildJson($this->snippetBuilder->buildIndex($items));
+    }
+
+    // The terms page as typed in the config, a path of the site being made absolute: schema.org reads urls, never paths
+    private function licenseUrl(): string
+    {
+        $url = trim((string) $this->configService->get('gallery-license-url'));
+
+        return '' === $url ? '' : $this->urlHelper->getAbsoluteUrl($url);
     }
 }

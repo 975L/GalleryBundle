@@ -1,5 +1,13 @@
 # ChangeLog
 
+## v1.20.5
+
+Photographs publish the site's terms page as their licence
+
+- Adds the `gallery-license-url` config entry for the photographs' terms page (26/09/2026)
+- A photograph's structured data publishes that page as `license` (26/09/2026)
+- `acquireLicensePage` falls back on that page when no print is offered (26/09/2026)
+
 ## v1.20.4
 
 QR codes are drawn by UiBundle's QrCodeGenerator
