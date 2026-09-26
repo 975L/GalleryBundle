@@ -1,13 +1,25 @@
-{# What the back-office holds on a media, said under it - the media page is where a credit is read. The licence is the one of the gallery the media is filed in, a Creative Commons one linking its deed in place of the reserved rights #}
-{% set licenseUrl = media.category ? media.category.licenseUrl : null %}
-{% if media.credits is not empty or media.rightsReserved or licenseUrl %}
+{# What the back-office holds on a media, said under it. The licence is its gallery's: a Creative Commons one drawn with its icons and linking its deed, all rights reserved linking the site's terms page when "gallery-license-url" is configured #}
+{% set gallery = media.category %}
+{% set deedUrl = gallery ? gallery.licenseUrl : null %}
+{% set termsUrl = deedUrl ? null : config('gallery-license-url') %}
+{% if media.credits is not empty or media.rightsReserved or deedUrl or termsUrl %}
     <p class="gallery-media-credits">
         {% if media.credits is not empty %}
             {# The label and its separator are the translation's own: French spaces its colon, English doesn't #}
             <span>{{ 'label.gallery_credits'|trans({'%credits%': media.credits}, 'gallery') }}</span>
         {% endif %}
-        {% if licenseUrl %}
-            <span><a href="{{ licenseUrl }}" rel="license noopener" target="_blank">{{ ('label.gallery_license_' ~ media.category.license|replace({'-': '_'}))|trans({}, 'gallery') }}</a></span>
+        {% if deedUrl %}
+            {# The short name is what a credit carries, the full wording being the icons' title for whoever reads them #}
+            <span>
+                <a href="{{ deedUrl }}" class="gallery-license" rel="license noopener" target="_blank" title="{{ gallery.licenseLabel|trans({}, 'gallery') }}">
+                    {% for icon in gallery.licenseIcons %}
+                        <span class="gallery-license-icon gallery-license-icon-{{ icon }}" aria-hidden="true"></span>
+                    {% endfor %}
+                    {{ gallery.licenseName }}
+                </a>
+            </span>
+        {% elseif termsUrl %}
+            <span><a href="{{ termsUrl }}" class="gallery-license" rel="license">&copy; {{ 'label.gallery_rights_reserved'|trans({}, 'gallery') }}</a></span>
         {% elseif media.rightsReserved %}
             <span>&copy; {{ 'label.gallery_rights_reserved'|trans({}, 'gallery') }}</span>
         {% endif %}

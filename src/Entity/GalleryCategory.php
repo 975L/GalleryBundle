@@ -197,6 +197,25 @@ class GalleryCategory implements HasBlocksInterface, TrashableInterface, \String
         return GalleryLicense::deedUrl($this->license);
     }
 
+    // The licence's short name, null when all rights are reserved
+    public function getLicenseName(): ?string
+    {
+        return GalleryLicense::name($this->license);
+    }
+
+    // The Creative Commons icons the licence is drawn with
+    /** @return list<string> */
+    public function getLicenseIcons(): array
+    {
+        return GalleryLicense::icons($this->license);
+    }
+
+    // The translation key naming the licence
+    public function getLicenseLabel(): string
+    {
+        return GalleryLicense::label($this->license);
+    }
+
     public function getCoverMedia(): ?GalleryMedia
     {
         return $this->coverMedia;

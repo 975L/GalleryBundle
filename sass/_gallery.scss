@@ -300,6 +300,31 @@
     color: var(--gallery-credits-color);
 }
 
+// The licence under the media, in the credits' own colour rather than the link's: it is part of the credit line, not an invitation to leave the page
+.gallery-license {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.15em;
+    color: inherit;
+}
+
+// Creative Commons' own icons, drawn as masks so they take the ink of the gallery they sit in, light or dark (see public/icons/, where their white ground was taken out)
+.gallery-license-icon {
+    display: inline-block;
+    width: 1.3em;
+    height: 1.3em;
+    background-color: currentColor;
+    mask-position: center;
+    mask-size: contain;
+    mask-repeat: no-repeat;
+}
+
+@each $icon in cc, by, nc, nd, sa, zero {
+    .gallery-license-icon-#{$icon} {
+        mask-image: url("../icons/cc-#{$icon}.svg");
+    }
+}
+
 // The score under the media, centred like every other line the page states. It has to be said here because a rating is a flex row of its own (see UiBundle's .rating-vote): text-align has no hold on it, and it would otherwise start at the left edge of a page whose title, breadcrumb, caption and credits are all centred - the same rule BookBundle states for its own hero
 .gallery-page .rating-vote {
     justify-content: center;

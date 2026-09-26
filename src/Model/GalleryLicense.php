@@ -45,6 +45,28 @@ final class GalleryLicense
         return self::DEEDS[$license] ?? null;
     }
 
+    // The licence's own short name, the one Creative Commons asks a credit to carry, which is never translated: "CC BY-NC 4.0", "CC0 1.0"
+    public static function name(string $license): ?string
+    {
+        $url = self::deedUrl($license);
+        if (null === $url) {
+            return null;
+        }
+
+        return 'cc0' === $license ? 'CC0 1.0' : 'CC ' . strtoupper(substr($license, 3)) . ' 4.0';
+    }
+
+    // The icons Creative Commons draws a licence with, in its own order: the "cc" mark, then one per condition - or the public domain mark for CC0 (see public/icons/)
+    /** @return list<string> */
+    public static function icons(string $license): array
+    {
+        if (null === self::deedUrl($license)) {
+            return [];
+        }
+
+        return 'cc0' === $license ? ['cc', 'zero'] : ['cc', ...explode('-', substr($license, 3))];
+    }
+
     // The translation key naming a licence, in the "gallery" domain
     public static function label(string $license): string
     {

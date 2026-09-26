@@ -355,6 +355,47 @@
   color: var(--gallery-credits-color);
 }
 
+.gallery-license {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.15em;
+  color: inherit;
+}
+
+.gallery-license-icon {
+  display: inline-block;
+  width: 1.3em;
+  height: 1.3em;
+  background-color: currentColor;
+  mask-position: center;
+  mask-size: contain;
+  mask-repeat: no-repeat;
+}
+
+.gallery-license-icon-cc {
+  mask-image: url("../icons/cc-cc.svg");
+}
+
+.gallery-license-icon-by {
+  mask-image: url("../icons/cc-by.svg");
+}
+
+.gallery-license-icon-nc {
+  mask-image: url("../icons/cc-nc.svg");
+}
+
+.gallery-license-icon-nd {
+  mask-image: url("../icons/cc-nd.svg");
+}
+
+.gallery-license-icon-sa {
+  mask-image: url("../icons/cc-sa.svg");
+}
+
+.gallery-license-icon-zero {
+  mask-image: url("../icons/cc-zero.svg");
+}
+
 .gallery-page .rating-vote {
   justify-content: center;
   margin-top: var(--gallery-rating-margin-top);

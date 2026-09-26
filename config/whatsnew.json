@@ -11,6 +11,11 @@
                 "en": "Each gallery can now publish its photographs under a Creative Commons licence, shown under every photograph, or keep all rights reserved",
                 "fr": "Chaque galerie peut désormais publier ses photos sous une licence Creative Commons, affichée sous chaque photo, ou garder tous les droits réservés",
                 "es": "Cada galería puede ahora publicar sus fotografías bajo una licencia Creative Commons, mostrada bajo cada fotografía, o mantener todos los derechos reservados"
+            },
+            {
+                "en": "The Creative Commons licence under your photographs now shows with its official icons, and a gallery keeping all rights reserved links your terms page",
+                "fr": "La licence Creative Commons sous vos photos s'affiche désormais avec ses icônes officielles, et une galerie gardant tous les droits réservés renvoie vers votre page de conditions",
+                "es": "La licencia Creative Commons bajo sus fotografías se muestra ahora con sus iconos oficiales, y una galería que mantiene todos los derechos reservados enlaza su página de condiciones"
             }
         ]
     },

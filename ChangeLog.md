@@ -1,5 +1,14 @@
 # ChangeLog
 
+## v1.21.1
+
+Credits draw a Creative Commons licence with its icons
+
+- Adds `GalleryLicense::name()` and `icons()` (26/09/2026)
+- Ships the Creative Commons icons in `public/icons/` (26/09/2026)
+- `Gallery:Credits` draws the licence with its icons and short name (26/09/2026)
+- `Gallery:Credits` links the `gallery-license-url` page under a reserved gallery (26/09/2026)
+
 ## v1.21
 
 Each gallery publishes its photographs under a licence of its own
