@@ -518,6 +518,10 @@
                 <source>help.gallery_category_hidden</source>
                 <target>The gallery stays in the back-office but leaves every public page - the index, the blocks, the menus, the sitemap - and its photographs leave the automatic galleries with it.</target>
             </trans-unit>
+            <trans-unit id="IUk.lVu">
+                <source>help.gallery_license</source>
+                <target>What visitors may do with this gallery's photographs. Each photograph follows its gallery's licence, automatic galleries included. A Creative Commons licence cannot be withdrawn from a photograph already published under it: when in doubt, keep "All rights reserved", which can always be opened later.</target>
+            </trans-unit>
             <trans-unit id="qncHJ9S">
                 <source>help.gallery_media_edition_size</source>
                 <target>Left empty, the print is unlimited. A number opens a numbered edition and writes its register. Careful: once saved it can no longer be changed.</target>
@@ -717,6 +721,42 @@
             <trans-unit id="tkYIy2h">
                 <source>label.gallery_latest_title</source>
                 <target>Latest additions</target>
+            </trans-unit>
+            <trans-unit id="MqxW4ie">
+                <source>label.gallery_license</source>
+                <target>Photographs licence</target>
+            </trans-unit>
+            <trans-unit id="o0nKQUm">
+                <source>label.gallery_license_cc0</source>
+                <target>CC0 1.0 (public domain)</target>
+            </trans-unit>
+            <trans-unit id="ppZMQR0">
+                <source>label.gallery_license_cc_by</source>
+                <target>CC BY 4.0 (attribution)</target>
+            </trans-unit>
+            <trans-unit id="_DqtpLD">
+                <source>label.gallery_license_cc_by_nc</source>
+                <target>CC BY-NC 4.0 (attribution, non commercial)</target>
+            </trans-unit>
+            <trans-unit id="Odd7K8Q">
+                <source>label.gallery_license_cc_by_nc_nd</source>
+                <target>CC BY-NC-ND 4.0 (attribution, non commercial, no derivatives)</target>
+            </trans-unit>
+            <trans-unit id="bmah4Vw">
+                <source>label.gallery_license_cc_by_nc_sa</source>
+                <target>CC BY-NC-SA 4.0 (attribution, non commercial, share alike)</target>
+            </trans-unit>
+            <trans-unit id="s8mjiem">
+                <source>label.gallery_license_cc_by_nd</source>
+                <target>CC BY-ND 4.0 (attribution, no derivatives)</target>
+            </trans-unit>
+            <trans-unit id="uHHg2Hl">
+                <source>label.gallery_license_cc_by_sa</source>
+                <target>CC BY-SA 4.0 (attribution, share alike)</target>
+            </trans-unit>
+            <trans-unit id="OknpPT1">
+                <source>label.gallery_license_reserved</source>
+                <target>All rights reserved</target>
             </trans-unit>
             <trans-unit id="HdrTU43">
                 <source>label.gallery_media</source>

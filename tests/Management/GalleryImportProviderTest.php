@@ -285,6 +285,26 @@ class GalleryImportProviderTest extends TestCase
         $this->assertFalse($medias[2]->isPrintable());
     }
 
+    // The licence is read back, an archive predating the key importing its galleries all rights reserved - what they published until then
+    public function testImportReadsTheLicenceOfTheCategory(): void
+    {
+        $persisted = [];
+        $em = $this->createStub(EntityManagerInterface::class);
+        $em->method('persist')->willReturnCallback(static function (object $entity) use (&$persisted): void {
+            $persisted[] = $entity;
+        });
+
+        $this->createProvider($em)->import([
+            ['slug' => 'voyages', 'title' => 'Voyages', 'license' => 'cc-by-sa', 'medias' => []],
+            ['slug' => 'montagne', 'title' => 'Montagne', 'medias' => []],
+        ]);
+
+        $categories = array_values(array_filter($persisted, static fn (object $entity): bool => $entity instanceof GalleryCategory));
+
+        $this->assertSame('cc-by-sa', $categories[0]->getLicense());
+        $this->assertSame('reserved', $categories[1]->getLicense());
+    }
+
     // The gallery's own mask is read back the same way, an archive predating the key importing as a gallery that is not masked
     public function testImportReadsTheMaskOfTheCategory(): void
     {

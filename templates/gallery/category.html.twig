@@ -12,6 +12,14 @@
     {% set ogImage = absolute_url(asset(ogMedia.filename)) %}
 {% endif %}
 
+{# Text and data mining reserved in a machine-readable way (the TDMRep protocol, article L. 122-5-3 of the French Intellectual Property Code asking an opt-out to be one a machine reads), where the gallery keeps all rights reserved - an automatic gallery keeping the default, the photographs it gathers being of other galleries. A Creative Commons licence already says what may be done, mining included #}
+{% block meta %}
+    {{ parent() }}
+    {% if category is not null and category.licenseUrl is null %}
+        <meta name="tdm-reservation" content="1">
+    {% endif %}
+{% endblock %}
+
 {# The classes the whole page is painted from (see sass/_gallery.scss), the same ones the index and the medias carry #}
 {% block bodyClass %}{{ gallery_body_class() }}{% endblock %}
 

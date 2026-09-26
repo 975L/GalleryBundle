@@ -81,6 +81,7 @@ class GalleryExportProvider implements ExportProviderInterface
             'isDeleted' => $category->isDeleted(),
             // Same for a masked gallery, exactly as a media's own flag travels below: a gallery an admin took off the site comes back off it
             'hidden' => $category->isHidden(),
+            'license' => $category->getLicense(),
             'coverMediaIndex' => $coverMediaIndex,
             // The category's editorial lead-in, carried the same way PageExportProvider carries a Page's, its own medias joining the archive
             'blocks' => $this->blockDataExporter->exportBlocks($category->getBlocks(), $files),

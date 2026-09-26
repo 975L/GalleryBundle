@@ -21,6 +21,7 @@ use c975L\GalleryBundle\Field\GalleryDataField;
 use c975L\GalleryBundle\Management\GalleryBlockOwnerResolver;
 use c975L\GalleryBundle\Management\GalleryExportProvider;
 use c975L\GalleryBundle\Management\GalleryImportProvider;
+use c975L\GalleryBundle\Model\GalleryLicense;
 use c975L\GalleryBundle\Model\GalleryMediaBatch;
 use c975L\GalleryBundle\Repository\GalleryCategoryRepository;
 use c975L\GalleryBundle\Repository\GalleryMediaRepository;
@@ -61,6 +62,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Dto\BatchActionDto;
 use EasyCorp\Bundle\EasyAdminBundle\Dto\EntityDto;
 use EasyCorp\Bundle\EasyAdminBundle\Dto\SearchDto;
 use EasyCorp\Bundle\EasyAdminBundle\Field\BooleanField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\ChoiceField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\CollectionField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\Field;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
@@ -672,6 +674,13 @@ class GalleryCategoryCrudController extends AbstractCrudController
             BooleanField::new('hidden')
                 ->setLabel(t('label.gallery_category_hidden', [], 'gallery'))
                 ->setHelp(t('help.gallery_category_hidden', [], 'gallery')),
+
+            // One licence for the whole gallery rather than one per photograph: a gallery is one author's set more often than not, and a photograph filed elsewhere follows its own gallery wherever it is shown
+            ChoiceField::new('license')
+                ->setLabel(t('label.gallery_license', [], 'gallery'))
+                ->setHelp(t('help.gallery_license', [], 'gallery'))
+                ->setTranslatableChoices(array_combine(GalleryLicense::all(), array_map(static fn (string $license) => t(GalleryLicense::label($license), [], 'gallery'), GalleryLicense::all())))
+                ->hideOnIndex(),
 
             ...$this->dataFields(),
 

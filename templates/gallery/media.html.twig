@@ -13,6 +13,14 @@
     {% set ogImage = absolute_url(asset(media.filename)) %}
 {% endif %}
 
+{# Text and data mining reserved in a machine-readable way (the TDMRep protocol, article L. 122-5-3 of the French Intellectual Property Code asking an opt-out to be one a machine reads), where the gallery keeps all rights reserved - read off the gallery the photograph is filed in rather than the one being walked through, an automatic gallery showing photographs of others. A Creative Commons licence already says what may be done, mining included #}
+{% block meta %}
+    {{ parent() }}
+    {% if media.category is not null and media.category.licenseUrl is null %}
+        <meta name="tdm-reservation" content="1">
+    {% endif %}
+{% endblock %}
+
 {# The classes the whole page is painted from (see sass/_gallery.scss), the same ones the index and the categories carry - a media is where a ground of its own matters most, the photo being what the page is for #}
 {% block bodyClass %}{{ gallery_body_class() }}{% endblock %}
 

@@ -16,7 +16,7 @@
             </trans-unit>
             <trans-unit id="FEm_w1D">
                 <source>description.gallery_license_url</source>
-                <target>Dirección de la página que indica cómo pueden usarse las fotos del sitio (todos los derechos reservados, una licencia Creative Commons, una solicitud mediante el formulario de contacto…), una ruta del sitio como /pages/licencia-fotos o una url completa. Se publica en los datos estructurados de cada foto ("license"), y como página donde obtener una licencia ("acquireLicensePage") cuando la foto no se ofrece como impresión: es lo que Google lee para mostrar la insignia "Con licencia" en Google Imágenes. Vacío, no se publica nada.</target>
+                <target>Dirección de la página que indica cómo pueden usarse las fotos del sitio y cómo solicitar el derecho (el modelo legal "Licencia de las fotos"), una ruta del sitio como /pages/licencia-fotos o una url completa. Se publica en los datos estructurados de cada foto como su licencia ("license") cuando su galería mantiene todos los derechos reservados, y como página donde obtener una licencia ("acquireLicensePage") cuando la foto no se ofrece como impresión: es lo que Google lee para mostrar la insignia "Con licencia" en Google Imágenes. Vacío, no se publica nada, salvo la licencia Creative Commons de una galería que haya elegido una.</target>
             </trans-unit>
             <trans-unit id="bj8kKWN">
                 <source>description.gallery_print_api_key</source>

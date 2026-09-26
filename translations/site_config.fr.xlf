@@ -16,7 +16,7 @@
             </trans-unit>
             <trans-unit id="FEm_w1D">
                 <source>description.gallery_license_url</source>
-                <target>Adresse de la page qui dit comment les photos du site peuvent être utilisées (droits réservés, licence Creative Commons, demande par le formulaire de contact…), un chemin du site comme /pages/licence-photos ou une url complète. Elle est publiée dans les données structurées de chaque photo ("license"), et comme page où obtenir une licence ("acquireLicensePage") quand la photo n'est pas proposée en tirage : c'est ce que Google lit pour afficher le badge « Licence » dans Google Images. Vide, rien n'est publié.</target>
+                <target>Adresse de la page qui dit comment les photos du site peuvent être utilisées et comment en demander le droit (le modèle légal « Licence des photos »), un chemin du site comme /pages/licence-photos ou une url complète. Elle est publiée dans les données structurées de chaque photo comme sa licence ("license") quand sa galerie garde tous les droits réservés, et comme page où obtenir une licence ("acquireLicensePage") quand la photo n'est pas proposée en tirage : c'est ce que Google lit pour afficher le badge « Licence » dans Google Images. Vide, rien n'est publié, sauf la licence Creative Commons d'une galerie qui en a choisi une.</target>
             </trans-unit>
             <trans-unit id="bj8kKWN">
                 <source>description.gallery_print_api_key</source>

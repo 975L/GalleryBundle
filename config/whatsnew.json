@@ -6,6 +6,11 @@
                 "en": "You can now name a page telling how your photographs may be used, so Google Images can show them with the \"Licensable\" badge",
                 "fr": "Vous pouvez désormais indiquer une page expliquant comment vos photos peuvent être utilisées, pour que Google Images les affiche avec le badge « Licence »",
                 "es": "Ahora puede indicar una página que explica cómo pueden usarse sus fotografías, para que Google Imágenes las muestre con la insignia \"Con licencia\""
+            },
+            {
+                "en": "Each gallery can now publish its photographs under a Creative Commons licence, shown under every photograph, or keep all rights reserved",
+                "fr": "Chaque galerie peut désormais publier ses photos sous une licence Creative Commons, affichée sous chaque photo, ou garder tous les droits réservés",
+                "es": "Cada galería puede ahora publicar sus fotografías bajo una licencia Creative Commons, mostrada bajo cada fotografía, o mantener todos los derechos reservados"
             }
         ]
     },

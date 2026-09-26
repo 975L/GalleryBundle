@@ -37,6 +37,7 @@ Add GalleryBundle on top of [c975L/CoreBundle](https://github.com/975L/CoreBundl
 - One category of the site can be turned into **the gallery of the last additions**: it holds no media of its own and shows what every other category received on its last days of upload, whatever gallery each photo landed in - as a public page, as a block, and as a back-office screen where a whole upload session is credited, downloaded or trashed in one go (see [the automatic galleries](#the-automatic-galleries)).
 - A public front-office viewer (index → category → media), browsed entirely in the stored (medium) resolution, with circular previous/next navigation whose neighbouring images are preloaded in the background so switching medias never shows a blank image while it loads. The high resolution opens in a lightbox over the image, fetched only when the visitor asks for it (see [browsing and the lightbox](#browsing-and-the-lightbox)).
 - Structured data on the three public pages: a photograph is published as an `ImageObject` carrying its credit, its copyright, its terms of use and the page a print is bought on - the properties an image search draws its "Licensable" badge from (see [structured data](#structured-data)).
+- Each gallery picks the licence its photographs are published under: all rights reserved by default, or a Creative Commons one whose deed is linked under every photograph and named in its structured data (see [structured data](#structured-data)).
 - Two block kinds contributed to UiBundle, so a gallery can be shown on any page composed in the back office instead of only under its own routes (see [blocks](#blocks-defined-by-this-bundle)).
 - A category owns UiBundle blocks of its own, giving it an editorial heading above its grid (see [category headings](#composing-a-categorys-heading)).
 - A category carries a rich-text summary, printed above its grid and reused as the page's social/search metas (see [summary](#a-categorys-summary)).
@@ -1519,7 +1520,11 @@ from: `creator` and `creditText` from the credit typed in the back office, `copy
 rights-reserved box, and `acquireLicensePage` - the photograph's own page where the page actually prints an
 offer for it, since that is where the print is ordered, the terms page otherwise. That terms page - how the
 site's photographs may be used, typed as a path or a full url in `gallery-license-url` (group **Galerie**) - is
-also every photograph's `license`; left empty, a photograph not offered as a print publishes neither.
+the `license` of every photograph whose gallery keeps all rights reserved; left empty, such a photograph not
+offered as a print publishes neither. A gallery can instead publish its photographs under a Creative Commons 4.0
+licence (or CC0), picked on its edit screen: each photograph then names that deed as its `license` and links it
+under its credit - automatic galleries included, a photograph following the gallery it is filed in - while a
+gallery keeping all rights reserved marks its pages `tdm-reservation` (TDMRep), opting out of text and data mining.
 Those are the properties Google's **Licensable** badge is drawn from, which is a link to where the photo is
 bought or licensed, printed under it in image results.
 

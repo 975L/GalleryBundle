@@ -46,6 +46,7 @@ class GalleryExportProviderTest extends TestCase
             'automaticKind' => null,
             'isDeleted' => false,
             'hidden' => false,
+            'license' => 'reserved',
             'coverMediaIndex' => null,
             'blocks' => [],
             'medias' => [],

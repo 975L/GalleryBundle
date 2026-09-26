@@ -10,6 +10,7 @@
 
 namespace c975L\GalleryBundle\Entity;
 
+use c975L\GalleryBundle\Model\GalleryLicense;
 use c975L\UiBundle\Contract\HasBlocksInterface;
 use c975L\UiBundle\Contract\TrashableInterface;
 use c975L\UiBundle\Entity\Block;
@@ -57,6 +58,10 @@ class GalleryCategory implements HasBlocksInterface, TrashableInterface, \String
     // What it drops out of is what findAllOrdered() answers (index, blocks, sitemap, menu links), plus the medias it holds, which leave the automatic galleries with it (see GalleryMediaRepository::latestMedias) - the back-office lists it like any other, its own edit screen being where it is filled and shown again
     #[ORM\Column(options: ['default' => false])]
     private bool $hidden = false;
+
+    // What the gallery's photographs may be used for, each photograph following the gallery it is filed in - including where an automatic gallery shows it among others (see GalleryLicense). A real column rather than a key of $data below, which is what a site adds and the bundle never reads
+    #[ORM\Column(length: 20, options: ['default' => GalleryLicense::RESERVED])]
+    private string $license = GalleryLicense::RESERVED;
 
     // The fields this site adds to a gallery and no other site has, held as one JSON payload rather than a column each - same reasoning as UiBundle's Block::$data: what a single site needs is then a form type it declares (see GalleryCustomizationProviderInterface::getCategoryDataFormType()), no schema migration for every app running this bundle. Anything the database itself has to filter, sort or join on stays a real column
     /** @var array<string, mixed>|null */
@@ -171,6 +176,25 @@ class GalleryCategory implements HasBlocksInterface, TrashableInterface, \String
     public function getDataValue(string $key, mixed $default = null): mixed
     {
         return $this->getData()[$key] ?? $default;
+    }
+
+    public function getLicense(): string
+    {
+        return $this->license;
+    }
+
+    // Anything the bundle does not offer falls back on all rights reserved, the one licence that never gives away more than the author meant to
+    public function setLicense(?string $license): self
+    {
+        $this->license = null !== $license && GalleryLicense::has($license) ? $license : GalleryLicense::RESERVED;
+
+        return $this;
+    }
+
+    // The Creative Commons deed the photographs are published under, null when all rights are reserved
+    public function getLicenseUrl(): ?string
+    {
+        return GalleryLicense::deedUrl($this->license);
     }
 
     public function getCoverMedia(): ?GalleryMedia

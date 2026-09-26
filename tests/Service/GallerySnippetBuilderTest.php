@@ -96,6 +96,30 @@ class GallerySnippetBuilderTest extends TestCase
         $this->assertSame('https://example.org/galerie/montagne/lac', $snippet['acquireLicensePage']);
     }
 
+    // A Creative Commons gallery publishes its deed as the licence, the site's page staying where anything more is asked for
+    public function testAPhotographOfACreativeCommonsGalleryNamesItsDeed(): void
+    {
+        $media = $this->media();
+        $media->getCategory()->setLicense('cc-by-nc');
+
+        $snippet = $this->builder()->buildMedia($media, 'https://example.org/lac.webp', null, null, false, null, 'https://example.org/pages/licence');
+
+        $this->assertSame('https://creativecommons.org/licenses/by-nc/4.0/', $snippet['license']);
+        $this->assertSame('https://example.org/pages/licence', $snippet['acquireLicensePage']);
+    }
+
+    // The deed needs no page of the site's own: a Creative Commons gallery is licensed even where none is configured
+    public function testACreativeCommonsGalleryIsLicensedWithoutATermsPage(): void
+    {
+        $media = $this->media();
+        $media->getCategory()->setLicense('cc0');
+
+        $snippet = $this->builder()->buildMedia($media, 'https://example.org/lac.webp');
+
+        $this->assertSame('https://creativecommons.org/publicdomain/zero/1.0/', $snippet['license']);
+        $this->assertArrayNotHasKey('acquireLicensePage', $snippet);
+    }
+
     public function testAPhotographWithoutATermsPagePublishesNoLicence(): void
     {
         $snippet = $this->builder()->buildMedia($this->media(), 'https://example.org/lac.webp', null, null, false, null, '  ');

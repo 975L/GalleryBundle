@@ -120,7 +120,9 @@ class GalleryImportProvider implements ImportProviderInterface
         $category
             // Optional like the rest, an archive predating the trash importing as a category that is not in it - which is what such an archive describes
             ->setIsDeleted($item['isDeleted'] ?? false)
-            ->setHidden($item['hidden'] ?? false);
+            ->setHidden($item['hidden'] ?? false)
+            // An archive written before galleries carried a licence restores them all rights reserved, which is what they published until then
+            ->setLicense($item['license'] ?? null);
     }
 
     // The automatic kind this category walks away with, or null for an ordinary gallery

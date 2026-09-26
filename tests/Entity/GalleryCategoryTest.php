@@ -42,6 +42,20 @@ class GalleryCategoryTest extends TestCase
         $this->assertFalse($category->isHidden());
     }
 
+    // All rights reserved until told otherwise, and anything the bundle does not offer falls back on it rather than on a licence nobody picked
+    public function testSetLicenseFallsBackToReservedWhenUnknown(): void
+    {
+        $category = new GalleryCategory();
+        $this->assertSame('reserved', $category->getLicense());
+        $this->assertNull($category->getLicenseUrl());
+
+        $category->setLicense('cc-by-nc');
+        $this->assertSame('https://creativecommons.org/licenses/by-nc/4.0/', $category->getLicenseUrl());
+
+        $category->setLicense('gpl');
+        $this->assertSame('reserved', $category->getLicense());
+    }
+
     public function testAddMediaSetsBothSidesOfTheRelationOnlyOnce(): void
     {
         $category = new GalleryCategory();

@@ -12,6 +12,7 @@ namespace c975L\GalleryBundle\Service;
 
 use c975L\GalleryBundle\Entity\GalleryCategory;
 use c975L\GalleryBundle\Entity\GalleryMedia;
+use c975L\GalleryBundle\Model\GalleryLicense;
 
 // Builds the schema.org graph a photograph's, a gallery's and the index's page publish as JSON-LD, out of the fields those pages already show.
 // A photograph is an ImageObject and a video a VideoObject, which is what an image search reads: the four properties a licence rests on - who took it, what the credit says, what the copyright says, and where a print is bought - are the very ones Google's "Licensable" badge is drawn from, and they are already typed in the back office.
@@ -104,8 +105,8 @@ class GallerySnippetBuilder
             'creator' => $this->creator($media),
             'creditText' => trim((string) $media->getCredits()),
             'copyrightNotice' => $this->copyrightNotice($media),
-            // The terms the photograph is used under, and where a licence is acquired: this very page when a print is ordered on it (see print/_offer.html.twig), the terms page otherwise, which is where a visitor learns how to ask
-            'license' => $licenseUrl,
+            // The licence of the gallery the photograph is filed in (a Creative Commons deed, or the site's page when all rights are reserved), and where more is acquired: this very page when a print is ordered on it (see print/_offer.html.twig), the site's page otherwise
+            'license' => GalleryLicense::deedUrl($media->getCategory()?->getLicense() ?? GalleryLicense::RESERVED) ?? $licenseUrl,
             'acquireLicensePage' => $printAvailable ? trim((string) $url) : $licenseUrl,
         ];
     }

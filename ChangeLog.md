@@ -1,5 +1,17 @@
 # ChangeLog
 
+## v1.21
+
+Each gallery publishes its photographs under a licence of its own
+
+- `GalleryCategory` gains a `license` column, all rights reserved by default (26/09/2026) [Needs db update]
+- Adds `Model\GalleryLicense`, offering the Creative Commons 4.0 set and CC0 (26/09/2026)
+- The category edit screen offers the licence choice (26/09/2026)
+- A Creative Commons gallery names its deed as each photograph's `license` (26/09/2026)
+- `Gallery:Credits` links the deed in place of the rights-reserved mark (26/09/2026)
+- A gallery keeping all rights reserved marks its pages `tdm-reservation` (26/09/2026)
+- The licence travels through the export/import (26/09/2026)
+
 ## v1.20.5
 
 Photographs publish the site's terms page as their licence
