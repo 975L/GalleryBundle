@@ -1,5 +1,13 @@
 # ChangeLog
 
+## v1.22.0
+
+A member's print orders in the export of their data
+
+- New `Management\AccountDataProvider`: the account's print orders in ConfigBundle's data export (27/09/2026)
+- New `GalleryPrintOrderRepository::findForUser()` (27/09/2026)
+- Requires `c975l/core-bundle` ^1.45 (27/09/2026)
+
 ## v1.21.1
 
 Credits draw a Creative Commons licence with its icons

@@ -1,5 +1,15 @@
 [
     {
+        "date": "2026-09-27",
+        "description": [
+            {
+                "en": "Your customers now find their print orders, with where each one stands, in the export of their personal data",
+                "fr": "Vos clients retrouvent désormais leurs commandes de tirages, avec l'état de chacune, dans l'export de leurs données personnelles",
+                "es": "Sus clientes encuentran ahora sus pedidos de impresiones, con el estado de cada uno, en la exportación de sus datos personales"
+            }
+        ]
+    },
+    {
         "date": "2026-09-26",
         "description": [
             {

@@ -10,6 +10,7 @@
 
 namespace c975L\GalleryBundle\Repository;
 
+use c975L\ConfigBundle\Contract\UserInterface;
 use c975L\GalleryBundle\Entity\GalleryPrintOrder;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
@@ -40,6 +41,20 @@ class GalleryPrintOrderRepository extends ServiceEntityRepository
     public function findByReference(string $provider, string $reference): ?GalleryPrintOrder
     {
         return $this->findOneBy(['provider' => $provider, 'reference' => $reference]);
+    }
+
+    // The print orders of that account's baskets, newest first - its part of the member's data export (see Management\AccountDataProvider)
+    /** @return list<GalleryPrintOrder> */
+    public function findForUser(UserInterface $user): array
+    {
+        return $this->createQueryBuilder('o')
+            ->innerJoin('o.basket', 'b')
+            ->andWhere('b.user = :user')
+            ->setParameter('user', $user)
+            ->orderBy('o.createdAt', \SortDirection::Descending)
+            ->getQuery()
+            ->getResult()
+        ;
     }
 
     // The orders a lab is holding, which the nightly synchronisation asks it about (see GalleryPrintSyncCommand). A reference is what makes an order askable at all, an order without one having never been accepted
