@@ -13,12 +13,16 @@ namespace c975L\GalleryBundle\Service;
 use c975L\GalleryBundle\Entity\GalleryCategory;
 use c975L\GalleryBundle\Entity\GalleryMedia;
 use c975L\GalleryBundle\Model\GalleryLicense;
+use c975L\GalleryBundle\Model\PrintOffer;
+use c975L\UiBundle\Service\JsonLdBuilder;
 
-// Builds the schema.org graph a photograph's, a gallery's and the index's page publish as JSON-LD, out of the fields those pages already show.
-// A photograph is an ImageObject and a video a VideoObject, which is what an image search reads: the four properties a licence rests on - who took it, what the credit says, what the copyright says, and where a print is bought - are the very ones Google's "Licensable" badge is drawn from, and they are already typed in the back office.
-// No offers node here: what a print costs belongs to whoever sells it (see ShopBundle, the one place of the ecosystem emitting one), and this graph only says where the page offering it is.
+// Builds the schema.org graph a photograph's, a gallery's and the index's page publish as JSON-LD, out of the fields they already show: a photograph is an ImageObject (a video a VideoObject) carrying the four properties Google's "Licensable" badge is drawn from, and its prints a Product of their own (see buildPrint()).
 class GallerySnippetBuilder
 {
+    public function __construct(private readonly JsonLdBuilder $jsonLdBuilder = new JsonLdBuilder())
+    {
+    }
+
     // The urls ($contentUrl, $thumbnailUrl, $url, $licenseUrl from config "gallery-license-url") come absolute from the caller. $printAvailable is the offer the page itself prints (see gallery_print_available()), handed over rather than asked again so the graph answers what the visitor is looking at
     public function buildMedia(GalleryMedia $media, ?string $contentUrl = null, ?string $thumbnailUrl = null, ?string $url = null, bool $printAvailable = false, ?string $embedUrl = null, ?string $licenseUrl = null): array
     {
@@ -56,7 +60,7 @@ class GallerySnippetBuilder
             'name' => $name,
             'url' => trim((string) $url),
             // The sentence the gallery is shared with, which is the only prose it carries (see GalleryCategory::$summarySocialNetwork)
-            'description' => $this->plainText($category->getSummarySocialNetwork()),
+            'description' => $this->jsonLdBuilder->plainText($category->getSummarySocialNetwork()),
             'mainEntity' => $this->itemList($items, $offset),
         ]);
     }
@@ -73,15 +77,45 @@ class GallerySnippetBuilder
         return [] === $list ? [] : ['@context' => 'https://schema.org', ...$list];
     }
 
+    // The prints of one photograph, as the Product a merchant listing reads: one Offer per size and paper, each at the price the page prints under it
+    /**
+     * @param list<PrintOffer> $offers    the sizes the page offers
+     * @param ?int             $remaining what is left of a numbered edition, null for an open one: none left is sold out
+     */
+    public function buildPrint(GalleryMedia $media, array $offers, string $currency, ?int $remaining = null, ?string $imageUrl = null, ?string $url = null): array
+    {
+        $name = trim((string) $media->getTitle());
+        $currency = trim($currency);
+
+        if ('' === $name || '' === $currency || [] === $offers) {
+            return [];
+        }
+
+        $availability = 0 === $remaining ? 'https://schema.org/SoldOut' : 'https://schema.org/InStock';
+
+        return $this->clean([
+            '@context' => 'https://schema.org',
+            '@type' => 'Product',
+            'name' => $name,
+            'image' => trim((string) $imageUrl),
+            'description' => $this->jsonLdBuilder->plainText($media->getDescription()),
+            'offers' => array_map(fn (PrintOffer $offer): array => $this->clean([
+                '@type' => 'Offer',
+                'name' => trim((string) $offer->format->getLabel()),
+                // Prices are stored in cents, schema.org expects the amount as it is charged
+                'price' => number_format((int) $offer->format->getPrice() / 100, 2, '.', ''),
+                'priceCurrency' => $currency,
+                'availability' => $availability,
+                'itemCondition' => 'https://schema.org/NewCondition',
+                'url' => trim((string) $url),
+            ]), $offers),
+        ]);
+    }
+
     // The same graph, encoded for a <script type="application/ld+json">; empty string when there is nothing to publish
     public function buildJson(array $snippet): string
     {
-        if ([] === $snippet) {
-            return '';
-        }
-
-        // JSON_HEX_TAG keeps a "</script>" typed into a field from closing the tag, JSON_INVALID_UTF8_SUBSTITUTE keeps a stray byte from emptying the whole graph
-        return json_encode($snippet, \JSON_HEX_TAG | \JSON_HEX_AMP | \JSON_HEX_APOS | \JSON_HEX_QUOT | \JSON_UNESCAPED_SLASHES | \JSON_UNESCAPED_UNICODE | \JSON_INVALID_UTF8_SUBSTITUTE);
+        return $this->jsonLdBuilder->encode($snippet);
     }
 
     // A video is a type of its own rather than an image carrying a file: an image search reads none of a video's own properties off an ImageObject, and the still is its thumbnail, never its content
@@ -93,7 +127,7 @@ class GallerySnippetBuilder
         return [
             '@type' => $video ? 'VideoObject' : 'ImageObject',
             'name' => $this->name($media),
-            'description' => $this->plainText($media->getDescription()),
+            'description' => $this->jsonLdBuilder->plainText($media->getDescription()),
             'contentUrl' => $contentUrl,
             // Where a video hosted elsewhere is played, which is what schema.org reads in place of a file it cannot fetch - the very url the player is framed with (see components/Gallery/Video.html.twig)
             'embedUrl' => $embedUrl,
@@ -139,50 +173,14 @@ class GallerySnippetBuilder
         return '' === $credits ? '' : '© ' . $credits;
     }
 
+    // The shared ItemList without its "@context": nested in an ImageGallery it is a property, and the index adds the context back itself
     /**
      * @param list<array{name: string, url: string}> $items
      * @param int                                    $offset the entries the pages before this one listed, which the positions start after
      */
     private function itemList(array $items, int $offset = 0): array
     {
-        $elements = [];
-        $position = $offset;
-
-        foreach ($items as $item) {
-            $name = trim($item['name']);
-            $url = trim($item['url']);
-
-            // An entry with nothing to point at is dropped rather than numbered: a list whose positions skip one is malformed
-            if ('' === $name || '' === $url) {
-                continue;
-            }
-
-            $elements[] = [
-                '@type' => 'ListItem',
-                'position' => ++$position,
-                'name' => $name,
-                'url' => $url,
-            ];
-        }
-
-        if ([] === $elements) {
-            return [];
-        }
-
-        return [
-            '@type' => 'ItemList',
-            // What this page holds and not what the whole gallery does: a page that grows on scroll publishes what it was served with
-            'numberOfItems' => count($elements),
-            'itemListElement' => $elements,
-        ];
-    }
-
-    // A description is rich text; a graph carries the words only
-    private function plainText(mixed $html): string
-    {
-        $text = html_entity_decode(strip_tags((string) $html), \ENT_QUOTES | \ENT_HTML5, 'UTF-8');
-
-        return trim((string) preg_replace('/\s+/u', ' ', $text));
+        return array_diff_key($this->jsonLdBuilder->itemList($items, $offset), ['@context' => true]);
     }
 
     // Drops everything left empty, so an unfilled field never reaches the graph as a blank property

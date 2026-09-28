@@ -19,3 +19,19 @@
         {% endif %}
     {% endif %}
 </nav>
+{# The same trail, said to a search engine, which prints it in place of the raw url - without the counts, which label a link and not a level. UiBundle drops a trail whose only level is the page itself, so the index publishes none #}
+{% if category|default(null) is not null %}
+    {% set trail = [{name: 'label.gallery_home'|trans({}, 'gallery'), url: absolute_url(localized_path('gallery_index'))}] %}
+    {% if current|default('') is empty %}
+        {% set trail = trail|merge([{name: category.title, url: absolute_url(app.request.pathinfo)}]) %}
+    {% else %}
+        {% set trail = trail|merge([
+            {name: category.title, url: absolute_url(localized_path('gallery_category', {category: category.slug}))},
+            {name: current, url: absolute_url(app.request.pathinfo)}
+        ]) %}
+    {% endif %}
+    {% set breadcrumbJsonLd = breadcrumb_json_ld(trail) %}
+    {% if breadcrumbJsonLd %}
+        <script type="application/ld+json">{{ breadcrumbJsonLd|raw }}</script>
+    {% endif %}
+{% endif %}

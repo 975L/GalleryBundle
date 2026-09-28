@@ -13,6 +13,7 @@ namespace c975L\GalleryBundle\Twig\Extension;
 use c975L\ConfigBundle\Service\ConfigServiceInterface;
 use c975L\GalleryBundle\Entity\GalleryCategory;
 use c975L\GalleryBundle\Entity\GalleryMedia;
+use c975L\GalleryBundle\Model\PrintOffer;
 use c975L\GalleryBundle\Service\GallerySnippetBuilder;
 use Symfony\Component\HttpFoundation\UrlHelper;
 use Twig\Attribute\AsTwigFunction;
@@ -54,6 +55,14 @@ class GalleryJsonLdExtension
     public function indexJsonLd(array $items = []): string
     {
         return $this->snippetBuilder->buildJson($this->snippetBuilder->buildIndex($items));
+    }
+
+    // Same for the prints the page offers, in the shop's currency - handed the offers the page already grouped, so the graph prices exactly what the visitor reads
+    /** @param array<string, list<PrintOffer>> $offersByPaper */
+    #[AsTwigFunction('gallery_print_json_ld', isSafe: ['html'])]
+    public function printJsonLd(GalleryMedia $media, array $offersByPaper, ?int $remaining = null, ?string $imageUrl = null, ?string $url = null): string
+    {
+        return $this->snippetBuilder->buildJson($this->snippetBuilder->buildPrint($media, array_merge(...array_values($offersByPaper)), (string) $this->configService->get('shop-currency'), $remaining, $imageUrl, $url));
     }
 
     // The terms page as typed in the config, a path of the site being made absolute: schema.org reads urls, never paths

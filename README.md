@@ -1531,8 +1531,10 @@ bought or licensed, printed under it in image results.
 
 A gallery is an `ImageGallery` listing the photographs the page was served with - a page after the first
 numbering them from where the previous one stopped, through the fourth argument of `gallery_json_ld()` - and
-the index an `ItemList` of the galleries. Neither carries an `offers` node: what a print costs belongs to whoever sells it, and ShopBundle
-is the one place of the ecosystem emitting one.
+the index an `ItemList` of the galleries. Where a photograph is offered as a print, the offer block publishes its
+prints as a `Product` through `gallery_print_json_ld()`, one `Offer` per size at the price it prints, in the
+`shop-currency` - sold out once a numbered edition has none left. The breadcrumb (`Gallery:Navigation`) publishes
+the trail it prints as a `BreadcrumbList`, the counts left out; the index, a trail of one level, publishes none.
 
 The whole of what `gallery/media.html.twig` does, to be reproduced as is by an app overriding it - the two files
 are read off the media rather than assumed, and each url is only built where there is a file to build it from,

@@ -74,4 +74,16 @@
         {# What the click answers with, drawn by PaymentBundle: the line saying the print was added - the bar carrying the count, the total and the way to the basket being placed once by UiBundle's layout, a second one here never filled #}
         <twig:c975LPayment:Basket:Message/>
     </div>
+
+    {# The same prices, said to a search engine as the Product a merchant listing is drawn from #}
+    {% set printJsonLd = gallery_print_json_ld(
+        media,
+        offersByPaper,
+        remaining,
+        media.filename ? absolute_url(asset(media.filename)) : null,
+        absolute_url(app.request.pathinfo)
+    ) %}
+    {% if printJsonLd %}
+        <script type="application/ld+json">{{ printJsonLd|raw }}</script>
+    {% endif %}
 {% endif %}

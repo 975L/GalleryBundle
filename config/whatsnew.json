@@ -1,5 +1,15 @@
 [
     {
+        "date": "2026-09-28",
+        "description": [
+            {
+                "en": "Your prints now show in search results with their price and availability, and your galleries' breadcrumb replaces the raw address there",
+                "fr": "Vos tirages apparaissent désormais dans les résultats de recherche avec leur prix et leur disponibilité, et le fil d'Ariane de vos galeries y remplace l'adresse brute",
+                "es": "Sus impresiones aparecen ahora en los resultados de búsqueda con su precio y disponibilidad, y la ruta de navegación de sus galerías sustituye allí la dirección bruta"
+            }
+        ]
+    },
+    {
         "date": "2026-09-27",
         "description": [
             {

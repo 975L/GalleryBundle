@@ -12,6 +12,8 @@ namespace c975L\GalleryBundle\Tests\Service;
 
 use c975L\GalleryBundle\Entity\GalleryCategory;
 use c975L\GalleryBundle\Entity\GalleryMedia;
+use c975L\GalleryBundle\Entity\GalleryPrintFormat;
+use c975L\GalleryBundle\Model\PrintOffer;
 use c975L\GalleryBundle\Service\GallerySnippetBuilder;
 use PHPUnit\Framework\TestCase;
 
@@ -248,6 +250,39 @@ class GallerySnippetBuilderTest extends TestCase
 
         $this->assertStringNotContainsString('</script>', $json);
         $this->assertStringContainsString('\u003C/script\u003E', $json);
+    }
+
+    // The prints are what a visitor buys of the photograph: a Product with one Offer per size, at the price the page prints
+    public function testThePrintsArePublishedAsAProductWithOneOfferPerSize(): void
+    {
+        $media = new GalleryMedia()->setTitle('Lac d\'Annecy');
+        $offers = [
+            new PrintOffer($media, new GalleryPrintFormat()->setLabel('30 x 40 cm')->setPrice(4500)),
+            new PrintOffer($media, new GalleryPrintFormat()->setLabel('50 x 70 cm')->setPrice(8900)),
+        ];
+
+        $snippet = $this->builder()->buildPrint($media, $offers, 'EUR', null, 'https://example.org/lac.webp', 'https://example.org/galerie/lac');
+
+        $this->assertSame('Product', $snippet['@type']);
+        $this->assertCount(2, $snippet['offers']);
+        $this->assertSame(['@type' => 'Offer', 'name' => '30 x 40 cm', 'price' => '45.00', 'priceCurrency' => 'EUR', 'availability' => 'https://schema.org/InStock', 'itemCondition' => 'https://schema.org/NewCondition', 'url' => 'https://example.org/galerie/lac'], $snippet['offers'][0]);
+    }
+
+    // A numbered edition with none left is sold out, not in stock
+    public function testASoldOutEditionSaysSo(): void
+    {
+        $media = new GalleryMedia()->setTitle('Lac d\'Annecy');
+        $snippet = $this->builder()->buildPrint($media, [new PrintOffer($media, new GalleryPrintFormat()->setLabel('A3')->setPrice(4500))], 'EUR', 0);
+
+        $this->assertSame('https://schema.org/SoldOut', $snippet['offers'][0]['availability']);
+    }
+
+    // No currency configured, no price anyone can read
+    public function testNoCurrencyPublishesNoProduct(): void
+    {
+        $media = new GalleryMedia()->setTitle('Lac d\'Annecy');
+
+        $this->assertSame([], $this->builder()->buildPrint($media, [new PrintOffer($media, new GalleryPrintFormat()->setPrice(4500))], ''));
     }
 
     private function builder(): GallerySnippetBuilder

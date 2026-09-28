@@ -1,5 +1,14 @@
 # ChangeLog
 
+## v1.23
+
+Prints published as a Product, the trail as a BreadcrumbList
+
+- New `gallery_print_json_ld()`: a photograph's prints published as a `Product`, one `Offer` per size (28/09/2026)
+- `Gallery:Navigation` publishes the `BreadcrumbList` of the trail it prints, counts left out (28/09/2026)
+- Item list, encoding and plain text delegated to UiBundle's `JsonLdBuilder` (28/09/2026)
+- Requires `c975l/core-bundle` ^1.47 (28/09/2026)
+
 ## v1.22.0
 
 A member's print orders in the export of their data

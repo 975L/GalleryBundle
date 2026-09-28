@@ -13,6 +13,8 @@ namespace c975L\GalleryBundle\Tests\Twig\Extension;
 use c975L\ConfigBundle\Service\ConfigServiceInterface;
 use c975L\GalleryBundle\Entity\GalleryCategory;
 use c975L\GalleryBundle\Entity\GalleryMedia;
+use c975L\GalleryBundle\Entity\GalleryPrintFormat;
+use c975L\GalleryBundle\Model\PrintOffer;
 use c975L\GalleryBundle\Service\GallerySnippetBuilder;
 use c975L\GalleryBundle\Twig\Extension\GalleryJsonLdExtension;
 use PHPUnit\Framework\TestCase;
@@ -25,14 +27,14 @@ use Twig\Extension\AttributeExtension;
 // What the three public pages call, the graph itself being GallerySnippetBuilder's business (see GallerySnippetBuilderTest)
 class GalleryJsonLdExtensionTest extends TestCase
 {
-    public function testGetFunctionsExposesTheThreeGraphs(): void
+    public function testGetFunctionsExposesTheFourGraphs(): void
     {
         $names = array_map(
             static fn ($function): string => $function->getName(),
             new AttributeExtension(GalleryJsonLdExtension::class)->getFunctions()
         );
 
-        $this->assertSame(['gallery_media_json_ld', 'gallery_json_ld', 'gallery_index_json_ld'], $names);
+        $this->assertSame(['gallery_media_json_ld', 'gallery_json_ld', 'gallery_index_json_ld', 'gallery_print_json_ld'], $names);
     }
 
     // The payload is written straight into a <script>, so it is marked safe rather than escaped
@@ -93,6 +95,22 @@ class GalleryJsonLdExtensionTest extends TestCase
         $snippet = json_decode($this->extension()->galleryJsonLd($this->category(), $items, 'https://example.org/galerie/montagne', 60), true);
 
         $this->assertSame(61, $snippet['mainEntity']['itemListElement'][0]['position']);
+    }
+
+    // The offers arrive grouped by paper as the page prints them, and are priced in the shop's currency
+    public function testThePrintsOfEveryPaperArePricedInTheShopCurrency(): void
+    {
+        $media = $this->media();
+        $offersByPaper = [
+            'Fine art' => [new PrintOffer($media, new GalleryPrintFormat()->setLabel('30 x 40 cm')->setPrice(4500))],
+            'Photo' => [new PrintOffer($media, new GalleryPrintFormat()->setLabel('A4')->setPrice(2500))],
+        ];
+
+        $snippet = json_decode($this->extension('EUR')->printJsonLd($media, $offersByPaper), true);
+
+        $this->assertSame('Product', $snippet['@type']);
+        $this->assertSame(['45.00', '25.00'], array_column($snippet['offers'], 'price'));
+        $this->assertSame('EUR', $snippet['offers'][1]['priceCurrency']);
     }
 
     // Nothing to publish is an empty string and not "[]", the template testing it before opening its <script>
