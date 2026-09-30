@@ -13,18 +13,20 @@ namespace c975L\GalleryBundle\Service;
 use c975L\ConfigBundle\Service\ConfigServiceInterface;
 use c975L\ConfigBundle\Service\SiteUrlResolver;
 use c975L\GalleryBundle\Entity\GalleryMedia;
+use c975L\GalleryBundle\Repository\GalleryCategoryRepository;
 use c975L\GalleryBundle\Repository\GalleryMediaRepository;
 use c975L\GalleryBundle\Routing\GalleryRoutePrefix;
-use c975L\UiBundle\Contract\SocialContentSourceInterface;
+use c975L\UiBundle\Contract\ScopedSocialContentSourceInterface;
 use c975L\UiBundle\Model\SocialContent;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
-// Hands SocialBundle's publication the gallery's photographs, one at a time - drawn at random, or oldest first, as "gallery-social-order" says - a site without SocialBundle simply never asks. What went out where is SocialBundle's to record, so nothing here nor on GalleryMedia keeps track of it
-class GallerySocialContentSource implements SocialContentSourceInterface
+// Hands SocialBundle's publication the gallery's photographs, one at a time - drawn at random, or oldest first, as "gallery-social-order" says, from the galleries a publication slot picked if any - a site without SocialBundle simply never asks. What went out where is SocialBundle's to record, so nothing here nor on GalleryMedia keeps track of it
+class GallerySocialContentSource implements ScopedSocialContentSourceInterface
 {
     public function __construct(
         private readonly GalleryMediaRepository $mediaRepository,
+        private readonly GalleryCategoryRepository $categoryRepository,
         private readonly UrlGeneratorInterface $urlGenerator,
         private readonly SiteUrlResolver $siteUrlResolver,
         private readonly ConfigServiceInterface $configService,
@@ -47,16 +49,34 @@ class GallerySocialContentSource implements SocialContentSourceInterface
 
     public function getNextContent(array $excludedIds): ?SocialContent
     {
+        return $this->getNextScopedContent($excludedIds, []);
+    }
+
+    // The galleries a slot may pick among: the visible ones holding photographs of their own, an automatic gallery only gathering those of the others
+    public function getScopes(): array
+    {
+        $scopes = [];
+        foreach ($this->categoryRepository->findAllOrdered() as $category) {
+            if (null === $category->getAutomaticKind()) {
+                $scopes[(string) $category->getId()] = (string) $category->getTitle();
+            }
+        }
+
+        return $scopes;
+    }
+
+    public function getNextScopedContent(array $excludedIds, array $scopeIds): ?SocialContent
+    {
         if (null === $this->siteUrlResolver->siteUrl()) {
             return null;
         }
 
         // At random unless the site asked for its oldest first: a gallery followed day after day reads better as a surprise than as its own archive in order
         if ('oldest' === $this->configService->get('gallery-social-order')) {
-            return $this->toContent($this->mediaRepository->findNextToPost($excludedIds));
+            return $this->toContent($this->mediaRepository->findNextToPost($excludedIds, $scopeIds));
         }
 
-        $ids = $this->mediaRepository->findPostableIds($excludedIds);
+        $ids = $this->mediaRepository->findPostableIds($excludedIds, $scopeIds);
 
         return [] === $ids ? null : $this->toContent($this->mediaRepository->findPostable($ids[array_rand($ids)]));
     }

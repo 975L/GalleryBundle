@@ -158,6 +158,10 @@
                 <source>description.guided_step_gallery_creation_files</source>
                 <target>Varios archivos a la vez, cada uno convirtiéndose en un medio de la galería - los tamaños indicados son lo que acepta el servidor.</target>
             </trans-unit>
+            <trans-unit id="78UExrz">
+                <source>description.guided_step_gallery_creation_license</source>
+                <target>Lo que los visitantes podrán hacer con las fotos. En caso de duda, mantenga «Todos los derechos reservados»: siempre se puede abrir más tarde, nunca volver atrás.</target>
+            </trans-unit>
             <trans-unit id="YGVaDLj">
                 <source>description.guided_step_gallery_creation_new</source>
                 <target>El formulario de creación lleva también el primer lote de medios: la galería se crea y se llena de una vez.</target>
@@ -1145,6 +1149,10 @@
             <trans-unit id="UzAnVT7">
                 <source>label.guided_step_gallery_creation_files</source>
                 <target>Elija sus fotos</target>
+            </trans-unit>
+            <trans-unit id="yI2Rw9c">
+                <source>label.guided_step_gallery_creation_license</source>
+                <target>Elija su licencia</target>
             </trans-unit>
             <trans-unit id="zdXlkGQ">
                 <source>label.guided_step_gallery_creation_new</source>

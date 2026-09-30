@@ -90,6 +90,12 @@ class GalleryGuidedProjectProvider implements GuidedProjectProviderInterface
                     'highlight' => '#GalleryCategory_title',
                 ],
                 [
+                    'label' => 'label.guided_step_gallery_creation_license',
+                    'description' => 'description.guided_step_gallery_creation_license',
+                    'narration' => 'narration.guided_step_gallery_creation_license',
+                    'highlight' => '#GalleryCategory_license',
+                ],
+                [
                     'label' => 'label.guided_step_gallery_creation_files',
                     'description' => 'description.guided_step_gallery_creation_files',
                     'narration' => 'narration.guided_step_gallery_creation_files',

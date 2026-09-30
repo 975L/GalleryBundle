@@ -1,5 +1,17 @@
 # ChangeLog
 
+## v1.24.0
+
+Publication slots may pick the galleries their photographs come from
+
+- `GallerySocialContentSource` implements `ScopedSocialContentSourceInterface`, its scopes being the galleries (30/09/2026)
+- `GallerySocialContentSource` takes `GalleryCategoryRepository` (30/09/2026) [BC-Break]
+- `GalleryMediaRepository::findNextToPost()` and `findPostableIds()` take an optional list of category ids (30/09/2026)
+- Requires `c975l/core-bundle` ^1.49.2 (30/09/2026)
+- Readme links to SocialBundle's guide for connecting the networks (30/09/2026)
+- Guided gallery creation walks the licence field (30/09/2026)
+- Skill documents the scoped social source (30/09/2026)
+
 ## v1.23
 
 Prints published as a Product, the trail as a BreadcrumbList

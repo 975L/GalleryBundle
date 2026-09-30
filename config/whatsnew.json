@@ -1,5 +1,20 @@
 [
     {
+        "date": "2026-09-30",
+        "description": [
+            {
+                "en": "Each publication slot on the social networks can now draw its photographs from the galleries you pick",
+                "fr": "Chaque créneau de publication sur les réseaux sociaux peut désormais puiser ses photos dans les galeries de votre choix",
+                "es": "Cada franja de publicación en las redes sociales puede ahora tomar sus fotografías de las galerías que elija"
+            },
+            {
+                "en": "The guided gallery creation now shows where to choose the licence of its photographs",
+                "fr": "La création guidée d'une galerie montre désormais où choisir la licence de ses photos",
+                "es": "La creación guiada de una galería muestra ahora dónde elegir la licencia de sus fotografías"
+            }
+        ]
+    },
+    {
         "date": "2026-09-28",
         "description": [
             {

@@ -14,6 +14,7 @@ use c975L\ConfigBundle\Service\ConfigServiceInterface;
 use c975L\ConfigBundle\Service\SiteUrlResolver;
 use c975L\GalleryBundle\Entity\GalleryCategory;
 use c975L\GalleryBundle\Entity\GalleryMedia;
+use c975L\GalleryBundle\Repository\GalleryCategoryRepository;
 use c975L\GalleryBundle\Repository\GalleryMediaRepository;
 use c975L\GalleryBundle\Routing\GalleryRoutePrefix;
 use c975L\GalleryBundle\Service\GallerySocialContentSource;
@@ -24,6 +25,9 @@ class GallerySocialContentSourceTest extends TestCase
 {
     /** @var list<string>|null */
     private ?array $excludedIds = null;
+
+    /** @var list<string>|null */
+    private ?array $categoryIds = null;
 
     private function createMedia(): GalleryMedia
     {
@@ -39,17 +43,20 @@ class GallerySocialContentSourceTest extends TestCase
         return $media;
     }
 
-    private function createSource(?GalleryMedia $media, ?string $siteUrl = 'https://example.org', string $order = 'oldest'): GallerySocialContentSource
+    /** @param list<GalleryCategory> $categories */
+    private function createSource(?GalleryMedia $media, ?string $siteUrl = 'https://example.org', string $order = 'oldest', array $categories = []): GallerySocialContentSource
     {
         $repository = $this->createStub(GalleryMediaRepository::class);
-        $repository->method('findNextToPost')->willReturnCallback(function (array $excludedIds) use ($media): ?GalleryMedia {
+        $repository->method('findNextToPost')->willReturnCallback(function (array $excludedIds, array $categoryIds = []) use ($media): ?GalleryMedia {
             $this->excludedIds = $excludedIds;
+            $this->categoryIds = $categoryIds;
 
             return $media;
         });
         $repository->method('findPostable')->willReturn($media);
-        $repository->method('findPostableIds')->willReturnCallback(function (array $excludedIds) use ($media): array {
+        $repository->method('findPostableIds')->willReturnCallback(function (array $excludedIds, array $categoryIds = []) use ($media): array {
             $this->excludedIds = $excludedIds;
+            $this->categoryIds = $categoryIds;
 
             return null === $media ? [] : [(int) $media->getId()];
         });
@@ -64,7 +71,10 @@ class GallerySocialContentSourceTest extends TestCase
         $siteUrlResolver = $this->createStub(SiteUrlResolver::class);
         $siteUrlResolver->method('siteUrl')->willReturn($siteUrl);
 
-        return new GallerySocialContentSource($repository, $urlGenerator, $siteUrlResolver, $configService, new GalleryRoutePrefix($configService), '/var/www/site');
+        $categoryRepository = $this->createStub(GalleryCategoryRepository::class);
+        $categoryRepository->method('findAllOrdered')->willReturn($categories);
+
+        return new GallerySocialContentSource($repository, $categoryRepository, $urlGenerator, $siteUrlResolver, $configService, new GalleryRoutePrefix($configService), '/var/www/site');
     }
 
     public function testTheNextPhotographIsHandedOverWithAbsoluteUrls(): void
@@ -127,5 +137,34 @@ class GallerySocialContentSourceTest extends TestCase
     public function testAtRandomNothingLeftToPostIsNull(): void
     {
         $this->assertNull($this->createSource(null, order: 'random')->getNextContent([]));
+    }
+
+    // A slot narrowed to some galleries hands their ids down to the query, whichever the order
+    public function testAScopedDrawOnlyLooksInTheGivenGalleries(): void
+    {
+        $this->createSource($this->createMedia())->getNextScopedContent(['7'], ['3', '5']);
+        $this->assertSame(['3', '5'], $this->categoryIds);
+
+        $this->createSource($this->createMedia(), order: 'random')->getNextScopedContent([], ['3']);
+        $this->assertSame(['3'], $this->categoryIds);
+    }
+
+    public function testTheUnscopedDrawLooksInEveryGallery(): void
+    {
+        $this->createSource($this->createMedia())->getNextContent([]);
+
+        $this->assertSame([], $this->categoryIds);
+    }
+
+    // An automatic gallery only gathers the photographs of the others, a slot picking it would pick nothing of its own
+    public function testTheScopesAreTheGalleriesHoldingTheirOwnPhotographs(): void
+    {
+        $mountain = new GalleryCategory()->setSlug('montagne')->setTitle('Montagne');
+        new \ReflectionProperty(GalleryCategory::class, 'id')->setValue($mountain, 3);
+        $latest = new GalleryCategory()->setSlug('dernieres')->setTitle('Dernières');
+        new \ReflectionProperty(GalleryCategory::class, 'id')->setValue($latest, 4);
+        new \ReflectionProperty(GalleryCategory::class, 'automaticKind')->setValue($latest, 'latest');
+
+        $this->assertSame(['3' => 'Montagne'], $this->createSource(null, categories: [$mountain, $latest])->getScopes());
     }
 }

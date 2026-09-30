@@ -18,6 +18,10 @@
                 <source>narration.guided_step_gallery_creation_files</source>
                 <target>Choisissez vos photos : plusieurs fichiers à la fois, chacun devenant un média de la galerie. Les tailles indiquées sont ce qu'accepte le serveur.</target>
             </trans-unit>
+            <trans-unit id="B_O4231">
+                <source>narration.guided_step_gallery_creation_license</source>
+                <target>Choisissez sa licence, ce que les visiteurs pourront faire des photos. Dans le doute, gardez « Tous droits réservés » : il est toujours possible d'ouvrir plus tard, jamais de revenir en arrière.</target>
+            </trans-unit>
             <trans-unit id="baen4pJ">
                 <source>narration.guided_step_gallery_creation_new</source>
                 <target>Ajoutez une galerie avec le bouton en haut de la liste. Le formulaire de création porte aussi le premier lot de médias : la galerie se crée et se remplit en une fois.</target>

@@ -150,10 +150,13 @@ class GalleryMediaRepository extends ServiceEntityRepository
     }
 
     // The oldest photograph never posted on the social networks, null once all of them were - oldest first, so a newly added photograph waits its turn rather than cutting in (see GallerySocialContentSource)
-    /** @param list<string> $excludedIds */
-    public function findNextToPost(array $excludedIds): ?GalleryMedia
+    /**
+     * @param list<string> $excludedIds
+     * @param list<string> $categoryIds
+     */
+    public function findNextToPost(array $excludedIds, array $categoryIds = []): ?GalleryMedia
     {
-        return $this->postableQuery($excludedIds)
+        return $this->postableQuery($excludedIds, $categoryIds)
             ->orderBy('m.createdAt', \SortDirection::Ascending)
             ->addOrderBy('m.id', \SortDirection::Ascending)
             ->setMaxResults(1)
@@ -164,12 +167,13 @@ class GalleryMediaRepository extends ServiceEntityRepository
     // The ids of every photograph not posted yet, for a draw at random among them - loading the photographs themselves to pick one would read the whole library
     /**
      * @param list<string> $excludedIds
+     * @param list<string> $categoryIds
      *
      * @return list<int>
      */
-    public function findPostableIds(array $excludedIds): array
+    public function findPostableIds(array $excludedIds, array $categoryIds = []): array
     {
-        return array_map(intval(...), $this->postableQuery($excludedIds)->select('m.id')->getQuery()->getSingleColumnResult());
+        return array_map(intval(...), $this->postableQuery($excludedIds, $categoryIds)->select('m.id')->getQuery()->getSingleColumnResult());
     }
 
     // One photograph read again when its post is published, null once it can no longer be: a gallery masked since the post was prepared takes it off the networks too
@@ -182,9 +186,12 @@ class GalleryMediaRepository extends ServiceEntityRepository
             ->getOneOrNullResult();
     }
 
-    // What may go on the social networks, minus the ids already posted: left out for the reasons latestMedias() leaves them out, plus what carries no image file of its own to post - a video, an embed
-    /** @param list<string> $excludedIds */
-    private function postableQuery(array $excludedIds = []): QueryBuilder
+    // What may go on the social networks, minus the ids already posted and within the given categories if any: left out for the reasons latestMedias() leaves them out, plus what carries no image file of its own to post - a video, an embed
+    /**
+     * @param list<string> $excludedIds
+     * @param list<string> $categoryIds
+     */
+    private function postableQuery(array $excludedIds = [], array $categoryIds = []): QueryBuilder
     {
         $qb = $this->createQueryBuilder('m')
             ->innerJoin('m.category', 'c')
@@ -201,6 +208,10 @@ class GalleryMediaRepository extends ServiceEntityRepository
 
         if ([] !== $excludedIds) {
             $qb->andWhere('m.id NOT IN (:excluded)')->setParameter('excluded', array_map(intval(...), $excludedIds));
+        }
+
+        if ([] !== $categoryIds) {
+            $qb->andWhere('c.id IN (:categories)')->setParameter('categories', array_map(intval(...), $categoryIds));
         }
 
         return $qb;

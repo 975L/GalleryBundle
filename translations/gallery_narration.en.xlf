@@ -18,6 +18,10 @@
                 <source>narration.guided_step_gallery_creation_files</source>
                 <target>Pick your photographs: several files at once, each becoming a media of the gallery. The sizes shown are what the server accepts.</target>
             </trans-unit>
+            <trans-unit id="B_O4231">
+                <source>narration.guided_step_gallery_creation_license</source>
+                <target>Choose its licence, what visitors may do with the photographs. When in doubt, keep "All rights reserved": it can always be opened later, never taken back.</target>
+            </trans-unit>
             <trans-unit id="baen4pJ">
                 <source>narration.guided_step_gallery_creation_new</source>
                 <target>Add a gallery with the button above the list. The creation form carries the first batch of media too: the gallery is created and filled in one go.</target>

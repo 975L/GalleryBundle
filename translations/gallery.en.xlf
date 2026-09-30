@@ -158,6 +158,10 @@
                 <source>description.guided_step_gallery_creation_files</source>
                 <target>Several files at once, each becoming a media of the gallery - the sizes shown are what the server accepts.</target>
             </trans-unit>
+            <trans-unit id="78UExrz">
+                <source>description.guided_step_gallery_creation_license</source>
+                <target>What visitors may do with the photographs. When in doubt, keep "All rights reserved": it can always be opened later, never taken back.</target>
+            </trans-unit>
             <trans-unit id="YGVaDLj">
                 <source>description.guided_step_gallery_creation_new</source>
                 <target>The creation form carries the first batch of media too, so a gallery is created and filled in one go.</target>
@@ -1145,6 +1149,10 @@
             <trans-unit id="UzAnVT7">
                 <source>label.guided_step_gallery_creation_files</source>
                 <target>Pick your photographs</target>
+            </trans-unit>
+            <trans-unit id="yI2Rw9c">
+                <source>label.guided_step_gallery_creation_license</source>
+                <target>Choose its licence</target>
             </trans-unit>
             <trans-unit id="zdXlkGQ">
                 <source>label.guided_step_gallery_creation_new</source>
