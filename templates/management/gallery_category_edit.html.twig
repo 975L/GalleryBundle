@@ -229,28 +229,26 @@
                     </button>
                 </div>
 
-                {# Puts a hundred photographs on sale in one click. Which sizes each is actually offered is worked out from its own original, so this only ever says "this one is for sale" (see GalleryPrintService::getOffers) #}
-                {% if config('gallery-print-enabled')|to_bool %}
-                    <div class="d-flex flex-wrap gap-2 align-items-center">
-                        <label class="d-flex align-items-center gap-2 p-1 ui-check-label">
-                            <input type="checkbox"
-                                class="form-check-input m-0 ui-check-lg"
-                                name="printable"
-                                value="1">
-                            {{ ('label.gallery_media_printable'|trans({}, 'gallery')) }}
-                        </label>
+                {# Puts a hundred photographs on sale in one click. Which sizes each is actually offered is worked out from its own original, so this only ever says "this one is for sale" (see GalleryPrintService::getOffers). Offered while the sale is still closed too, a catalogue being marked before the shop opens #}
+                <div class="d-flex flex-wrap gap-2 align-items-center">
+                    <label class="d-flex align-items-center gap-2 p-1 ui-check-label">
+                        <input type="checkbox"
+                            class="form-check-input m-0 ui-check-lg"
+                            name="printable"
+                            value="1">
+                        {{ ('label.gallery_media_printable'|trans({}, 'gallery')) }}
+                    </label>
 
-                        <button type="submit"
-                            name="field"
-                            value="printable"
-                            formaction="{{ ea_url().setAction('editMedias') }}"
-                            class="btn btn-secondary"
-                            disabled
-                            data-gallery-media-selection-target="submit">
-                            <i class="fa fa-print"></i> {{ ('action.apply_printable'|trans({}, 'gallery')) }}
-                        </button>
-                    </div>
-                {% endif %}
+                    <button type="submit"
+                        name="field"
+                        value="printable"
+                        formaction="{{ ea_url().setAction('editMedias') }}"
+                        class="btn btn-secondary"
+                        disabled
+                        data-gallery-media-selection-target="submit">
+                        <i class="fa fa-print"></i> {{ ('action.apply_printable'|trans({}, 'gallery')) }}
+                    </button>
+                </div>
 
                 {# Moves the checked medias into another gallery, their files following them there and the ranks of both galleries renumbered behind and in front (see GalleryCategoryCrudController::moveMedias) #}
                 {# The title root works exactly as the upload screen's: left empty the medias keep the titles they had, filled they are renumbered from where the arrival gallery leaves off - no public url moves either way, a slug never following a title in this bundle #}

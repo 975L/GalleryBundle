@@ -26,11 +26,7 @@ class GalleryShortcutProvider implements ShortcutProviderInterface
 
     public function getShortcuts(): array
     {
-        // Nothing to offer a site that does not sell prints: a tile toggling the rehearsal of a shop that is closed is a switch with no other side
-        if (true !== $this->configService->get('gallery-print-enabled')) {
-            return [];
-        }
-
+        // Offered whether or not the sale is open: the lab is put into rehearsal before the shop opens, so the first orders are test ones
         $enabled = $this->configService->getBool($this->configService->get('gallery-print-sandbox'));
 
         return [

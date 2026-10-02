@@ -44,13 +44,10 @@ class GalleryGuidedProjectProvider implements GuidedProjectProviderInterface
             $this->mediasRecoveryProject(),
             $this->latestGalleryProject(),
             $this->librarySortingProject(),
+            // Offered whether or not the sale is open, the catalogue being written and an order rehearsed before the shop opens (see MenuProvider)
+            $this->printSetupProject(),
+            $this->printOrderProject(),
         ];
-
-        // Offered only where the screens it walks are, the print ones being hidden from the menu on a site that does not sell prints (see MenuProvider)
-        if (true === $this->configService->get('gallery-print-enabled')) {
-            $projects[] = $this->printSetupProject();
-            $projects[] = $this->printOrderProject();
-        }
 
         // The order only matters where SocialBundle is there to publish (see GallerySocialContentSource)
         if (isset($this->bundles['c975LSocialBundle'])) {

@@ -348,7 +348,7 @@
             </trans-unit>
             <trans-unit id="vdrMdME">
                 <source>description.guided_step_gallery_print_setup_done</source>
-                <target>It remains to tick "printable" on the photographs you sell, on their own screen.</target>
+                <target>It remains to tick "printable" on the photographs you sell, then to open the sale: while "Print sales" is off, the warning at the top of these screens says so.</target>
             </trans-unit>
             <trans-unit id="mwwAUyV">
                 <source>description.guided_step_gallery_print_setup_edit</source>
@@ -1494,6 +1494,10 @@
                 <source>label.info_print_orders</source>
                 <target>The prints ordered, those the lab is printing and those waiting for your signature</target>
             </trans-unit>
+            <trans-unit id="PLxo.GD">
+                <source>label.info_print_sale_closed</source>
+                <target>The print sale is closed to the public: no visitor can order yet. Everything can be set up and tested meanwhile.</target>
+            </trans-unit>
             <trans-unit id="knMSD8.">
                 <source>label.load_more</source>
                 <target>Load more media</target>
@@ -1657,6 +1661,10 @@
             <trans-unit id="dZ.ivsQ">
                 <source>label.print_remaining</source>
                 <target>%count% of %total% left</target>
+            </trans-unit>
+            <trans-unit id="lRZj_wk">
+                <source>label.print_sale_open</source>
+                <target>Open it</target>
             </trans-unit>
             <trans-unit id="gtGKU6i">
                 <source>label.print_test_mode</source>

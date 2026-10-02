@@ -60,14 +60,16 @@ class GalleryGuidedProjectProviderTest extends TestCase
         $this->assertSame([5010, 5020, 5025, 5030, 5035, 5040, 5050, 5060, 5065, 5070, 5075, 5080], array_column($projects, 'order'));
     }
 
-    // The two print screens are hidden from the menu on a site that does not sell prints (see MenuProvider), and a parcours walking a screen with no way in reads as a broken one
-    public function testThePrintProjectIsOnlyOfferedWhereTheShopIsOpen(): void
+    // The print screens are listed whether or not the sale is open (see MenuProvider), so their parcours are too: the catalogue is written and an order rehearsed before the shop opens
+    public function testThePrintProjectsAreOfferedWhetherOrNotTheShopIsOpen(): void
     {
-        $controllers = [];
-        $projects = $this->createProvider($controllers, false)->getGuidedProjects();
+        foreach ([false, true] as $printEnabled) {
+            $controllers = [];
+            $slugs = array_column($this->createProvider($controllers, $printEnabled)->getGuidedProjects(), 'slug');
 
-        $this->assertNotContains('gallery-print-setup', array_column($projects, 'slug'));
-        $this->assertNotContains('gallery-print-order', array_column($projects, 'slug'));
+            $this->assertContains('gallery-print-setup', $slugs);
+            $this->assertContains('gallery-print-order', $slugs);
+        }
     }
 
     // The publication order means nothing where SocialBundle is not there to publish

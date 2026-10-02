@@ -26,23 +26,12 @@ class ManagementTargetsTest extends ManagementTargetsTestCase
     protected function managementProviders(): iterable
     {
         return [
-            new MenuProvider($this->configService()),
+            new MenuProvider($this->createStub(ConfigServiceInterface::class)),
             new LinkableRouteProvider($this->categoryRepository(), $this->createStub(TranslatorInterface::class)),
             // The socle's own recorder rather than a bare stub, so the controller each parcours opens on is read back and checked (see ManagementTargetsTestCase)
-            new GalleryGuidedProjectProvider($this->adminUrlGenerator(), $this->configService()),
-            new GalleryShortcutProvider($this->createStub(TranslatorInterface::class), $this->configService()),
+            new GalleryGuidedProjectProvider($this->adminUrlGenerator(), $this->createStub(ConfigServiceInterface::class)),
+            new GalleryShortcutProvider($this->createStub(TranslatorInterface::class), $this->createStub(ConfigServiceInterface::class)),
         ];
-    }
-
-    // Answers that the print shop is open, so the screens and the switch it adds are read back and checked too - a bare stub would hand back null and leave that half of the management surface untested
-    private function configService(): ConfigServiceInterface
-    {
-        $configService = $this->createStub(ConfigServiceInterface::class);
-        $configService->method('get')->willReturnCallback(
-            static fn (string $slug): mixed => 'gallery-print-enabled' === $slug ? true : null,
-        );
-
-        return $configService;
     }
 
     // One category is enough to have the route its entries name checked too - an empty repository would leave the index route as the only linkable target

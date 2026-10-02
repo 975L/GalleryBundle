@@ -3,5 +3,7 @@
 {% block main %}
     <p>{{ ('label.info_print_orders'|trans({}, 'gallery')) }}</p>
 
+    {% include '@c975LGallery/management/_gallery_print_sale_notice.html.twig' %}
+
     {{ parent() }}
 {% endblock main %}

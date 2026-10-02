@@ -17,7 +17,7 @@ use c975L\GalleryBundle\Controller\Management\GalleryMediaCrudController;
 use c975L\GalleryBundle\Controller\Management\GalleryPrintFormatCrudController;
 use c975L\GalleryBundle\Controller\Management\GalleryPrintOrderCrudController;
 
-// Two entries: the galleries, which is where a gallery is composed and its own medias are arranged (see GalleryCategoryCrudController), and the whole library read across them all - the contact sheet a triage pass works from, which no single gallery's screen can be (see GalleryMediaCrudController)
+// Four entries: the galleries, which is where a gallery is composed and its own medias are arranged (see GalleryCategoryCrudController), the whole library read across them all - the contact sheet a triage pass works from, which no single gallery's screen can be (see GalleryMediaCrudController) - then the print orders and the print catalogue
 class MenuProvider implements MenuProviderInterface
 {
     public function __construct(
@@ -36,7 +36,7 @@ class MenuProvider implements MenuProviderInterface
 
     public function getMenus(): array
     {
-        $menus = [
+        return [
             'gallery' => [
                 'controller' => GalleryCategoryCrudController::class,
                 'label' => 'label.gallery_categories',
@@ -59,11 +59,8 @@ class MenuProvider implements MenuProviderInterface
                 // The same bar the galleries entry sits behind, both screens stating it themselves (see GalleryMediaCrudController::roleNeeded)
                 'role' => $this->configService->get('site-role-editor'),
             ],
-        ];
-
-        // The two print screens only exist for a site that sells prints. Hidden and not disabled: a menu entry that opens on an empty feature is a question an admin has to answer every time they read the menu
-        if (true === $this->configService->get('gallery-print-enabled')) {
-            $menus['gallery_print_order'] = [
+            // Listed whether or not the sale is open: the catalogue is written and the orders rehearsed before the shop opens, and the screens say themselves when it is still closed (see _gallery_print_sale_notice.html.twig)
+            'gallery_print_order' => [
                 'controller' => GalleryPrintOrderCrudController::class,
                 // Lists what happened rather than what an admin makes: empty, it is no feature left unused (see UnusedFeatureBuilder)
                 'creatable' => false,
@@ -73,9 +70,8 @@ class MenuProvider implements MenuProviderInterface
                 'icon' => 'fas fa-print',
                 'description' => 'label.info_print_orders',
                 'role' => $this->configService->get('site-role-editor'),
-            ];
-
-            $menus['gallery_print_format'] = [
+            ],
+            'gallery_print_format' => [
                 'controller' => GalleryPrintFormatCrudController::class,
                 'label' => 'label.print_formats',
                 'narration' => 'narration.print_formats',
@@ -83,10 +79,8 @@ class MenuProvider implements MenuProviderInterface
                 'icon' => 'fas fa-ruler-combined',
                 'description' => 'label.info_print_formats',
                 'role' => $this->configService->get('site-role-editor'),
-            ];
-        }
-
-        return $menus;
+            ],
+        ];
     }
 
     public function getLinks(): array

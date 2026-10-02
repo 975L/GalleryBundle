@@ -10,15 +10,18 @@
 
 namespace c975L\GalleryBundle\Controller\Management;
 
+use c975L\ConfigBundle\Repository\ConfigRepository;
 use c975L\ConfigBundle\Service\ConfigServiceInterface;
 use c975L\GalleryBundle\Entity\GalleryPrintCopy;
 use c975L\GalleryBundle\Entity\GalleryPrintOrder;
 use c975L\GalleryBundle\Message\GalleryPrintOrderMessage;
 use c975L\GalleryBundle\Service\GalleryCertificateService;
+use c975L\UiBundle\Service\ConfigEditUrlResolver;
 use Doctrine\ORM\EntityManagerInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
+use EasyCorp\Bundle\EasyAdminBundle\Config\KeyValueStore;
 use EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
@@ -26,7 +29,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\ChoiceField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\DateTimeField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextareaField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
-use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
+use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGeneratorInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Messenger\MessageBusInterface;
@@ -52,13 +55,30 @@ class GalleryPrintOrderCrudController extends AbstractCrudController
         GalleryPrintOrder::STATE_FAILED => 'danger',
     ];
 
+    // The switch opening the print sale to the public, off while this screen is set up and tested (see _gallery_print_sale_notice.html.twig)
+    private const string SWITCH_SLUG = 'gallery-print-enabled';
+
     public function __construct(
         private readonly ConfigServiceInterface $configService,
         private readonly GalleryCertificateService $certificateService,
         private readonly MessageBusInterface $messageBus,
         private readonly EntityManagerInterface $entityManager,
-        private readonly AdminUrlGenerator $adminUrlGenerator,
+        private readonly AdminUrlGeneratorInterface $adminUrlGenerator,
+        private readonly ConfigRepository $configRepository,
+        private readonly ConfigEditUrlResolver $configEditUrlResolver,
     ) {
+    }
+
+    // The sale still closed, the index says so, with the switch's edit url for an admin - ConfigCrudController denying anything below that role
+    #[\Override]
+    public function configureResponseParameters(KeyValueStore $responseParameters): KeyValueStore
+    {
+        $enabled = $this->configService->getBool($this->configService->get(self::SWITCH_SLUG));
+
+        $responseParameters->set('print_enabled', $enabled);
+        $responseParameters->set('print_switch_url', $enabled || !$this->isGranted($this->configService->get('site-role-admin')) ? null : $this->configEditUrlResolver->resolve($this->configRepository->findOneBySlug(self::SWITCH_SLUG)));
+
+        return $responseParameters;
     }
 
     public static function getEntityFqcn(): string

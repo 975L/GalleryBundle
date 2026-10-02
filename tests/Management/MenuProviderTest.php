@@ -13,17 +13,23 @@ namespace c975L\GalleryBundle\Tests\Management;
 use c975L\ConfigBundle\Service\ConfigServiceInterface;
 use c975L\GalleryBundle\Controller\Management\GalleryCategoryCrudController;
 use c975L\GalleryBundle\Controller\Management\GalleryMediaCrudController;
+use c975L\GalleryBundle\Controller\Management\GalleryPrintFormatCrudController;
+use c975L\GalleryBundle\Controller\Management\GalleryPrintOrderCrudController;
 use c975L\GalleryBundle\Management\MenuProvider;
 use PHPUnit\Framework\TestCase;
 
 class MenuProviderTest extends TestCase
 {
-    // Answers the editor key each entry names, the bar its own screen states
-    private function createProvider(): MenuProvider
+    // Answers the editor key each entry names, the bar its own screen states, and the print sale switch
+    private function createProvider(bool $printEnabled = false): MenuProvider
     {
         $configService = $this->createStub(ConfigServiceInterface::class);
         $configService->method('get')->willReturnCallback(
-            static fn (string $key) => 'site-role-editor' === $key ? 'ROLE_EDITOR' : null
+            static fn (string $key): mixed => match ($key) {
+                'site-role-editor' => 'ROLE_EDITOR',
+                'gallery-print-enabled' => $printEnabled,
+                default => null,
+            }
         );
 
         return new MenuProvider($configService);
@@ -43,14 +49,14 @@ class MenuProviderTest extends TestCase
         $this->assertSame(['label' => 'label.gallery', 'translation_domain' => 'gallery', 'icon' => 'fas fa-camera'], $provider->getMenuSection());
     }
 
-    // Two entries: the galleries, where a gallery is composed and its own medias arranged, and the whole library read across them all
-    public function testGetMenusReturnsTheCategoryAndTheLibraryEntries(): void
+    // Four entries: the galleries, where a gallery is composed and its own medias arranged, the whole library read across them all, then the print orders and catalogue
+    public function testGetMenusReturnsTheCategoryTheLibraryAndThePrintEntries(): void
     {
         $provider = $this->createProvider();
 
         $menus = $provider->getMenus();
 
-        $this->assertCount(2, $menus);
+        $this->assertSame(['gallery', 'gallery_media', 'gallery_print_order', 'gallery_print_format'], array_keys($menus));
         $this->assertSame(GalleryCategoryCrudController::class, $menus['gallery']['controller']);
         $this->assertSame('label.gallery_categories', $menus['gallery']['label']);
         $this->assertSame('gallery', $menus['gallery']['translation_domain']);
@@ -71,6 +77,19 @@ class MenuProviderTest extends TestCase
         $provider = $this->createProvider();
 
         $this->assertSame('label.info_gallery_category', $provider->getMenus()['gallery']['description']);
+    }
+
+    // The print screens are set up and tested before the sale opens, so the switch hides neither of them (their indexes say the sale is closed instead)
+    public function testThePrintEntriesAreListedWhetherOrNotTheSaleIsOpen(): void
+    {
+        foreach ([false, true] as $printEnabled) {
+            $menus = $this->createProvider($printEnabled)->getMenus();
+
+            $this->assertSame(GalleryPrintOrderCrudController::class, $menus['gallery_print_order']['controller']);
+            $this->assertSame(GalleryPrintFormatCrudController::class, $menus['gallery_print_format']['controller']);
+            $this->assertSame('ROLE_EDITOR', $menus['gallery_print_order']['role']);
+            $this->assertSame('ROLE_EDITOR', $menus['gallery_print_format']['role']);
+        }
     }
 
     public function testGetLinksReturnsNone(): void

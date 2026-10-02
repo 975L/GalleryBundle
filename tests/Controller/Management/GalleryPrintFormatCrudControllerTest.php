@@ -10,15 +10,19 @@
 
 namespace c975L\GalleryBundle\Tests\Controller\Management;
 
+use c975L\ConfigBundle\Entity\Config;
 use c975L\ConfigBundle\Management\ContentLocaleScreen;
+use c975L\ConfigBundle\Repository\ConfigRepository;
 use c975L\ConfigBundle\Service\ConfigServiceInterface;
 use c975L\GalleryBundle\Controller\Management\GalleryPrintFormatCrudController;
 use c975L\GalleryBundle\Model\PrintCatalogueImportReport;
 use c975L\GalleryBundle\Service\GalleryTranslator;
 use c975L\GalleryBundle\Service\PrintCatalogueImporter;
+use c975L\UiBundle\Service\ConfigEditUrlResolver;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
+use EasyCorp\Bundle\EasyAdminBundle\Config\KeyValueStore;
 use EasyCorp\Bundle\EasyAdminBundle\Contracts\Provider\AdminContextProviderInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGeneratorInterface;
 use PHPUnit\Framework\TestCase;
@@ -27,6 +31,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\HttpFoundation\Session\Storage\MockArraySessionStorage;
+use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 // What the import action says out loud: the rows written are counted, and everything the report is unsure of is stated rather than left to surface on the first order
@@ -91,6 +96,35 @@ class GalleryPrintFormatCrudControllerTest extends TestCase
         $this->assertNull($index->getAction(Crud::PAGE_INDEX, 'importPrintCatalogue'));
     }
 
+    // The sale closed, the catalogue is still written meanwhile: the index says so, and hands an admin the switch that opens it
+    public function testTheClosedSaleIsSaidWithTheSwitchForAnAdmin(): void
+    {
+        $parameters = $this->createController(new PrintCatalogueImportReport(0, 0, [], false), $this->createSession(), printEnabled: false, admin: true)
+            ->configureResponseParameters(KeyValueStore::new());
+
+        $this->assertFalse($parameters->get('print_enabled'));
+        $this->assertSame('/management/config/edit', $parameters->get('print_switch_url'));
+    }
+
+    // ConfigCrudController denies anything below the admin role, so an editor is told the sale is closed without a link that would refuse them
+    public function testAnEditorIsToldTheSaleIsClosedWithoutTheSwitch(): void
+    {
+        $parameters = $this->createController(new PrintCatalogueImportReport(0, 0, [], false), $this->createSession(), printEnabled: false)
+            ->configureResponseParameters(KeyValueStore::new());
+
+        $this->assertFalse($parameters->get('print_enabled'));
+        $this->assertNull($parameters->get('print_switch_url'));
+    }
+
+    public function testAnOpenSaleCarriesNoNotice(): void
+    {
+        $parameters = $this->createController(new PrintCatalogueImportReport(0, 0, [], false), $this->createSession(), printEnabled: true, admin: true)
+            ->configureResponseParameters(KeyValueStore::new());
+
+        $this->assertTrue($parameters->get('print_enabled'));
+        $this->assertNull($parameters->get('print_switch_url'));
+    }
+
     private function import(PrintCatalogueImportReport $report): Session
     {
         $session = $this->createSession();
@@ -99,7 +133,7 @@ class GalleryPrintFormatCrudControllerTest extends TestCase
         return $session;
     }
 
-    private function createController(PrintCatalogueImportReport $report, Session $session): GalleryPrintFormatCrudController
+    private function createController(PrintCatalogueImportReport $report, Session $session, bool $printEnabled = true, bool $admin = false): GalleryPrintFormatCrudController
     {
         $importer = $this->createStub(PrintCatalogueImporter::class);
         $importer->method('import')->willReturn($report);
@@ -118,6 +152,26 @@ class GalleryPrintFormatCrudControllerTest extends TestCase
         $container = new Container();
         $container->set('request_stack', new RequestStack([$request]));
 
+        $authorizationChecker = $this->createStub(AuthorizationCheckerInterface::class);
+        $authorizationChecker->method('isGranted')->willReturnCallback(static fn (mixed $role): bool => $admin && 'ROLE_ADMIN' === $role);
+        $container->set('security.authorization_checker', $authorizationChecker);
+
+        $configService = $this->createStub(ConfigServiceInterface::class);
+        $configService->method('get')->willReturnCallback(
+            static fn (string $slug): mixed => match ($slug) {
+                'gallery-print-enabled' => $printEnabled,
+                'site-role-admin' => 'ROLE_ADMIN',
+                default => null,
+            },
+        );
+        $configService->method('getBool')->willReturnCallback(static fn (mixed $value): bool => true === $value);
+
+        $configRepository = $this->createStub(ConfigRepository::class);
+        $configRepository->method('findOneBySlug')->willReturn(new Config());
+
+        $configEditUrlResolver = $this->createStub(ConfigEditUrlResolver::class);
+        $configEditUrlResolver->method('resolve')->willReturn('/management/config/edit');
+
         // Action is final and cannot be doubled, so the stub hands a real one back
         $contentLocaleScreen = $this->createStub(ContentLocaleScreen::class);
         $contentLocaleScreen->method('action')->willReturnCallback(static fn (string $name): Action => Action::new($name)->linkToUrl('#'));
@@ -126,7 +180,9 @@ class GalleryPrintFormatCrudControllerTest extends TestCase
         $controller = new GalleryPrintFormatCrudController(
             adminContextProvider: $this->createStub(AdminContextProviderInterface::class),
             adminUrlGenerator: $adminUrlGenerator,
-            configService: $this->createStub(ConfigServiceInterface::class),
+            configEditUrlResolver: $configEditUrlResolver,
+            configRepository: $configRepository,
+            configService: $configService,
             contentLocaleScreen: $contentLocaleScreen,
             galleryTranslator: $this->createStub(GalleryTranslator::class),
             printCatalogueImporter: $importer,

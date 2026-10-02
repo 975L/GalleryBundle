@@ -383,13 +383,15 @@ back masked, a sync mirroring the source rather than publishing what it had take
 ### Selling prints
 
 **A photograph can be sold as a print, and the lab ships it to the customer directly** — nothing transits
-through the shopkeeper, who never packs a tube. The shop is off out of the box: switch **Prints on sale**
-(`gallery-print-enabled`, group **Gallery** in **Configuration**) on and two screens appear in the
-dashboard, **Print formats** and **Print orders**.
+through the shopkeeper, who never packs a tube. The shop is closed to the public out of the box: its two
+screens, **Print formats** and **Print orders**, are in the dashboard all the same, so the catalogue is
+written and the whole chain tested before **Prints on sale** (`gallery-print-enabled`, group **Gallery** in
+**Configuration**) is switched on. While it is off, both screens say so in a warning, which hands an admin
+the link to the switch.
 
 | Entry | Default | What it decides |
 | --- | --- | --- |
-| `gallery-print-enabled` | `false` | The shop's master switch. Off, the two screens and the sale block are gone |
+| `gallery-print-enabled` | `false` | Opens the sale to the public. Off, the sale block is gone from the site; the back office stays whole |
 | `gallery-print-provider` | `prodigi` | Which lab fulfils the orders. `manual` to fulfil them by hand |
 | `gallery-print-api-key` | — | The lab's api key, held sensitive and restricted |
 | `gallery-print-sandbox` | `true` | The lab's test mode, toggled from a dashboard tile rather than from this screen |
@@ -1479,9 +1481,9 @@ certificates of a limited edition and hands the order to the lab, and **publishi
 social networks**, which opens ConfigBundle's settings on `gallery-social-order`.
 Nothing to register — the provider is picked up automatically.
 
-The two print ones are only offered where `gallery-print-enabled` is on, exactly as their screens are: a
-parcours walking a screen with no way into it reads as a broken one. The social one, likewise, only where
-SocialBundle is installed, the order meaning nothing without it.
+The two print ones are offered whether or not `gallery-print-enabled` is on, exactly as their screens are
+listed: a shop is set up before it opens. The social one only where SocialBundle is installed, the order
+meaning nothing without it.
 
 Only the opening step of each carries an `url`, the nine gallery ones sending the user to the categories
 or, for the sorting one, to the library's contact sheet — the two sidebar entries of the feature, both

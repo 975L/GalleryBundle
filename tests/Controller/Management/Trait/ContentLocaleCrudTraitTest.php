@@ -11,12 +11,14 @@
 namespace c975L\GalleryBundle\Tests\Controller\Management\Trait;
 
 use c975L\ConfigBundle\Management\ContentLocaleScreen;
+use c975L\ConfigBundle\Repository\ConfigRepository;
 use c975L\ConfigBundle\Service\ConfigServiceInterface;
 use c975L\GalleryBundle\Controller\Management\GalleryPrintFormatCrudController;
 use c975L\GalleryBundle\Controller\Management\Trait\ContentLocaleCrudTrait;
 use c975L\GalleryBundle\Entity\GalleryPrintFormat;
 use c975L\GalleryBundle\Service\GalleryTranslator;
 use c975L\GalleryBundle\Service\PrintCatalogueImporter;
+use c975L\UiBundle\Service\ConfigEditUrlResolver;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Config\KeyValueStore;
@@ -82,10 +84,16 @@ class ContentLocaleCrudTraitTest extends TestCase
         $galleryTranslator->method('isActive')->willReturn($active);
         $galleryTranslator->method('getTranslatableLocales')->willReturn($active ? ['en'] : []);
 
+        // The sale open, so the closed-sale notice asks for no role check (see GalleryPrintFormatCrudController::configureResponseParameters)
+        $configService = $this->createStub(ConfigServiceInterface::class);
+        $configService->method('getBool')->willReturn(true);
+
         return new GalleryPrintFormatCrudController(
             adminContextProvider: $adminContextProvider,
             adminUrlGenerator: $this->createStub(AdminUrlGeneratorInterface::class),
-            configService: $this->createStub(ConfigServiceInterface::class),
+            configEditUrlResolver: $this->createStub(ConfigEditUrlResolver::class),
+            configRepository: $this->createStub(ConfigRepository::class),
+            configService: $configService,
             contentLocaleScreen: $contentLocaleScreen,
             galleryTranslator: $galleryTranslator,
             printCatalogueImporter: $this->createStub(PrintCatalogueImporter::class),

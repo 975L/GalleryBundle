@@ -11,11 +11,13 @@
 namespace c975L\GalleryBundle\Controller\Management;
 
 use c975L\ConfigBundle\Management\ContentLocaleScreen;
+use c975L\ConfigBundle\Repository\ConfigRepository;
 use c975L\ConfigBundle\Service\ConfigServiceInterface;
 use c975L\GalleryBundle\Controller\Management\Trait\ContentLocaleCrudTrait;
 use c975L\GalleryBundle\Entity\GalleryPrintFormat;
 use c975L\GalleryBundle\Service\GalleryTranslator;
 use c975L\GalleryBundle\Service\PrintCatalogueImporter;
+use c975L\UiBundle\Service\ConfigEditUrlResolver;
 use EasyCorp\Bundle\EasyAdminBundle\Attribute\AdminRoute;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
@@ -44,9 +46,14 @@ class GalleryPrintFormatCrudController extends AbstractCrudController
 {
     use ContentLocaleCrudTrait;
 
+    // The switch opening the print sale to the public, off while this screen is set up and tested (see _gallery_print_sale_notice.html.twig)
+    private const string SWITCH_SLUG = 'gallery-print-enabled';
+
     public function __construct(
         private readonly AdminContextProviderInterface $adminContextProvider,
         private readonly AdminUrlGeneratorInterface $adminUrlGenerator,
+        private readonly ConfigEditUrlResolver $configEditUrlResolver,
+        private readonly ConfigRepository $configRepository,
         private readonly ConfigServiceInterface $configService,
         private readonly ContentLocaleScreen $contentLocaleScreen,
         private readonly GalleryTranslator $galleryTranslator,
@@ -193,12 +200,17 @@ class GalleryPrintFormatCrudController extends AbstractCrudController
         yield BooleanField::new('published', t('label.print_format_published', [], 'gallery'));
     }
 
-    // The language tabs above the edit form (see ContentLocaleCrudTrait), this screen shaping nothing else of its response
+    // The language tabs above the edit form (see ContentLocaleCrudTrait), and on the index the sale still closed, with the switch's edit url for an admin - ConfigCrudController denying anything below that role
     #[\Override]
     public function configureResponseParameters(KeyValueStore $responseParameters): KeyValueStore
     {
         $responseParameters = parent::configureResponseParameters($responseParameters);
         $this->addContentLocaleParameters($responseParameters);
+
+        $enabled = $this->configService->getBool($this->configService->get(self::SWITCH_SLUG));
+
+        $responseParameters->set('print_enabled', $enabled);
+        $responseParameters->set('print_switch_url', $enabled || !$this->isGranted($this->configService->get('site-role-admin')) ? null : $this->configEditUrlResolver->resolve($this->configRepository->findOneBySlug(self::SWITCH_SLUG)));
 
         return $responseParameters;
     }

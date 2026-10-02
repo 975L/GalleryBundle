@@ -1,5 +1,15 @@
 [
     {
+        "date": "2026-10-02",
+        "description": [
+            {
+                "en": "The print formats and print orders screens are now available before the sale opens, so you can prepare and test everything first",
+                "fr": "Les écrans des formats et des commandes de tirages sont désormais accessibles avant l'ouverture de la vente, pour tout préparer et tester d'abord",
+                "es": "Las pantallas de formatos y pedidos de copias están ahora disponibles antes de abrir la venta, para prepararlo y probarlo todo primero"
+            }
+        ]
+    },
+    {
         "date": "2026-09-30",
         "description": [
             {

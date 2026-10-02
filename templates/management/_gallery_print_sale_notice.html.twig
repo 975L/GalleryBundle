@@ -1,0 +1,9 @@
+{# The sale still closed to the public, these screens are set up and tested meanwhile: said here rather than the entries going missing from the sidebar #}
+{% if not print_enabled %}
+    <div class="alert alert-warning">
+        {{ ('label.info_print_sale_closed'|trans({}, 'gallery')) }}
+        {% if print_switch_url %}
+            <a href="{{ print_switch_url }}" class="alert-link">{{ ('label.print_sale_open'|trans({}, 'gallery')) }}</a>
+        {% endif %}
+    </div>
+{% endif %}

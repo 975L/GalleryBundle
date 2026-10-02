@@ -415,7 +415,7 @@ EasyAdmin — **never in `.env`, `parameters:` or a Configuration/TreeBuilder cl
 | `gallery-latest-max` | int | how many medias it stops at (empty or 0 falls back to 200) |
 | `gallery-license-url` | text | the photographs' terms of use page, published as `license` and as `acquireLicensePage` when no print is offered (see *Structured data*) |
 | `gallery-printable-max` | int | how many photographs the prints gallery stops at (empty or 0 falls back to 200) |
-| `gallery-print-enabled` | bool | the print shop; off out of the box, and off it hides its two back-office screens and its tile (see *Selling prints*) |
+| `gallery-print-enabled` | bool | opens the print sale to the public; off out of the box. It hides nothing in the back office: the two print screens, their guided projects and the test-mode tile stay, the indexes warning that the sale is closed (see *Selling prints*) |
 | `gallery-print-provider` | text | which lab fulfils the orders (`prodigi` out of the box, `manual` to fulfil them by hand) |
 | `gallery-print-api-key` | text, sensitive | the lab's api key |
 | `gallery-print-sandbox` | bool | the lab's test mode, on out of the box - toggled from the dashboard tile |
@@ -438,14 +438,21 @@ A `theme-` slug is compiled into a `--c975l-color-gallery-*` custom property by 
 expression that follows a light or a dark gallery rather than a fixed color.
 
 The gallery back office sits behind ConfigBundle's `site-role-editor` setting, except the two permanent
-deletions, held at `site-role-admin` (see *Deleting takes two steps*). Both sidebar entries state that same
+deletions, held at `site-role-admin` (see *Deleting takes two steps*). Every sidebar entry states that same
 bar (`MenuProvider`, `'role'` key) and so do the screens themselves (`setPermission(Action::INDEX, ...)` on
 each CRUD), so an editor reaches them instead of seeing no entry at all — read by `c975l/core-bundle`
 `^1.14.0` and up, earlier ones giving every entry the admin bar.
 
 ## Selling prints
 
-Off unless `gallery-print-enabled` is on. Requires `c975l/payment-bundle` `^6.6`: a print is sold through
+Closed to the public unless `gallery-print-enabled` is on, which only governs the public side: the back
+office never hides anything because of it. `MenuProvider` always lists the `gallery_print_order` and
+`gallery_print_format` entries, `GalleryGuidedProjectProvider` always contributes the two print parcours,
+`GalleryShortcutProvider` always offers the test-mode tile, and the bulk **printable** action of a gallery's
+screen is always there. While the switch is off, both print indexes draw an `alert alert-warning`
+(`_gallery_print_sale_notice.html.twig`, fed `print_enabled` and `print_switch_url` by each CRUD's
+`configureResponseParameters()`), the switch's edit url - from UiBundle's `ConfigEditUrlResolver` - being
+handed to `site-role-admin` only, ConfigCrudController denying anything below. Requires `c975l/payment-bundle` `^6.6`: a print is sold through
 the one basket, this bundle plugging in as a `BasketItemProviderInterface` of kind `gallery_print`. It
 also answers `CatalogueBasketItemProviderInterface`, whose `getCatalogueUrl()` hands the basket the path
 its "continue shopping" button goes back to — `gallery_index`, PaymentBundle knowing of no shop to send
@@ -548,7 +555,8 @@ number tying it to the `orders` part. An account with no print order adds no key
   each other.
 
 What the bundle already contributes to the dashboard, so you do not have to: `MenuProvider` (its own
-**Galerie** sidebar section, holding the `gallery` and `gallery_media` entries, rather than the shared
+**Galerie** sidebar section, holding the `gallery`, `gallery_media`, `gallery_print_order` and
+`gallery_print_format` entries, rather than the shared
 "management" one),
 `LinkableRouteProvider` (the index and each category offered as a SiteBundle menu target, tagged `gallery_galleries` through `LinkableRouteCacheTagsInterface` so a menu item pointing at one is cached),
 `GallerySitemapProvider`, `GalleryUrlMetadataProvider`, `GalleryFilesHealthCheckProvider` (kind
@@ -556,7 +564,7 @@ What the bundle already contributes to the dashboard, so you do not have to: `Me
 `GalleryExportProvider` /
 `GalleryImportProvider` (categories as a zip, files included), `GalleryBackupPathProvider`,
 `GalleryBlockOwnerResolver`, `GalleryGuidedProjectProvider` (whose `gallery-print-setup` and
-`gallery-print-order` parcours are only offered where `gallery-print-enabled` is on, and `gallery-social` where SocialBundle is installed), `WhatsNewProvider`, `ImportmapProvider`,
+`gallery-print-order` parcours are offered whatever `gallery-print-enabled` says, and `gallery-social` only where SocialBundle is installed), `WhatsNewProvider`, `ImportmapProvider`,
 `Service\ScriptProvider`, `Service\StylesheetProvider` (public and management stylesheets both),
 `Service\GalleryShowcaseProvider`,
 `GalleryShortcutProvider` (the tile toggling the lab's test mode), `GalleryDemoFixtureProvider`,

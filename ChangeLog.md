@@ -1,5 +1,14 @@
 # ChangeLog
 
+## v1.24.1
+
+Print screens listed before the sale opens
+
+- Print screens, their guided projects and the test-mode tile no longer hidden while `gallery-print-enabled` is off (02/10/2026)
+- Print indexes warn that the sale is closed, with a link to the switch for an admin (02/10/2026)
+- Gallery bulk **printable** action offered whatever the switch says (02/10/2026)
+- Print setup guided project ends on opening the sale (02/10/2026)
+
 ## v1.24.0
 
 Publication slots may pick the galleries their photographs come from
