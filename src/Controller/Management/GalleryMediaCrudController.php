@@ -423,6 +423,8 @@ class GalleryMediaCrudController extends AbstractCrudController
                 ->setLabel(t('label.description', [], 'gallery'))
                 ->setHelp(t('label.gallery_media_description_help', [], 'gallery'))
                 ->setRequired(false)
+                // Opt-in marker read by the block form theme, which is what puts Donovan under a plain textarea
+                ->setFormTypeOption('attr', ['data-ai-rephrase' => true])
                 ->hideOnIndex(),
 
             TextField::new('credits')

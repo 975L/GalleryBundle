@@ -1,5 +1,11 @@
 # ChangeLog
 
+## v1.24.2
+
+Media caption offers Donovan's rephrase button
+
+- Media `description` field opted into Donovan's rephrase button (03/10/2026)
+
 ## v1.24.1
 
 Print screens listed before the sale opens

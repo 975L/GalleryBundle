@@ -723,7 +723,8 @@ to, so it does follow a media moved to another one (see
 Under the title sits a **description**: the caption read under the photograph on its own page, free text
 and as long as it needs to be. Nothing composes it and nothing fills it in — a media without one renders no
 caption at all, which is what most of a batch is. It is hidden from the grid of the back office, where a
-paragraph per row would bury the thumbnails that list exists to show.
+paragraph per row would bury the thumbnails that list exists to show. It stays a plain textarea, with
+**Donovan**'s rephrase button under it like under any other text field of the ecosystem.
 
 Where the **title** names the media in a grid and doubles as its `alt` text, the caption says what there is
 to say about it: where it was taken, who is in it, what the visitor is looking at. That is also why it is

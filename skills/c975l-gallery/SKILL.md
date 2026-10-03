@@ -61,7 +61,7 @@ top-level unit, and each holds its `GalleryMedia`.
   back with `getDataValue()`, and travel through the export/import. Declaring nothing means no field.
 - `GalleryMedia` — belongs to one category, keyed publicly by `slug` which is **unique within its
   category only**. Carries `title`, `data` (the site's own fields, see below), `description` (the caption printed under the photograph and reused
-  as the page's description metas when set), `credits`, `rightsReserved`, `position`, `mediaType`
+  as the page's description metas when set, a plain textarea opted into Donovan's rephrase button by `data-ai-rephrase`), `credits`, `rightsReserved`, `position`, `mediaType`
   (`image` / a platform name / `embed`, always derived, never set), `externalUrl`, an optional
   uploaded video file, and the Vich fields. Implements `TrashableInterface`,
   `VichMultiSizeImageInterface`, `VichMediaNamableInterface`, `VichOriginalKeepableInterface`,
