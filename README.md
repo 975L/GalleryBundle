@@ -1315,8 +1315,12 @@ With `c975l/social-bundle` installed, `Service\GallerySocialContentSource` (UiBu
 time: an image with a file of its own, in a gallery neither trashed, hidden nor automatic. What went out
 where is SocialBundle's to record, and a photograph is never offered twice on the same network. Nothing to register.
 
-Its scopes are the galleries: a SocialBundle publication slot may pick some of them, and its photographs are
+Its scopes are the galleries: a SocialBundle series may pick some of them, and its photographs are
 then drawn from those alone.
+
+`Service\GalleryPickableMediaProvider` (UiBundle's `PickableMediaProviderInterface`) also offers the visible
+photographs and uploaded videos one by one, the latest first: SocialBundle's "Ajouter depuis le site" adds them
+to a post. Nothing to register.
 
 Connecting the networks themselves — Bluesky in one click, a Facebook Page and its Instagram account through a
 Meta app of your own — is SocialBundle's, step by step in its readme:

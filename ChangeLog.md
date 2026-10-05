@@ -1,5 +1,12 @@
 # ChangeLog
 
+## v1.25.0
+
+Photographs and videos offered to a social post
+
+- `GalleryPickableMediaProvider`: the gallery's visible photographs and uploaded videos offered to another bundle (05/10/2026)
+- Requires `c975l/core-bundle` ^1.53.0 (05/10/2026)
+
 ## v1.24.2
 
 Media caption offers Donovan's rephrase button

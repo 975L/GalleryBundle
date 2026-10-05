@@ -217,6 +217,32 @@ class GalleryMediaRepository extends ServiceEntityRepository
         return $qb;
     }
 
+    // What another bundle may pick (see GalleryPickableMediaProvider): the photographs and the uploaded videos visitors see, the latest first, their title, their slug or their category's title containing the search when one is given
+    /** @return list<GalleryMedia> */
+    public function findPickable(string $search, int $limit): array
+    {
+        $qb = $this->createQueryBuilder('m')
+            ->innerJoin('m.category', 'c')
+            ->addSelect('c')
+            ->where('m.isDeleted = false')
+            ->andWhere('m.hidden = false')
+            ->andWhere('(m.mediaType = :image AND m.filename IS NOT NULL) OR (m.mediaType = :video AND m.videoFilename IS NOT NULL)')
+            ->andWhere('c.isDeleted = false')
+            ->andWhere('c.hidden = false')
+            ->setParameter('image', GalleryMedia::MEDIA_TYPE_IMAGE)
+            ->setParameter('video', GalleryMedia::MEDIA_TYPE_VIDEO)
+            ->orderBy('m.createdAt', \SortDirection::Descending)
+            ->addOrderBy('m.id', \SortDirection::Descending)
+            ->setMaxResults(max(1, $limit))
+        ;
+
+        if ('' !== $search) {
+            $qb->andWhere('m.title LIKE :search OR m.slug LIKE :search OR c.title LIKE :search')->setParameter('search', '%' . addcslashes($search, '%_') . '%');
+        }
+
+        return $qb->getQuery()->getResult();
+    }
+
     // The photographs on sale as prints, whatever category they landed in - what the automatic gallery of the prints shows (see GalleryPrintableProvider)
     // Read off the flag alone and never off GalleryPrintService::isPrintable(): that one opens the file to count its pixels, which on a page listing the galleries would be one getimagesize() per photograph. A flagged photograph whose file is too small for any format shows here and is simply not offered for sale on its own page, which is the answer a visitor can act on
     /** @return list<GalleryMedia> */

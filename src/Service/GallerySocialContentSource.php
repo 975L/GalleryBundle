@@ -21,7 +21,7 @@ use c975L\UiBundle\Model\SocialContent;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
-// Hands SocialBundle's publication the gallery's photographs, one at a time - drawn at random, or oldest first, as "gallery-social-order" says, from the galleries a publication slot picked if any - a site without SocialBundle simply never asks. What went out where is SocialBundle's to record, so nothing here nor on GalleryMedia keeps track of it
+// Hands SocialBundle's publication the gallery's photographs, one at a time - drawn at random, or oldest first, as "gallery-social-order" says, from the galleries a series picked if any - a site without SocialBundle simply never asks. What went out where is SocialBundle's to record, so nothing here nor on GalleryMedia keeps track of it
 class GallerySocialContentSource implements ScopedSocialContentSourceInterface
 {
     public function __construct(
