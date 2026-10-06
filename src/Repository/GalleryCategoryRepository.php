@@ -11,6 +11,7 @@
 namespace c975L\GalleryBundle\Repository;
 
 use c975L\GalleryBundle\Entity\GalleryCategory;
+use c975L\GalleryBundle\Entity\GalleryMedia;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Contracts\Service\ResetInterface;
@@ -107,10 +108,21 @@ class GalleryCategoryRepository extends ServiceEntityRepository implements Reset
             return $category;
         }
 
-        // Translated at creation time only - like any other category it's a normal DB row afterwards, editable/renamable later from the Management CRUD
         // A kind the bundle doesn't ship names its own url and heading (see AutomaticGalleryInterface): the constants above only hold the two it does, and a site's own kind is a perfectly good slug and a title an admin renames on the spot
+        $slug = self::AUTOMATIC_SLUGS[$kind] ?? $kind;
+
+        // The gallery a lost flag left behind is taken back rather than doubled (see orphanOf())
+        $orphan = $this->orphanOf($kind, $slug);
+        if (null !== $orphan) {
+            $orphan->setAutomaticKind($kind);
+            $this->getEntityManager()->flush();
+
+            return $orphan;
+        }
+
+        // Translated at creation time only - like any other category it's a normal DB row afterwards, editable/renamable later from the Management CRUD
         $category = new GalleryCategory()
-            ->setSlug($this->freeSlug(self::AUTOMATIC_SLUGS[$kind] ?? $kind))
+            ->setSlug($this->freeSlug($slug))
             ->setTitle($this->translator->trans(self::AUTOMATIC_TITLES[$kind] ?? $kind, [], 'gallery'))
             ->setAutomaticKind($kind)
         ;
@@ -120,6 +132,36 @@ class GalleryCategoryRepository extends ServiceEntityRepository implements Reset
         $em->flush();
 
         return $category;
+    }
+
+    // The duplicate a lost flag already wrote on a site updated before findOrCreateAutomatic() took the leftover back, paired with that leftover (duplicate first), or null when there is nothing to merge - the merge itself is c975l:gallery:automatic:dedupe's
+    /** @return ?array{GalleryCategory, GalleryCategory} */
+    public function findAutomaticDuplicate(string $kind): ?array
+    {
+        $slug = self::AUTOMATIC_SLUGS[$kind] ?? $kind;
+        $duplicate = $this->findOneBy(['automaticKind' => $kind]);
+        if (null === $duplicate || $slug === $duplicate->getSlug()) {
+            return null;
+        }
+
+        $orphan = $this->orphanOf($kind, $slug);
+
+        return null !== $orphan ? [$duplicate, $orphan] : null;
+    }
+
+    // Migrating the v1.12 boolean by a DROP plus an ADD (see UPGRADE.md) turned the gallery of the last additions into an ordinary, empty category under its very slug, a second one written beside it putting a "latest-2" on three sites. "latest" only, the one kind that migration touched: an empty gallery under "prints" or a site's own kind is just as likely one an admin named before filling it. Never the catch-all, nor another kind's automatic (it holds no medias of its own, so the emptiness can't tell it apart), nor one in the trash - an admin's answer, not a leftover. Medias counted rather than the collection read, which is not extra lazy
+    private function orphanOf(string $kind, string $slug): ?GalleryCategory
+    {
+        if (GalleryCategory::AUTOMATIC_LATEST !== $kind) {
+            return null;
+        }
+
+        $orphan = $this->findOneBySlug($slug);
+        if (null === $orphan || $orphan->isUncategorized() || $orphan->isAutomatic() || $orphan->isDeleted()) {
+            return null;
+        }
+
+        return 0 === $this->getEntityManager()->getRepository(GalleryMedia::class)->count(['category' => $orphan]) ? $orphan : null;
     }
 
     // Catch-all category a GalleryMedia falls back to when imported without a real one to attach it to. Created lazily so it only ever exists once it's actually needed, and flushed immediately so it's safe to reference the same row from within the same request right after.

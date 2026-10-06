@@ -1,5 +1,15 @@
 [
     {
+        "date": "2026-10-06",
+        "description": [
+            {
+                "en": "The last additions gallery no longer appears twice after an update",
+                "fr": "La galerie des derniers ajouts n'apparaît plus en double après une mise à jour",
+                "es": "La galería de las últimas incorporaciones ya no aparece duplicada tras una actualización"
+            }
+        ]
+    },
+    {
         "date": "2026-10-05",
         "description": [
             {

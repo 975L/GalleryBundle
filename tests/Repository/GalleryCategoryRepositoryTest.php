@@ -13,6 +13,9 @@ namespace c975L\GalleryBundle\Tests\Repository;
 use c975L\GalleryBundle\Entity\GalleryCategory;
 use c975L\GalleryBundle\Repository\GalleryCategoryRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\EntityRepository;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
@@ -24,6 +27,18 @@ class GalleryCategoryRepositoryTest extends TestCase
         $translator->method('trans')->willReturnArgument(0);
 
         return $translator;
+    }
+
+    // orphanOf() counts the medias of the gallery under the slug through the entity manager rather than reading its collection
+    private function createEntityManager(int $medias = 0): EntityManagerInterface & MockObject
+    {
+        $mediaRepository = $this->createStub(EntityRepository::class);
+        $mediaRepository->method('count')->willReturn($medias);
+
+        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $entityManager->method('getRepository')->willReturn($mediaRepository);
+
+        return $entityManager;
     }
 
     public function testFindOrCreateUncategorizedReturnsTheExistingOneWithoutPersistingAnything(): void
@@ -112,16 +127,95 @@ class GalleryCategoryRepositoryTest extends TestCase
         $this->assertTrue($existing->isDeleted());
     }
 
-    // The slug is a constant on a column held unique: a site that already named a gallery "latest" would meet a UniqueConstraintViolationException on every page listing its galleries, so the taken one is suffixed until it is free
+    // An empty ordinary gallery under the slug is the one a lost v1.12 flag left behind: it is flagged again, rather than a "latest-2" being written beside it
+    public function testFindOrCreateAutomaticTakesBackAnEmptyGalleryUnderItsSlug(): void
+    {
+        $entityManager = $this->createEntityManager();
+        $entityManager->expects($this->never())->method('persist');
+        $entityManager->expects($this->once())->method('flush');
+
+        $repository = new GalleryCategoryRepositoryFindOneByFixture(null, $entityManager, $this->createTranslator(), ['latest']);
+        $category = $repository->findOrCreateAutomatic(GalleryCategory::AUTOMATIC_LATEST);
+
+        $this->assertSame('latest', $category->getSlug());
+        $this->assertSame(GalleryCategory::AUTOMATIC_LATEST, $category->getAutomaticKind());
+    }
+
+    // Each gallery under the slug that is not a leftover: the catch-all, another kind's automatic (no medias of its own, so the emptiness can't tell it apart), and one an admin put in the trash
+    /** @return iterable<string, array{\Closure(string): GalleryCategory}> */
+    public static function provideGalleriesNotTakenBack(): iterable
+    {
+        yield 'catch-all' => [static fn (string $slug): GalleryCategory => new GalleryCategory()->setSlug($slug)->setUncategorized(true)];
+        yield 'another automatic' => [static fn (string $slug): GalleryCategory => new GalleryCategory()->setSlug($slug)->setAutomaticKind(GalleryCategory::AUTOMATIC_PRINTABLE)];
+        yield 'trashed' => [static function (string $slug): GalleryCategory {
+            $category = new GalleryCategory()->setSlug($slug);
+            $category->setIsDeleted(true);
+
+            return $category;
+        }];
+    }
+
+    // Left as they are, and a "latest-2" written beside them as before
+    #[DataProvider('provideGalleriesNotTakenBack')]
+    public function testFindOrCreateAutomaticLeavesAGalleryThatIsNoLeftoverAlone(\Closure $takenFactory): void
+    {
+        $entityManager = $this->createEntityManager();
+        $entityManager->expects($this->once())->method('persist');
+
+        $repository = new GalleryCategoryRepositoryFindOneByFixture(null, $entityManager, $this->createTranslator(), ['latest'], $takenFactory);
+
+        $this->assertSame('latest-2', $repository->findOrCreateAutomatic(GalleryCategory::AUTOMATIC_LATEST)->getSlug());
+    }
+
+    // Only "latest" lost its flag in the v1.12 migration: an empty "prints" is just as likely a gallery an admin named before filling it
+    public function testFindOrCreateAutomaticTakesBackNoOtherKind(): void
+    {
+        $entityManager = $this->createEntityManager();
+        $entityManager->expects($this->once())->method('persist');
+
+        $repository = new GalleryCategoryRepositoryFindOneByFixture(null, $entityManager, $this->createTranslator(), ['prints']);
+
+        $this->assertSame('prints-2', $repository->findOrCreateAutomatic(GalleryCategory::AUTOMATIC_PRINTABLE)->getSlug());
+    }
+
+    // The slug is a constant on a column held unique: a site that already named a gallery "latest" and filled it would meet a UniqueConstraintViolationException on every page listing its galleries, so the taken one is suffixed until it is free
     public function testFindOrCreateAutomaticSuffixesASlugAlreadyTaken(): void
     {
-        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $entityManager = $this->createEntityManager(1);
         $entityManager->expects($this->once())->method('persist');
         $entityManager->expects($this->once())->method('flush');
 
         $repository = new GalleryCategoryRepositoryFindOneByFixture(null, $entityManager, $this->createTranslator(), ['latest', 'latest-2']);
 
         $this->assertSame('latest-3', $repository->findOrCreateAutomatic(GalleryCategory::AUTOMATIC_LATEST)->getSlug());
+    }
+
+    // A site updated before the take-back has both: the suffixed automatic and the leftover under the base slug, handed over as a pair for gallery:automatic:dedupe to merge
+    public function testFindAutomaticDuplicatePairsTheSuffixedOneWithTheLeftover(): void
+    {
+        $duplicate = new GalleryCategory()->setSlug('latest-2')->setAutomaticKind(GalleryCategory::AUTOMATIC_LATEST);
+        $entityManager = $this->createEntityManager();
+        $entityManager->expects($this->never())->method('flush');
+
+        $repository = new GalleryCategoryRepositoryFindOneByFixture($duplicate, $entityManager, $this->createTranslator(), ['latest']);
+
+        $pair = $repository->findAutomaticDuplicate(GalleryCategory::AUTOMATIC_LATEST);
+
+        $this->assertNotNull($pair);
+        $this->assertSame($duplicate, $pair[0]);
+        $this->assertSame('latest', $pair[1]->getSlug());
+    }
+
+    // The automatic already under its own slug is the normal state, not a duplicate
+    public function testFindAutomaticDuplicateFindsNothingWhenTheAutomaticHoldsTheSlug(): void
+    {
+        $automatic = new GalleryCategory()->setSlug('latest')->setAutomaticKind(GalleryCategory::AUTOMATIC_LATEST);
+        $entityManager = $this->createEntityManager();
+        $entityManager->expects($this->never())->method('flush');
+
+        $repository = new GalleryCategoryRepositoryFindOneByFixture($automatic, $entityManager, $this->createTranslator(), ['latest']);
+
+        $this->assertNull($repository->findAutomaticDuplicate(GalleryCategory::AUTOMATIC_LATEST));
     }
 
     // Same slug, same constraint, same suffixing - and the catch-all is the one an upload lands on, so failing to create it would leave the medias nowhere to go
@@ -200,6 +294,8 @@ class GalleryCategoryRepositoryFindOneByFixture extends GalleryCategoryRepositor
         TranslatorInterface $translator,
         /** @var list<string> */
         private readonly array $takenSlugs = [],
+        // What sits under a taken slug, an ordinary gallery unless a test needs another one
+        private readonly ?\Closure $takenFactory = null,
     ) {
         new \ReflectionProperty(GalleryCategoryRepository::class, 'translator')->setValue($this, $translator);
     }
@@ -209,7 +305,11 @@ class GalleryCategoryRepositoryFindOneByFixture extends GalleryCategoryRepositor
     public function findOneBy(array $criteria, ?array $orderBy = null): ?object
     {
         if (isset($criteria['slug'])) {
-            return \in_array($criteria['slug'], $this->takenSlugs, true) ? new GalleryCategory()->setSlug($criteria['slug']) : null;
+            if (!\in_array($criteria['slug'], $this->takenSlugs, true)) {
+                return null;
+            }
+
+            return null !== $this->takenFactory ? ($this->takenFactory)($criteria['slug']) : new GalleryCategory()->setSlug($criteria['slug']);
         }
 
         return $this->existingCategory;

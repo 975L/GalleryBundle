@@ -1,5 +1,21 @@
 # UPGRADE
 
+## v1.25.1
+
+### A site already showing a "latest-2"
+
+A site whose v1.12 migration lost the flag got a second *Derniers ajouts* beside the emptied original. This
+version no longer writes one, but does not remove the one already there. Merge them once, after checking
+what it would do:
+
+```bash
+php bin/console c975l:gallery:automatic:dedupe --dry-run
+php bin/console c975l:gallery:automatic:dedupe
+```
+
+The original `latest` takes the flag back, `latest-2` is removed and its url redirected to `latest`. A
+`latest-2` carrying heading blocks is left alone: move them to `latest` first, then run it again.
+
 ## v1.17
 
 ### The zoom this bundle invented becomes everyone's

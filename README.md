@@ -280,7 +280,11 @@ the owning category alone: no upload button, no drag to reorder, no cover radio,
 carries: `findOrCreateAutomatic()` leaves a trashed one exactly where it was put, where the catch-all
 "Non classé" is lifted back out. Restore it and it is back, with the additions of the moment. An imported
 archive carrying the flag only takes it on a site that holds no such gallery at all, trash included, so an
-import never leaves two of them behind.
+import never leaves two of them behind. An empty ordinary gallery already sitting under `latest` - the one a
+v1.12 migration that lost the flag leaves behind - is flagged again rather than doubled with a `latest-2`,
+unless it is the catch-all, another automatic gallery or in the trash. A site that already holds the
+`latest-2` merges the two with `php bin/console c975l:gallery:automatic:dedupe [--dry-run]`: the original
+takes the flag back, the duplicate is removed and its url redirected there (left alone if it carries blocks).
 
 **It is one kind of automatic gallery, not the only one.** A site selling prints gets a second one, the
 photographs on offer (`GalleryCategory::AUTOMATIC_PRINTABLE`, see [selling prints](#selling-prints)),

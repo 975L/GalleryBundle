@@ -42,9 +42,7 @@ class GalleryAutomaticProvider implements ResetInterface
     {
         $gallery = $this->gallery($category);
 
-        return null === $gallery
-            ? $this->galleryMediaRepository->findVisibleByCategory($category)
-            : $gallery->getMedias();
+        return $gallery?->getMedias() ?? $this->galleryMediaRepository->findVisibleByCategory($category);
     }
 
     // The neighbours of a media within the automatic gallery it is being browsed from, null when the media is not among them - which is what sends the page back to its own category's navigation (see GalleryController::media)
@@ -107,7 +105,10 @@ class GalleryAutomaticProvider implements ResetInterface
                     continue;
                 }
 
-                $categories[] = $category;
+                // Already listed when it was taken back from an ordinary gallery under its slug (see GalleryCategoryRepository::orphanOf), read before it carried the flag
+                if (!\in_array($category, $categories, true)) {
+                    $categories[] = $category;
+                }
                 $added = true;
             }
 

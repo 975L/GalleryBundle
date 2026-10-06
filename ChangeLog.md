@@ -1,5 +1,14 @@
 # ChangeLog
 
+## v1.25.1
+
+Automatic gallery takes back the empty one a lost flag left behind
+
+- `findOrCreateAutomatic()` re-flags the empty `latest` a lost flag left behind instead of writing a `latest-2` (06/10/2026)
+- Catch-all, automatic and trashed galleries are never taken back (06/10/2026)
+- Added `c975l:gallery:automatic:dedupe` command merging an existing `latest-2` into `latest` (06/10/2026)
+- `GalleryAutomaticProvider::prepare()` no longer lists a taken-back gallery twice (06/10/2026)
+
 ## v1.25.0
 
 Photographs and videos offered to a social post

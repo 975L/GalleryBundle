@@ -135,7 +135,7 @@ class GalleryImportProvider implements ImportProviderInterface
     {
         // "automatic" is what an archive exported before the kinds carries, and it named the gallery of the last additions - read as a fallback rather than importing that gallery as an ordinary one
         $kind = $item['automaticKind'] ?? (($item['automatic'] ?? false) ? GalleryCategory::AUTOMATIC_LATEST : null);
-        if (null === $kind || !\in_array($automatic[$kind] ?? null, [null, $category], true)) {
+        if (!\is_string($kind) || !\in_array($automatic[$kind] ?? null, [null, $category], true)) {
             return null;
         }
 
