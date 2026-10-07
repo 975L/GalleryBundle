@@ -1,5 +1,15 @@
 [
     {
+        "date": "2026-10-07",
+        "description": [
+            {
+                "en": "Search engines and social networks now get a description of your galleries even when you have not written one",
+                "fr": "Les moteurs de recherche et les réseaux sociaux reçoivent désormais une description de vos galeries, même si vous n'en avez pas écrit",
+                "es": "Los motores de búsqueda y las redes sociales reciben ahora una descripción de sus galerías, aunque no haya escrito ninguna"
+            }
+        ]
+    },
+    {
         "date": "2026-10-06",
         "description": [
             {

@@ -1,5 +1,14 @@
 # ChangeLog
 
+## v1.25.2
+
+Gallery pages described in a full sentence
+
+- The gallery index falls back on a sentence naming the site as meta description (07/10/2026)
+- A gallery without a summary, the automatic one first, falls back on a sentence naming it (07/10/2026)
+- Added the `text.meta_gallery` and `text.meta_category` translations (07/10/2026)
+- Added `GalleryDescriptionFallbackTest` (07/10/2026)
+
 ## v1.25.1
 
 Automatic gallery takes back the empty one a lost flag left behind

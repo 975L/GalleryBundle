@@ -1726,6 +1726,14 @@
                 <source>print_paper.photo_rag</source>
                 <target>Un chiffon 100 % coton lisse, le plus sûr des papiers d'art : il flatte le détail fin et ne trahit aucun sujet. Celui à prendre quand on hésite.</target>
             </trans-unit>
+            <trans-unit id="HFrOJ4w">
+                <source>text.meta_category</source>
+                <target>« %category% », une galerie de photos et de vidéos de %site%, à parcourir en ligne.</target>
+            </trans-unit>
+            <trans-unit id="qFKsnoI">
+                <source>text.meta_gallery</source>
+                <target>Toutes les galeries de photos et de vidéos de %site%, à parcourir en ligne, galerie après galerie.</target>
+            </trans-unit>
         </body>
     </file>
 </xliff>

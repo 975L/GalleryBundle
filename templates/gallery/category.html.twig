@@ -2,9 +2,8 @@
 
 {# Defines specific variables #}
 {% set title = 'label.gallery_page_title'|trans({}, 'gallery') ~ ' - ' ~ category.title %}
-{# The name both layouts read to write the "description"/"og:description" metas - a category then describes itself to a search engine and to a social network with the very text it opens with on screen #}
-{# Handed over as typed: both layouts reduce it with "plain_text" themselves, which is where a rich-text summary has to be detoured - stripping it here as well would glue the lines that filter parts with a space #}
-{% set summarySocialNetwork = category.summarySocialNetwork %}
+{# The name both layouts read to write the "description"/"og:description" metas, so a category describes itself with the very text it opens with on screen. Handed over as typed: both layouts reduce it with "plain_text" themselves, which is where a rich-text summary has to be detoured - stripping it here as well would glue the lines that filter parts with a space. A gallery with no summary of its own - the automatic one first, written by the bundle with none - falls back on a sentence saying what it holds and where, rather than an empty description #}
+{% set summarySocialNetwork = category.summarySocialNetwork|striptags|trim is not empty ? category.summarySocialNetwork : 'text.meta_category'|trans({'%category%': category.title, '%site%': config('site-name')}, 'gallery') %}
 {# What a shared gallery shows of itself: the very face its tile carries on the index - the cover an admin picked, or one of its photos at random for lack of one (see GalleryCategory::getCoverOrRandomMedia()) #}
 {# Read once into a variable: the method draws a fresh media on each call, so asking it twice would test one photo and share another #}
 {% set ogMedia = category.coverOrRandomMedia %}

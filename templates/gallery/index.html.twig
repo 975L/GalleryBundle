@@ -2,6 +2,8 @@
 
 {# Defines specific variables #}
 {% set title = 'label.gallery_page_title'|trans({}, 'gallery') %}
+{# The row an editor wrote for this url wins, a sentence naming the site being its fallback rather than an empty description (see ConfigBundle's UrlMetadata) #}
+{% set summarySocialNetwork = url_metadata_summary('text.meta_gallery'|trans({'%site%': config('site-name')}, 'gallery')) %}
 
 {# One of the galleries' own photos when the index is shared, taken at random among the faces its tiles carry - the site's default og-image says nothing of what this page holds, and a gallery is better introduced by a photo than by a logo #}
 {# Only for lack of a row written for this url in "Descriptions d'urls", the one page of the bundle that is offered there (see GalleryUrlMetadataProvider): an image chosen for this very url is an admin's decision, where the one below is picked because nobody made it. The layout would never see it otherwise, a variable set here short-circuiting its whole chain #}

@@ -907,7 +907,9 @@ form (UiBundle's Trix editor, so **Donovan**'s rephrase button sits under it lik
 field of the ecosystem), printed above the grid by `gallery/category.html.twig` and, stripped of its
 markup, reused as the page's `description` / `og:description` metas — named after SiteBundle's
 `Page::$summarySocialNetwork` and ConfigBundle's `UrlMetadata::$summarySocialNetwork`, which hold the
-same text in the same role, so a site meets one name for it rather than one per bundle.
+same text in the same role, so a site meets one name for it rather than one per bundle. A category left
+without one — the automatic gallery first — falls back on the `text.meta_category` sentence naming it and the
+site, rather than an empty description.
 
 One field for both on purpose: what introduces a gallery to a reader is what introduces it to a search
 engine, and an admin made to type the same sentence twice would leave one of the two stale. The metas
@@ -1394,7 +1396,8 @@ php bin/console c975l:url-metadata:sync
 That one page only: a category and a media each say their own from their columns (see
 [a category's summary](#a-categorys-summary)), and a row written for them would never be read. The
 configured route prefix is read at sync time, so a site renaming it gets the new url declared and the
-former one reported as orphaned, to be removed from the back office.
+former one reported as orphaned, to be removed from the back office. Until that row is written, the index
+describes itself with the `text.meta_gallery` sentence naming the site.
 
 ### Backup
 
