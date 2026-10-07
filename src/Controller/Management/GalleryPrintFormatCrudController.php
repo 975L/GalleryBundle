@@ -182,6 +182,11 @@ class GalleryPrintFormatCrudController extends AbstractCrudController
             ->hideOnIndex()
         ;
 
+        yield IntegerField::new('weight', t('label.print_format_weight', [], 'gallery'))
+            ->setHelp(t('help.print_format_weight', [], 'gallery'))
+            ->hideOnIndex()
+        ;
+
         yield TextField::new('sku', t('label.print_format_sku', [], 'gallery'))
             ->setHelp(t('help.print_format_sku', [], 'gallery'))
         ;

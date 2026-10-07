@@ -11,6 +11,11 @@
                 "en": "Your photos and galleries with a very short description now get a full sentence in search results and social shares",
                 "fr": "Vos photos et galeries à la description très courte sont désormais présentées par une phrase complète dans les moteurs de recherche et les partages",
                 "es": "Sus fotos y galerías con una descripción muy corta se presentan ahora con una frase completa en los buscadores y al compartirlas"
+            },
+            {
+                "en": "You can now enter the weight of each print format, so shipping is charged on what the parcel actually weighs",
+                "fr": "Vous pouvez désormais indiquer le poids de chaque format de tirage, pour que les frais de port correspondent au poids réel du colis",
+                "es": "Ahora puede indicar el peso de cada formato de copia, para que los gastos de envío correspondan al peso real del paquete"
             }
         ]
     },

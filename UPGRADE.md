@@ -1,5 +1,20 @@
 # UPGRADE
 
+## v1.26
+
+### Print formats carry a shipping weight
+
+One nullable column, and nothing to backfill: a format left unweighed weighs nothing, which is what every print
+did until now.
+
+```sql
+ALTER TABLE gallery_print_format ADD weight INT DEFAULT NULL;
+```
+
+Generate it with `doctrine:migrations:diff` and run it. **Grams, whole**, as prices are held in cents: the packed
+weight of the print, tube included. PaymentBundle reads it through `WeighableBasketItemProviderInterface` and prices
+the parcel on its delivery grid.
+
 ## v1.25.1
 
 ### A site already showing a "latest-2"

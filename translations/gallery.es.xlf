@@ -566,6 +566,10 @@
                 <source>help.print_format_slug</source>
                 <target>Aquello por lo que un pedido ya realizado recuerda este formato. Cambiarlo no afecta a las ventas antiguas, pero evítelo una vez vendidas copias.</target>
             </trans-unit>
+            <trans-unit id="hPLYDKJ">
+                <source>help.print_format_weight</source>
+                <target>El peso de la copia una vez embalada, en gramos, para calcular los gastos de envío. Déjelo vacío si no la pesa.</target>
+            </trans-unit>
             <trans-unit id="xzaPeIL">
                 <source>label.block_category</source>
                 <target>Categoría</target>
@@ -1589,6 +1593,10 @@
             <trans-unit id="szsi9sl">
                 <source>label.print_format_vat</source>
                 <target>IVA (%)</target>
+            </trans-unit>
+            <trans-unit id="VDZUxBt">
+                <source>label.print_format_weight</source>
+                <target>Peso (g)</target>
             </trans-unit>
             <trans-unit id="6Lc0Irt">
                 <source>label.print_format_width</source>

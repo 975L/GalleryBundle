@@ -17,8 +17,11 @@ use c975L\GalleryBundle\Message\GalleryPrintOrderMessage;
 use c975L\GalleryBundle\Model\PrintCopySnapshot;
 use c975L\GalleryBundle\Model\PrintOffer;
 use c975L\GalleryBundle\Repository\GalleryPrintCopyRepository;
+use c975L\GalleryBundle\Repository\GalleryPrintFormatRepository;
 use c975L\PaymentBundle\Contract\BasketItemProviderInterface;
 use c975L\PaymentBundle\Contract\CatalogueBasketItemProviderInterface;
+use c975L\PaymentBundle\Contract\ShippingBasketItemProviderInterface;
+use c975L\PaymentBundle\Contract\WeighableBasketItemProviderInterface;
 use c975L\PaymentBundle\Entity\Basket;
 use c975L\PaymentBundle\Service\VatCalculator;
 use Doctrine\ORM\EntityManagerInterface;
@@ -27,11 +30,12 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 // Plugs prints into PaymentBundle's basket and checkout (see BasketItemProviderInterface). What is sold is a photograph at one size, which is why every id here names both
-class GalleryPrintBasketItemProvider implements BasketItemProviderInterface, CatalogueBasketItemProviderInterface
+class GalleryPrintBasketItemProvider implements BasketItemProviderInterface, CatalogueBasketItemProviderInterface, ShippingBasketItemProviderInterface, WeighableBasketItemProviderInterface
 {
     public function __construct(
         private readonly GalleryPrintService $printService,
         private readonly GalleryPrintCopyRepository $copyRepository,
+        private readonly GalleryPrintFormatRepository $formatRepository,
         private readonly PrintFulfilmentRegistry $fulfilmentRegistry,
         private readonly GalleryPrintEmailInterface $printEmail,
         private readonly ConfigServiceInterface $configService,
@@ -151,6 +155,7 @@ class GalleryPrintBasketItemProvider implements BasketItemProviderInterface, Cat
                 'format' => $format->getSlug(),
                 'formatLabel' => $format->getLabel(),
                 'sku' => $format->getSku(),
+                'weight' => $format->getWeight(),
                 'price' => $format->getPrice(),
                 // The shop's own currency, read here as the other providers do: a row prints its price with it, and an order keeps saying what it was charged in
                 'currency' => (string) $this->configService->get('shop-currency'),
@@ -176,6 +181,21 @@ class GalleryPrintBasketItemProvider implements BasketItemProviderInterface, Cat
             'totalVat' => VatCalculator::included($total, $format->getVat()),
             'total' => $total,
         ];
+    }
+
+    // Prints are posted only while the print service is switched on and its catalogue holds a format - see ShippingBasketItemProviderInterface
+    public function shipsParcels(): bool
+    {
+        return $this->printService->isEnabled() && $this->formatRepository->count([]) > 0;
+    }
+
+    // What the line weighs, the format's packed weight frozen into the basket taken as many times as it was ordered - see WeighableBasketItemProviderInterface
+    public function getWeight(array $itemData): ?int
+    {
+        // Read with defaults: a line snapshotted before formats were weighed carries no such key, and an unweighed format is counted as nothing rather than as zero
+        $weight = $itemData['item']['weight'] ?? null;
+
+        return null === $weight ? null : (int) $weight * max(1, (int) ($itemData['quantity'] ?? 1));
     }
 
     // A print is a sheet of paper in a tube - nothing here is ever delivered by e-mail

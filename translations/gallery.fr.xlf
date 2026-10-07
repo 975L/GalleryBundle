@@ -566,6 +566,10 @@
                 <source>help.print_format_slug</source>
                 <target>Ce qu'une commande déjà passée retient de ce format. Le renommer n'affecte pas les ventes anciennes, mais évitez-le une fois des tirages vendus.</target>
             </trans-unit>
+            <trans-unit id="hPLYDKJ">
+                <source>help.print_format_weight</source>
+                <target>Le poids du tirage une fois emballé, en grammes, pour le calcul des frais de port. À laisser vide si vous ne le pesez pas.</target>
+            </trans-unit>
             <trans-unit id="xzaPeIL">
                 <source>label.block_category</source>
                 <target>Catégorie</target>
@@ -1589,6 +1593,10 @@
             <trans-unit id="szsi9sl">
                 <source>label.print_format_vat</source>
                 <target>TVA (%)</target>
+            </trans-unit>
+            <trans-unit id="VDZUxBt">
+                <source>label.print_format_weight</source>
+                <target>Poids (g)</target>
             </trans-unit>
             <trans-unit id="6Lc0Irt">
                 <source>label.print_format_width</source>

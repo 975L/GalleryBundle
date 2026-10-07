@@ -17,12 +17,14 @@ use c975L\GalleryBundle\Entity\GalleryPrintCopy;
 use c975L\GalleryBundle\Entity\GalleryPrintFormat;
 use c975L\GalleryBundle\Model\PrintOffer;
 use c975L\GalleryBundle\Repository\GalleryPrintCopyRepository;
+use c975L\GalleryBundle\Repository\GalleryPrintFormatRepository;
 use c975L\GalleryBundle\Service\GalleryPrintBasketItemProvider;
 use c975L\GalleryBundle\Service\GalleryPrintEmailInterface;
 use c975L\GalleryBundle\Service\GalleryPrintService;
 use c975L\GalleryBundle\Service\PrintFulfilmentRegistry;
 use c975L\PaymentBundle\Entity\Basket;
 use Doctrine\ORM\EntityManagerInterface;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\MessageBusInterface;
@@ -110,6 +112,42 @@ class GalleryPrintBasketItemProviderTest extends TestCase
         $this->assertNull($line['parent']['url']);
     }
 
+    // The print switch and the catalogue's size, each state named so a failure says which one broke
+    /** @return iterable<string, array{bool, int, bool}> */
+    public static function provideShipsParcelsStates(): iterable
+    {
+        yield 'on with formats' => [true, 3, true];
+        yield 'off with formats' => [false, 3, false];
+        yield 'on without formats' => [true, 0, false];
+    }
+
+    // Prints are declared as posted only while the print service is switched on and has a format to sell
+    #[DataProvider('provideShipsParcelsStates')]
+    public function testPrintsShipParcelsOnlyWhileThePrintServiceCanSellOne(bool $enabled, int $formats, bool $expected): void
+    {
+        $printService = $this->createStub(GalleryPrintService::class);
+        $printService->method('isEnabled')->willReturn($enabled);
+
+        $formatRepository = $this->createStub(GalleryPrintFormatRepository::class);
+        $formatRepository->method('count')->willReturn($formats);
+
+        $provider = $this->createProvider($this->createOffer(false), ['printService' => $printService, 'formatRepository' => $formatRepository]);
+
+        $this->assertSame($expected, $provider->shipsParcels());
+    }
+
+    // The format's weight is frozen into the line, then taken as many times as it was ordered; a format nobody weighed, or a line snapshotted before formats were, weighs nothing
+    public function testALineWeighsItsFormatTimesItsQuantity(): void
+    {
+        $offer = $this->createOffer(false);
+        $offer->format->setWeight(250);
+        $provider = $this->createProvider($offer);
+
+        $this->assertSame(750, $provider->getWeight($provider->toBasketData($offer, 3)));
+        $this->assertNull($provider->getWeight(['item' => ['weight' => null], 'quantity' => 3]));
+        $this->assertNull($provider->getWeight(['item' => [], 'quantity' => 3]));
+    }
+
     /** @param array<string, mixed> $services */
     private function createProvider(PrintOffer $offer, array $services = []): GalleryPrintBasketItemProvider
     {
@@ -122,6 +160,7 @@ class GalleryPrintBasketItemProviderTest extends TestCase
         return new GalleryPrintBasketItemProvider(
             $services['printService'],
             $services['copyRepository'],
+            $services['formatRepository'],
             $this->createStub(PrintFulfilmentRegistry::class),
             $services['printEmail'],
             $services['configService'],
@@ -147,6 +186,7 @@ class GalleryPrintBasketItemProviderTest extends TestCase
         return [
             'printService' => $printService,
             'copyRepository' => $this->createStub(GalleryPrintCopyRepository::class),
+            'formatRepository' => $this->createStub(GalleryPrintFormatRepository::class),
             'printEmail' => $this->createStub(GalleryPrintEmailInterface::class),
             'configService' => $configService,
             'messageBus' => $messageBus,

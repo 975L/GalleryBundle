@@ -1,5 +1,16 @@
 # ChangeLog
 
+## v1.26.0
+
+Print formats carry a shipping weight
+
+- New `GalleryPrintFormat::$weight`, the packed weight in whole grams (07/10/2026) [Needs db update]
+- `GalleryPrintBasketItemProvider` implements PaymentBundle's `WeighableBasketItemProviderInterface` (07/10/2026)
+- `GalleryPrintBasketItemProvider` implements PaymentBundle's `ShippingBasketItemProviderInterface` (07/10/2026)
+- Prints ship parcels only while the sale is on and a format exists (07/10/2026)
+- Requires `c975l/payment-bundle` ^6.18 (07/10/2026)
+- Added the weight and `shipsParcels()` cases to `GalleryPrintBasketItemProviderTest` (07/10/2026)
+
 ## v1.25.3
 
 Photos and short gallery summaries described in a full sentence

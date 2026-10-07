@@ -60,6 +60,10 @@ class GalleryPrintFormat implements \Stringable
     #[ORM\Column]
     private float $vat = 20.0;
 
+    // What the print weighs once packed, in grams, whole - as prices are held in cents. Null on a format nobody weighed, which the basket adds up as nothing rather than as zero. Read by PaymentBundle through WeighableBasketItemProviderInterface, the tariff grid and the zones being its business
+    #[ORM\Column(nullable: true)]
+    private ?int $weight = null;
+
     // What the lab calls this product. The only field here that belongs to the lab and not to the shop - changing lab rewrites this column and nothing else
     #[ORM\Column(length: 100, nullable: true)]
     private ?string $sku = null;
@@ -172,6 +176,18 @@ class GalleryPrintFormat implements \Stringable
     public function setVat(float $vat): self
     {
         $this->vat = $vat;
+
+        return $this;
+    }
+
+    public function getWeight(): ?int
+    {
+        return $this->weight;
+    }
+
+    public function setWeight(?int $weight): self
+    {
+        $this->weight = $weight;
 
         return $this;
     }

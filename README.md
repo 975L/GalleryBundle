@@ -70,7 +70,7 @@ Add GalleryBundle on top of [c975L/CoreBundle](https://github.com/975L/CoreBundl
 - EasyAdmin
 - VichUploader Bundle in `^3.0`
 - `symfony/expression-language`, which the public routes' condition is evaluated with (see [public routes](#public-routes)) — pulled in by Composer
-- [c975L/PaymentBundle](https://github.com/975L/PaymentBundle) in `^6.9.3` — the one basket a print is bought through. Required rather than suggested so the print shop is there to be switched on, instead of being a feature nobody knows exists
+- [c975L/PaymentBundle](https://github.com/975L/PaymentBundle) in `^6.18` — the one basket a print is bought through. Required rather than suggested so the print shop is there to be switched on, instead of being a feature nobody knows exists
 
 `GalleryMedia::$user` is typed against `c975L\ConfigBundle\Contract\UserInterface`: your `App\Entity\User` must implement it. The scaffolded `User` already does; an older one adds the `implements` itself, with no migration and no configuration change.
 
@@ -407,7 +407,8 @@ before anything should be on sale, and inferring would turn developing into publ
 
 #### The catalogue, and what a photograph is actually offered at
 
-**Print formats** is the catalogue: a label, a size in centimetres, its dpi, its price and vat, and the
+**Print formats** is the catalogue: a label, a size in centimetres, its dpi, its price and vat, its packed
+weight in grams (what PaymentBundle's delivery grid prices the parcel on, left empty if unweighed), and the
 **sku the lab knows it by** — distinct from the slug, and the only one of the two ever sent to a lab, so
 renaming a format in the back office never renames it at the printer.
 
@@ -492,7 +493,9 @@ then naming the rank alone.
 The sale plugs into [PaymentBundle](https://github.com/975L/PaymentBundle)'s one basket as a
 `BasketItemProviderInterface` of kind `gallery_print`. It also answers PaymentBundle's
 `CatalogueBasketItemProviderInterface`, so the basket's "continue shopping" button goes back to the galleries on a
-site running the gallery and the basket without a shop. Once paid:
+site running the gallery and the basket without a shop. It answers `ShippingBasketItemProviderInterface` too, so
+the shipping health check asks for a delivery grid only while the sale is switched on and the catalogue holds a
+format, and `WeighableBasketItemProviderInterface`, a line weighing its format's weight times its quantity. Once paid:
 
 - An **open edition** goes straight to the lab, over Messenger, away from the request that paid for it.
 - A **limited edition** stops and waits: two e-mails go out — the buyer's, naming the numbers they bought,
