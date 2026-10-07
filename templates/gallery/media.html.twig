@@ -4,9 +4,11 @@
 {% set title = 'label.gallery_media'|trans({}, 'gallery') ~ ' - ' ~ (media.title is not empty ? media.title : category.title) %}
 {# The meta description and the og:description of the page: the caption an admin wrote when there is one, nobody summarising a photo better than whoever filed it. Without one it is composed rather than left empty - the site it lives on, the gallery it belongs to, its own title, who took it, a photo's sentence being these four said in order. Empty parts are dropped rather than left as an empty slot between two separators, and a credit naming the site itself is dropped too: a photographer's own site would otherwise open and close every one of its descriptions with the same name #}
 {% set siteName = config('site-name') %}
+{% set composedSummary = [siteName, category.title, media.title, media.credits == siteName ? null : media.credits]|filter(v => v is not empty)|join(' - ') %}
+{# Four short names often make less than a description is expected to hold (ConfigBundle's ContentQualityAnalyzer::DESCRIPTION_MIN_LENGTH, 50): they are then said inside a sentence naming the media, its gallery and the site #}
 {% set summarySocialNetwork = media.description is not empty
     ? media.description
-    : [siteName, category.title, media.title, media.credits == siteName ? null : media.credits]|filter(v => v is not empty)|join(' - ') %}
+    : (composedSummary|length >= 50 ? composedSummary : 'text.meta_media'|trans({'%media%': media.title is not empty ? media.title : category.title, '%category%': category.title, '%site%': siteName}, 'gallery')) %}
 {# The photo is what the page is for, so it is what a share of it shows - stated here, the layout's own chain (the url's row, then the site's default og-image, then the logo) is only ever reached by a media carrying no file #}
 {# The stored (medium) file, 1024px wide: the thumbnail is capped at 600 and cropped by the grid, and the high resolution weighs megabytes for a card nobody views at 2048px. A video entry shares its still, which is the image it has #}
 {% if media.filename is not null %}

@@ -734,7 +734,8 @@ Where the **title** names the media in a grid and doubles as its `alt` text, the
 to say about it: where it was taken, who is in it, what the visitor is looking at. That is also why it is
 the page's own meta description and `og:description` when there is one — nobody summarises a photograph
 better than whoever filed it, and the composed sentence (see [the image a shared page
-carries](#the-image-a-shared-page-carries)) is only the fallback for a media carrying no caption.
+carries](#the-image-a-shared-page-carries)) is only the fallback for a media carrying no caption,
+itself said inside the `text.meta_media` sentence when shorter than 50 characters.
 
 It travels with its media through the export/import, an archive predating it importing medias without one.
 Three theme tokens size and color it (`--gallery-media-description-font-size`, `-line-height`, `-color`) —
@@ -909,7 +910,8 @@ markup, reused as the page's `description` / `og:description` metas — named af
 `Page::$summarySocialNetwork` and ConfigBundle's `UrlMetadata::$summarySocialNetwork`, which hold the
 same text in the same role, so a site meets one name for it rather than one per bundle. A category left
 without one — the automatic gallery first — falls back on the `text.meta_category` sentence naming it and the
-site, rather than an empty description.
+site, rather than an empty description - and so does one whose summary is shorter than 50 characters, that
+summary then closing the sentence.
 
 One field for both on purpose: what introduces a gallery to a reader is what introduces it to a search
 engine, and an admin made to type the same sentence twice would leave one of the two stale. The metas

@@ -1728,11 +1728,15 @@
             </trans-unit>
             <trans-unit id="HFrOJ4w">
                 <source>text.meta_category</source>
-                <target>« %category% », une galerie de photos et de vidéos de %site%, à parcourir en ligne.</target>
+                <target>« %category% », une galerie de photos et de vidéos de %site%, à parcourir en ligne. %summary%</target>
             </trans-unit>
             <trans-unit id="qFKsnoI">
                 <source>text.meta_gallery</source>
                 <target>Toutes les galeries de photos et de vidéos de %site%, à parcourir en ligne, galerie après galerie.</target>
+            </trans-unit>
+            <trans-unit id="ANvhc5C">
+                <source>text.meta_media</source>
+                <target>« %media% », de la galerie « %category% » de %site%, à voir en ligne.</target>
             </trans-unit>
         </body>
     </file>

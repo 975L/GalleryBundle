@@ -52,9 +52,22 @@ class GalleryMediaDescriptionTest extends TestCase
     public function testAMediaWithoutACaptionFallsBackOnTheComposedSentence(): void
     {
         $this->assertStringContainsString(
-            ": [siteName, category.title, media.title, media.credits == siteName ? null : media.credits]|filter(v => v is not empty)|join(' - ') %}",
+            "{% set composedSummary = [siteName, category.title, media.title, media.credits == siteName ? null : media.credits]|filter(v => v is not empty)|join(' - ') %}",
             $this->read(self::MEDIA_PAGE)
         );
+    }
+
+    // A composed sentence shorter than a description is expected to be is said inside a translated one naming the media, its gallery and the site
+    public function testAShortComposedSentenceFallsBackOnATranslatedOne(): void
+    {
+        $this->assertStringContainsString(
+            ": (composedSummary|length >= 50 ? composedSummary : 'text.meta_media'|trans({'%media%': media.title is not empty ? media.title : category.title, '%category%': category.title, '%site%': siteName}, 'gallery')) %}",
+            $this->read(self::MEDIA_PAGE)
+        );
+
+        foreach (['fr', 'en', 'es'] as $locale) {
+            $this->assertStringContainsString('<source>text.meta_media</source>', $this->read('translations/gallery.' . $locale . '.xlf'), $locale);
+        }
     }
 
     // The paragraph is styled by the bundle's own stylesheet rather than left to the site's paragraph rules

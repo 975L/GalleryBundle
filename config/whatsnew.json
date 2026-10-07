@@ -6,6 +6,11 @@
                 "en": "Search engines and social networks now get a description of your galleries even when you have not written one",
                 "fr": "Les moteurs de recherche et les réseaux sociaux reçoivent désormais une description de vos galeries, même si vous n'en avez pas écrit",
                 "es": "Los motores de búsqueda y las redes sociales reciben ahora una descripción de sus galerías, aunque no haya escrito ninguna"
+            },
+            {
+                "en": "Your photos and galleries with a very short description now get a full sentence in search results and social shares",
+                "fr": "Vos photos et galeries à la description très courte sont désormais présentées par une phrase complète dans les moteurs de recherche et les partages",
+                "es": "Sus fotos y galerías con una descripción muy corta se presentan ahora con una frase completa en los buscadores y al compartirlas"
             }
         ]
     },

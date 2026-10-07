@@ -1,5 +1,16 @@
 # ChangeLog
 
+## v1.25.3
+
+Photos and short gallery summaries described in a full sentence
+
+- A media whose composed description is shorter than 50 characters is described by a sentence naming it, its gallery and the site (07/10/2026)
+- A gallery whose summary is shorter than 50 characters is described by the sentence naming it, closed by that summary (07/10/2026)
+- Added the `text.meta_media` translation (07/10/2026)
+- `text.meta_category` takes the `%summary%` parameter (07/10/2026)
+- Added the short composed case to `GalleryMediaDescriptionTest` (07/10/2026)
+- Updated `GalleryDescriptionFallbackTest` (07/10/2026)
+
 ## v1.25.2
 
 Gallery pages described in a full sentence
