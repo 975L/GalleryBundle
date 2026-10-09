@@ -32,9 +32,6 @@ use Symfony\Component\Filesystem\Filesystem;
  */
 class GalleryPrintFileBuilder
 {
-    // Where built files wait for the lab to come and get them. Outside public/, reachable only through the signed route that serves them (see PrintFileController)
-    public const DIRECTORY = 'var/gallery-print';
-
     // Share of the print's width the signature is laid at, matching what UiBundle stamps derivatives with - a signature is recognisable by its proportion to the image, not by a number of pixels
     public const SIGNATURE_RATIO = 0.12;
 
@@ -47,6 +44,9 @@ class GalleryPrintFileBuilder
         private readonly Filesystem $filesystem,
         #[Autowire(param: 'kernel.project_dir')]
         private readonly string $projectDir,
+        // Where built files wait for the lab to come and get them. Outside public/, reachable only through the signed route that serves them (see PrintFileController)
+        #[Autowire(param: 'c975l_gallery.print_dir')]
+        private readonly string $printDir,
     ) {
     }
 
@@ -104,12 +104,18 @@ class GalleryPrintFileBuilder
         return $path;
     }
 
-    // Where a copy's print sits, keyed on the copy and not on the photograph: two sizes of the same photograph are two different files, and a numbered copy is not the same print as its neighbour
+    // Where a copy's print sits, keyed on the copy and not on the photograph: two sizes of the same photograph are two different files, and a numbered copy is not the same print as its neighbour. Its certificate joins the number, which two databases sharing the folder may both have given out
     public function getPath(GalleryPrintCopy $copy): ?string
     {
         $id = $copy->getId();
 
-        return null === $id ? null : sprintf('%s/%s/%d.jpg', $this->projectDir, self::DIRECTORY, $id);
+        if (null === $id) {
+            return null;
+        }
+
+        $certificate = $copy->getCertificate();
+
+        return sprintf('%s/%d%s.jpg', rtrim($this->printDir, '/'), $id, null !== $certificate ? '-' . $certificate : '');
     }
 
     // Frees what a shipped order no longer needs - these are the largest files this bundle writes, and keeping the print of every order ever placed is how a disk fills up

@@ -512,6 +512,10 @@ resolution (`Service\GalleryPrintFileBuilder`) — a web-sized signature blown u
 lab fetches it through a signed url expiring at seven days (route `gallery_print_file`); an unsigned
 request gets 404 rather than 403, an url nobody signed naming nothing worth confirming exists.
 
+The file waits in `var/gallery-print/`, named after the copy and its certificate. An app running a second
+context against its own database (a demo) moves it by setting the `c975l_gallery.print_dir` container
+parameter, which wins over the bundle's default.
+
 #### From the lab to the letterbox
 
 The lab reports an order twice over, and both roads end at `Service\GalleryPrintOrderTracker`, the one

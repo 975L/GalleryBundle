@@ -1,5 +1,14 @@
 # ChangeLog
 
+## v1.26.1
+
+Print files folder set by a container parameter
+
+- Added the `c975l_gallery.print_dir` container parameter, defaulting to `var/gallery-print` (09/10/2026)
+- Removed `GalleryPrintFileBuilder::DIRECTORY` (09/10/2026)
+- Print files are named after the copy and its certificate (09/10/2026)
+- Added `GalleryPrintFileBuilderTest` (09/10/2026)
+
 ## v1.26.0
 
 Print formats carry a shipping weight

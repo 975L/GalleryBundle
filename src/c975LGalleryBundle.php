@@ -24,6 +24,9 @@ class c975LGalleryBundle extends AbstractBundle
     public function loadExtension(array $config, ContainerConfigurator $containerConfigurator, ContainerBuilder $containerBuilder): void
     {
         $containerConfigurator->import('../config/services.yaml');
+
+        // Where built prints wait for the lab (see GalleryPrintFileBuilder) - an app running a second context against its own database (a demo) sets its own, or that context's prints land among the site's under the same copy numbers. An app parameter wins over this one
+        $containerBuilder->setParameter('c975l_gallery.print_dir', '%kernel.project_dir%/var/gallery-print');
     }
 
     // asset_mapper needs this path so Twig's asset()/importmap can resolve "@c975l/gallery-bundle" to the bundle's own assets/ directory (the front-office media preload controller)
