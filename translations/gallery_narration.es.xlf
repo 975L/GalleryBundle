@@ -64,7 +64,7 @@
             </trans-unit>
             <trans-unit id="ldd2Eo5">
                 <source>narration.guided_step_gallery_library_sorting_badges</source>
-                <target>Mire debajo de una miniatura: las pastillas dicen si la fotografía está oculta, si está en venta, en cuántos ejemplares, y cuántos visitantes le han dado me gusta. Ordena sin abrir ni una sola.</target>
+                <target>Mire debajo de una miniatura: las pastillas dicen si la fotografía está oculta, si está en venta, en cuántos ejemplares, cuántos visitantes le han dado me gusta, y si está reservada o ya publicada en las redes sociales. Ordena sin abrir ni una sola.</target>
             </trans-unit>
             <trans-unit id="Li2fjI9">
                 <source>narration.guided_step_gallery_library_sorting_done</source>
@@ -240,7 +240,7 @@
             </trans-unit>
             <trans-unit id="Ag8_NhW">
                 <source>narration.guided_step_gallery_social_done</source>
-                <target>El resto se ajusta en el módulo de redes sociales: las redes donde publicar, el ritmo, la plantilla del mensaje. Una foto retirada del sitio mientras tanto nunca se publica.</target>
+                <target>El resto se ajusta en el módulo de redes sociales: las redes donde publicar, el ritmo, la plantilla del mensaje. Una foto retirada del sitio mientras tanto nunca se publica. En la lista de fotos, una pastilla indica las que un borrador ha reservado o que ya han salido. En un borrador, Cambiar el contenido saca otra.</target>
             </trans-unit>
             <trans-unit id="UEMXI2U">
                 <source>narration.guided_step_gallery_social_entry</source>

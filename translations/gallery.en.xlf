@@ -200,7 +200,7 @@
             </trans-unit>
             <trans-unit id="tEl1wBS">
                 <source>description.guided_step_gallery_library_sorting_badges</source>
-                <target>Under each thumbnail: masked, on sale, the edition size, and how many visitors liked it. Enough to sort without opening a single photograph.</target>
+                <target>Under each thumbnail: masked, on sale, the edition size, how many visitors liked it, and whether a social network reserved or published it. Enough to sort without opening a single photograph.</target>
             </trans-unit>
             <trans-unit id="D4PA3R6">
                 <source>description.guided_step_gallery_library_sorting_done</source>
@@ -372,7 +372,7 @@
             </trans-unit>
             <trans-unit id="mtSCDaj">
                 <source>description.guided_step_gallery_social_done</source>
-                <target>The networks and the pace are set on the social networks side.</target>
+                <target>The networks and the pace are set on the social networks side. The photo list then shows those reserved or already published.</target>
             </trans-unit>
             <trans-unit id="mnsoh7Y">
                 <source>description.guided_step_gallery_social_entry</source>
@@ -626,6 +626,10 @@
                 <source>label.description</source>
                 <target>Description</target>
             </trans-unit>
+            <trans-unit id="BNowKFG">
+                <source>label.feed_gallery</source>
+                <target>Latest photos</target>
+            </trans-unit>
             <trans-unit id="LHpZe.c">
                 <source>label.fieldset_this_language</source>
                 <target>In this language (%language%)</target>
@@ -801,6 +805,18 @@
             <trans-unit id="HEqsH6R">
                 <source>label.gallery_media_slug_help</source>
                 <target>Forms the media public URL. Posed once at upload and no longer following the title: editing it here sets up a redirect from the old URL. Emptied, it is rebuilt from the title.</target>
+            </trans-unit>
+            <trans-unit id="6GHHnG5">
+                <source>label.gallery_media_social_date_format</source>
+                <target>m/d</target>
+            </trans-unit>
+            <trans-unit id="gEONyN.">
+                <source>label.gallery_media_social_published</source>
+                <target>Published %date%</target>
+            </trans-unit>
+            <trans-unit id="D0XUPes">
+                <source>label.gallery_media_social_reserved</source>
+                <target>Reserved %date%</target>
             </trans-unit>
             <trans-unit id="HTN3j6r">
                 <source>label.gallery_media_title_help</source>

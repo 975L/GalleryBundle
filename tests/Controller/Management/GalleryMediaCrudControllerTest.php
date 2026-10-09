@@ -27,18 +27,23 @@ use c975L\GalleryBundle\Service\GalleryMediaSlugger;
 use c975L\GalleryBundle\Service\GalleryTranslator;
 use c975L\GalleryBundle\Service\GalleryUrlRedirector;
 use c975L\GalleryBundle\Service\UploadLimits;
+use c975L\UiBundle\Contract\SocialContentStatusProviderInterface;
 use c975L\UiBundle\Contract\VichWatermarkableInterface;
+use c975L\UiBundle\Model\SocialContentStatus;
 use c975L\UiBundle\Repository\RatingRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\ORM\UnitOfWork;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Filters;
+use EasyCorp\Bundle\EasyAdminBundle\Config\KeyValueStore;
 use EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext;
 use EasyCorp\Bundle\EasyAdminBundle\Context\RequestContext;
 use EasyCorp\Bundle\EasyAdminBundle\Contracts\Provider\AdminContextProviderInterface;
+use EasyCorp\Bundle\EasyAdminBundle\Dto\EntityDto;
 use EasyCorp\Bundle\EasyAdminBundle\Dto\FieldDto;
 use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\SlugField;
@@ -743,5 +748,42 @@ class GalleryMediaCrudControllerTest extends TestCase
         $this->createControllerWithRouter()->deleteEntity($this->createEntityManager([], $persisted), $media);
 
         $this->assertSame($cover, $category->getCoverMedia());
+    }
+
+    // A media a post holds says so on its tile, reserved or published with its date in the language's format - nothing for one no post holds. SocialBundle is asked once, about the medias the page draws only
+    public function testTheIndexSaysWhetherAPostHoldsEachMediaItDraws(): void
+    {
+        $statuses = $this->createMock(SocialContentStatusProviderInterface::class);
+        $statuses->expects($this->once())->method('getStatuses')->with('gallery_media', ['7', '8', '9'])->willReturn([
+            '7' => new SocialContentStatus(SocialContentStatus::PUBLISHED, new \DateTimeImmutable('2026-10-09')),
+            '9' => new SocialContentStatus(SocialContentStatus::RESERVED, new \DateTimeImmutable('2026-10-12')),
+        ]);
+        $translator = $this->createStub(TranslatorInterface::class);
+        $translator->method('trans')->willReturnCallback(static fn (string $id, array $parameters = []): string => 'label.gallery_media_social_date_format' === $id ? 'm/d' : $id . ' ' . implode(' ', $parameters));
+
+        // Only what the index reads, the rest of the constructor having nothing to do with it
+        $controller = new \ReflectionClass(GalleryMediaCrudController::class)->newInstanceWithoutConstructor();
+        $properties = [
+            'likeCounter' => new GalleryMediaLikeCounter($this->createConfigService(), $this->createStub(RatingRepository::class)),
+            'socialStatuses' => $statuses,
+            'translator' => $translator,
+        ];
+        foreach ($properties as $property => $value) {
+            new \ReflectionProperty(GalleryMediaCrudController::class, $property)->setValue($controller, $value);
+        }
+
+        $entities = [];
+        foreach ([7, 8, 9] as $id) {
+            $media = new GalleryMedia();
+            new \ReflectionProperty(GalleryMedia::class, 'id')->setValue($media, $id);
+            $entities[] = new EntityDto(GalleryMedia::class, new ClassMetadata(GalleryMedia::class), null, $media);
+        }
+
+        $parameters = $controller->configureResponseParameters(KeyValueStore::new(['pageName' => Crud::PAGE_INDEX, 'entities' => $entities]));
+
+        $this->assertSame([
+            '7' => ['published' => true, 'label' => 'label.gallery_media_social_published 10/09'],
+            '9' => ['published' => false, 'label' => 'label.gallery_media_social_reserved 10/12'],
+        ], $parameters->get('media_social'));
     }
 }

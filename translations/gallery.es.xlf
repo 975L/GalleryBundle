@@ -200,7 +200,7 @@
             </trans-unit>
             <trans-unit id="tEl1wBS">
                 <source>description.guided_step_gallery_library_sorting_badges</source>
-                <target>Bajo cada miniatura: oculta, en venta, el tamaño de la edición y cuántos visitantes le dieron me gusta. Suficiente para ordenar sin abrir ni una sola fotografía.</target>
+                <target>Bajo cada miniatura: oculta, en venta, el tamaño de la edición, cuántos visitantes le dieron me gusta y si una red social la reservó o publicó. Suficiente para ordenar sin abrir ni una sola fotografía.</target>
             </trans-unit>
             <trans-unit id="D4PA3R6">
                 <source>description.guided_step_gallery_library_sorting_done</source>
@@ -372,7 +372,7 @@
             </trans-unit>
             <trans-unit id="mtSCDaj">
                 <source>description.guided_step_gallery_social_done</source>
-                <target>Las redes y el ritmo se ajustan en la parte de redes sociales.</target>
+                <target>Las redes y el ritmo se ajustan en la parte de redes sociales. La lista de fotos indica luego las reservadas o ya publicadas.</target>
             </trans-unit>
             <trans-unit id="mnsoh7Y">
                 <source>description.guided_step_gallery_social_entry</source>
@@ -626,6 +626,10 @@
                 <source>label.description</source>
                 <target>Descripción</target>
             </trans-unit>
+            <trans-unit id="BNowKFG">
+                <source>label.feed_gallery</source>
+                <target>Últimas fotos</target>
+            </trans-unit>
             <trans-unit id="LHpZe.c">
                 <source>label.fieldset_this_language</source>
                 <target>En este idioma (%language%)</target>
@@ -801,6 +805,18 @@
             <trans-unit id="HEqsH6R">
                 <source>label.gallery_media_slug_help</source>
                 <target>Forma la URL pública del medio. Fijado una vez al enviarlo y ya no sigue al título: modificarlo aquí crea una redirección desde la URL anterior. Vaciado, se reconstruye a partir del título.</target>
+            </trans-unit>
+            <trans-unit id="6GHHnG5">
+                <source>label.gallery_media_social_date_format</source>
+                <target>d/m</target>
+            </trans-unit>
+            <trans-unit id="gEONyN.">
+                <source>label.gallery_media_social_published</source>
+                <target>Publicada %date%</target>
+            </trans-unit>
+            <trans-unit id="D0XUPes">
+                <source>label.gallery_media_social_reserved</source>
+                <target>Reservada %date%</target>
             </trans-unit>
             <trans-unit id="HTN3j6r">
                 <source>label.gallery_media_title_help</source>

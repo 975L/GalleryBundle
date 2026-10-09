@@ -16,7 +16,8 @@
                     owner: true,
                     cover_media_id: null,
                     selectable: false,
-                    likes: media_likes[media.id]|default(0)
+                    likes: media_likes[media.id]|default(0),
+                    social: media_social[media.id]|default(null)
                 }, with_context: false) }}
             {% endif %}
         {% endfor %}

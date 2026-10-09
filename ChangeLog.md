@@ -1,5 +1,19 @@
 # ChangeLog
 
+## v1.27.0
+
+Atom feed of the latest photographs and browsable social source
+
+- Added `GalleryFeedProvider`, serving the latest medias at `/feed/gallery.xml` (09/10/2026)
+- `GallerySocialContentSource` implements `BrowsableSocialContentSourceInterface` (09/10/2026)
+- Added `GalleryMediaRepository::findRecent()` and `findPostableLatest()` (09/10/2026)
+- Media tiles show whether a social post reserved or published the photograph (09/10/2026)
+- Media mover keeps the folders a namer put above `gallery/`, refusing any `..` (09/10/2026)
+- `GalleryMedia::$user` is set to null when its account is deleted (09/10/2026) [Needs db update]
+- Requires `c975l/core-bundle` ^1.61 (09/10/2026)
+- Guided tour mentions the social badge (09/10/2026)
+- Added `GalleryFeedProviderTest` (09/10/2026)
+
 ## v1.26.1
 
 Print files folder set by a container parameter

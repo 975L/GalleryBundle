@@ -64,7 +64,7 @@
             </trans-unit>
             <trans-unit id="ldd2Eo5">
                 <source>narration.guided_step_gallery_library_sorting_badges</source>
-                <target>Regardez sous une vignette : les pastilles disent si la photographie est masquée, si elle est en vente, en combien d'exemplaires, et combien de visiteurs l'ont aimée. Vous triez sans en ouvrir une seule.</target>
+                <target>Regardez sous une vignette : les pastilles disent si la photographie est masquée, si elle est en vente, en combien d'exemplaires, combien de visiteurs l'ont aimée, et si elle est réservée ou déjà publiée sur les réseaux sociaux. Vous triez sans en ouvrir une seule.</target>
             </trans-unit>
             <trans-unit id="Li2fjI9">
                 <source>narration.guided_step_gallery_library_sorting_done</source>
@@ -240,7 +240,7 @@
             </trans-unit>
             <trans-unit id="Ag8_NhW">
                 <source>narration.guided_step_gallery_social_done</source>
-                <target>Le reste se règle dans le module des réseaux sociaux : les réseaux où publier, le rythme, le modèle du message. Une photo retirée du site entre-temps n’est jamais publiée.</target>
+                <target>Le reste se règle dans le module des réseaux sociaux : les réseaux où publier, le rythme, le modèle du message. Une photo retirée du site entre-temps n’est jamais publiée. Dans la liste des photos, une pastille indique celles qu'un brouillon a réservées ou qui sont déjà parties. Sur un brouillon, Changer le contenu en tire une autre.</target>
             </trans-unit>
             <trans-unit id="UEMXI2U">
                 <source>narration.guided_step_gallery_social_entry</source>

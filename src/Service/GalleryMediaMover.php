@@ -27,6 +27,9 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 #[AsDoctrineListener(event: Events::postFlush)]
 class GalleryMediaMover
 {
+    // The folder every media name starts with, above this bundle's own directory
+    private const string MEDIAS_ROOT = 'medias/';
+
     /** @var array<string, string> absolute path of a file waiting to be moved => where it goes */
     private array $pendingRenames = [];
 
@@ -192,14 +195,16 @@ class GalleryMediaMover
     }
 
     // Where a file lands once its media has changed gallery, null for a media carrying none - the move is queued and the new name handed back for the row
-    // Only a name under this bundle's own directory is moved at all, exactly as an import only honours those (see GalleryImportProvider::archivedFilename): anything else was written by something that is not this bundle, and is left exactly where it is
+    // Only a name under this bundle's own directory is moved at all, like an import, which only honours medias/gallery/ itself (see GalleryImportProvider::archivedFilename): anything else was written by something that is not this bundle, and is left exactly where it is. That directory may sit some folders further down than "medias/", where a namer decorating the site's put it - a sandbox keeping each visitor's files apart: those folders are kept, only the gallery below them changes, and a segment starting with a dot ("..") is never one of them
     private function queue(?string $filename, string $root, string $directory): ?string
     {
-        if (null === $filename || !str_starts_with($filename, GalleryMedia::MEDIA_DIRECTORY . '/')) {
+        $bundleDirectory = substr(GalleryMedia::MEDIA_DIRECTORY, \strlen(self::MEDIAS_ROOT));
+
+        if (null === $filename || 1 !== preg_match('#^(' . preg_quote(self::MEDIAS_ROOT, '#') . '(?:[^/.][^/]*/)*?)' . preg_quote($bundleDirectory, '#') . '/#', $filename, $matches)) {
             return $filename;
         }
 
-        $moved = $directory . '/' . basename($filename);
+        $moved = $matches[1] . substr($directory, \strlen(self::MEDIAS_ROOT)) . '/' . basename($filename);
         if ($moved !== $filename) {
             $this->pendingRenames[$this->projectDir . '/' . $root . $filename] = $this->projectDir . '/' . $root . $moved;
         }

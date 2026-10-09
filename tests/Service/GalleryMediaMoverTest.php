@@ -327,6 +327,20 @@ class GalleryMediaMoverTest extends TestCase
         $this->assertFalse($this->exists('public/medias/gallery/volvo/volvo-240-abc123-thumb.webp'));
     }
 
+    // A name a namer put one folder further down - a sandbox's own, in a demo - is moved within that folder, never back into the site's
+    public function testANameUnderANamersFolderStaysInIt(): void
+    {
+        $source = $this->createCategory('voitures', 'Voitures');
+        $target = $this->createCategory('volvo', 'Volvo');
+        $media = $this->createMedia($source, 'volvo-240');
+        $media->setFilename('medias/demo/visitor/gallery/voitures/volvo-240-abc123.webp');
+
+        $mover = $this->createMover();
+        $mover->move($this->createEntityManager(), [$media], $target);
+
+        $this->assertSame('medias/demo/visitor/gallery/volvo/volvo-240-abc123.webp', $media->getFilename());
+    }
+
     // A name written by something that is not this bundle is left exactly where it is, exactly as an import only honours those under its own directory
     public function testANameOutsideTheBundlesDirectoryIsLeftWhereItIs(): void
     {
@@ -339,6 +353,20 @@ class GalleryMediaMoverTest extends TestCase
         $mover->move($this->createEntityManager(), [$media], $target);
 
         $this->assertSame('uploads/legacy.webp', $media->getFilename());
+    }
+
+    // A name climbing out of "medias/" through a ".." is no namer's folder, and is left where it is
+    public function testANameClimbingOutOfTheMediasFolderIsLeftWhereItIs(): void
+    {
+        $source = $this->createCategory('voitures', 'Voitures');
+        $target = $this->createCategory('volvo', 'Volvo');
+        $media = $this->createMedia($source, 'volvo-240');
+        $media->setFilename('medias/../gallery/voitures/volvo-240-abc123.webp');
+
+        $mover = $this->createMover();
+        $mover->move($this->createEntityManager(), [$media], $target);
+
+        $this->assertSame('medias/../gallery/voitures/volvo-240-abc123.webp', $media->getFilename());
     }
 
     // A file replaced in the very save that moves the media is Vich's to store, under the gallery the media now belongs to - moving what is about to be deleted would race the cleanup for the same names

@@ -36,8 +36,8 @@
         <p class="text-center small text-muted mb-1">{{ media.category.title }}</p>
     {% endif %}
 
-    {# What a triage pass reads off a thumbnail without opening it - masked or not, on sale and in how many copies, and how many visitors liked it, the likes being handed in rather than counted here, one query answering for the whole grid (see GalleryMediaLikeCounter, asked once per grid by both callers) and 0 on a site that shows no heart at all #}
-    {% if media.hidden or media.printable or likes|default(0) > 0 %}
+    {# What a triage pass reads off a thumbnail without opening it - masked or not, on sale and in how many copies, and how many visitors liked it, the likes being handed in rather than counted here, one query answering for the whole grid (see GalleryMediaLikeCounter, asked once per grid by both callers) and 0 on a site that shows no heart at all - and whether a social post holds it, null on a site without SocialBundle and on a category's own grid #}
+    {% if media.hidden or media.printable or likes|default(0) > 0 or social|default(null) %}
         <p class="text-center small mb-1">
             {% if media.hidden %}
                 <span class="badge bg-secondary">{{ ('label.gallery_media_hidden'|trans({}, 'gallery')) }}</span>
@@ -53,6 +53,9 @@
                 <span class="badge bg-light text-dark" aria-label="{{ ('label.gallery_media_likes'|trans({'%count%': likes}, 'gallery')) }}">
                     <i class="fa fa-heart" aria-hidden="true"></i> {{ likes }}
                 </span>
+            {% endif %}
+            {% if social|default(null) %}
+                <span class="badge {{ social.published ? 'bg-success' : 'bg-warning text-dark' }}">{{ social.label }}</span>
             {% endif %}
         </p>
     {% endif %}

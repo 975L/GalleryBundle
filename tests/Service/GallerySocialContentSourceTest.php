@@ -18,6 +18,7 @@ use c975L\GalleryBundle\Repository\GalleryCategoryRepository;
 use c975L\GalleryBundle\Repository\GalleryMediaRepository;
 use c975L\GalleryBundle\Routing\GalleryRoutePrefix;
 use c975L\GalleryBundle\Service\GallerySocialContentSource;
+use c975L\UiBundle\Model\SocialContent;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
@@ -54,6 +55,12 @@ class GallerySocialContentSourceTest extends TestCase
             return $media;
         });
         $repository->method('findPostable')->willReturn($media);
+        $repository->method('findPostableLatest')->willReturnCallback(function (array $excludedIds, array $categoryIds, int $limit) use ($media): array {
+            $this->excludedIds = $excludedIds;
+            $this->categoryIds = $categoryIds;
+
+            return null === $media ? [] : [$media];
+        });
         $repository->method('findPostableIds')->willReturnCallback(function (array $excludedIds, array $categoryIds = []) use ($media): array {
             $this->excludedIds = $excludedIds;
             $this->categoryIds = $categoryIds;
@@ -166,5 +173,24 @@ class GallerySocialContentSourceTest extends TestCase
         new \ReflectionProperty(GalleryCategory::class, 'automaticKind')->setValue($latest, 'latest');
 
         $this->assertSame(['3' => 'Montagne'], $this->createSource(null, categories: [$mountain, $latest])->getScopes());
+    }
+
+    // What a post's photograph is chosen among: the ones still free in the galleries given, as contents
+    public function testTheContentsToChooseAreTheFreePhotographsOfTheGalleriesGiven(): void
+    {
+        $contents = $this->createSource($this->createMedia())->findContents(['7'], ['3'], 48);
+
+        $this->assertSame(['42'], array_map(static fn (SocialContent $content): string => $content->sourceId, $contents));
+        $this->assertSame([['7'], ['3']], [$this->excludedIds, $this->categoryIds]);
+    }
+
+    // A photograph's gallery, the one it is drawn again from - none for one taken off the site
+    public function testAPhotographsScopeIsItsGallery(): void
+    {
+        $media = $this->createMedia();
+        new \ReflectionProperty(GalleryCategory::class, 'id')->setValue($media->getCategory(), 3);
+
+        $this->assertSame('3', $this->createSource($media)->getContentScope('42'));
+        $this->assertNull($this->createSource(null)->getContentScope('42'));
     }
 }

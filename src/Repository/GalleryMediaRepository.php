@@ -124,6 +124,13 @@ class GalleryMediaRepository extends ServiceEntityRepository
         return null === $day ? [] : $this->latestMedias($day, $max);
     }
 
+    // The most recently added medias whatever their date, most recent first - what the Atom feed lists (see GalleryFeedProvider)
+    /** @return list<GalleryMedia> */
+    public function findRecent(int $limit): array
+    {
+        return $this->latestMedias(null, $limit);
+    }
+
     // The most recently added medias, from a date on or from the whole table, most recent first
     // A trashed category's medias are left out as its own trashed medias are: they are off the site, and an addition is only an addition to something that shows. A masked category's are left out for the same reason (see GalleryCategory::$hidden), a gallery taken off the site taking its photographs with it. So are the medias of the automatic category itself, which a category flagged after it was filled would otherwise feed itself with
     /** @return list<GalleryMedia> */
@@ -162,6 +169,23 @@ class GalleryMediaRepository extends ServiceEntityRepository
             ->setMaxResults(1)
             ->getQuery()
             ->getOneOrNullResult();
+    }
+
+    // The photographs not posted yet, the latest first - what a post's content is chosen among
+    /**
+     * @param list<string> $excludedIds
+     * @param list<string> $categoryIds
+     *
+     * @return list<GalleryMedia>
+     */
+    public function findPostableLatest(array $excludedIds, array $categoryIds, int $limit): array
+    {
+        return $this->postableQuery($excludedIds, $categoryIds)
+            ->orderBy('m.createdAt', \SortDirection::Descending)
+            ->addOrderBy('m.id', \SortDirection::Descending)
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
     }
 
     // The ids of every photograph not posted yet, for a draw at random among them - loading the photographs themselves to pick one would read the whole library

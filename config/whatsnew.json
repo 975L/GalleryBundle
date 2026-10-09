@@ -1,5 +1,25 @@
 [
     {
+        "date": "2026-10-09",
+        "description": [
+            {
+                "en": "Your visitors can now follow your latest photos in their feed reader",
+                "fr": "Vos visiteurs peuvent désormais suivre vos dernières photos dans leur lecteur de flux",
+                "es": "Sus visitantes pueden ahora seguir sus últimas fotos en su lector de feeds"
+            },
+            {
+                "en": "The photo list now shows which photos are reserved or already published on the social networks",
+                "fr": "La liste des photos indique désormais celles réservées ou déjà publiées sur les réseaux sociaux",
+                "es": "La lista de fotos indica ahora las reservadas o ya publicadas en las redes sociales"
+            },
+            {
+                "en": "On a social post prepared from the site, you can now swap the photo for another one from the same gallery or pick it yourself",
+                "fr": "Sur un post préparé depuis le site, vous pouvez désormais changer la photo pour une autre de la même galerie ou la choisir vous-même",
+                "es": "En una publicación preparada desde el sitio, ahora puede cambiar la foto por otra de la misma galería o elegirla usted mismo"
+            }
+        ]
+    },
+    {
         "date": "2026-10-07",
         "description": [
             {

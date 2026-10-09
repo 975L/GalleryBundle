@@ -16,13 +16,14 @@ use c975L\GalleryBundle\Entity\GalleryMedia;
 use c975L\GalleryBundle\Repository\GalleryCategoryRepository;
 use c975L\GalleryBundle\Repository\GalleryMediaRepository;
 use c975L\GalleryBundle\Routing\GalleryRoutePrefix;
+use c975L\UiBundle\Contract\BrowsableSocialContentSourceInterface;
 use c975L\UiBundle\Contract\ScopedSocialContentSourceInterface;
 use c975L\UiBundle\Model\SocialContent;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 // Hands SocialBundle's publication the gallery's photographs, one at a time - drawn at random, or oldest first, as "gallery-social-order" says, from the galleries a series picked if any - a site without SocialBundle simply never asks. What went out where is SocialBundle's to record, so nothing here nor on GalleryMedia keeps track of it
-class GallerySocialContentSource implements ScopedSocialContentSourceInterface
+class GallerySocialContentSource implements BrowsableSocialContentSourceInterface, ScopedSocialContentSourceInterface
 {
     public function __construct(
         private readonly GalleryMediaRepository $mediaRepository,
@@ -79,6 +80,20 @@ class GallerySocialContentSource implements ScopedSocialContentSourceInterface
         $ids = $this->mediaRepository->findPostableIds($excludedIds, $scopeIds);
 
         return [] === $ids ? null : $this->toContent($this->mediaRepository->findPostable($ids[array_rand($ids)]));
+    }
+
+    // The photographs still free in the galleries given, the latest first - what a draft's content is chosen among
+    public function findContents(array $excludedIds, array $scopeIds, int $limit): array
+    {
+        return array_values(array_filter(array_map($this->toContent(...), $this->mediaRepository->findPostableLatest($excludedIds, $scopeIds, $limit))));
+    }
+
+    // The gallery a photograph is in, the one a post's photograph is drawn again from
+    public function getContentScope(string $sourceId): ?string
+    {
+        $categoryId = $this->mediaRepository->findPostable((int) $sourceId)?->getCategory()?->getId();
+
+        return null === $categoryId ? null : (string) $categoryId;
     }
 
     // Null as well for a photograph taken off the site since the post was prepared, or whose gallery was: a reviewer publishing it a day later must not put back what was withdrawn

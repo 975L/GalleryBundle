@@ -157,6 +157,18 @@ class GalleryMediaRepositoryTest extends TestCase
         $this->assertSame([], $repository->findLatest(7, 0));
     }
 
+    // The feed reads the most recent medias whatever their date, the latest first and never past its ceiling
+    public function testFindRecentIgnoresTheWindowAndKeepsTheLatestFirst(): void
+    {
+        $old = $this->createMediaAddedOn('-400 days');
+        $recent = $this->createMediaAddedOn('-1 day');
+        $repository = new GalleryMediaRepositoryLatestFixture([$old, $recent, $this->createMediaAddedOn('-30 days')]);
+
+        $this->assertSame($recent, $repository->findRecent(2)[0]);
+        $this->assertCount(2, $repository->findRecent(2));
+        $this->assertContains($old, $repository->findRecent(10));
+    }
+
     // One read for the whole listing, handed back under the id of the category each media belongs to - a caller then poses each list on its own category without going back to the database
     public function testFindVisibleByCategoriesGroupsTheMediasUnderTheirCategory(): void
     {

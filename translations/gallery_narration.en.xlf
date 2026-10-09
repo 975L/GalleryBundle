@@ -64,7 +64,7 @@
             </trans-unit>
             <trans-unit id="ldd2Eo5">
                 <source>narration.guided_step_gallery_library_sorting_badges</source>
-                <target>Look under a thumbnail: the badges say whether the photograph is masked, whether it is on sale and in how many copies, and how many visitors liked it. You sort without opening a single one.</target>
+                <target>Look under a thumbnail: the badges say whether the photograph is masked, whether it is on sale and in how many copies, how many visitors liked it, and whether it is reserved or already published on the social networks. You sort without opening a single one.</target>
             </trans-unit>
             <trans-unit id="Li2fjI9">
                 <source>narration.guided_step_gallery_library_sorting_done</source>
@@ -240,7 +240,7 @@
             </trans-unit>
             <trans-unit id="Ag8_NhW">
                 <source>narration.guided_step_gallery_social_done</source>
-                <target>The rest is set in the social networks module: the networks to publish on, the pace, the message template. A photograph taken off the site in the meantime is never published.</target>
+                <target>The rest is set in the social networks module: the networks to publish on, the pace, the message template. A photograph taken off the site in the meantime is never published. In the photo list, a badge shows those a draft has reserved or that have already gone out. On a draft, Change the content draws another one.</target>
             </trans-unit>
             <trans-unit id="UEMXI2U">
                 <source>narration.guided_step_gallery_social_entry</source>

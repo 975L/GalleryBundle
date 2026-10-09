@@ -45,6 +45,7 @@ Add GalleryBundle on top of [c975L/CoreBundle](https://github.com/975L/CoreBundl
 - Videos sit in the same categories as the photos: an entry becomes one by carrying the url of the page it is watched on, or a video file of the site's own, and each carries its own uploaded still, so one grid holds both kinds. YouTube, TikTok, Vimeo and Dailymotion are recognized, any other player being framed as pasted (see [videos](#videos)).
 - The bundle's own stylesheet and theme file, reading UiBundle's admin-editable colors and fonts, so a gallery looks like the site it is installed on without a line of CSS (see [theme](#theme)).
 - Sitemap generation (gallery index, categories and media pages), via ConfigBundle's `SitemapProviderInterface`
+- An Atom feed of the latest photographs at `/feed/gallery.xml`, via ConfigBundle's `FeedProviderInterface` (see [Atom feed](#atom-feed))
 - The gallery index listed in the "Descriptions d'urls" screen, via ConfigBundle's `UrlMetadataProviderInterface`, ready to be described without anyone typing its path (see [describing the gallery index](#describing-the-gallery-index))
 - The gallery index and each category offered as a SiteBundle menu target, so a navbar links straight to one of the site's galleries (see [linking a gallery from a menu](#linking-a-gallery-from-a-menu))
 - Categories can be exported/imported as a zip (heading blocks, medias and files bundled in), plugging into ConfigBundle's **Export sync (everything)** dashboard shortcut and **Import content** screen.
@@ -1333,6 +1334,12 @@ where is SocialBundle's to record, and a photograph is never offered twice on th
 Its scopes are the galleries: a SocialBundle series may pick some of them, and its photographs are
 then drawn from those alone.
 
+It is also browsable (UiBundle's `BrowsableSocialContentSourceInterface`): on a draft's screen, SocialBundle's
+"Changer le contenu" draws another photograph in the same gallery, or takes one chosen among those still free, the
+latest first. The other way round, each tile of the medias' list carries a badge — "Réservée 10/10" for a
+photograph a draft holds, "Publiée 09/10" once it went out — read from UiBundle's
+`SocialContentStatusProviderInterface`, which SocialBundle implements; without SocialBundle no badge is shown.
+
 `Service\GalleryPickableMediaProvider` (UiBundle's `PickableMediaProviderInterface`) also offers the visible
 photographs and uploaded videos one by one, the latest first: SocialBundle's "Ajouter depuis le site" adds them
 to a post. Nothing to register.
@@ -1390,6 +1397,14 @@ out — a media taken off the site is served nowhere.
 ```bash
 php bin/console c975l:health-check:run --kind=files-gallery
 ```
+
+### Atom feed
+
+`GalleryFeedProvider` (ConfigBundle's `FeedProviderInterface`) serves the latest photographs and videos at
+`/feed/gallery.xml`, most recent first, with the same visibility rules as the automatic gallery: a masked or trashed
+media, or one in a masked gallery, never shows. Each entry links to the media's page and carries its medium image,
+the high resolution one being too heavy for a feed reader. ConfigBundle announces the feed in every page's `<head>`.
+Nothing to register — the provider is picked up automatically.
 
 ### Describing the gallery index
 

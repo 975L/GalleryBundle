@@ -1,5 +1,20 @@
 # UPGRADE
 
+## v1.27
+
+### CoreBundle 1.61 required
+
+The feed and the social posts rely on interfaces CoreBundle ships from v1.61 on:
+
+```bash
+composer update c975l/core-bundle
+```
+
+### A media's creator can be deleted
+
+`gallery_media.user_id` is now set to null when the account that created the media is deleted, where it used to
+block the deletion. Generate the migration with `doctrine:migrations:diff` and run it.
+
 ## v1.26
 
 ### Print formats carry a shipping weight

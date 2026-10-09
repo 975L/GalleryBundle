@@ -172,7 +172,9 @@ class GalleryMedia implements TrashableInterface, VichMultiSizeImageInterface, V
     private bool $watermark = false;
     private ?string $watermarkPosition = null;
 
+    // "SET NULL" and not the default: this only records who created the media, and deleting that account must not be blocked by it
     #[ORM\ManyToOne]
+    #[ORM\JoinColumn(onDelete: 'SET NULL')]
     private ?UserInterface $user = null;
 
     #[ORM\Column]

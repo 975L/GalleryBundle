@@ -200,7 +200,7 @@
             </trans-unit>
             <trans-unit id="tEl1wBS">
                 <source>description.guided_step_gallery_library_sorting_badges</source>
-                <target>Sous chaque vignette : masquée, en vente, la taille de l'édition, et le nombre de visiteurs qui l'ont aimée. De quoi trier sans ouvrir une seule photographie.</target>
+                <target>Sous chaque vignette : masquée, en vente, la taille de l'édition, le nombre de visiteurs qui l'ont aimée, et si un réseau social l'a réservée ou publiée. De quoi trier sans ouvrir une seule photographie.</target>
             </trans-unit>
             <trans-unit id="D4PA3R6">
                 <source>description.guided_step_gallery_library_sorting_done</source>
@@ -372,7 +372,7 @@
             </trans-unit>
             <trans-unit id="mtSCDaj">
                 <source>description.guided_step_gallery_social_done</source>
-                <target>Les réseaux et le rythme se règlent du côté des réseaux sociaux.</target>
+                <target>Les réseaux et le rythme se règlent du côté des réseaux sociaux. La liste des photos indique ensuite celles réservées ou déjà publiées.</target>
             </trans-unit>
             <trans-unit id="mnsoh7Y">
                 <source>description.guided_step_gallery_social_entry</source>
@@ -626,6 +626,10 @@
                 <source>label.description</source>
                 <target>Description</target>
             </trans-unit>
+            <trans-unit id="BNowKFG">
+                <source>label.feed_gallery</source>
+                <target>Dernières photos</target>
+            </trans-unit>
             <trans-unit id="LHpZe.c">
                 <source>label.fieldset_this_language</source>
                 <target>Dans cette langue (%language%)</target>
@@ -801,6 +805,18 @@
             <trans-unit id="HEqsH6R">
                 <source>label.gallery_media_slug_help</source>
                 <target>Forme l'URL publique du média. Posé une fois à l'envoi, il ne suit plus le titre : le modifier ici met en place une redirection depuis l'ancienne URL. Vidé, il est reconstruit à partir du titre.</target>
+            </trans-unit>
+            <trans-unit id="6GHHnG5">
+                <source>label.gallery_media_social_date_format</source>
+                <target>d/m</target>
+            </trans-unit>
+            <trans-unit id="gEONyN.">
+                <source>label.gallery_media_social_published</source>
+                <target>Publiée %date%</target>
+            </trans-unit>
+            <trans-unit id="D0XUPes">
+                <source>label.gallery_media_social_reserved</source>
+                <target>Réservée %date%</target>
             </trans-unit>
             <trans-unit id="HTN3j6r">
                 <source>label.gallery_media_title_help</source>

@@ -25,7 +25,9 @@ use c975L\GalleryBundle\Service\GalleryMediaSlugger;
 use c975L\GalleryBundle\Service\GalleryTranslator;
 use c975L\GalleryBundle\Service\GalleryUrlRedirector;
 use c975L\GalleryBundle\Service\UploadLimits;
+use c975L\UiBundle\Contract\SocialContentStatusProviderInterface;
 use c975L\UiBundle\Contract\VichWatermarkableInterface;
+use c975L\UiBundle\Model\SocialContentStatus;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\QueryBuilder;
 use EasyCorp\Bundle\EasyAdminBundle\Collection\FieldCollection;
@@ -85,6 +87,7 @@ class GalleryMediaCrudController extends AbstractCrudController
         private readonly GalleryUrlRedirector $urlRedirector,
         private readonly TranslatorInterface $translator,
         private readonly UploadLimits $uploadLimits,
+        private readonly ?SocialContentStatusProviderInterface $socialStatuses = null,
     ) {
     }
 
@@ -145,7 +148,7 @@ class GalleryMediaCrudController extends AbstractCrudController
         ;
     }
 
-    // The likes of the medias the index shows, counted once for the whole page and by the very service a category's own grid asks (see GalleryMediaLikeCounter) - and on the edit screen, the language tabs above the form (see ContentLocaleCrudTrait)
+    // The likes of the medias the index shows and their social posts, each asked once for the whole page and by the very service a category's own grid asks (see GalleryMediaLikeCounter) - and on the edit screen, the language tabs above the form (see ContentLocaleCrudTrait)
     #[\Override]
     public function configureResponseParameters(KeyValueStore $responseParameters): KeyValueStore
     {
@@ -157,9 +160,36 @@ class GalleryMediaCrudController extends AbstractCrudController
             return $responseParameters;
         }
 
-        $responseParameters->set('media_likes', $this->likeCounter->count($this->shownMedias($responseParameters->get('entities'))));
+        $medias = $this->shownMedias($responseParameters->get('entities'));
+        $responseParameters->set('media_likes', $this->likeCounter->count($medias));
+        $responseParameters->set('media_social', $this->socialBadges($medias));
 
         return $responseParameters;
+    }
+
+    // Whether a social post holds each photograph the page draws - reserved by a draft, or published - asked once for the page, and empty on a site without SocialBundle
+    /**
+     * @param list<GalleryMedia> $medias
+     *
+     * @return array<string, array{published: bool, label: string}>
+     */
+    private function socialBadges(array $medias): array
+    {
+        if (null === $this->socialStatuses || [] === $medias) {
+            return [];
+        }
+
+        // The date's format is the language's own: "09/10" reads as the 10th of September in English
+        $format = $this->translator->trans('label.gallery_media_social_date_format', [], 'gallery');
+        $ids = array_map(static fn (GalleryMedia $media): string => (string) $media->getId(), $medias);
+
+        return array_map(
+            fn (SocialContentStatus $status): array => [
+                'published' => $status->isPublished(),
+                'label' => $this->translator->trans('label.gallery_media_social_' . $status->state, ['%date%' => $status->at->format($format)], 'gallery'),
+            ],
+            $this->socialStatuses->getStatuses('gallery_media', $ids),
+        );
     }
 
     // The medias the page actually draws, read off the dtos EasyAdmin hands the template
