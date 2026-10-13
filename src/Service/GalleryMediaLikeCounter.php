@@ -17,6 +17,9 @@ use c975L\UiBundle\Repository\RatingRepository;
 // How many visitors liked each of the photographs a back-office grid draws - the badge under the thumbnail, on a category's own grid and on the whole library's contact sheet alike (see _gallery_media_tile.html.twig), asked in one query for the whole grid and from one place, both grids asking the same question and never answering it twice differently
 class GalleryMediaLikeCounter
 {
+    // What UiBundle's ratings file a media's likes under
+    public const string OWNER_TYPE = 'gallery_media';
+
     public function __construct(
         private readonly ConfigServiceInterface $configService,
         private readonly RatingRepository $ratingRepository,
@@ -48,7 +51,7 @@ class GalleryMediaLikeCounter
         // The very owner type the heart under the photograph votes on, and the one a permanent deletion drops its rows by (see GalleryCategoryCrudController::dropRatings)
         return array_map(
             static fn (array $aggregate): int => $aggregate['count'],
-            $this->ratingRepository->getAggregates('gallery_media', $ids)
+            $this->ratingRepository->getAggregates(self::OWNER_TYPE, $ids)
         );
     }
 }

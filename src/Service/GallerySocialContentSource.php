@@ -22,9 +22,12 @@ use c975L\UiBundle\Model\SocialContent;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
-// Hands SocialBundle's publication the gallery's photographs, one at a time - drawn at random, or oldest first, as "gallery-social-order" says, from the galleries a series picked if any - a site without SocialBundle simply never asks. What went out where is SocialBundle's to record, so nothing here nor on GalleryMedia keeps track of it
+// Hands SocialBundle's publication the gallery's photographs, one at a time - drawn at random, or oldest first, as "gallery-social-order" says, from the galleries a series picked if any, a video going out by its still - a site without SocialBundle simply never asks. What went out where is SocialBundle's to record, so nothing here nor on GalleryMedia keeps track of it
 class GallerySocialContentSource implements BrowsableSocialContentSourceInterface, ScopedSocialContentSourceInterface
 {
+    // What SocialBundle files a media's posts under, photograph or video
+    public const string SOURCE_TYPE = 'gallery_media';
+
     public function __construct(
         private readonly GalleryMediaRepository $mediaRepository,
         private readonly GalleryCategoryRepository $categoryRepository,
@@ -39,7 +42,7 @@ class GallerySocialContentSource implements BrowsableSocialContentSourceInterfac
 
     public function getSourceType(): string
     {
-        return 'gallery_media';
+        return self::SOURCE_TYPE;
     }
 
     // Never: the same photograph twice is a repeat, a gallery keeps growing with new ones to post
@@ -122,7 +125,7 @@ class GallerySocialContentSource implements BrowsableSocialContentSourceInterfac
             sourceId: (string) $media->getId(),
             title: $title,
             url: $siteUrl . $path,
-            // The medium file, the one every page shows: a few hundred kilobytes, well under what a network accepts, where the high resolution one may not be
+            // The medium file, the one every page shows and the still of a video: a few hundred kilobytes, well under what a network accepts, where the high resolution one may not be
             imagePath: $this->projectDir . '/public/' . $media->getFilename(),
             imageUrl: $siteUrl . '/' . $media->getFilename(),
             imageAlt: $title,

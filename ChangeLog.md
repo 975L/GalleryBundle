@@ -1,5 +1,14 @@
 # ChangeLog
 
+## v1.27.1
+
+Videos posted by their still and picked medias held as contents
+
+- `GallerySocialContentSource` hands over videos and embeds, by their still (13/10/2026)
+- `GalleryPickableMediaProvider` names each media's source type and id (13/10/2026)
+- Added `GallerySocialContentSource::SOURCE_TYPE` and `GalleryMediaLikeCounter::OWNER_TYPE` (13/10/2026)
+- Requires `c975l/core-bundle` ^1.64 (13/10/2026)
+
 ## v1.27.0
 
 Atom feed of the latest photographs and browsable social source

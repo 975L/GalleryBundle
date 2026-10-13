@@ -51,6 +51,30 @@ class GalleryPickableMediaProviderTest extends TestCase
         $this->assertSame('video/mp4', $pickable->mimeType);
     }
 
+    // What lets a post picking it reserve the photograph in the gallery's list
+    public function testAMediaIsOfferedAsTheContentItIs(): void
+    {
+        $media = new GalleryMedia()->setTitle('Lac')->setFilename('medias/gallery/montagne/lac.webp')->setMimeType('image/webp');
+        new \ReflectionProperty(GalleryMedia::class, 'id')->setValue($media, 97);
+
+        $pickable = $this->createProvider($media)->findPickableMedia('', 10)[0];
+
+        $this->assertSame('gallery_media', $pickable->sourceType);
+        $this->assertSame('97', $pickable->sourceId);
+    }
+
+    // A video is a content of the gallery's source too, held the same way once picked
+    public function testAVideoIsOfferedAsTheContentItIs(): void
+    {
+        $media = new GalleryMedia()->setSlug('cascade')->setFilename('medias/gallery/montagne/cascade.webp')->setVideoFilename('medias/gallery/montagne/cascade.mp4')->setVideoMimeType('video/mp4');
+        new \ReflectionProperty(GalleryMedia::class, 'id')->setValue($media, 98);
+
+        $pickable = $this->createProvider($media)->findPickableMedia('', 10)[0];
+
+        $this->assertSame('gallery_media', $pickable->sourceType);
+        $this->assertSame('98', $pickable->sourceId);
+    }
+
     public function testTheLabelIsTheGallery(): void
     {
         $label = $this->createProvider()->getPickableMediaLabel();

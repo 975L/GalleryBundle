@@ -1036,15 +1036,11 @@ class GalleryCategoryCrudController extends AbstractCrudController
         return $ids;
     }
 
-    /**
-     * Drops the likes of medias removed for good - the one thing a deletion leaves behind, a rating naming its owner (see c975L\UiBundle\Entity\Rating) rather than relating to it, so no foreign key cascades it.
-     * One query for the whole set, a gallery of two thousand photos being deleted in one go.
-     *
-     * @param int[] $mediaIds
-     */
+    // Drops the likes of medias removed for good, in one query for the whole set - a rating names its owner (see c975L\UiBundle\Entity\Rating) rather than relating to it, so no foreign key cascades it
+    /** @param int[] $mediaIds */
     private function dropRatings(RatingRepository $ratingRepository, array $mediaIds): void
     {
-        $ratingRepository->deleteForOwners('gallery_media', $mediaIds);
+        $ratingRepository->deleteForOwners(GalleryMediaLikeCounter::OWNER_TYPE, $mediaIds);
     }
 
     // The category the posted selection belongs to, and the screen to return to - the three selection actions share it rather than each rebuilding the same two things

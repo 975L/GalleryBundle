@@ -46,6 +46,9 @@ class GalleryPickableMediaProvider implements PickableMediaProviderInterface
             title: (string) ($media->getTitle() ?? $media->getSlug()),
             mimeType: (string) ($video ? $media->getVideoMimeType() : $media->getMimeType()),
             thumbnailPath: $media->getThumbnailFilename() ?? $media->getFilename(),
+            // The content a post picking it holds, as GallerySocialContentSource names it - a video as much as a photograph
+            sourceType: GallerySocialContentSource::SOURCE_TYPE,
+            sourceId: (string) $media->getId(),
         );
     }
 }

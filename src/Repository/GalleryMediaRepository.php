@@ -210,7 +210,7 @@ class GalleryMediaRepository extends ServiceEntityRepository
             ->getOneOrNullResult();
     }
 
-    // What may go on the social networks, minus the ids already posted and within the given categories if any: left out for the reasons latestMedias() leaves them out, plus what carries no image file of its own to post - a video, an embed
+    // What may go on the social networks, minus the ids already posted and within the given categories if any: left out for the reasons latestMedias() leaves them out, plus what carries no image file to post. A video or an embed goes out by its still, the post linking to the page that plays it
     /**
      * @param list<string> $excludedIds
      * @param list<string> $categoryIds
@@ -222,12 +222,10 @@ class GalleryMediaRepository extends ServiceEntityRepository
             ->addSelect('c')
             ->where('m.isDeleted = false')
             ->andWhere('m.hidden = false')
-            ->andWhere('m.mediaType = :image')
             ->andWhere('m.filename IS NOT NULL')
             ->andWhere('c.isDeleted = false')
             ->andWhere('c.hidden = false')
             ->andWhere('c.automaticKind IS NULL')
-            ->setParameter('image', GalleryMedia::MEDIA_TYPE_IMAGE)
         ;
 
         if ([] !== $excludedIds) {

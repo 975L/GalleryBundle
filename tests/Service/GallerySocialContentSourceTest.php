@@ -96,6 +96,19 @@ class GallerySocialContentSourceTest extends TestCase
         $this->assertSame('https://example.org/medias/gallery/montagne/lac-abc.webp', $content->imageUrl);
     }
 
+    // The still is what a network is handed, the post linking to the page that plays the video
+    public function testAVideoIsHandedOverByItsStill(): void
+    {
+        $media = $this->createMedia()->setVideoFilename('medias/gallery/montagne/lac-abc.mp4');
+
+        $content = $this->createSource($media)->getNextContent([]);
+
+        $this->assertSame('42', $content?->sourceId);
+        $this->assertSame('https://example.org/galerie/montagne/lac', $content->url);
+        $this->assertSame('/var/www/site/public/medias/gallery/montagne/lac-abc.webp', $content->imagePath);
+        $this->assertSame('https://example.org/medias/gallery/montagne/lac-abc.webp', $content->imageUrl);
+    }
+
     // The description is rich text typed in the back-office, which a post shows as it is
     public function testTheVariablesCarryTheCategoryAndThePlainDescription(): void
     {

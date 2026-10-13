@@ -22,6 +22,7 @@ use c975L\GalleryBundle\Service\GalleryCustomizationRegistry;
 use c975L\GalleryBundle\Service\GalleryMediaLikeCounter;
 use c975L\GalleryBundle\Service\GalleryMediaMover;
 use c975L\GalleryBundle\Service\GalleryMediaSlugger;
+use c975L\GalleryBundle\Service\GallerySocialContentSource;
 use c975L\GalleryBundle\Service\GalleryTranslator;
 use c975L\GalleryBundle\Service\GalleryUrlRedirector;
 use c975L\GalleryBundle\Service\UploadLimits;
@@ -188,7 +189,7 @@ class GalleryMediaCrudController extends AbstractCrudController
                 'published' => $status->isPublished(),
                 'label' => $this->translator->trans('label.gallery_media_social_' . $status->state, ['%date%' => $status->at->format($format)], 'gallery'),
             ],
-            $this->socialStatuses->getStatuses('gallery_media', $ids),
+            $this->socialStatuses->getStatuses(GallerySocialContentSource::SOURCE_TYPE, $ids),
         );
     }
 

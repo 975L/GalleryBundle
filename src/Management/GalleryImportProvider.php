@@ -14,6 +14,7 @@ use c975L\ConfigBundle\Management\ImportProviderInterface;
 use c975L\GalleryBundle\Entity\GalleryCategory;
 use c975L\GalleryBundle\Entity\GalleryMedia;
 use c975L\GalleryBundle\Repository\GalleryCategoryRepository;
+use c975L\GalleryBundle\Service\GalleryMediaLikeCounter;
 use c975L\GalleryBundle\Service\GalleryMediaSlugger;
 use c975L\UiBundle\Management\BlockDataImporter;
 use c975L\UiBundle\Repository\RatingRepository;
@@ -82,7 +83,7 @@ class GalleryImportProvider implements ImportProviderInterface
         $this->em->flush();
 
         // Only once the replaced medias have actually gone, and in one query for the whole import: a flush that fails leaves them in place, likes and all
-        $this->ratingRepository->deleteForOwners('gallery_media', $droppedMediaIds);
+        $this->ratingRepository->deleteForOwners(GalleryMediaLikeCounter::OWNER_TYPE, $droppedMediaIds);
 
         if (null !== $filesDir) {
             $this->restoreArchivedFiles($archived, $filesDir);

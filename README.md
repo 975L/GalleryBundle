@@ -66,7 +66,7 @@ Add GalleryBundle on top of [c975L/CoreBundle](https://github.com/975L/CoreBundl
 
 - PHP >= 8.4
 - Symfony ^8.0
-- [c975L/CoreBundle](https://github.com/975L/CoreBundle) in `^1.38` — ConfigBundle and UiBundle ship as the single `c975l/core-bundle` package, so requiring this bundle pulls both (Vich naming/resizing, EasyAdmin form-theme conventions, stylesheet registry, page layout fallback, menu provider, scaffold, sitemap and health checks). `^1.25` is what overrides VichUploader 3.0's storage and namer, without which the derivatives are named by Vich's own rule, `^1.26` what ships the `Image:Zoom` the media page opens its high resolution with, `^1.31` what places PaymentBundle's basket bar once on every page, the print offer drawing none of its own, and `^1.38` what ships the `QrCodeGenerator` the qr code of a certificate and of a gallery is drawn with
+- [c975L/CoreBundle](https://github.com/975L/CoreBundle) in `^1.64` — ConfigBundle and UiBundle ship as the single `c975l/core-bundle` package, so requiring this bundle pulls both (Vich naming/resizing, EasyAdmin form-theme conventions, stylesheet registry, page layout fallback, menu provider, scaffold, sitemap and health checks). `^1.25` is what overrides VichUploader 3.0's storage and namer, without which the derivatives are named by Vich's own rule, `^1.26` what ships the `Image:Zoom` the media page opens its high resolution with, `^1.31` what places PaymentBundle's basket bar once on every page, the print offer drawing none of its own, and `^1.38` what ships the `QrCodeGenerator` the qr code of a certificate and of a gallery is drawn with
 - Doctrine ORM
 - EasyAdmin
 - VichUploader Bundle in `^3.0`
@@ -1328,7 +1328,8 @@ kept original, which is copied aside before any signature is laid.
 
 With `c975l/social-bundle` installed, `Service\GallerySocialContentSource` (UiBundle's
 `ScopedSocialContentSourceInterface`, source type `gallery_media`) hands its publication one photograph at a
-time: an image with a file of its own, in a gallery neither trashed, hidden nor automatic. What went out
+time, in a gallery neither trashed, hidden nor automatic. A video, uploaded or embedded, goes out the same way
+by its still, the post linking to the page that plays it. What went out
 where is SocialBundle's to record, and a photograph is never offered twice on the same network. Nothing to register.
 
 Its scopes are the galleries: a SocialBundle series may pick some of them, and its photographs are
@@ -1342,7 +1343,7 @@ photograph a draft holds, "Publiée 09/10" once it went out — read from UiBund
 
 `Service\GalleryPickableMediaProvider` (UiBundle's `PickableMediaProviderInterface`) also offers the visible
 photographs and uploaded videos one by one, the latest first: SocialBundle's "Ajouter depuis le site" adds them
-to a post. Nothing to register.
+to a post, each one named as the `gallery_media` content it is so that its tile carries the badge too. Nothing to register.
 
 Connecting the networks themselves — Bluesky in one click, a Facebook Page and its Instagram account through a
 Meta app of your own — is SocialBundle's, step by step in its readme:

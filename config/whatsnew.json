@@ -1,5 +1,20 @@
 [
     {
+        "date": "2026-10-13",
+        "description": [
+            {
+                "en": "Your videos can now be published on the social networks too, shown by their still image with a link to their page",
+                "fr": "Vos vidéos peuvent désormais être publiées elles aussi sur les réseaux sociaux, présentées par leur image fixe avec un lien vers leur page",
+                "es": "Sus vídeos también pueden publicarse ahora en las redes sociales, presentados por su imagen fija con un enlace a su página"
+            },
+            {
+                "en": "A photo or video added by hand to a social post now shows as reserved in the photo list",
+                "fr": "Une photo ou une vidéo ajoutée à la main à une publication apparaît désormais comme réservée dans la liste des photos",
+                "es": "Una foto o un vídeo añadido a mano a una publicación aparece ahora como reservado en la lista de fotos"
+            }
+        ]
+    },
+    {
         "date": "2026-10-09",
         "description": [
             {
