@@ -18,13 +18,11 @@
         {{ form_row(form.watermarkPosition) }}
 
         {# Filled the moment files are picked, so a batch php would truncate is refused before it is sent rather than reported as a success over part of it #}
-        <div class="alert alert-danger"
+        <twig:ea:Alert variant="danger"
             data-gallery-upload-limits-target="message"
-            role="alert"
-            hidden></div>
+            hidden></twig:ea:Alert>
 
-        <button type="submit"
-            class="btn btn-primary"
-            data-gallery-upload-limits-target="submit">{{ 'label.gallery_upload_medias'|trans({}, 'gallery') }}</button>
+        <twig:ea:Button variant="primary"
+            data-gallery-upload-limits-target="submit">{{ 'label.gallery_upload_medias'|trans({}, 'gallery') }}</twig:ea:Button>
     {{ form_end(form) }}
 {% endblock main %}

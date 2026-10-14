@@ -238,6 +238,10 @@
                 <source>narration.guided_step_gallery_print_setup_published</source>
                 <target>Mientras la casilla siga sin marcar, el formato solo existe para usted. Márquela y aparecerá bajo cada foto puesta en venta.</target>
             </trans-unit>
+            <trans-unit id="wssQKiU">
+                <source>narration.guided_step_gallery_print_setup_weight</source>
+                <target>Pese la copia con su embalaje e indíquelo en gramos: de ahí se calculan los gastos de envío. Una tienda que no pesa sus copias deja el campo vacío.</target>
+            </trans-unit>
             <trans-unit id="Ag8_NhW">
                 <source>narration.guided_step_gallery_social_done</source>
                 <target>El resto se ajusta en el módulo de redes sociales: las redes donde publicar, el ritmo, la plantilla del mensaje. Una foto retirada del sitio mientras tanto nunca se publica. En la lista de fotos, una pastilla indica las que un borrador ha reservado o que ya han salido. En un borrador, Cambiar el contenido saca otra.</target>

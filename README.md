@@ -68,7 +68,7 @@ Add GalleryBundle on top of [c975L/CoreBundle](https://github.com/975L/CoreBundl
 - Symfony ^8.0
 - [c975L/CoreBundle](https://github.com/975L/CoreBundle) in `^1.64` — ConfigBundle and UiBundle ship as the single `c975l/core-bundle` package, so requiring this bundle pulls both (Vich naming/resizing, EasyAdmin form-theme conventions, stylesheet registry, page layout fallback, menu provider, scaffold, sitemap and health checks). `^1.25` is what overrides VichUploader 3.0's storage and namer, without which the derivatives are named by Vich's own rule, `^1.26` what ships the `Image:Zoom` the media page opens its high resolution with, `^1.31` what places PaymentBundle's basket bar once on every page, the print offer drawing none of its own, and `^1.38` what ships the `QrCodeGenerator` the qr code of a certificate and of a gallery is drawn with
 - Doctrine ORM
-- EasyAdmin
+- EasyAdmin in `^5.7` — the back-office templates are drawn with its Twig components and its `ea()` function
 - VichUploader Bundle in `^3.0`
 - `symfony/expression-language`, which the public routes' condition is evaluated with (see [public routes](#public-routes)) — pulled in by Composer
 - [c975L/PaymentBundle](https://github.com/975L/PaymentBundle) in `^6.18` — the one basket a print is bought through. Required rather than suggested so the print shop is there to be switched on, instead of being a feature nobody knows exists
@@ -1533,7 +1533,7 @@ that very step:
 | --- | --- |
 | `.action-new`, `.action-edit`, `.action-detail`, `.action-saveAndReturn`, `.action-delete`, `.action-trash`, `.action-restore`, `.action-importPrintCatalogue`, `.action-printCertificates`, `.action-releaseToLab`, `.action-translate` | EasyAdmin builds an `action-<name>` class from the action's own name — `saveAndReturn`, not `save`. The import one is only drawn where the lab publishes a range, the translate one where the site declares several languages, the certificates one on a limited edition and the release one on an order waiting for a human, and the step reads as well without the outline |
 | `[data-content-locales]` | the language tabs ConfigBundle draws above an edit screen |
-| `#GalleryCategory_title`, `#GalleryCategory_summarySocialNetwork`, `#GalleryCategory_titleRoot`, `#GalleryMedia_title`, `#GalleryMedia_category`, `#GalleryMedia_credits`, `#GalleryMedia_externalUrl`, `#GalleryPrintFormat_price`, `#GalleryPrintFormat_published` | plain form fields, pointed at through their rendered id |
+| `#GalleryCategory_title`, `#GalleryCategory_summarySocialNetwork`, `#GalleryCategory_titleRoot`, `#GalleryMedia_title`, `#GalleryMedia_category`, `#GalleryMedia_credits`, `#GalleryMedia_externalUrl`, `#GalleryPrintFormat_price`, `#GalleryPrintFormat_weight`, `#GalleryPrintFormat_published` | plain form fields, pointed at through their rendered id |
 | `#GalleryCategory_files` | the batch upload of the creation form |
 | `#Config_value` | the value field of ConfigBundle's own edit screen |
 | `[data-gallery-upload-medias]`, `[data-gallery-cover-radio]`, `[data-gallery-media-sort-handle]`, `[data-gallery-media-selection-target="toggle"]`, `[data-gallery-download-medias]` | markers carried by this bundle's own templates, the elements having no id of their own |

@@ -101,7 +101,6 @@ class GalleryPrintFormatCrudController extends AbstractCrudController
         $importAction = Action::new('importPrintCatalogue', t('action.import_print_catalogue', [], 'gallery'), 'fas fa-download')
             ->linkToCrudAction('importPrintCatalogue')
             ->createAsGlobalAction()
-            ->addCssClass('btn btn-secondary')
         ;
 
         return $actions

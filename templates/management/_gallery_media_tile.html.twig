@@ -27,7 +27,7 @@
         {% endif %}
         <p class="text-center small">
             {{ media.title }}
-            {% if media.video %}<span class="badge bg-secondary">{{ ('label.gallery_media_type_' ~ media.mediaType)|trans({}, 'gallery') }}</span>{% endif %}
+            {% if media.video %}<twig:ea:Badge>{{ ('label.gallery_media_type_' ~ media.mediaType)|trans({}, 'gallery') }}</twig:ea:Badge>{% endif %}
         </p>
     </a>
 
@@ -40,22 +40,22 @@
     {% if media.hidden or media.printable or likes|default(0) > 0 or social|default(null) %}
         <p class="text-center small mb-1">
             {% if media.hidden %}
-                <span class="badge bg-secondary">{{ ('label.gallery_media_hidden'|trans({}, 'gallery')) }}</span>
+                <twig:ea:Badge>{{ ('label.gallery_media_hidden'|trans({}, 'gallery')) }}</twig:ea:Badge>
             {% endif %}
             {% if media.printable %}
-                <span class="badge bg-success">{{ ('label.gallery_media_on_sale'|trans({}, 'gallery')) }}</span>
+                <twig:ea:Badge variant="success">{{ ('label.gallery_media_on_sale'|trans({}, 'gallery')) }}</twig:ea:Badge>
             {% endif %}
             {# Only a numbered edition has a size to show, an open one printing without end (see GalleryMedia::$editionSize) #}
             {% if media.printable and media.editionSize %}
-                <span class="badge bg-light text-dark">{{ ('label.gallery_media_edition_of'|trans({'%count%': media.editionSize}, 'gallery')) }}</span>
+                <twig:ea:Badge variant="light">{{ ('label.gallery_media_edition_of'|trans({'%count%': media.editionSize}, 'gallery')) }}</twig:ea:Badge>
             {% endif %}
             {% if likes|default(0) > 0 %}
-                <span class="badge bg-light text-dark" aria-label="{{ ('label.gallery_media_likes'|trans({'%count%': likes}, 'gallery')) }}">
+                <twig:ea:Badge variant="light" aria-label="{{ ('label.gallery_media_likes'|trans({'%count%': likes}, 'gallery')) }}">
                     <i class="fa fa-heart" aria-hidden="true"></i> {{ likes }}
-                </span>
+                </twig:ea:Badge>
             {% endif %}
             {% if social|default(null) %}
-                <span class="badge {{ social.published ? 'bg-success' : 'bg-warning text-dark' }}">{{ social.label }}</span>
+                <twig:ea:Badge variant="{{ social.published ? 'success' : 'warning' }}">{{ social.label }}</twig:ea:Badge>
             {% endif %}
         </p>
     {% endif %}

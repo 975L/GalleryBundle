@@ -4,25 +4,21 @@
 {% macro download_buttons(action_url) %}
     {# The attribute is what the guided project points at, the pair of buttons having no other stable hook (see GalleryGuidedProjectProvider) #}
     <div class="d-flex flex-wrap gap-2 align-items-center" data-gallery-download-medias>
-        <button type="submit"
+        <twig:ea:Button
             name="variant"
             value="highres"
             formaction="{{ action_url }}"
-            class="btn btn-secondary"
             disabled
-            data-gallery-media-selection-target="submit">
-            <i class="fa fa-download"></i> {{ ('action.download_highres'|trans({}, 'gallery')) }}
-        </button>
+            data-gallery-media-selection-target="submit"
+            icon="fa fa-download">{{ ('action.download_highres'|trans({}, 'gallery')) }}</twig:ea:Button>
 
-        <button type="submit"
+        <twig:ea:Button
             name="variant"
             value="original"
             formaction="{{ action_url }}"
-            class="btn btn-secondary"
             disabled
-            data-gallery-media-selection-target="submit">
-            <i class="fa fa-download"></i> {{ ('action.download_originals'|trans({}, 'gallery')) }}
-        </button>
+            data-gallery-media-selection-target="submit"
+            icon="fa fa-download">{{ ('action.download_originals'|trans({}, 'gallery')) }}</twig:ea:Button>
     </div>
 {% endmacro %}
 
@@ -72,22 +68,16 @@
 
         {# The way in and out of the photo trash, next to the heading it changes rather than among the selection buttons, which act on what the grid is showing. Hidden when the trash is empty and we are not in it: a button leading to an empty screen says nothing #}
         {% if medias_trash %}
-            <a href="{{ ea_url().setAction('edit').unset('mediasTrash') }}" class="btn btn-secondary btn-sm align-middle ms-2">
-                <i class="fa fa-images"></i> {{ ('label.gallery_medias'|trans({}, 'gallery')) }}
-            </a>
+            <twig:ea:Button htmlElement="a" href="{{ ea_url().setAction('edit').unset('mediasTrash') }}" size="sm" class="align-middle ms-2" icon="fa fa-images">{{ ('label.gallery_medias'|trans({}, 'gallery')) }}</twig:ea:Button>
         {% elseif not automatic and medias_trash_count|default(0) > 0 %}
-            <a href="{{ ea_url().setAction('edit').set('mediasTrash', 1) }}" class="btn btn-secondary btn-sm align-middle ms-2">
-                <i class="fa fa-trash-alt"></i> {{ ('action.trash'|trans({}, 'gallery')) }} ({{ medias_trash_count }})
-            </a>
+            <twig:ea:Button htmlElement="a" href="{{ ea_url().setAction('edit').set('mediasTrash', 1) }}" size="sm" class="align-middle ms-2" icon="fa fa-trash-alt">{{ ('action.trash'|trans({}, 'gallery')) }} ({{ medias_trash_count }})</twig:ea:Button>
         {% endif %}
     </h2>
 
     {# Rendered here rather than as an edit action, which put it up in the toolbar above the blocks collection - "Ajouter un UiBlock" was then the button under the hand of an admin meaning to add a media (media_upload_url comes from the same configureResponseParameters) #}
     {% set upload_medias_button %}
         {# The attribute is what the guided project points at, this button having no other stable hook (see GalleryGuidedProjectProvider) #}
-        <a href="{{ media_upload_url|default('') }}" class="btn btn-secondary" data-gallery-upload-medias>
-            <i class="fas fa-upload"></i> {{ ('label.gallery_upload_medias'|trans({}, 'gallery')) }}
-        </a>
+        <twig:ea:Button htmlElement="a" href="{{ media_upload_url|default('') }}" data-gallery-upload-medias icon="fas fa-upload">{{ ('label.gallery_upload_medias'|trans({}, 'gallery')) }}</twig:ea:Button>
     {% endset %}
 
     {% if medias|default([])|length > 0 %}
@@ -97,11 +87,9 @@
             <p>{{ ((medias_trash ? 'label.info_gallery_category_medias_trash' : 'label.info_gallery_category_medias')|trans({}, 'gallery')) }}</p>
         {% endif %}
 
-        {# The checked medias are posted to GalleryCategoryCrudController::deleteMedias(), or to editMedias() by the buttons carrying their own "formaction". A form of its own, after the edit form parent() has already closed above: an html form never nests in another #}
-        {# It carries the sort controller too, rather than a wrapper of its own: the cover's "random" radio sits in the toolbar and the medias in the grid, and the form is the smallest element holding both #}
-        {# In the trash the sort controller is left off entirely: a trashed photo is neither arranged nor made a cover, and a drag there would renumber it over the positions of the ones still online #}
+        {# The checked medias are posted to GalleryCategoryCrudController::deleteMedias() - to deleteMediasPermanently() in the trash, its confirmed button carrying no formaction as EasyAdmin would post it through its hidden form without the selection or its token - or elsewhere by the buttons carrying their own "formaction". A form of its own, after the edit form parent() has already closed above: an html form never nests in another. It carries the sort controller too, the cover's "random" radio sitting in the toolbar and the medias in the grid, except in the trash where a drag would renumber a trashed photo over the positions of the ones still online #}
         <form method="post"
-            action="{{ ea_url().setAction('deleteMedias') }}"
+            action="{{ ea_url().setAction(medias_trash ? 'deleteMediasPermanently' : 'deleteMedias') }}"
             data-controller="gallery-media-selection{{ sortable ? ' gallery-media-sort' : '' }}"
             {% if sortable %}
                 data-gallery-media-sort-url-value="{{ ea_url().setAction('saveMediasLayout') }}"
@@ -124,28 +112,23 @@
 
                 {# In the trash a photo is not arranged, not credited and not made a cover: the only two things left to do to it are putting it back and dropping it for good #}
                 {% if medias_trash %}
-                    <button type="submit"
+                    <twig:ea:Button
                         formaction="{{ ea_url().setAction('restoreMedias') }}"
-                        class="btn btn-secondary"
                         disabled
-                        data-gallery-media-selection-target="submit">
-                        <i class="fa fa-trash-restore"></i> {{ ('action.restore_selection'|trans({}, 'gallery')) }}
-                    </button>
+                        data-gallery-media-selection-target="submit"
+                        icon="fa fa-trash-restore">{{ ('action.restore_selection'|trans({}, 'gallery')) }}</twig:ea:Button>
 
                     {# The one button of the whole gallery that loses files, so it asks first - EasyAdmin's own modal, as the move to trash does below #}
-                    <button type="submit"
-                        formaction="{{ ea_url().setAction('deleteMediasPermanently') }}"
-                        class="btn btn-danger"
+                    <twig:ea:Modal:Trigger type="submit"
+                        variant="danger"
                         disabled
-                        data-bs-toggle="modal"
-                        data-bs-target="#modal-action-confirmation"
+                        target="#modal-action-confirmation"
                         data-action-confirmation="true"
                         data-action-variant="danger"
                         data-action-confirmation-message="{{ ('label.gallery_medias_delete_permanently_confirm'|trans({}, 'gallery')) }}"
                         data-action-confirmation-content="{{ ('delete_modal.content'|trans({}, 'EasyAdminBundle')) }}"
-                        data-gallery-media-selection-target="submit">
-                        <i class="fa fa-trash"></i> {{ ('action.delete_permanently'|trans({}, 'gallery')) }}
-                    </button>
+                        data-gallery-media-selection-target="submit"
+                        icon="fa fa-trash">{{ ('action.delete_permanently'|trans({}, 'gallery')) }}</twig:ea:Modal:Trigger>
 
                     {{ macros.download_buttons(ea_url().setAction('downloadMedias')) }}
                 {% else %}
@@ -176,15 +159,13 @@
                         data-action="keydown.enter->gallery-media-selection#submitOwn">
 
                     {# Enter in the box above reaches this very button rather than the form's first one, the toolbar now holding a second text box (see gallery-media-selection#submitOwn) - the deletion further down must never be what a keystroke triggers #}
-                    <button type="submit"
+                    <twig:ea:Button
                         name="field"
                         value="credits"
                         formaction="{{ ea_url().setAction('editMedias') }}"
-                        class="btn btn-secondary"
                         disabled
-                        data-gallery-media-selection-target="submit">
-                        <i class="fa fa-copyright"></i> {{ ('action.apply_credits'|trans({}, 'gallery')) }}
-                    </button>
+                        data-gallery-media-selection-target="submit"
+                        icon="fa fa-copyright">{{ ('action.apply_credits'|trans({}, 'gallery')) }}</twig:ea:Button>
                 </div>
 
                 <div class="d-flex flex-wrap gap-2 align-items-center">
@@ -197,15 +178,13 @@
                     </label>
 
                     {# Unchecked is a value of its own: the same button is what takes the rights back off a selection #}
-                    <button type="submit"
+                    <twig:ea:Button
                         name="field"
                         value="rightsReserved"
                         formaction="{{ ea_url().setAction('editMedias') }}"
-                        class="btn btn-secondary"
                         disabled
-                        data-gallery-media-selection-target="submit">
-                        <i class="fa fa-lock"></i> {{ ('action.apply_rights_reserved'|trans({}, 'gallery')) }}
-                    </button>
+                        data-gallery-media-selection-target="submit"
+                        icon="fa fa-lock">{{ ('action.apply_rights_reserved'|trans({}, 'gallery')) }}</twig:ea:Button>
                 </div>
 
                 {# Takes a whole selection off the public pages, or puts it back - the same button both ways, as the rights one above #}
@@ -218,15 +197,13 @@
                         {{ ('label.gallery_media_hidden'|trans({}, 'gallery')) }}
                     </label>
 
-                    <button type="submit"
+                    <twig:ea:Button
                         name="field"
                         value="hidden"
                         formaction="{{ ea_url().setAction('editMedias') }}"
-                        class="btn btn-secondary"
                         disabled
-                        data-gallery-media-selection-target="submit">
-                        <i class="fa fa-eye-slash"></i> {{ ('action.apply_hidden'|trans({}, 'gallery')) }}
-                    </button>
+                        data-gallery-media-selection-target="submit"
+                        icon="fa fa-eye-slash">{{ ('action.apply_hidden'|trans({}, 'gallery')) }}</twig:ea:Button>
                 </div>
 
                 {# Puts a hundred photographs on sale in one click. Which sizes each is actually offered is worked out from its own original, so this only ever says "this one is for sale" (see GalleryPrintService::getOffers). Offered while the sale is still closed too, a catalogue being marked before the shop opens #}
@@ -239,15 +216,13 @@
                         {{ ('label.gallery_media_printable'|trans({}, 'gallery')) }}
                     </label>
 
-                    <button type="submit"
+                    <twig:ea:Button
                         name="field"
                         value="printable"
                         formaction="{{ ea_url().setAction('editMedias') }}"
-                        class="btn btn-secondary"
                         disabled
-                        data-gallery-media-selection-target="submit">
-                        <i class="fa fa-print"></i> {{ ('action.apply_printable'|trans({}, 'gallery')) }}
-                    </button>
+                        data-gallery-media-selection-target="submit"
+                        icon="fa fa-print">{{ ('action.apply_printable'|trans({}, 'gallery')) }}</twig:ea:Button>
                 </div>
 
                 {# Moves the checked medias into another gallery, their files following them there and the ranks of both galleries renumbered behind and in front (see GalleryCategoryCrudController::moveMedias) #}
@@ -284,30 +259,26 @@
                         data-action="keydown.enter->gallery-media-selection#submitOwn">
 
                     {# Its own target rather than the shared one: this button also waits on a destination being picked, where the others only wait on a media being checked #}
-                    <button type="submit"
+                    <twig:ea:Button
                         formaction="{{ ea_url().setAction('moveMedias') }}"
-                        class="btn btn-secondary"
                         disabled
-                        data-gallery-media-selection-target="moveSubmit">
-                        <i class="fa fa-images"></i> {{ ('action.move_selection'|trans({}, 'gallery')) }}
-                    </button>
+                        data-gallery-media-selection-target="moveSubmit"
+                        icon="fa fa-images">{{ ('action.move_selection'|trans({}, 'gallery')) }}</twig:ea:Button>
                 </div>
 
                 {{ macros.download_buttons(ea_url().setAction('downloadMedias')) }}
 
-                {# Disabled until something is checked, the controller above enabling it on the first box ticked. The confirmation is EasyAdmin's own modal, the one its delete actions open: app.js submits this form once confirmed (its "standalone button inside a form" case), so nothing here has to ask on its own #}
-                <button type="submit"
-                    class="btn btn-danger"
+                {# Disabled until something is checked, the controller above enabling it on the first box ticked. The confirmation is EasyAdmin's own modal, the one its delete actions open: app.js submits this form once confirmed (its "standalone button inside a form" case), so nothing here has to ask on its own - which only holds for a button carrying no formaction: one that does is posted through EasyAdmin's own hidden form, without the selection or its token #}
+                <twig:ea:Modal:Trigger type="submit"
+                    variant="danger"
                     disabled
-                    data-bs-toggle="modal"
-                    data-bs-target="#modal-action-confirmation"
+                    target="#modal-action-confirmation"
                     data-action-confirmation="true"
                     data-action-variant="danger"
                     data-action-confirmation-message="{{ ('label.gallery_medias_delete_confirm'|trans({}, 'gallery')) }}"
                     data-action-confirmation-content="{{ ('delete_modal.content'|trans({}, 'EasyAdminBundle')) }}"
-                    data-gallery-media-selection-target="submit">
-                    <i class="fa fa-trash-alt"></i> {{ ('action.trash_selection'|trans({}, 'gallery')) }}
-                </button>
+                    data-gallery-media-selection-target="submit"
+                    icon="fa fa-trash-alt">{{ ('action.trash_selection'|trans({}, 'gallery')) }}</twig:ea:Modal:Trigger>
                 {% endif %}
             </div>
 
@@ -318,7 +289,7 @@
                 {% for group in medias_by_day|default([]) %}
                     <h3 class="h6 mt-4">
                         {{ group.day|format_date('long') }}
-                        <span class="badge bg-secondary">{{ group.medias|length }}</span>
+                        <twig:ea:Badge>{{ group.medias|length }}</twig:ea:Badge>
                     </h3>
 
                     <div class="management-media-grid">
@@ -341,9 +312,7 @@
         <p>{{ ('label.info_gallery_category_medias_trash_empty'|trans({}, 'gallery')) }}</p>
 
         <div class="mb-3">
-            <a href="{{ ea_url().setAction('edit').unset('mediasTrash') }}" class="btn btn-secondary">
-                <i class="fa fa-images"></i> {{ ('label.gallery_medias'|trans({}, 'gallery')) }}
-            </a>
+            <twig:ea:Button htmlElement="a" href="{{ ea_url().setAction('edit').unset('mediasTrash') }}" icon="fa fa-images">{{ ('label.gallery_medias'|trans({}, 'gallery')) }}</twig:ea:Button>
         </div>
     {% elseif automatic %}
         {# Nothing has been added yet, or the last additions all went to the trash - there is no upload to offer here, this gallery being fed by the others #}

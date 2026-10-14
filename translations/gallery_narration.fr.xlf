@@ -238,6 +238,10 @@
                 <source>narration.guided_step_gallery_print_setup_published</source>
                 <target>Tant que la case reste décochée, le format n'existe que pour vous. Cochez-la et il apparaît sous chaque photo mise en vente.</target>
             </trans-unit>
+            <trans-unit id="wssQKiU">
+                <source>narration.guided_step_gallery_print_setup_weight</source>
+                <target>Pesez le tirage avec son emballage et indiquez-le en grammes : c'est de là que partent les frais de port. Une boutique qui ne pèse pas ses tirages laisse le champ vide.</target>
+            </trans-unit>
             <trans-unit id="Ag8_NhW">
                 <source>narration.guided_step_gallery_social_done</source>
                 <target>Le reste se règle dans le module des réseaux sociaux : les réseaux où publier, le rythme, le modèle du message. Une photo retirée du site entre-temps n’est jamais publiée. Dans la liste des photos, une pastille indique celles qu'un brouillon a réservées ou qui sont déjà parties. Sur un brouillon, Changer le contenu en tire une autre.</target>

@@ -1,5 +1,20 @@
 [
     {
+        "date": "2026-10-14",
+        "description": [
+            {
+                "en": "Permanently deleting photos from a gallery's trash works again",
+                "fr": "La suppression définitive des photos depuis la corbeille d'une galerie fonctionne à nouveau",
+                "es": "La eliminación definitiva de fotos desde la papelera de una galería vuelve a funcionar"
+            },
+            {
+                "en": "The guided tour for setting up print sales now shows where to enter each format's packed weight",
+                "fr": "Le parcours guidé de mise en vente des tirages montre désormais où indiquer le poids emballé de chaque format",
+                "es": "El recorrido guiado para vender copias muestra ahora dónde indicar el peso embalado de cada formato"
+            }
+        ]
+    },
+    {
         "date": "2026-10-13",
         "description": [
             {

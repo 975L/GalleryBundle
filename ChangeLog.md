@@ -1,5 +1,15 @@
 # ChangeLog
 
+## v1.28.0
+
+Back-office drawn with EasyAdmin 5.7 Twig components
+
+- Requires `easycorp/easyadmin-bundle` ^5.7 (14/10/2026)
+- Custom actions no longer add the `btn` classes EasyAdmin already sets (14/10/2026)
+- Back-office screens drawn with EasyAdmin Twig components, `ea()` in place of the removed `ea` global (14/10/2026)
+- Fixed permanent deletion from the photo trash posting no selection (14/10/2026)
+- Print setup guided project walks the format's weight (14/10/2026)
+
 ## v1.27.1
 
 Videos posted by their still and picked medias held as contents

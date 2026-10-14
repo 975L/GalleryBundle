@@ -370,6 +370,10 @@
                 <source>description.guided_step_gallery_print_setup_published</source>
                 <target>Un formato sin publicar no se ofrece en ninguna parte.</target>
             </trans-unit>
+            <trans-unit id="8KE0WgB">
+                <source>description.guided_step_gallery_print_setup_weight</source>
+                <target>El peso de la copia embalada, en gramos, para los gastos de envío.</target>
+            </trans-unit>
             <trans-unit id="mtSCDaj">
                 <source>description.guided_step_gallery_social_done</source>
                 <target>Las redes y el ritmo se ajustan en la parte de redes sociales. La lista de fotos indica luego las reservadas o ya publicadas.</target>
@@ -1389,6 +1393,10 @@
             <trans-unit id="dXd9cfo">
                 <source>label.guided_step_gallery_print_setup_published</source>
                 <target>Publicar el formato</target>
+            </trans-unit>
+            <trans-unit id="DMisMmI">
+                <source>label.guided_step_gallery_print_setup_weight</source>
+                <target>Indicar el peso</target>
             </trans-unit>
             <trans-unit id="DURR9LZ">
                 <source>label.guided_step_gallery_social_done</source>

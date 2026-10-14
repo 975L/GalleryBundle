@@ -234,8 +234,7 @@ class GalleryMediaCrudController extends AbstractCrudController
     {
         // Lets the admin back out of an edit without saving - mirrors EasyAdmin's own built-in actions (linkToCrudAction targeting INDEX, same as Action::INDEX itself), which redirects to the category the media was reached from, or to the library's contact sheet when none is carried
         $cancelAction = Action::new('cancel', $this->translator->trans('action.cancel', [], 'EasyAdminBundle'), 'fa fa-times')
-            ->linkToCrudAction(Action::INDEX)
-            ->addCssClass('btn btn-secondary');
+            ->linkToCrudAction(Action::INDEX);
 
         return $actions
             // The contact sheet is a screen of its own since the index stopped redirecting, so it states the same bar its sidebar entry announces (see MenuProvider)

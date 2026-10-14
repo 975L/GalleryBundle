@@ -238,6 +238,10 @@
                 <source>narration.guided_step_gallery_print_setup_published</source>
                 <target>While the box stays unticked, the format exists for you alone. Tick it and it appears under every photograph put up for sale.</target>
             </trans-unit>
+            <trans-unit id="wssQKiU">
+                <source>narration.guided_step_gallery_print_setup_weight</source>
+                <target>Weigh the print with its packaging and enter it in grams: that is what the shipping costs are worked out from. A shop that does not weigh its prints leaves the field empty.</target>
+            </trans-unit>
             <trans-unit id="Ag8_NhW">
                 <source>narration.guided_step_gallery_social_done</source>
                 <target>The rest is set in the social networks module: the networks to publish on, the pace, the message template. A photograph taken off the site in the meantime is never published. In the photo list, a badge shows those a draft has reserved or that have already gone out. On a draft, Change the content draws another one.</target>

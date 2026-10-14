@@ -105,8 +105,7 @@ trait ContentLocaleCrudTrait
     {
         return $this->contentLocaleScreen()
             ->action('translate', t('action.translate', [], 'gallery'), 'fa fa-language', $this->galleryTranslator()->getTranslatableLocales())
-            ->displayIf(fn (object $entity): bool => $this->galleryTranslator()->isActive() && !($entity instanceof TrashableInterface && $entity->isDeleted()))
-            ->addCssClass('btn btn-secondary');
+            ->displayIf(fn (object $entity): bool => $this->galleryTranslator()->isActive() && !($entity instanceof TrashableInterface && $entity->isDeleted()));
     }
 
     // What the language tabs at the top of the edit screen need, and nothing at all where the row is not saved yet or the site declares a single language

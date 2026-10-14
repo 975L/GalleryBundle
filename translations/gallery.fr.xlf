@@ -370,6 +370,10 @@
                 <source>description.guided_step_gallery_print_setup_published</source>
                 <target>Un format non publié n'est proposé nulle part.</target>
             </trans-unit>
+            <trans-unit id="8KE0WgB">
+                <source>description.guided_step_gallery_print_setup_weight</source>
+                <target>Le poids du tirage emballé, en grammes, pour les frais de port.</target>
+            </trans-unit>
             <trans-unit id="mtSCDaj">
                 <source>description.guided_step_gallery_social_done</source>
                 <target>Les réseaux et le rythme se règlent du côté des réseaux sociaux. La liste des photos indique ensuite celles réservées ou déjà publiées.</target>
@@ -1389,6 +1393,10 @@
             <trans-unit id="dXd9cfo">
                 <source>label.guided_step_gallery_print_setup_published</source>
                 <target>Publier le format</target>
+            </trans-unit>
+            <trans-unit id="DMisMmI">
+                <source>label.guided_step_gallery_print_setup_weight</source>
+                <target>Indiquer le poids</target>
             </trans-unit>
             <trans-unit id="DURR9LZ">
                 <source>label.guided_step_gallery_social_done</source>

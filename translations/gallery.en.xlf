@@ -370,6 +370,10 @@
                 <source>description.guided_step_gallery_print_setup_published</source>
                 <target>An unpublished format is offered nowhere.</target>
             </trans-unit>
+            <trans-unit id="8KE0WgB">
+                <source>description.guided_step_gallery_print_setup_weight</source>
+                <target>The print's weight once packed, in grams, for shipping costs.</target>
+            </trans-unit>
             <trans-unit id="mtSCDaj">
                 <source>description.guided_step_gallery_social_done</source>
                 <target>The networks and the pace are set on the social networks side. The photo list then shows those reserved or already published.</target>
@@ -1389,6 +1393,10 @@
             <trans-unit id="dXd9cfo">
                 <source>label.guided_step_gallery_print_setup_published</source>
                 <target>Publish the format</target>
+            </trans-unit>
+            <trans-unit id="DMisMmI">
+                <source>label.guided_step_gallery_print_setup_weight</source>
+                <target>Enter the weight</target>
             </trans-unit>
             <trans-unit id="DURR9LZ">
                 <source>label.guided_step_gallery_social_done</source>

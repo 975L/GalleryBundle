@@ -13,10 +13,9 @@
         data-gallery-upload-limits-batch-message-value="{{ 'label.gallery_upload_batch_too_large'|trans({}, 'gallery') }}">
 
         {# Filled the moment files are picked, so a batch php would truncate is seen before it is sent rather than reported as a success over part of it #}
-        <div class="alert alert-danger"
+        <twig:ea:Alert variant="danger"
             data-gallery-upload-limits-target="message"
-            role="alert"
-            hidden></div>
+            hidden></twig:ea:Alert>
 
         {{ parent() }}
     </div>

@@ -573,6 +573,12 @@ class GalleryGuidedProjectProvider implements GuidedProjectProviderInterface
                     'highlight' => '#GalleryPrintFormat_price',
                 ],
                 [
+                    'label' => 'label.guided_step_gallery_print_setup_weight',
+                    'description' => 'description.guided_step_gallery_print_setup_weight',
+                    'narration' => 'narration.guided_step_gallery_print_setup_weight',
+                    'highlight' => '#GalleryPrintFormat_weight',
+                ],
+                [
                     'label' => 'label.guided_step_gallery_print_setup_published',
                     'description' => 'description.guided_step_gallery_print_setup_published',
                     'narration' => 'narration.guided_step_gallery_print_setup_published',

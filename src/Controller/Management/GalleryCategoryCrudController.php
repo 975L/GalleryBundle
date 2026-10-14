@@ -202,14 +202,12 @@ class GalleryCategoryCrudController extends AbstractCrudController
         // The route takes the slug alone, its prefix being filled from the request context (see GalleryRoutePrefixListener)
         $viewOnSiteAction = Action::new('viewOnSite', t('action.view_on_site', [], 'gallery'), 'fa fa-external-link-alt')
             ->linkToUrl(fn (GalleryCategory $category): string => $this->generateUrl('gallery_category', ['category' => $category->getSlug()]))
-            ->setHtmlAttributes(['target' => '_blank'])
-            ->addCssClass('btn btn-secondary');
+            ->setHtmlAttributes(['target' => '_blank']);
         $actions->setPermission('viewOnSite', $this->roleNeeded());
 
         // Lets the admin back out of a create/edit without saving - mirrors EasyAdmin's own built-in actions (linkToCrudAction targeting INDEX, same as Action::INDEX itself)
         $cancelAction = Action::new('cancel', $this->translator->trans('action.cancel', [], 'EasyAdminBundle'), 'fa fa-times')
-            ->linkToCrudAction(Action::INDEX)
-            ->addCssClass('btn btn-secondary');
+            ->linkToCrudAction(Action::INDEX);
 
         // In the trash a category is off the site and takes no upload, so the two actions that assume the opposite go away and the two that only make sense there appear. "exportSelection" deliberately stays: exporting a category out of the trash, files and all, is how it is carried to another site or kept aside before it is dropped for good
         if ($this->isTrash()) {
@@ -285,8 +283,7 @@ class GalleryCategoryCrudController extends AbstractCrudController
                     ->generateUrl());
 
         return $action
-            ->createAsGlobalAction()
-            ->addCssClass('btn btn-secondary');
+            ->createAsGlobalAction();
     }
 
     // Puts a category back on the site, its medias and files never having moved - only shown once already in the trash
