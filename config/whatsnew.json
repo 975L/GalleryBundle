@@ -6,6 +6,11 @@
                 "en": "Search engines now see the copyright of every credited photo, even under a Creative Commons licence",
                 "fr": "Les moteurs de recherche voient désormais le copyright de chaque photo créditée, même sous licence Creative Commons",
                 "es": "Los buscadores ven ahora el copyright de cada foto acreditada, incluso bajo licencia Creative Commons"
+            },
+            {
+                "en": "The buttons on each row of the galleries, print formats and orders lists are now compact icons, their name shown on hover",
+                "fr": "Les boutons de chaque ligne des listes de galeries, formats et commandes de tirages sont désormais des icônes compactes, leur nom s'affichant au survol",
+                "es": "Los botones de cada fila de las listas de galerías, formatos y pedidos de copias son ahora iconos compactos, con su nombre al pasar el ratón"
             }
         ]
     },

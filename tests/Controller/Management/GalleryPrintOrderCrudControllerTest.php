@@ -17,12 +17,16 @@ use c975L\GalleryBundle\Controller\Management\GalleryPrintOrderCrudController;
 use c975L\GalleryBundle\Service\GalleryCertificateService;
 use c975L\UiBundle\Service\ConfigEditUrlResolver;
 use Doctrine\ORM\EntityManagerInterface;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Config\KeyValueStore;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGeneratorInterface;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\DependencyInjection\Container;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 // The orders screen stays listed while the sale is closed, so a test order can be followed there: the index says the sale is closed rather than the entry going missing
 class GalleryPrintOrderCrudControllerTest extends TestCase
@@ -63,6 +67,30 @@ class GalleryPrintOrderCrudControllerTest extends TestCase
         }
     }
 
+    // An order's row buttons are icons on the list, their label kept as the title, while the detail page keeps the labelled buttons
+    public function testTheRowActionsAreIconsOnTheListOnly(): void
+    {
+        $actions = $this->createController(printEnabled: true, admin: true)->configureActions(Actions::new());
+
+        $index = $actions->getAsDto(Crud::PAGE_INDEX);
+        foreach (['printCertificates' => 'action.print_certificates', 'releaseToLab' => 'action.release_to_lab', Action::DETAIL => 'action.detail'] as $name => $title) {
+            $action = $index->getAction(Crud::PAGE_INDEX, $name);
+
+            $this->assertNotNull($action);
+            $this->assertFalse($action->getLabel());
+            $this->assertSame($title, $action->getHtmlAttributes()['title']);
+        }
+
+        $detail = $actions->getAsDto(Crud::PAGE_DETAIL);
+        foreach (['printCertificates', 'releaseToLab'] as $name) {
+            $action = $detail->getAction(Crud::PAGE_DETAIL, $name);
+
+            $this->assertNotNull($action);
+            $this->assertNotFalse($action->getLabel());
+            $this->assertArrayNotHasKey('title', $action->getHtmlAttributes());
+        }
+    }
+
     private function createController(bool $printEnabled, bool $admin): GalleryPrintOrderCrudController
     {
         $configService = $this->createStub(ConfigServiceInterface::class);
@@ -84,6 +112,9 @@ class GalleryPrintOrderCrudControllerTest extends TestCase
         $authorizationChecker = $this->createStub(AuthorizationCheckerInterface::class);
         $authorizationChecker->method('isGranted')->willReturnCallback(static fn (mixed $role): bool => $admin && 'ROLE_ADMIN' === $role);
 
+        $translator = $this->createStub(TranslatorInterface::class);
+        $translator->method('trans')->willReturnArgument(0);
+
         $container = new Container();
         $container->set('security.authorization_checker', $authorizationChecker);
 
@@ -95,6 +126,7 @@ class GalleryPrintOrderCrudControllerTest extends TestCase
             $this->createStub(AdminUrlGeneratorInterface::class),
             $configRepository,
             $configEditUrlResolver,
+            $translator,
         );
         $controller->setContainer($container);
 

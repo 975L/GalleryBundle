@@ -221,6 +221,9 @@ class GalleryCategoryCrudController extends AbstractCrudController
             ;
         }
 
+        // EasyAdmin's own Edit as an icon on the list, its label kept as the title
+        EasyAdminActionHelper::iconOnlyDefaults($actions, $this->translator, [Action::EDIT]);
+
         return $actions
             ->add(Crud::PAGE_INDEX, $this->trashAction())
             ->add(Crud::PAGE_INDEX, $viewOnSiteAction)
@@ -240,17 +243,9 @@ class GalleryCategoryCrudController extends AbstractCrudController
             ->setPermission(Action::NEW, $this->roleNeeded())
             ->setPermission(Action::EDIT, $this->roleNeeded())
             ->setPermission(Action::DELETE, $this->roleNeeded())
-            ->update(Crud::PAGE_INDEX, Action::EDIT, fn (Action $action) => EasyAdminActionHelper::toIconOnly(
-                $action,
-                $this->translator->trans('action.edit', [], 'EasyAdminBundle'),
-            ))
             ->update(Crud::PAGE_INDEX, 'viewOnSite', fn (Action $action) => EasyAdminActionHelper::toIconOnly(
                 $action,
                 $this->translator->trans('action.view_on_site', [], 'gallery'),
-            ))
-            ->update(Crud::PAGE_INDEX, 'translate', fn (Action $action) => EasyAdminActionHelper::toIconOnly(
-                $action,
-                $this->translator->trans('action.translate', [], 'gallery'),
             ))
             // The catch-all "Non classé" category must always exist as a fallback for medias uploaded without a real one picked (see GalleryCategoryRepository::findOrCreateUncategorized)
             ->update(Crud::PAGE_INDEX, Action::DELETE, fn (Action $action) => EasyAdminActionHelper::toIconOnly(

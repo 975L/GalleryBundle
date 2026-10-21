@@ -619,7 +619,7 @@ declaring one language (`isActive()`).
 - **Back office** — `Controller\Management\Trait\ContentLocaleCrudTrait` gives the three CRUD controllers a
   language screen through ConfigBundle's `ContentLocaleScreen` (`?contenu=xx`): `translationFields()` for
   `configureFields()`, `addContentLocaleParameters()` for the tabs, `stageContentLocale()` for the edit form,
-  and `translateAction()` on the galleries and print formats indexes. The edit templates include
+  and `translateAction()`, icon-only, on the galleries and print formats indexes. The edit templates include
   `@c975LConfig/management/_content_locale_tabs.html.twig`. A language screen submits the translated texts
   alone, so `GalleryCategoryCrudController::createEditFormBuilder()` skips the slug normalizer and the blocks
   listener there, and `GalleryMediaCrudController` skips the watermark listener.

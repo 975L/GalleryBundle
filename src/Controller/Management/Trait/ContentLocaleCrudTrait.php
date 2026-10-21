@@ -11,6 +11,7 @@
 namespace c975L\GalleryBundle\Controller\Management\Trait;
 
 use c975L\ConfigBundle\Management\ContentLocaleScreen;
+use c975L\ConfigBundle\Management\EasyAdminActionHelper;
 use c975L\GalleryBundle\Entity\GalleryCategory;
 use c975L\GalleryBundle\Entity\GalleryMedia;
 use c975L\GalleryBundle\Entity\GalleryPrintFormat;
@@ -100,12 +101,15 @@ trait ContentLocaleCrudTrait
         return $fields;
     }
 
-    // Opens the first language screen straight from the list, the way BookBundle's catalog, SiteBundle's pages and ShopBundle's products are translated - the tabs above a row already opened are the only other way in, and a translation screen nobody finds translates nothing
+    // Opens the first language screen straight from the list, the way BookBundle's catalog, SiteBundle's pages and ShopBundle's products are translated - the tabs above a row already opened are the only other way in, and a translation screen nobody finds translates nothing. Icon-only, being only ever offered on the list
     private function translateAction(): Action
     {
-        return $this->contentLocaleScreen()
+        $action = $this->contentLocaleScreen()
             ->action('translate', t('action.translate', [], 'gallery'), 'fa fa-language', $this->galleryTranslator()->getTranslatableLocales())
             ->displayIf(fn (object $entity): bool => $this->galleryTranslator()->isActive() && !($entity instanceof TrashableInterface && $entity->isDeleted()));
+        EasyAdminActionHelper::toIconOnly($action, $this->translator->trans('action.translate', [], 'gallery'));
+
+        return $action;
     }
 
     // What the language tabs at the top of the edit screen need, and nothing at all where the row is not saved yet or the site declares a single language

@@ -11,6 +11,7 @@
 namespace c975L\GalleryBundle\Controller\Management;
 
 use c975L\ConfigBundle\Management\ContentLocaleScreen;
+use c975L\ConfigBundle\Management\EasyAdminActionHelper;
 use c975L\ConfigBundle\Repository\ConfigRepository;
 use c975L\ConfigBundle\Service\ConfigServiceInterface;
 use c975L\GalleryBundle\Controller\Management\Trait\ContentLocaleCrudTrait;
@@ -90,6 +91,9 @@ class GalleryPrintFormatCrudController extends AbstractCrudController
     #[\Override]
     public function configureActions(Actions $actions): Actions
     {
+        // EasyAdmin's own Edit and Delete as icons on the list, their label kept as the title
+        EasyAdminActionHelper::iconOnlyDefaults($actions, $this->translator);
+
         // The language screen, opened straight from the list whether or not the lab publishes a range (see ContentLocaleCrudTrait::translateAction())
         $actions->add(Crud::PAGE_INDEX, $this->translateAction());
 

@@ -88,12 +88,28 @@ class GalleryPrintFormatCrudControllerTest extends TestCase
     // The language screen is opened from the list whether or not the lab publishes a range, a site printing by hand naming its formats too (see ContentLocaleCrudTrait::translateAction())
     public function testTheLanguageScreenIsOfferedEvenWithoutACatalogueToImport(): void
     {
-        $actions = $this->createController(new PrintCatalogueImportReport(0, 0, [], false), $this->createSession())->configureActions(Actions::new());
+        $actions = $this->createController(new PrintCatalogueImportReport(0, 0, [], false), $this->createSession())->configureActions(Actions::new()->add(Crud::PAGE_INDEX, Action::EDIT)->add(Crud::PAGE_INDEX, Action::DELETE));
 
         $index = $actions->getAsDto(Crud::PAGE_INDEX);
 
         $this->assertNotNull($index->getAction(Crud::PAGE_INDEX, 'translate'));
         $this->assertNull($index->getAction(Crud::PAGE_INDEX, 'importPrintCatalogue'));
+    }
+
+    // The row buttons are icons, their label kept as the title (see ContentLocaleCrudTrait::translateAction() for the language one)
+    public function testTheRowActionsAreIcons(): void
+    {
+        $actions = $this->createController(new PrintCatalogueImportReport(0, 0, [], false), $this->createSession())->configureActions(Actions::new()->add(Crud::PAGE_INDEX, Action::EDIT)->add(Crud::PAGE_INDEX, Action::DELETE));
+
+        $index = $actions->getAsDto(Crud::PAGE_INDEX);
+
+        foreach ([Action::EDIT => 'action.edit', Action::DELETE => 'action.delete', 'translate' => 'action.translate'] as $name => $title) {
+            $action = $index->getAction(Crud::PAGE_INDEX, $name);
+
+            $this->assertNotNull($action);
+            $this->assertFalse($action->getLabel());
+            $this->assertSame($title, $action->getHtmlAttributes()['title']);
+        }
     }
 
     // The sale closed, the catalogue is still written meanwhile: the index says so, and hands an admin the switch that opens it

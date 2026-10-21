@@ -1,5 +1,13 @@
 # ChangeLog
 
+## v1.28.2
+
+Row actions drawn as icons on the gallery back-office lists
+
+- Requires `c975l/core-bundle` ^1.72.2 (21/10/2026)
+- Row actions of galleries, print formats and print orders drawn as icons, their label as the title (21/10/2026)
+- Translate action icon-only from `ContentLocaleCrudTrait::translateAction()` (21/10/2026)
+
 ## v1.28.1
 
 Copyright notice published for every credited photograph

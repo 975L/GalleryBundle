@@ -10,6 +10,7 @@
 
 namespace c975L\GalleryBundle\Controller\Management;
 
+use c975L\ConfigBundle\Management\EasyAdminActionHelper;
 use c975L\ConfigBundle\Repository\ConfigRepository;
 use c975L\ConfigBundle\Service\ConfigServiceInterface;
 use c975L\GalleryBundle\Entity\GalleryPrintCopy;
@@ -33,6 +34,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGeneratorInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Messenger\MessageBusInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 use function Symfony\Component\Translation\t;
 
@@ -66,6 +68,7 @@ class GalleryPrintOrderCrudController extends AbstractCrudController
         private readonly AdminUrlGeneratorInterface $adminUrlGenerator,
         private readonly ConfigRepository $configRepository,
         private readonly ConfigEditUrlResolver $configEditUrlResolver,
+        private readonly TranslatorInterface $translator,
     ) {
     }
 
@@ -108,25 +111,32 @@ class GalleryPrintOrderCrudController extends AbstractCrudController
     #[\Override]
     public function configureActions(Actions $actions): Actions
     {
-        $certificate = Action::new('printCertificates', t('action.print_certificates', [], 'gallery'), 'fa fa-certificate')
+        // Each action is built twice, the list carrying an icon whose label is kept as the title and the detail page the labelled button
+        $certificate = static fn (): Action => Action::new('printCertificates', t('action.print_certificates', [], 'gallery'), 'fa fa-certificate')
             ->linkToCrudAction('printCertificates')
             // Nothing to certify on an open edition, so the action is not offered there rather than being offered and refused
             ->displayIf(static fn (GalleryPrintOrder $order): bool => $order->hasLimitedEdition())
         ;
 
-        $release = Action::new('releaseToLab', t('action.release_to_lab', [], 'gallery'), 'fa fa-paper-plane')
+        $release = static fn (): Action => Action::new('releaseToLab', t('action.release_to_lab', [], 'gallery'), 'fa fa-paper-plane')
             ->linkToCrudAction('releaseToLab')
             ->displayIf(static fn (GalleryPrintOrder $order): bool => $order->needsAttention())
         ;
 
-        return $actions
-            ->add(Crud::PAGE_INDEX, $certificate)
-            ->add(Crud::PAGE_INDEX, $release)
-            ->add(Crud::PAGE_DETAIL, $certificate)
-            ->add(Crud::PAGE_DETAIL, $release)
+        $actions
+            ->add(Crud::PAGE_INDEX, EasyAdminActionHelper::toIconOnly($certificate(), $this->translator->trans('action.print_certificates', [], 'gallery')))
+            ->add(Crud::PAGE_INDEX, EasyAdminActionHelper::toIconOnly($release(), $this->translator->trans('action.release_to_lab', [], 'gallery')))
+            ->add(Crud::PAGE_DETAIL, $certificate())
+            ->add(Crud::PAGE_DETAIL, $release())
             ->add(Crud::PAGE_INDEX, Action::DETAIL)
             // An order is what happened, not something to compose: it is written by the checkout and by the lab, and an admin correcting it by hand would be correcting the record of a sale
             ->disable(Action::NEW, Action::EDIT, Action::DELETE)
+        ;
+
+        // EasyAdmin's own Detail as an icon on the list, its label kept as the title
+        EasyAdminActionHelper::iconOnlyDefaults($actions, $this->translator, [Action::DETAIL]);
+
+        return $actions
             ->setPermission(Action::DETAIL, $this->roleNeeded())
             ->setPermission('printCertificates', $this->roleNeeded())
             ->setPermission('releaseToLab', $this->roleNeeded())
