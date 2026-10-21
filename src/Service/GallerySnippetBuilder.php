@@ -161,13 +161,9 @@ class GallerySnippetBuilder
         return '' === $credits ? [] : ['@type' => 'Person', 'name' => $credits];
     }
 
-    // Said only where the box is ticked: a photograph nobody claimed publishes no notice rather than one naming nobody
+    // Said wherever someone is credited, the box ticked or not, since a Creative Commons licence leaves the copyright standing. A photograph nobody claimed publishes no notice rather than one naming nobody
     private function copyrightNotice(GalleryMedia $media): string
     {
-        if (!$media->isRightsReserved()) {
-            return '';
-        }
-
         $credits = trim((string) $media->getCredits());
 
         return '' === $credits ? '' : '© ' . $credits;

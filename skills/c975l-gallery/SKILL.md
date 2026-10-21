@@ -636,7 +636,8 @@ its structured data by calling the same function.
 A photograph is an `ImageObject`, a video a `VideoObject` whose still becomes the `thumbnailUrl` and whose own
 file the `contentUrl` — a video framed from a platform having none, it names its player as `embedUrl` instead
 (`GalleryMedia::getEmbedUrl()`). Four properties are what an image search reads a licence from: `creator` and
-`creditText` off `GalleryMedia::$credits`, `copyrightNotice` off `$rightsReserved`, and `acquireLicensePage` —
+`creditText` off `GalleryMedia::$credits`, `copyrightNotice` as `© credits` whenever credits are set (not
+`$rightsReserved`: a CC photograph is still copyrighted), and `acquireLicensePage` —
 the photograph's own url where the page actually prints an offer for it, the terms page otherwise. That terms
 page, config `gallery-license-url` (a path made absolute by `UrlHelper` in the extension, or a full url), is also
 published as `license` while the gallery keeps all rights reserved; empty, neither is. `GalleryCategory::$license`

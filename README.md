@@ -1563,9 +1563,10 @@ the markup by calling the same function.
 A photograph is an `ImageObject` and a video a `VideoObject`, the still then being the thumbnail and its own file
 the content - a video framed from a platform having no file of the site's own, it names its player as `embedUrl`
 instead. Beside the name, the caption and the file, four properties are what an image search reads a licence
-from: `creator` and `creditText` from the credit typed in the back office, `copyrightNotice` from the
-rights-reserved box, and `acquireLicensePage` - the photograph's own page where the page actually prints an
-offer for it, since that is where the print is ordered, the terms page otherwise. That terms page - how the
+from: `creator` and `creditText` from the credit typed in the back office, `copyrightNotice` as
+"© credit" whenever a credit is typed - the box ticked or not, a free licence leaving the copyright standing -,
+and `acquireLicensePage` - the photograph's own page where the page actually prints an offer for it,
+since that is where the print is ordered, the terms page otherwise. That terms page - how the
 site's photographs may be used, typed as a path or a full url in `gallery-license-url` (group **Galerie**) - is
 the `license` of every photograph whose gallery keeps all rights reserved; left empty, such a photograph not
 offered as a print publishes neither. A gallery can instead publish its photographs under a Creative Commons 4.0

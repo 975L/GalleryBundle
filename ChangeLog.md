@@ -1,5 +1,11 @@
 # ChangeLog
 
+## v1.28.1
+
+Copyright notice published for every credited photograph
+
+- `copyrightNotice` published as soon as a credit is typed, no longer only when the rights-reserved box is ticked (21/10/2026)
+
 ## v1.28.0
 
 Back-office drawn with EasyAdmin 5.7 Twig components

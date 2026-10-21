@@ -47,6 +47,14 @@ class GallerySnippetBuilderTest extends TestCase
         $this->assertSame('© Laurent Marquet', $snippet['copyrightNotice']);
     }
 
+    // The notice is the author's copyright, which a free licence or an unticked box leaves standing
+    public function testACreditedPhotographPublishesItsCopyrightWithoutTheRightsReservedBox(): void
+    {
+        $snippet = $this->builder()->buildMedia($this->media()->setCredits('Laurent Marquet'), 'https://example.org/lac.webp');
+
+        $this->assertSame('© Laurent Marquet', $snippet['copyrightNotice']);
+    }
+
     // A photograph nobody claimed says nothing rather than a notice naming nobody
     public function testAPhotographWithoutACreditPublishesNeitherCreatorNorNotice(): void
     {
