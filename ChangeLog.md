@@ -1,5 +1,11 @@
 # ChangeLog
 
+## v1.28.3
+
+Lizard no longer pinned in the CI complexity job
+
+- Lizard installed unpinned in the CI complexity job (25/10/2026)
+
 ## v1.28.2
 
 Row actions drawn as icons on the gallery back-office lists
