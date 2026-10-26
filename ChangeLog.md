@@ -1,5 +1,11 @@
 # ChangeLog
 
+## v1.28.4
+
+Showcase links no longer repeat the demonstration's base url
+
+- Showcase links built without the generator's base url, no more `/demo/demo/gallery/...` (26/10/2026)
+
 ## v1.28.3
 
 Lizard no longer pinned in the CI complexity job

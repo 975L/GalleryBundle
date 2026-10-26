@@ -17,6 +17,7 @@ use c975L\GalleryBundle\Service\GalleryShowcaseProvider;
 use c975L\UiBundle\Registry\PlaceholderMediaRegistry;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Symfony\Component\Routing\RequestContext;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Twig\Environment;
 
@@ -101,6 +102,19 @@ class GalleryShowcaseProviderTest extends TestCase
         $this->assertSame('/demo/' . GalleryRoutePrefix::DEFAULT . '/paysages', $categories[0]['url']);
     }
 
+    // Rendered by the demonstration itself, the generator's paths carry its "/demo" base url, which the demonstration's address already ends on - taken once, not twice
+    public function testGetShowcasesDoesNotRepeatTheDemonstrationBaseUrl(): void
+    {
+        $rendered = [];
+        $this->provider(['medias/one.webp'], $this->recordingTwig($rendered), [], 'https://bundles.975l.com/demo', '/demo')->getShowcases();
+
+        $categories = $rendered['@c975LGallery/components/Gallery/Categories.html.twig']['categories'];
+        $this->assertSame('https://bundles.975l.com/demo/gallery/paysages', $categories[0]['url']);
+
+        $medias = $rendered['@c975LGallery/components/Gallery/Medias.html.twig']['medias'];
+        $this->assertSame('https://bundles.975l.com/demo/gallery/paysages/cretes-au-matin', $medias[0]['url']);
+    }
+
     // No demonstration named, no link: Image:Link renders a <span> rather than sending a visitor to a category this site does not hold
     public function testGetShowcasesLeavesTheStandInsUnlinkedWithoutADemonstrationSite(): void
     {
@@ -131,7 +145,7 @@ class GalleryShowcaseProviderTest extends TestCase
      * @param list<string>                $images
      * @param array<string, list<string>> $keyedImages
      */
-    private function provider(array $images, ?Environment $twig = null, array $keyedImages = [], ?string $demoUrl = '/demo/'): GalleryShowcaseProvider
+    private function provider(array $images, ?Environment $twig = null, array $keyedImages = [], ?string $demoUrl = '/demo/', string $baseUrl = ''): GalleryShowcaseProvider
     {
         if (null === $twig) {
             $twig = $this->createStub(Environment::class);
@@ -148,11 +162,12 @@ class GalleryShowcaseProviderTest extends TestCase
         $configService = $this->createStub(ConfigServiceInterface::class);
         $configService->method('get')->willReturnCallback(static fn (string $key): mixed => 'ui-showcase-demo-url' === $key ? $demoUrl : null);
 
-        // The site's own generator, whose paths the demonstration's address is prefixed to - it lays the gallery prefix down as it was handed, the way the router does for a {gallery_prefix} it was given explicitly
+        // The site's own generator, whose paths the demonstration's address is prefixed to - it lays the gallery prefix down as it was handed, the way the router does for a {gallery_prefix} it was given explicitly, behind the base url the request is served under
         $urlGenerator = $this->createStub(UrlGeneratorInterface::class);
-        $urlGenerator->method('generate')->willReturnCallback(static fn (string $route, array $parameters = []): string => 'gallery_category' === $route
+        $urlGenerator->method('getContext')->willReturn(new RequestContext($baseUrl));
+        $urlGenerator->method('generate')->willReturnCallback(static fn (string $route, array $parameters = []): string => $baseUrl . ('gallery_category' === $route
             ? '/' . $parameters['gallery_prefix'] . '/' . $parameters['category']
-            : '/' . $parameters['gallery_prefix'] . '/' . $parameters['category'] . '/' . $parameters['slug']);
+            : '/' . $parameters['gallery_prefix'] . '/' . $parameters['category'] . '/' . $parameters['slug']));
 
         return new GalleryShowcaseProvider($twig, $translator, $registry, new GallerySampleCatalog($registry), $configService, $urlGenerator);
     }

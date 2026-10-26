@@ -123,22 +123,18 @@ class GalleryShowcaseProvider implements GalleryShowcaseProviderInterface
         ];
     }
 
-    /**
-     * Where a stand-in's thumbnail leads: the demonstration site the app names in "ui-showcase-demo-url", which
-     * is the only place holding these categories and these medias (same catalog, see GalleryDemoFixtureProvider) -
-     * the site rendering the showcase has none of them, and its own gallery url would be a 404.
-     *
-     * Empty when no demonstration is named, and Image:Link then renders a <span> rather than a dead link. The path
-     * is generated against the default gallery prefix rather than this site's own (see GalleryRoutePrefix): that
-     * first segment is edited in each back office, and a site having renamed it would send the visitor to a segment
-     * the demonstration does not answer on.
-     *
-     * @param array<string, string> $parameters
-     */
+    // Stand-in link to the "ui-showcase-demo-url" site, the only one holding the sample catalog (empty when none is named), built on the default gallery prefix and stripped of the generator's base url, which the demonstration's address already ends on
+    /** @param array<string, string> $parameters */
     private function url(string $route, array $parameters): string
     {
         $demo = rtrim((string) $this->configService->get('ui-showcase-demo-url'), '/');
+        if ('' === $demo) {
+            return '';
+        }
 
-        return '' === $demo ? '' : $demo . $this->urlGenerator->generate($route, $parameters + [GalleryRoutePrefix::PARAMETER => GalleryRoutePrefix::DEFAULT]);
+        $path = $this->urlGenerator->generate($route, $parameters + [GalleryRoutePrefix::PARAMETER => GalleryRoutePrefix::DEFAULT]);
+        $baseUrl = $this->urlGenerator->getContext()->getBaseUrl();
+
+        return $demo . ('' !== $baseUrl && str_starts_with($path, $baseUrl . '/') ? substr($path, \strlen($baseUrl)) : $path);
     }
 }
