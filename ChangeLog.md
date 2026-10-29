@@ -1,5 +1,14 @@
 # ChangeLog
 
+## v1.28.5
+
+Gallery route prefix on error pages
+
+- Gallery route prefix listener declared at `RedirectSubscriber::PRIORITY + 1` (29/10/2026)
+- Gallery route prefix set on a sub-request whose context lacks it (29/10/2026)
+- Gallery route prefix read once per request (29/10/2026)
+- Required `c975l/core-bundle` ^1.79.8 (29/10/2026)
+
 ## v1.28.4
 
 Showcase links no longer repeat the demonstration's base url

@@ -1,5 +1,15 @@
 [
     {
+        "date": "2026-10-29",
+        "description": [
+            {
+                "en": "A page you marked as permanently removed now shows its proper notice instead of an error",
+                "fr": "Une page marquée comme définitivement supprimée affiche désormais son message au lieu d'une erreur",
+                "es": "Una página marcada como eliminada definitivamente muestra ahora su aviso en lugar de un error"
+            }
+        ]
+    },
+    {
         "date": "2026-10-21",
         "description": [
             {

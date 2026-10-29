@@ -53,11 +53,21 @@ class GalleryRoutePrefixListenerTest extends TestCase
         $this->assertSame('galerie', $this->context->getParameter(GalleryRoutePrefix::PARAMETER));
     }
 
-    // The main request already set it, and a sub-request must not read the configuration again on every render
-    public function testItLeavesASubRequestAlone(): void
+    // A fragment renders inside a page whose context is already set: reading the configuration again would buy nothing
+    public function testItLeavesASubRequestOnAFilledContextAlone(): void
+    {
+        $this->context->setParameter(GalleryRoutePrefix::PARAMETER, 'galerie');
+
+        ($this->createListener('fotos'))($this->createEvent(HttpKernelInterface::SUB_REQUEST));
+
+        $this->assertSame('galerie', $this->context->getParameter(GalleryRoutePrefix::PARAMETER));
+    }
+
+    // The error page of a request aborted before the listener ran (a 400 from an early listener) still renders links: its sub-request gets the prefix, or the error turns into a 500
+    public function testItFillsASubRequestOnAnEmptyContext(): void
     {
         ($this->createListener('galerie'))($this->createEvent(HttpKernelInterface::SUB_REQUEST));
 
-        $this->assertNull($this->context->getParameter(GalleryRoutePrefix::PARAMETER));
+        $this->assertSame('galerie', $this->context->getParameter(GalleryRoutePrefix::PARAMETER));
     }
 }

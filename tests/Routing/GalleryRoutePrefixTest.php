@@ -59,4 +59,30 @@ class GalleryRoutePrefixTest extends TestCase
         $this->assertFalse($routePrefix->matches('boutique'));
         $this->assertFalse($routePrefix->matches(null));
     }
+
+    // The listener and every route condition ask for it on the same request: the configuration is read once
+    public function testGetReadsTheConfigurationOnce(): void
+    {
+        $configService = $this->createMock(ConfigServiceInterface::class);
+        $configService->expects($this->once())->method('get')->willReturn('galerie');
+        $routePrefix = new GalleryRoutePrefix($configService);
+
+        $routePrefix->get();
+        $routePrefix->matches('galerie');
+
+        $this->assertSame('galerie', $routePrefix->get());
+    }
+
+    // A worker runtime keeps the service between requests: a prefix changed in the dashboard must still apply on the next one
+    public function testResetReadsTheConfigurationAgain(): void
+    {
+        $configService = $this->createStub(ConfigServiceInterface::class);
+        $configService->method('get')->willReturn('galerie', 'fotos');
+        $routePrefix = new GalleryRoutePrefix($configService);
+
+        $routePrefix->get();
+        $routePrefix->reset();
+
+        $this->assertSame('fotos', $routePrefix->get());
+    }
 }

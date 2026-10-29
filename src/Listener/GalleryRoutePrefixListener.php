@@ -10,15 +10,15 @@
 
 namespace c975L\GalleryBundle\Listener;
 
+use c975L\ConfigBundle\EventSubscriber\RedirectSubscriber;
 use c975L\GalleryBundle\Routing\GalleryRoutePrefix;
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Component\Routing\RouterInterface;
 
-// Matching a gallery url is the routes' condition business (see GalleryRoutePrefix); generating one is this listener's: the generator fills a route parameter it wasn't given from the request context, which is where the configured prefix is put here, so path('gallery_category', {category: ...}) keeps taking the category alone
-// Runs just before Symfony's own RouterListener (priority 32), the parameter having to be in the context before anything generates a url
-#[AsEventListener(event: KernelEvents::REQUEST, priority: 33)]
+// Matching a gallery url is the routes' condition business (see GalleryRoutePrefix); generating one is this listener's: the generator fills a route parameter it wasn't given from the request context, which is where the configured prefix is put here, so path('gallery_category', {category: ...}) keeps taking the category alone. Runs before ConfigBundle's RedirectSubscriber, as the error page a "gone" row leads to still renders links
+#[AsEventListener(event: KernelEvents::REQUEST, priority: RedirectSubscriber::PRIORITY + 1)]
 class GalleryRoutePrefixListener
 {
     public function __construct(
@@ -27,12 +27,16 @@ class GalleryRoutePrefixListener
     ) {
     }
 
+    // Puts the configured prefix in the router's context
     public function __invoke(RequestEvent $event): void
     {
-        if (!$event->isMainRequest()) {
+        $context = $this->router->getContext();
+
+        // A fragment renders inside a page whose context is already set, but the error page of a request aborted before this listener ran is a sub-request on an empty one
+        if (!$event->isMainRequest() && $context->hasParameter(GalleryRoutePrefix::PARAMETER)) {
             return;
         }
 
-        $this->router->getContext()->setParameter(GalleryRoutePrefix::PARAMETER, $this->routePrefix->get());
+        $context->setParameter(GalleryRoutePrefix::PARAMETER, $this->routePrefix->get());
     }
 }
