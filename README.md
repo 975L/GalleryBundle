@@ -1637,8 +1637,8 @@ seeded in Spanish reads as a Spanish gallery.
 The photographs come from what the site declares through UiBundle's `PlaceholderMediaProviderInterface`: each
 media is given the picture declared under its own `gallery/<slug>` key (`keyed_images`), so the showcase and the
 demo site show the same photograph under the same title, and falls back on the generic pool, rotated over the
-catalog, for a slug the site declares none for. The demo takes its files **as a temporary copy**: an upload moves
-the file it is handed, and the placeholders belong to the whole site. A site declaring none is seeded with nothing
+catalog, for a slug the site declares none for. The demo takes its files **as a temporary copy**, made by UiBundle's
+`DemoFixtureMediaCopier`: an upload moves the file it is handed, and the placeholders belong to the whole site. A site declaring none is seeded with nothing
 at all rather than with empty categories — a gallery is its photographs.
 
 The showcase's thumbnails lead to the demonstration site UiBundle's `ui-showcase-demo-url` names: `paysages`,

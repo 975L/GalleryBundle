@@ -15,10 +15,9 @@ use c975L\GalleryBundle\Entity\GalleryMedia;
 use c975L\UiBundle\Contract\DemoFixtureLinkerInterface;
 use c975L\UiBundle\Contract\DemoFixtureProviderInterface;
 use c975L\UiBundle\Registry\PlaceholderMediaRegistry;
+use c975L\UiBundle\Service\DemoFixtureMediaCopier;
 use c975L\UiBundle\Service\DemoFixtureTranslator;
-use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Contracts\Translation\TranslatorInterface;
-use Vich\UploaderBundle\FileAbstraction\ReplacingFile;
 
 // The gallery a demo site is seeded with, from the very data the block showcase renders (see GallerySampleCatalog) - persisted here, where the showcase only ever builds arrays
 class GalleryDemoFixtureProvider implements DemoFixtureLinkerInterface, DemoFixtureProviderInterface
@@ -31,8 +30,7 @@ class GalleryDemoFixtureProvider implements DemoFixtureLinkerInterface, DemoFixt
         private readonly GallerySampleCatalog $catalog,
         private readonly TranslatorInterface $translator,
         private readonly PlaceholderMediaRegistry $placeholderMediaRegistry,
-        #[Autowire(param: 'kernel.project_dir')]
-        private readonly string $projectDir,
+        private readonly DemoFixtureMediaCopier $demoFixtureMediaCopier,
     ) {
     }
 
@@ -91,7 +89,7 @@ class GalleryDemoFixtureProvider implements DemoFixtureLinkerInterface, DemoFixt
      */
     private function media(array $spec, string $image, int $position): ?GalleryMedia
     {
-        $file = $this->temporaryCopy($image);
+        $file = $this->demoFixtureMediaCopier->copy($image);
         if (null === $file) {
             return null;
         }
@@ -107,25 +105,6 @@ class GalleryDemoFixtureProvider implements DemoFixtureLinkerInterface, DemoFixt
         $this->demoFixtureTranslator->stage($media, GalleryTranslator::OWNER_MEDIA, self::DOMAIN, ['title' => $spec['title']]);
 
         return $media;
-    }
-
-    /**
-     * VichUploader moves the file it is handed, so what it gets is a copy: the placeholder itself is read by every
-     * other showcase of the site, and would be gone after the first load.
-     *
-     * A ReplacingFile rather than a plain File, which UploadHandler::hasUploadedFile() leaves silently ignored -
-     * the row would be written with no file name and nothing would reach the disk.
-     */
-    private function temporaryCopy(string $publicPath): ?ReplacingFile
-    {
-        $source = $this->projectDir . '/public/' . $publicPath;
-        if (!is_file($source)) {
-            return null;
-        }
-
-        $target = sys_get_temp_dir() . '/c975l-demo-' . uniqid() . '-' . basename($publicPath);
-
-        return copy($source, $target) ? new ReplacingFile($target, true, true, true) : null;
     }
 
     private function trans(string $key): string

@@ -1,5 +1,12 @@
 # ChangeLog
 
+## v1.28.6
+
+Demo pictures copied through UiBundle's DemoFixtureMediaCopier
+
+- `GalleryDemoFixtureProvider`: pictures copied through UiBundle's `DemoFixtureMediaCopier`, its own copy removed (30/10/2026)
+- Requires `c975l/core-bundle` ^1.81.3 (30/10/2026)
+
 ## v1.28.5
 
 Gallery route prefix on error pages

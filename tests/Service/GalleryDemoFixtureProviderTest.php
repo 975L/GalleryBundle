@@ -17,6 +17,7 @@ use c975L\GalleryBundle\Service\GallerySampleCatalog;
 use c975L\GalleryBundle\Service\GalleryTranslator;
 use c975L\UiBundle\Entity\Translation;
 use c975L\UiBundle\Registry\PlaceholderMediaRegistry;
+use c975L\UiBundle\Service\DemoFixtureMediaCopier;
 use c975L\UiBundle\Service\DemoFixtureTranslator;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Filesystem\Filesystem;
@@ -53,7 +54,7 @@ class GalleryDemoFixtureProviderTest extends TestCase
         $registry = $this->createStub(PlaceholderMediaRegistry::class);
         $registry->method('getImages')->willReturn($images);
 
-        return new GalleryDemoFixtureProvider(new DemoFixtureTranslator($translator, ['fr'], 'fr'), new GallerySampleCatalog($registry), $translator, $registry, $this->projectDir);
+        return new GalleryDemoFixtureProvider(new DemoFixtureTranslator($translator, ['fr'], 'fr'), new GallerySampleCatalog($registry), $translator, $registry, new DemoFixtureMediaCopier($this->projectDir));
     }
 
     /** @return list<GalleryCategory> */
@@ -126,7 +127,7 @@ class GalleryDemoFixtureProviderTest extends TestCase
         $registry->method('getImages')->willReturn([self::IMAGE]);
 
         $demoFixtureTranslator = new DemoFixtureTranslator($translator, ['fr', 'en'], 'fr');
-        $provider = new GalleryDemoFixtureProvider($demoFixtureTranslator, new GallerySampleCatalog($registry), $translator, $registry, $this->projectDir);
+        $provider = new GalleryDemoFixtureProvider($demoFixtureTranslator, new GallerySampleCatalog($registry), $translator, $registry, new DemoFixtureMediaCopier($this->projectDir));
 
         $identifier = 0;
         foreach ($provider->getDemoFixtures() as $category) {
