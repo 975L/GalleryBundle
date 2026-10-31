@@ -164,6 +164,7 @@ class GalleryCategoryCrudControllerTest extends TestCase
         ?GalleryAutomaticProvider $automaticProvider = null,
         ?GalleryLatestProvider $latestProvider = null,
         ?GalleryCustomizationRegistry $customizationRegistry = null,
+        ?AdminUrlGenerator $adminUrlGenerator = null,
     ): GalleryCategoryCrudController {
         $translator = $this->createStub(TranslatorInterface::class);
         $translator->method('trans')->willReturnArgument(0);
@@ -185,7 +186,7 @@ class GalleryCategoryCrudControllerTest extends TestCase
         // Named rather than positional: this constructor is a list of twenty-four services kept in alphabetical order, and one more of them landing in the middle of it would otherwise shift every argument below
         return new GalleryCategoryCrudController(
             adminContextProvider: $this->createStub(AdminContextProviderInterface::class),
-            adminUrlGenerator: $this->createAdminUrlGenerator(),
+            adminUrlGenerator: $adminUrlGenerator ?? $this->createAdminUrlGenerator(),
             blockMoveRowAttrBuilder: $this->createStub(BlockMoveRowAttrBuilder::class),
             configService: $this->createConfigService(),
             contentExporter: $services['contentExporter'],
@@ -1751,6 +1752,32 @@ class GalleryCategoryCrudControllerTest extends TestCase
         $this->assertSame('ROLE_ADMIN', $actions->getAsDto(null)->getActionPermissions()[Action::BATCH_DELETE] ?? null);
     }
 
+    // Posted without "trash=1", the batch would reach deleteEntity() as if from the galleries and leave the trash as it was - so the url the trash's batch action posts to carries it
+    public function testConfigureActionsPostsTheTrashBatchDeleteWithTheTrashFlag(): void
+    {
+        $urlGenerator = $this->createStub(UrlGeneratorInterface::class);
+        $urlGenerator->method('generate')->willReturnCallback(static fn (string $route, array $parameters): string => '/management?' . http_build_query($parameters));
+        $adminControllers = $this->createStub(AdminControllerRegistryInterface::class);
+        $adminControllers->method('getDashboardCount')->willReturn(1);
+        $adminControllers->method('getFirstDashboard')->willReturn('App\\Controller\\Management\\DashboardController');
+        $adminControllers->method('getFirstDashboardRoute')->willReturn('admin');
+        $routeGenerator = $this->createStub(AdminRouteGeneratorInterface::class);
+        $routeGenerator->method('findRouteName')->willReturn('admin');
+        $adminUrlGenerator = new AdminUrlGenerator($this->createStub(AdminContextProviderInterface::class), $urlGenerator, $adminControllers, $routeGenerator, new ArrayAdapter());
+
+        $controller = $this->createController(requestStack: new RequestStack([new Request(query: ['trash' => 1])]), adminUrlGenerator: $adminUrlGenerator);
+
+        $actions = $controller->configureActions(
+            Actions::new()
+                ->add(Crud::PAGE_INDEX, Action::DELETE)
+                ->add(Crud::PAGE_INDEX, Action::BATCH_DELETE)
+        );
+
+        $url = $actions->getAsDto(Crud::PAGE_INDEX)->getAction(Crud::PAGE_INDEX, Action::BATCH_DELETE)?->getUrl();
+        $this->assertIsCallable($url);
+        $this->assertStringContainsString('trash=1', $url());
+    }
+
     // The galleries screen carries neither, so it always takes two deliberate steps to lose one - only the way into the trash, which is there whatever the screen
     public function testConfigureActionsAddsNoTrashActionsOnTheGalleriesView(): void
     {
@@ -2551,22 +2578,27 @@ class GalleryCategoryCrudControllerTest extends TestCase
         $this->assertSame([], array_values(array_filter($persisted, static fn (object $entity): bool => $entity instanceof Redirect)));
     }
 
-    // The row button is hidden on "Non classé", but a batch selection reaches it all the same - the fallback of every upload stays on the site, and the admin is told why
+    // A batch reaches "Non classé" from the list, where its row button is hidden, or from the trash should an import have flagged it - the fallback of every upload stays on the site either way, and the admin is told why
     public function testDeleteEntityLeavesTheUncategorizedCategoryOnTheSite(): void
     {
-        $category = new GalleryCategory()->setTitle('Non classé')->setSlug('non-classe')->setUncategorized(true);
-        $requestStack = $this->createRequestStackWithSession();
+        foreach ([false, true] as $trash) {
+            $category = new GalleryCategory()->setTitle('Non classé')->setSlug('non-classe')->setUncategorized(true);
+            $category->setIsDeleted($trash);
+            $requestStack = $this->createRequestStackWithSession();
+            $requestStack->getCurrentRequest()->query->set('trash', (int) $trash);
 
-        $entityManager = $this->createMock(EntityManagerInterface::class);
-        $entityManager->expects($this->never())->method('flush');
+            $entityManager = $this->createMock(EntityManagerInterface::class);
+            $entityManager->expects($this->never())->method('flush');
+            $entityManager->expects($this->never())->method('remove');
 
-        $controller = $this->createController();
-        $controller->setContainer($this->createContainer(['request_stack' => $requestStack]));
+            $controller = $this->createController(requestStack: $requestStack);
+            $controller->setContainer($this->createContainer(['request_stack' => $requestStack]));
 
-        $controller->deleteEntity($entityManager, $category);
+            $controller->deleteEntity($entityManager, $category);
 
-        $this->assertFalse($category->isDeleted());
-        $this->assertCount(1, $requestStack->getSession()->getFlashBag()->peek('warning'));
+            $this->assertSame($trash, $category->isDeleted());
+            $this->assertCount(1, $requestStack->getSession()->getFlashBag()->peek('warning'));
+        }
     }
 
     // A batch posted twice from the galleries, or over a category trashed meanwhile, finds it already in the trash: it stays there rather than being removed for good
@@ -2597,7 +2629,7 @@ class GalleryCategoryCrudControllerTest extends TestCase
         $this->assertFalse($category->isDeleted());
     }
 
-    // The batch action of the trash removes it for good: its urls left answering 410, its medias' likes dropped with it
+    // The batch action of the trash removes it for good: its urls left answering 410, its medias' likes dropped with it - the message for the whole selection is TrashBatchDeleteTrait's, said once rather than per row
     public function testDeleteEntityRemovesATrashedCategoryForGood(): void
     {
         $category = $this->createCategoryWithMedias(7, 8);
@@ -2613,13 +2645,19 @@ class GalleryCategoryCrudControllerTest extends TestCase
             $removed[] = $entity;
         });
 
-        $controller = $this->createController(redirectRepository: $this->createRedirectRepository(), requestStack: new RequestStack([new Request(query: ['trash' => 1])]));
+        $request = new Request(query: ['trash' => 1]);
+        $request->setSession(new Session(new MockArraySessionStorage()));
+        $requestStack = new RequestStack([$request]);
+        $controller = $this->createController(redirectRepository: $this->createRedirectRepository(), requestStack: $requestStack);
         $controller->setContainer($this->createContainer([
             'router' => $this->createRouter(),
             'security.authorization_checker' => $this->createAuthorizationChecker(true),
+            'request_stack' => $requestStack,
         ]));
 
         $controller->deleteEntity($entityManager, $category);
+
+        $this->assertSame([], $request->getSession()->getFlashBag()->peekAll());
 
         $redirects = array_values(array_filter($persisted, static fn (object $entity): bool => $entity instanceof Redirect));
         $this->assertSame(['/gallery/voyages', '/gallery/voyages/*'], array_map(static fn (Redirect $redirect): ?string => $redirect->getFromPath(), $redirects));
@@ -2647,17 +2685,21 @@ class GalleryCategoryCrudControllerTest extends TestCase
         $controller->deleteEntity($entityManager, $category);
     }
 
-    // Refused before the first row is touched, rather than on the first trashed one, which would leave the selection half applied
+    // Refused before the first row is touched by TrashBatchDeleteTrait, which reads the screen from the request the batch posts - rather than on the first trashed one, which would leave the selection half applied
     public function testBatchDeleteDeniesTheTrashBelowTheAdminRole(): void
     {
-        $controller = $this->createController(requestStack: new RequestStack([new Request(query: ['trash' => 1])]));
+        $request = new Request(query: ['trash' => 1]);
+        $controller = $this->createController(requestStack: new RequestStack([$request]));
         $controller->setContainer($this->createContainer([
             'security.authorization_checker' => $this->createAuthorizationChecker(false),
         ]));
 
         $this->expectException(AccessDeniedException::class);
 
-        $controller->batchDelete($this->createAdminContext(), new BatchActionDto(Action::BATCH_DELETE, [1, 2], GalleryCategory::class, 'token'));
+        $controller->batchDelete(
+            AdminContext::forTesting(RequestContext::forTesting($request)),
+            new BatchActionDto(Action::BATCH_DELETE, [1, 2], GalleryCategory::class, 'token'),
+        );
     }
 
     // --- deletePermanently -------------------------------------------------------------------------------

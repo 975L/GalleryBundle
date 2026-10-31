@@ -19,7 +19,7 @@ class GalleryViewingBehaviourTest extends JsCase
     // Warmed while the current media is being looked at, so clicking prev or next does not show a blank while it loads
     public function testTheNeighboursAreFetchedWhileTheCurrentMediaIsBeingLookedAt(): void
     {
-        $warmed = $this->media('return fetched();');
+        $warmed = $this->media('return warmed(2);');
 
         $this->assertContains($this->url('assets/js/gallery-media-preload.js') . '?precedent', $warmed, 'The previous media is not warmed, so going back shows a blank while it loads.');
         $this->assertContains($this->url('assets/js/gallery-media-preload.js') . '?suivant', $warmed, 'The next media is not warmed, so going on shows a blank while it loads.');
@@ -60,7 +60,15 @@ class GalleryViewingBehaviourTest extends JsCase
     {
         $preamble = 'const image = () => root.querySelector(".gallery-media-display");
              // What the browser really went and asked for, which is the only thing a warmed cache leaves behind
-             const fetched = () => performance.getEntriesByType("resource").map((entry) => entry.name).filter((name) => name.includes("?precedent") || name.includes("?suivant")); ';
+             const fetched = () => performance.getEntriesByType("resource").map((entry) => entry.name).filter((name) => name.includes("?precedent") || name.includes("?suivant"));
+             // A resource is only listed once its response has arrived, which a busy run may not have done when the probe starts: waited for, up to two seconds, rather than read at once
+             const warmed = async (expected) => {
+                 for (let tries = 0; tries < 40 && fetched().length < expected; tries++) {
+                     await new Promise((resolve) => setTimeout(resolve, 50));
+                 }
+
+                 return fetched();
+             }; ';
 
         return $this->observe(
             $this->page($neighbours),

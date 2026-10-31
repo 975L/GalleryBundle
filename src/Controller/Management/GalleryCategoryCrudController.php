@@ -10,6 +10,7 @@
 
 namespace c975L\GalleryBundle\Controller\Management;
 
+use c975L\ConfigBundle\Controller\Management\Trait\TrashBatchDeleteTrait;
 use c975L\ConfigBundle\Management\ContentLocaleScreen;
 use c975L\ConfigBundle\Management\EasyAdminActionHelper;
 use c975L\ConfigBundle\Service\ConfigServiceInterface;
@@ -96,6 +97,7 @@ use function Symfony\Component\Translation\t;
 class GalleryCategoryCrudController extends AbstractCrudController
 {
     use ContentLocaleCrudTrait;
+    use TrashBatchDeleteTrait;
 
     // Also the token ids the edit template renders in its selection form (see gallery_category_edit.html.twig), which posts to deleteMedias(), editMedias() or saveMediasLayout() depending on the button pressed - one token each, an html form holding a single "_token" field that they would otherwise share
     public const DELETE_MEDIAS_CSRF_TOKEN = 'gallery_media_delete_selection';
@@ -264,8 +266,8 @@ class GalleryCategoryCrudController extends AbstractCrudController
             ->disable(Action::DETAIL)
         ;
 
-        // The batch "Delete" runs deleteEntity() below, which trashes from the galleries and removes for good from the trash - worded for each, EasyAdmin's own "Delete" saying neither
-        return EasyAdminActionHelper::trashBatchDelete($actions, $this->isTrash());
+        // The batch "Delete" runs deleteEntity() below, which trashes from the galleries and removes for good from the trash - worded for each, EasyAdmin's own "Delete" saying neither, and posted from the trash with "trash=1" so deleteEntity() still knows which screen asked
+        return EasyAdminActionHelper::trashBatchDelete($actions, $this->isTrash(), $this->adminUrlGenerator);
     }
 
     // Toggles between "go to trash" and "back to galleries", depending on where we currently are - one button rather than two, the screen it leads to being the one you are not on
@@ -350,38 +352,27 @@ class GalleryCategoryCrudController extends AbstractCrudController
         ;
     }
 
-    // The batch "Delete" of the trash removes for good, so the admin role is checked before the first row is touched - EasyAdmin only checks the editor's role DELETE carries, and a refusal met row by row would leave the selection half applied
-    #[\Override]
-    public function batchDelete(AdminContext $context, BatchActionDto $batchActionDto): Response
-    {
-        if ($this->isTrash()) {
-            $this->denyAccessUnlessGranted((string) $this->configService->get('site-role-admin'));
-        }
-
-        return parent::batchDelete($context, $batchActionDto);
-    }
-
     // Move to trash: flags the category and nothing else. Its medias keep their own flag untouched, so restoring it gives back exactly the ones that were showing, and the cascade on GalleryCategory::$medias is never reached - which is what leaves every file on disk. From the trash, the batch "Delete" removes it for good instead
     #[\Override]
     public function deleteEntity(EntityManagerInterface $entityManager, mixed $entityInstance): void
     {
         if ($entityInstance instanceof GalleryCategory) {
+            // "Non classé" is the fallback of every upload and stays on the site whatever reaches it - a batch of the list, where its row button is hidden, or one of the trash should an import have flagged it - and the admin is told why
+            if ($entityInstance->isUncategorized()) {
+                $this->addFlash('warning', $this->translator->trans('flash.gallery_category_uncategorized_kept', [], 'gallery'));
+
+                return;
+            }
+
             // The screen says which of the two was asked, the category's own flag only guarding against a stale view: a batch posted twice from the galleries must never reach the removal for good, nor one restored meanwhile
             if ($this->isTrash()) {
                 if (!$entityInstance->isDeleted()) {
                     return;
                 }
 
-                // Held at the admin role as deletePermanently() is, batchDelete() having checked it already
+                // From the trash, at the admin role like its row button - TrashBatchDeleteTrait checked it before the first row and says once what went, this holds EasyAdmin's single delete to the same bar
                 $this->denyAccessUnlessGranted((string) $this->configService->get('site-role-admin'));
                 $this->removeForGood($entityManager, $entityInstance);
-
-                return;
-            }
-
-            // The row button is hidden on "Non classé", but a batch selection reaches it all the same - the fallback of every upload must stay on the site, and the admin is told why it did
-            if ($entityInstance->isUncategorized()) {
-                $this->addFlash('warning', $this->translator->trans('flash.gallery_category_uncategorized_kept', [], 'gallery'));
 
                 return;
             }
@@ -435,6 +426,13 @@ class GalleryCategoryCrudController extends AbstractCrudController
         // A stale link to a category restored since must not drop it from the site: only one in the trash is removed for good
         $category = $context->getEntity()->getInstance();
         if (!$category->isDeleted()) {
+            return $this->redirect($this->trashIndexUrl());
+        }
+
+        // "Non classé" is never removed for good, even flagged by an import: every upload falls back on it
+        if ($category->isUncategorized()) {
+            $this->addFlash('warning', $this->translator->trans('flash.gallery_category_uncategorized_kept', [], 'gallery'));
+
             return $this->redirect($this->trashIndexUrl());
         }
 

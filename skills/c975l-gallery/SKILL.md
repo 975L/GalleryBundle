@@ -85,7 +85,8 @@ simply never reached.
   setting; the rest of the gallery back office sits behind `site-role-editor`.
 - The batch "Delete" runs `deleteEntity()`, which trashes on the galleries and removes for good in the
   trash: `isTrash()` decides, the row's `isDeleted()` only guards against a stale view, and
-  `batchDelete()` checks the admin role before the first row when in the trash. `deletePermanently()`
+  ConfigBundle's `TrashBatchDeleteTrait::batchDelete()` checks the admin role before the first row
+  when in the trash and says once how many went. `deletePermanently()`
   ignores a category that is not in the trash.
 - A trashed category or media answers **410 Gone** on its public url, not 404, straight from the row.
   That 410 lasts only as long as the entity can be restored: the permanent deletion is what writes the

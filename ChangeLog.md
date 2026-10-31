@@ -1,5 +1,15 @@
 # ChangeLog
 
+## v1.28.8
+
+Trash emptied in a batch for real
+
+- `GalleryCategoryCrudController`: trash's batch action posted with "trash=1" (31/10/2026)
+- `GalleryCategoryCrudController`: batch removal through ConfigBundle's `TrashBatchDeleteTrait` (31/10/2026)
+- `GalleryCategoryCrudController`: "Non classé" never removed for good from the trash (31/10/2026)
+- `GalleryViewingBehaviourTest`: neighbours' preload waited for rather than read at once (31/10/2026)
+- Requires `c975l/core-bundle` ^1.84.0 (31/10/2026)
+
 ## v1.28.7
 
 Trash emptied in a batch, and titled as such
