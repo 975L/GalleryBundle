@@ -182,7 +182,7 @@ class GalleryCategoryCrudControllerTest extends TestCase
             'customizationRegistry' => $customizationRegistry,
         ]) + $this->defaultControllerServices($galleryCategoryRepository);
 
-        // Named rather than positional: this constructor is a list of twenty-three services kept in alphabetical order, and one more of them landing in the middle of it would otherwise shift every argument below
+        // Named rather than positional: this constructor is a list of twenty-four services kept in alphabetical order, and one more of them landing in the middle of it would otherwise shift every argument below
         return new GalleryCategoryCrudController(
             adminContextProvider: $this->createStub(AdminContextProviderInterface::class),
             adminUrlGenerator: $this->createAdminUrlGenerator(),
@@ -208,6 +208,8 @@ class GalleryCategoryCrudControllerTest extends TestCase
             galleryMediaRepository: $services['mediaRepository'],
             galleryTranslator: $this->createStub(GalleryTranslator::class),
             urlRedirector: new GalleryUrlRedirector($services['redirectRepository']),
+            // The recording double rather than a bare stub, so a test reads back which likes a permanent deletion dropped
+            ratingRepository: $this->createRatingRepository(),
             requestStack: $services['requestStack'],
             slugger: new AsciiSlugger(),
             translator: $translator,
@@ -259,7 +261,8 @@ class GalleryCategoryCrudControllerTest extends TestCase
     private function createConfigService(): ConfigServiceInterface
     {
         $configService = $this->createStub(ConfigServiceInterface::class);
-        $configService->method('get')->willReturn('ROLE_EDITOR');
+        // The admin role told apart from the editor's, so a test reads which of the two an action is held at
+        $configService->method('get')->willReturnCallback(static fn (string $key): string => 'site-role-admin' === $key ? 'ROLE_ADMIN' : 'ROLE_EDITOR');
 
         return $configService;
     }
@@ -546,7 +549,7 @@ class GalleryCategoryCrudControllerTest extends TestCase
             'request_stack' => $this->createRequestStackWithSession(),
         ]));
 
-        $controller->deleteMediasPermanently($this->createAdminContext($category), $this->createDeleteMediasRequest([7, 9, 999]), $entityManager, $this->createRatingRepository());
+        $controller->deleteMediasPermanently($this->createAdminContext($category), $this->createDeleteMediasRequest([7, 9, 999]), $entityManager);
 
         $this->assertSame([7, 9], $removed);
     }
@@ -563,7 +566,7 @@ class GalleryCategoryCrudControllerTest extends TestCase
             'request_stack' => $this->createRequestStackWithSession(),
         ]));
 
-        $controller->deleteMediasPermanently($this->createAdminContext($category), $this->createDeleteMediasRequest([7, 9]), $this->createStub(EntityManagerInterface::class), $this->createRatingRepository());
+        $controller->deleteMediasPermanently($this->createAdminContext($category), $this->createDeleteMediasRequest([7, 9]), $this->createStub(EntityManagerInterface::class));
 
         $this->assertSame(['gallery_media#7', 'gallery_media#9'], $this->ratingsDeletedFor);
         $this->assertSame(1, $this->ratingsDeleteCalls);
@@ -585,7 +588,7 @@ class GalleryCategoryCrudControllerTest extends TestCase
         ]));
 
         try {
-            $controller->deleteMediasPermanently($this->createAdminContext($category), $this->createDeleteMediasRequest([7, 9]), $entityManager, $this->createRatingRepository());
+            $controller->deleteMediasPermanently($this->createAdminContext($category), $this->createDeleteMediasRequest([7, 9]), $entityManager);
             $this->fail('The failing flush should have surfaced');
         } catch (\RuntimeException) {
         }
@@ -608,7 +611,7 @@ class GalleryCategoryCrudControllerTest extends TestCase
             'request_stack' => $this->createRequestStackWithSession(),
         ]));
 
-        $controller->deleteMediasPermanently($this->createAdminContext($category), $this->createDeleteMediasRequest([7, 8]), $entityManager, $this->createRatingRepository());
+        $controller->deleteMediasPermanently($this->createAdminContext($category), $this->createDeleteMediasRequest([7, 8]), $entityManager);
     }
 
     // The mirror of the check above: a media still showing in the grid is not something the trash screen puts back
@@ -706,7 +709,7 @@ class GalleryCategoryCrudControllerTest extends TestCase
             'router' => $this->createRouter(),
         ]));
 
-        $controller->deleteMediasPermanently($this->createAdminContext($category), $this->createDeleteMediasRequest([7]), $entityManager, $this->createRatingRepository());
+        $controller->deleteMediasPermanently($this->createAdminContext($category), $this->createDeleteMediasRequest([7]), $entityManager);
 
         $redirects = array_values(array_filter($persisted, static fn (object $entity): bool => $entity instanceof Redirect));
         $this->assertCount(1, $redirects);
@@ -1696,17 +1699,56 @@ class GalleryCategoryCrudControllerTest extends TestCase
             Actions::new()
                 ->add(Crud::PAGE_INDEX, Action::EDIT)
                 ->add(Crud::PAGE_INDEX, Action::DELETE)
+                ->add(Crud::PAGE_INDEX, Action::BATCH_DELETE)
         );
 
         $index = $actions->getAsDto(Crud::PAGE_INDEX);
         $disabled = $actions->getAsDto(null)->getDisabledActions();
+        $trashed = new GalleryCategory()->setTitle('Voyages');
+        $trashed->setIsDeleted(true);
 
         $this->assertNotNull($index->getAction(Crud::PAGE_INDEX, 'restore'));
         $this->assertNotNull($index->getAction(Crud::PAGE_INDEX, 'deletePermanently'));
         $this->assertContains(Action::NEW, $disabled);
-        $this->assertContains(Action::DELETE, $disabled);
         $this->assertContains('uploadMedias', $disabled);
         $this->assertNotContains('exportSelection', $disabled);
+        // DELETE stays enabled, or EasyAdmin would disable the batch action emptying the trash with it - the row button is hidden on a trashed category instead
+        $this->assertNotContains(Action::BATCH_DELETE, $disabled);
+        $this->assertFalse($index->getAction(Crud::PAGE_INDEX, Action::DELETE)->isDisplayed($this->createEntityDto($trashed)));
+    }
+
+    // The batch "Delete" runs deleteEntity(), which trashes from the galleries - EasyAdmin's own "Delete" would read as the irreversible one
+    public function testConfigureActionsWordsTheBatchDeleteAsAMoveToTheTrashOnTheGalleriesView(): void
+    {
+        $actions = $this->createController()->configureActions(
+            Actions::new()
+                ->add(Crud::PAGE_INDEX, Action::DELETE)
+                ->add(Crud::PAGE_INDEX, Action::BATCH_DELETE)
+        );
+
+        $label = $actions->getAsDto(Crud::PAGE_INDEX)->getAction(Crud::PAGE_INDEX, Action::BATCH_DELETE)->getLabel();
+
+        $this->assertInstanceOf(TranslatableMessage::class, $label);
+        $this->assertSame('action.move_to_trash', $label->getMessage());
+    }
+
+    // From the trash the same batch action removes the selection for good, so it says so - and is held at the admin role, as the row button is
+    public function testConfigureActionsWordsTheBatchDeleteAsAPermanentDeletionOnTheTrashView(): void
+    {
+        $controller = $this->createController(requestStack: new RequestStack([new Request(query: ['trash' => 1])]));
+
+        $actions = $controller->configureActions(
+            Actions::new()
+                ->add(Crud::PAGE_INDEX, Action::DELETE)
+                ->add(Crud::PAGE_INDEX, Action::BATCH_DELETE)
+        );
+
+        $batchDelete = $actions->getAsDto(Crud::PAGE_INDEX)->getAction(Crud::PAGE_INDEX, Action::BATCH_DELETE);
+        $label = $batchDelete->getLabel();
+
+        $this->assertInstanceOf(TranslatableMessage::class, $label);
+        $this->assertSame('action.delete_permanently', $label->getMessage());
+        $this->assertSame('ROLE_ADMIN', $actions->getAsDto(null)->getActionPermissions()[Action::BATCH_DELETE] ?? null);
     }
 
     // The galleries screen carries neither, so it always takes two deliberate steps to lose one - only the way into the trash, which is there whatever the screen
@@ -1797,6 +1839,24 @@ class GalleryCategoryCrudControllerTest extends TestCase
         );
 
         $this->assertNull($actions->getAsDto(Crud::PAGE_EDIT)->getAction(Crud::PAGE_EDIT, 'uploadMedias'));
+    }
+
+    // The trash is the same screen as the galleries, so its title says which of the two is shown
+    public function testConfigureCrudTitlesTheTrashAsSuch(): void
+    {
+        $galleries = $this->createController()->configureCrud(Crud::new());
+        $trash = $this->createController(requestStack: new RequestStack([new Request(query: ['trash' => 1])]))->configureCrud(Crud::new());
+
+        $this->assertSame('label.gallery_categories', $this->pageTitleMessage($galleries));
+        $this->assertSame('action.trash', $this->pageTitleMessage($trash));
+    }
+
+    // The key the index title is translated from
+    private function pageTitleMessage(Crud $crud): ?string
+    {
+        $title = $crud->getAsDto()->getCustomPageTitle(Crud::PAGE_INDEX);
+
+        return $title instanceof TranslatableMessage ? $title->getMessage() : null;
     }
 
     // The row actions are icon-only, so they cost less width side by side than the dropdown they'd otherwise be folded into
@@ -2491,12 +2551,122 @@ class GalleryCategoryCrudControllerTest extends TestCase
         $this->assertSame([], array_values(array_filter($persisted, static fn (object $entity): bool => $entity instanceof Redirect)));
     }
 
+    // The row button is hidden on "Non classé", but a batch selection reaches it all the same - the fallback of every upload stays on the site, and the admin is told why
+    public function testDeleteEntityLeavesTheUncategorizedCategoryOnTheSite(): void
+    {
+        $category = new GalleryCategory()->setTitle('Non classé')->setSlug('non-classe')->setUncategorized(true);
+        $requestStack = $this->createRequestStackWithSession();
+
+        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $entityManager->expects($this->never())->method('flush');
+
+        $controller = $this->createController();
+        $controller->setContainer($this->createContainer(['request_stack' => $requestStack]));
+
+        $controller->deleteEntity($entityManager, $category);
+
+        $this->assertFalse($category->isDeleted());
+        $this->assertCount(1, $requestStack->getSession()->getFlashBag()->peek('warning'));
+    }
+
+    // A batch posted twice from the galleries, or over a category trashed meanwhile, finds it already in the trash: it stays there rather than being removed for good
+    public function testDeleteEntityLeavesACategoryAlreadyInTheTrashThereFromTheGalleries(): void
+    {
+        $category = new GalleryCategory()->setTitle('Voyages')->setSlug('voyages');
+        $category->setIsDeleted(true);
+
+        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $entityManager->expects($this->never())->method('remove');
+
+        $this->createControllerWithRouter()->deleteEntity($entityManager, $category);
+
+        $this->assertTrue($category->isDeleted());
+    }
+
+    // The mirror of the check above: a category restored since the trash was listed is not removed for good by its batch action
+    public function testDeleteEntityLeavesACategoryRestoredMeanwhileFromTheTrash(): void
+    {
+        $category = new GalleryCategory()->setTitle('Voyages')->setSlug('voyages');
+
+        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $entityManager->expects($this->never())->method('remove');
+        $entityManager->expects($this->never())->method('flush');
+
+        $this->createController(requestStack: new RequestStack([new Request(query: ['trash' => 1])]))->deleteEntity($entityManager, $category);
+
+        $this->assertFalse($category->isDeleted());
+    }
+
+    // The batch action of the trash removes it for good: its urls left answering 410, its medias' likes dropped with it
+    public function testDeleteEntityRemovesATrashedCategoryForGood(): void
+    {
+        $category = $this->createCategoryWithMedias(7, 8);
+        $category->setIsDeleted(true);
+        $persisted = [];
+        $removed = [];
+
+        $entityManager = $this->createStub(EntityManagerInterface::class);
+        $entityManager->method('persist')->willReturnCallback(static function (object $entity) use (&$persisted): void {
+            $persisted[] = $entity;
+        });
+        $entityManager->method('remove')->willReturnCallback(static function (object $entity) use (&$removed): void {
+            $removed[] = $entity;
+        });
+
+        $controller = $this->createController(redirectRepository: $this->createRedirectRepository(), requestStack: new RequestStack([new Request(query: ['trash' => 1])]));
+        $controller->setContainer($this->createContainer([
+            'router' => $this->createRouter(),
+            'security.authorization_checker' => $this->createAuthorizationChecker(true),
+        ]));
+
+        $controller->deleteEntity($entityManager, $category);
+
+        $redirects = array_values(array_filter($persisted, static fn (object $entity): bool => $entity instanceof Redirect));
+        $this->assertSame(['/gallery/voyages', '/gallery/voyages/*'], array_map(static fn (Redirect $redirect): ?string => $redirect->getFromPath(), $redirects));
+        $this->assertTrue($redirects[0]->isGone());
+        $this->assertSame([$category], $removed);
+        $this->assertSame(['gallery_media#7', 'gallery_media#8'], $this->ratingsDeletedFor);
+    }
+
+    // The batch action only checks the editor's role DELETE carries, so emptying the trash checks the admin's itself, as the row button does
+    public function testDeleteEntityDeniesARemovalForGoodBelowTheAdminRole(): void
+    {
+        $category = new GalleryCategory()->setTitle('Voyages')->setSlug('voyages');
+        $category->setIsDeleted(true);
+
+        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $entityManager->expects($this->never())->method('remove');
+
+        $controller = $this->createController(requestStack: new RequestStack([new Request(query: ['trash' => 1])]));
+        $controller->setContainer($this->createContainer([
+            'security.authorization_checker' => $this->createAuthorizationChecker(false),
+        ]));
+
+        $this->expectException(AccessDeniedException::class);
+
+        $controller->deleteEntity($entityManager, $category);
+    }
+
+    // Refused before the first row is touched, rather than on the first trashed one, which would leave the selection half applied
+    public function testBatchDeleteDeniesTheTrashBelowTheAdminRole(): void
+    {
+        $controller = $this->createController(requestStack: new RequestStack([new Request(query: ['trash' => 1])]));
+        $controller->setContainer($this->createContainer([
+            'security.authorization_checker' => $this->createAuthorizationChecker(false),
+        ]));
+
+        $this->expectException(AccessDeniedException::class);
+
+        $controller->batchDelete($this->createAdminContext(), new BatchActionDto(Action::BATCH_DELETE, [1, 2], GalleryCategory::class, 'token'));
+    }
+
     // --- deletePermanently -------------------------------------------------------------------------------
 
     // The category page and every media page under it are declared in the sitemap (see GallerySitemapProvider), so the urls are left answering 410 - the medias through a single wildcard row rather than one row each
     public function testDeletePermanentlyLeavesTheCategoryAndEverythingUnderItAnsweringGone(): void
     {
         $category = new GalleryCategory()->setTitle('Voyages')->setSlug('voyages');
+        $category->setIsDeleted(true);
         $persisted = [];
         $removed = [];
 
@@ -2516,7 +2686,7 @@ class GalleryCategoryCrudControllerTest extends TestCase
             'request_stack' => $this->createRequestStackWithSession(),
         ]));
 
-        $controller->deletePermanently($this->createAdminContext($category), new Request(['token' => 'token']), $entityManager, $this->createRatingRepository());
+        $controller->deletePermanently($this->createAdminContext($category), new Request(['token' => 'token']), $entityManager);
 
         $redirects = array_values(array_filter($persisted, static fn (object $entity): bool => $entity instanceof Redirect));
         $this->assertSame(['/gallery/voyages', '/gallery/voyages/*'], array_map(static fn (Redirect $redirect): ?string => $redirect->getFromPath(), $redirects));
@@ -2530,6 +2700,7 @@ class GalleryCategoryCrudControllerTest extends TestCase
     public function testDeletePermanentlyDropsTheLikesOfEveryMediaItTakesWithIt(): void
     {
         $category = $this->createCategoryWithMedias(7, 8);
+        $category->setIsDeleted(true);
 
         $controller = $this->createController(redirectRepository: $this->createRedirectRepository());
         $controller->setContainer($this->createContainer([
@@ -2539,7 +2710,7 @@ class GalleryCategoryCrudControllerTest extends TestCase
             'request_stack' => $this->createRequestStackWithSession(),
         ]));
 
-        $controller->deletePermanently($this->createAdminContext($category), new Request(['token' => 'token']), $this->createStub(EntityManagerInterface::class), $this->createRatingRepository());
+        $controller->deletePermanently($this->createAdminContext($category), new Request(['token' => 'token']), $this->createStub(EntityManagerInterface::class));
 
         $this->assertSame(['gallery_media#7', 'gallery_media#8'], $this->ratingsDeletedFor);
     }
@@ -2558,7 +2729,6 @@ class GalleryCategoryCrudControllerTest extends TestCase
             $this->createAdminContext(new GalleryCategory()->setTitle('Voyages')->setSlug('voyages')),
             new Request(['token' => 'token']),
             $this->createStub(EntityManagerInterface::class),
-            $this->createRatingRepository(),
         );
     }
 
@@ -2579,7 +2749,30 @@ class GalleryCategoryCrudControllerTest extends TestCase
             'security.csrf.token_manager' => $this->createCsrfTokenManager(false),
         ]));
 
-        $controller->deletePermanently($this->createAdminContext($category), new Request(), $entityManager, $this->createRatingRepository());
+        $controller->deletePermanently($this->createAdminContext($category), new Request(), $entityManager);
+    }
+
+    // A stale link to a category restored since leads back to the trash, the category left on the site
+    public function testDeletePermanentlyLeavesACategoryNotInTheTrash(): void
+    {
+        $category = new GalleryCategory()->setTitle('Voyages')->setSlug('voyages');
+        $requestStack = $this->createRequestStackWithSession();
+
+        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $entityManager->expects($this->never())->method('remove');
+        $entityManager->expects($this->never())->method('flush');
+
+        $controller = $this->createController();
+        $controller->setContainer($this->createContainer([
+            'router' => $this->createRouter(),
+            'security.authorization_checker' => $this->createAuthorizationChecker(true),
+            'security.csrf.token_manager' => $this->createCsrfTokenManager(true),
+            'request_stack' => $requestStack,
+        ]));
+
+        $controller->deletePermanently($this->createAdminContext($category), new Request(['token' => 'token']), $entityManager);
+
+        $this->assertSame([], $requestStack->getSession()->getFlashBag()->peekAll());
     }
 
     // --- restore -----------------------------------------------------------------------------------------

@@ -174,8 +174,7 @@ class GalleryController extends AbstractController
         return $category;
     }
 
-    // A trashed category answers 410 rather than 404, the same way SiteBundle serves a trashed Page: it says the url held something and no longer does, which a search engine acts on far faster than on a 404 - and it only lasts as long as the category can still be restored, deletePermanently() replacing it with a "gone" Redirect that says it for good (see GalleryCategoryCrudController)
-    // A hidden one answers 404, exactly as a hidden media does below and for the same reason: masking is reversible, and a crawler must not be told anything a change of mind would have to be taken back. The medias it holds answer 404 with it, their pages being resolved through here
+    // A trashed category answers 410 rather than 404, the same way SiteBundle serves a trashed Page: it says the url held something and no longer does, which a search engine acts on far faster than on a 404 - and it only lasts as long as the category can still be restored, its permanent deletion replacing it with a "gone" Redirect that says it for good (see GalleryCategoryCrudController). A hidden one answers 404, exactly as a hidden media does below and for the same reason: masking is reversible, and a crawler must not be told anything a change of mind would have to be taken back. The medias it holds answer 404 with it, their pages being resolved through here
     private function resolveCategory(string $slug): GalleryCategory
     {
         $category = $this->categoryRepository->findOneBySlug($slug);

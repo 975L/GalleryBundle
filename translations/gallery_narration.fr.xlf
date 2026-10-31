@@ -292,11 +292,11 @@
             </trans-unit>
             <trans-unit id="E66DXJx">
                 <source>narration.guided_step_gallery_trash_delete</source>
-                <target>Retirez-en une du site. Le bouton demande confirmation, puis met la galerie à la corbeille : ses médias, ses fichiers et son adresse sont conservés, et seule sa page répond désormais qu'elle n'existe plus.</target>
+                <target>Retirez-en une du site. « Mettre à la corbeille » demande confirmation, puis met la galerie à la corbeille : ses médias, ses fichiers et son adresse sont conservés, et seule sa page répond désormais qu'elle n'existe plus. Cochez plusieurs galeries pour les y mettre ensemble.</target>
             </trans-unit>
             <trans-unit id="jkS92Sw">
                 <source>narration.guided_step_gallery_trash_done</source>
-                <target>Rien ne se perd en un clic. Jeter une galerie pour de bon est l'autre bouton de la corbeille, tenu à l'administrateur : c'est le seul qui retire les fichiers du serveur.</target>
+                <target>Rien ne se perd en un clic. Jeter une galerie pour de bon est l'autre bouton de la corbeille, tenu à l'administrateur : c'est le seul qui retire les fichiers du serveur. Cochez-en plusieurs pour vider la corbeille d'un coup.</target>
             </trans-unit>
             <trans-unit id="WBdp.7G">
                 <source>narration.guided_step_gallery_trash_open</source>

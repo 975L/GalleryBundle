@@ -18,10 +18,6 @@
                 <source>action.apply_rights_reserved</source>
                 <target>Aplicar los derechos reservados</target>
             </trans-unit>
-            <trans-unit id="sSgetpg">
-                <source>action.delete_permanently</source>
-                <target>Eliminar definitivamente</target>
-            </trans-unit>
             <trans-unit id="GeDA.v_">
                 <source>action.download_highres</source>
                 <target>Descargar en alta resolución</target>
@@ -45,10 +41,6 @@
             <trans-unit id="FN9Jswr">
                 <source>action.move_selection</source>
                 <target>Mover la selección</target>
-            </trans-unit>
-            <trans-unit id="vUjYe27">
-                <source>action.move_to_trash</source>
-                <target>Mover a la papelera</target>
             </trans-unit>
             <trans-unit id="pyWTZUc">
                 <source>action.print_certificates</source>
@@ -416,11 +408,11 @@
             </trans-unit>
             <trans-unit id="vZywfgl">
                 <source>description.guided_step_gallery_trash_delete</source>
-                <target>El botón pide confirmación y luego mueve la galería a la papelera: sus medios, sus archivos y su dirección se conservan, y solo su página responde a partir de entonces que ya no existe.</target>
+                <target>«Mover a la papelera» pide confirmación y luego mueve la galería a la papelera: sus medios, sus archivos y su dirección se conservan, y solo su página responde a partir de entonces que ya no existe. Marque varias galerías para moverlas juntas.</target>
             </trans-unit>
             <trans-unit id="Pkkkoh1">
                 <source>description.guided_step_gallery_trash_done</source>
-                <target>Tirar una galería definitivamente es el otro botón de la papelera, reservado al administrador: es el único que retira los archivos del servidor.</target>
+                <target>Tirar una galería definitivamente es el otro botón de la papelera, reservado al administrador: es el único que retira los archivos del servidor. Marque varias para vaciar la papelera de una vez.</target>
             </trans-unit>
             <trans-unit id="KaOuqrH">
                 <source>description.guided_step_gallery_trash_open</source>
@@ -493,6 +485,10 @@
             <trans-unit id="XcWUcOA">
                 <source>flash.gallery_category_restored</source>
                 <target>Galería restaurada</target>
+            </trans-unit>
+            <trans-unit id="LvG.6xE">
+                <source>flash.gallery_category_uncategorized_kept</source>
+                <target>La galería «Sin clasificar» se mantiene: recibe los envíos hechos sin galería.</target>
             </trans-unit>
             <trans-unit id="jEF1Zc.">
                 <source>flash.print_catalogue_imported</source>

@@ -1,5 +1,22 @@
 # ChangeLog
 
+## v1.28.7
+
+Trash emptied in a batch, and titled as such
+
+- `GalleryCategoryCrudController`: batch "Delete" worded "Move to trash" / "Delete permanently" (31/10/2026)
+- `GalleryCategoryCrudController`: batch "Delete permanently" in the trash, admin only (31/10/2026)
+- `GalleryCategoryCrudController`: trash titled "Trash" (31/10/2026)
+- `GalleryCategoryCrudController`: shared `removeForGood()`, `RatingRepository` in the constructor (31/10/2026)
+- `GalleryCategoryCrudController`: "Non classé" kept out of batch trashing (31/10/2026)
+- `GalleryCategoryCrudController`: batch action decided by the screen, not by the row's trash flag (31/10/2026)
+- `GalleryCategoryCrudController`: trash batch refused below the admin role before the first row (31/10/2026)
+- `GalleryCategoryCrudController`: warning when a batch skips "Non classé" (31/10/2026)
+- `GalleryCategoryCrudController`: `deletePermanently()` ignores a category not in the trash (31/10/2026)
+- Trash guided project mentions the batch gestures (31/10/2026)
+- `action.move_to_trash` and `action.delete_permanently` read from ConfigBundle's `config` catalog (31/10/2026)
+- Requires `c975l/core-bundle` ^1.83.0 (31/10/2026)
+
 ## v1.28.6
 
 Demo pictures copied through UiBundle's DemoFixtureMediaCopier

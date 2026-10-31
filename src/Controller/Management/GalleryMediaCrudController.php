@@ -363,8 +363,7 @@ class GalleryMediaCrudController extends AbstractCrudController
         );
     }
 
-    // Move to trash: the media leaves the grid and its page answers 410 (see GalleryController::resolveCategoryAndMedia), but the row and its four files stay exactly where they are - what removes them is deletePermanently() on its category's trash screen, or the category's own permanent deletion
-    // No "gone" Redirect is recorded here any more: the 410 lasts only as long as the media can still be restored, and a Redirect row would outlive the restore (see GalleryCategoryCrudController::deletePermanently, which records the tree for good)
+    // Move to trash: the media leaves the grid and its page answers 410 (see GalleryController::resolveCategoryAndMedia), but the row and its four files stay exactly where they are - what removes them is deletePermanently() on its category's trash screen, or the category's own permanent deletion. No "gone" Redirect is recorded here any more: the 410 lasts only as long as the media can still be restored, and a Redirect row would outlive the restore (see GalleryCategoryCrudController::removeForGood, which records the tree for good)
     #[\Override]
     public function deleteEntity(EntityManagerInterface $entityManager, object $entityInstance): void
     {

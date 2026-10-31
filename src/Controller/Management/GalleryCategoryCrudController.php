@@ -132,6 +132,7 @@ class GalleryCategoryCrudController extends AbstractCrudController
         private readonly GalleryMediaRepository $galleryMediaRepository,
         private readonly GalleryTranslator $galleryTranslator,
         private readonly GalleryUrlRedirector $urlRedirector,
+        private readonly RatingRepository $ratingRepository,
         private readonly RequestStack $requestStack,
         private readonly SluggerInterface $slugger,
         private readonly TranslatorInterface $translator,
@@ -168,6 +169,8 @@ class GalleryCategoryCrudController extends AbstractCrudController
         return $crud
             ->setEntityLabelInSingular(t('label.gallery_category', [], 'gallery'))
             ->setEntityLabelInPlural(t('label.gallery_categories', [], 'gallery'))
+            // The trash is the same screen as the galleries, and says which of the two is shown rather than printing "Galleries" over both
+            ->setPageTitle(Crud::PAGE_INDEX, t($this->isTrash() ? 'action.trash' : 'label.gallery_categories', [], 'gallery'))
             ->setEntityPermission($this->roleNeeded())
             // The order the site itself lists them in (see GalleryCategoryRepository::findAllOrdered), so a gallery is looked for here where it is found there
             ->setDefaultSort(['title' => 'ASC'])
@@ -217,14 +220,16 @@ class GalleryCategoryCrudController extends AbstractCrudController
                 ->setPermission('restore', $this->roleNeeded())
                 // The only irreversible action of the screen, held one role higher than the rest of the gallery - same split as SiteBundle's own deletePermanently()
                 ->setPermission('deletePermanently', (string) $this->configService->get('site-role-admin'))
-                ->disable(Action::NEW, Action::DELETE, 'uploadMedias', 'viewOnSite')
+                // The batch "Delete" of the trash removes the selection for good (see deleteEntity), so it is held at the same role - shown to the admin alone, the row "Delete" being hidden on trashed rows below. DELETE itself is not disabled: EasyAdmin would take the batch action down with it, and the trash could only be emptied one row at a time
+                ->setPermission(Action::BATCH_DELETE, (string) $this->configService->get('site-role-admin'))
+                ->disable(Action::NEW, 'uploadMedias', 'viewOnSite')
             ;
         }
 
         // EasyAdmin's own Edit as an icon on the list, its label kept as the title
         EasyAdminActionHelper::iconOnlyDefaults($actions, $this->translator, [Action::EDIT]);
 
-        return $actions
+        $actions
             ->add(Crud::PAGE_INDEX, $this->trashAction())
             ->add(Crud::PAGE_INDEX, $viewOnSiteAction)
             ->add(Crud::PAGE_EDIT, $viewOnSiteAction)
@@ -236,9 +241,9 @@ class GalleryCategoryCrudController extends AbstractCrudController
             ->add(Crud::PAGE_EDIT, Action::DELETE)
             ->update(Crud::PAGE_EDIT, Action::DELETE, fn (Action $action) => $action
                 // "delete" now only moves the category to the trash, so it says so - and the confirmation says what survives, which is everything
-                ->setLabel(t('action.move_to_trash', [], 'gallery'))
+                ->setLabel(t('action.move_to_trash', [], 'config'))
                 ->setIcon('fa fa-trash-alt')
-                ->displayIf(static fn (GalleryCategory $category): bool => !$category->isUncategorized()))
+                ->displayIf(static fn (GalleryCategory $category): bool => !$category->isUncategorized() && !$category->isDeleted()))
             ->setPermission(Action::INDEX, $this->roleNeeded())
             ->setPermission(Action::NEW, $this->roleNeeded())
             ->setPermission(Action::EDIT, $this->roleNeeded())
@@ -247,17 +252,20 @@ class GalleryCategoryCrudController extends AbstractCrudController
                 $action,
                 $this->translator->trans('action.view_on_site', [], 'gallery'),
             ))
-            // The catch-all "Non classé" category must always exist as a fallback for medias uploaded without a real one picked (see GalleryCategoryRepository::findOrCreateUncategorized)
+            // The catch-all "Non classé" category must always exist as a fallback for medias uploaded without a real one picked (see GalleryCategoryRepository::findOrCreateUncategorized), and a trashed one is dropped by "Delete permanently" instead
             ->update(Crud::PAGE_INDEX, Action::DELETE, fn (Action $action) => EasyAdminActionHelper::toIconOnly(
                 $action
-                    ->setLabel(t('action.move_to_trash', [], 'gallery'))
+                    ->setLabel(t('action.move_to_trash', [], 'config'))
                     ->setIcon('fa fa-trash-alt')
-                    ->displayIf(static fn (GalleryCategory $category): bool => !$category->isUncategorized()),
-                $this->translator->trans('action.move_to_trash', [], 'gallery'),
+                    ->displayIf(static fn (GalleryCategory $category): bool => !$category->isUncategorized() && !$category->isDeleted()),
+                $this->translator->trans('action.move_to_trash', [], 'config'),
             ))
             // Detail adds no information beyond what edit already shows
             ->disable(Action::DETAIL)
         ;
+
+        // The batch "Delete" runs deleteEntity() below, which trashes from the galleries and removes for good from the trash - worded for each, EasyAdmin's own "Delete" saying neither
+        return EasyAdminActionHelper::trashBatchDelete($actions, $this->isTrash());
     }
 
     // Toggles between "go to trash" and "back to galleries", depending on where we currently are - one button rather than two, the screen it leads to being the one you are not on
@@ -296,10 +304,10 @@ class GalleryCategoryCrudController extends AbstractCrudController
     private function deletePermanentlyAction(): Action
     {
         return EasyAdminActionHelper::toIconOnly(
-            Action::new('deletePermanently', t('action.delete_permanently', [], 'gallery'), 'fa fa-trash')
+            Action::new('deletePermanently', t('action.delete_permanently', [], 'config'), 'fa fa-trash')
                 ->linkToUrl(fn (GalleryCategory $category): string => $this->trashActionUrl('deletePermanently', $category, self::DELETE_PERMANENTLY_CSRF_TOKEN))
                 ->askConfirmation(t('confirm.delete_permanently', [], 'gallery')),
-            $this->translator->trans('action.delete_permanently', [], 'gallery'),
+            $this->translator->trans('action.delete_permanently', [], 'config'),
         );
     }
 
@@ -342,11 +350,42 @@ class GalleryCategoryCrudController extends AbstractCrudController
         ;
     }
 
-    // Move to trash: flags the category and nothing else. Its medias keep their own flag untouched, so restoring it gives back exactly the ones that were showing, and the cascade on GalleryCategory::$medias is never reached - which is what leaves every file on disk
+    // The batch "Delete" of the trash removes for good, so the admin role is checked before the first row is touched - EasyAdmin only checks the editor's role DELETE carries, and a refusal met row by row would leave the selection half applied
+    #[\Override]
+    public function batchDelete(AdminContext $context, BatchActionDto $batchActionDto): Response
+    {
+        if ($this->isTrash()) {
+            $this->denyAccessUnlessGranted((string) $this->configService->get('site-role-admin'));
+        }
+
+        return parent::batchDelete($context, $batchActionDto);
+    }
+
+    // Move to trash: flags the category and nothing else. Its medias keep their own flag untouched, so restoring it gives back exactly the ones that were showing, and the cascade on GalleryCategory::$medias is never reached - which is what leaves every file on disk. From the trash, the batch "Delete" removes it for good instead
     #[\Override]
     public function deleteEntity(EntityManagerInterface $entityManager, mixed $entityInstance): void
     {
         if ($entityInstance instanceof GalleryCategory) {
+            // The screen says which of the two was asked, the category's own flag only guarding against a stale view: a batch posted twice from the galleries must never reach the removal for good, nor one restored meanwhile
+            if ($this->isTrash()) {
+                if (!$entityInstance->isDeleted()) {
+                    return;
+                }
+
+                // Held at the admin role as deletePermanently() is, batchDelete() having checked it already
+                $this->denyAccessUnlessGranted((string) $this->configService->get('site-role-admin'));
+                $this->removeForGood($entityManager, $entityInstance);
+
+                return;
+            }
+
+            // The row button is hidden on "Non classé", but a batch selection reaches it all the same - the fallback of every upload must stay on the site, and the admin is told why it did
+            if ($entityInstance->isUncategorized()) {
+                $this->addFlash('warning', $this->translator->trans('flash.gallery_category_uncategorized_kept', [], 'gallery'));
+
+                return;
+            }
+
             $entityInstance->setIsDeleted(true);
             $entityManager->flush();
 
@@ -383,9 +422,9 @@ class GalleryCategoryCrudController extends AbstractCrudController
         return $this->redirect($this->trashIndexUrl());
     }
 
-    // Removes the category for good, with its medias, its heading blocks and every file of the set - the cascade and GalleryMediaDerivativeCleanupListener only ever run from here
+    // Removes the category for good, with its medias, its heading blocks and every file of the set - the row button of the trash
     #[AdminRoute('/{entityId}/delete-permanently')]
-    public function deletePermanently(AdminContext $context, Request $request, EntityManagerInterface $entityManager, RatingRepository $ratingRepository): Response
+    public function deletePermanently(AdminContext $context, Request $request, EntityManagerInterface $entityManager): Response
     {
         $this->denyAccessUnlessGranted((string) $this->configService->get('site-role-admin'));
 
@@ -393,8 +432,22 @@ class GalleryCategoryCrudController extends AbstractCrudController
             return $this->redirect($this->trashIndexUrl());
         }
 
+        // A stale link to a category restored since must not drop it from the site: only one in the trash is removed for good
         $category = $context->getEntity()->getInstance();
+        if (!$category->isDeleted()) {
+            return $this->redirect($this->trashIndexUrl());
+        }
 
+        $this->removeForGood($entityManager, $category);
+
+        $this->addFlash('success', $this->translator->trans('flash.gallery_category_deleted_permanently', [], 'gallery'));
+
+        return $this->redirect($this->trashIndexUrl());
+    }
+
+    // What removing a category for good takes, whether from its row button or from the batch action of the trash - the cascade and GalleryMediaDerivativeCleanupListener only ever run from here
+    private function removeForGood(EntityManagerInterface $entityManager, GalleryCategory $category): void
+    {
         // The 410 the trash served only lasted as long as the category could still be restored; a "gone" Redirect keeps answering it for good, which search engines act on far faster than the plain 404 the url would otherwise fall back to. Recorded here rather than at the move to trash, where it used to sit: a category that can still come back must not have its url declared gone
         if (\is_string($category->getSlug())) {
             $this->urlRedirector->recordGoneTree($entityManager, $this->generateUrl('gallery_category', ['category' => $category->getSlug()]));
@@ -407,11 +460,7 @@ class GalleryCategoryCrudController extends AbstractCrudController
         $entityManager->flush();
 
         // Only once the medias have actually gone: a flush that fails leaves them in place, and they must find their likes where they left them
-        $this->dropRatings($ratingRepository, $mediaIds);
-
-        $this->addFlash('success', $this->translator->trans('flash.gallery_category_deleted_permanently', [], 'gallery'));
-
-        return $this->redirect($this->trashIndexUrl());
+        $this->dropRatings($mediaIds);
     }
 
     // The upload screen for a category, reached from the index's row button and from the edit screen's media list alike
@@ -889,9 +938,7 @@ class GalleryCategoryCrudController extends AbstractCrudController
         return $this->galleryMediaRepository->findByCategory($category);
     }
 
-    // Moves the medias checked under the category's edit form (see gallery_category_edit.html.twig) to the trash - the media CRUD only ever handles one at a time, which is a screen per media for a batch an admin wants off the grid in one go
-    // Only medias of the category the url carries are ever touched, whatever ids are posted, and none of their files is touched at all - they wait in the trash view of this very screen, which restores them or drops them for good
-    // Their likes stay where they are, this action taking no RatingRepository at all: the trash is reversible, and a photo coming back has to find them (see dropRatings, which only deletePermanently and deleteMediasPermanently reach)
+    // Moves the medias checked under the category's edit form (see gallery_category_edit.html.twig) to the trash - the media CRUD only ever handles one at a time, which is a screen per media for a batch an admin wants off the grid in one go. Only medias of the category the url carries are ever touched, whatever ids are posted, and none of their files is touched at all - they wait in the trash view of this very screen, which restores them or drops them for good. Their likes stay where they are, this action never calling dropRatings: the trash is reversible, and a photo coming back has to find them (see dropRatings, which only removeForGood and deleteMediasPermanently reach)
     #[AdminRoute('/{entityId}/delete-medias', options: ['methods' => ['POST']])]
     public function deleteMedias(AdminContext $context, Request $request, EntityManagerInterface $entityManager): Response
     {
@@ -970,7 +1017,7 @@ class GalleryCategoryCrudController extends AbstractCrudController
 
     // Drops the checked medias for good, files included - the only path in this bundle that removes a media, GalleryMediaDerivativeCleanupListener running off the remove() below. Held at the admin role, the rest of the gallery sitting at the editor's
     #[AdminRoute('/{entityId}/delete-medias-permanently', options: ['methods' => ['POST']])]
-    public function deleteMediasPermanently(AdminContext $context, Request $request, EntityManagerInterface $entityManager, RatingRepository $ratingRepository): Response
+    public function deleteMediasPermanently(AdminContext $context, Request $request, EntityManagerInterface $entityManager): Response
     {
         $this->denyAccessUnlessGranted((string) $this->configService->get('site-role-admin'));
 
@@ -1000,7 +1047,7 @@ class GalleryCategoryCrudController extends AbstractCrudController
         $entityManager->flush();
 
         // Only once the medias have actually gone: a flush that fails leaves them in place, likes and all
-        $this->dropRatings($ratingRepository, $mediaIds);
+        $this->dropRatings($mediaIds);
 
         if (!$medias->isEmpty()) {
             $this->addFlash('success', $this->translator->trans('label.gallery_medias_deleted_permanently', ['%count%' => $medias->count()], 'gallery'));
@@ -1030,9 +1077,9 @@ class GalleryCategoryCrudController extends AbstractCrudController
 
     // Drops the likes of medias removed for good, in one query for the whole set - a rating names its owner (see c975L\UiBundle\Entity\Rating) rather than relating to it, so no foreign key cascades it
     /** @param int[] $mediaIds */
-    private function dropRatings(RatingRepository $ratingRepository, array $mediaIds): void
+    private function dropRatings(array $mediaIds): void
     {
-        $ratingRepository->deleteForOwners(GalleryMediaLikeCounter::OWNER_TYPE, $mediaIds);
+        $this->ratingRepository->deleteForOwners(GalleryMediaLikeCounter::OWNER_TYPE, $mediaIds);
     }
 
     // The category the posted selection belongs to, and the screen to return to - the three selection actions share it rather than each rebuilding the same two things

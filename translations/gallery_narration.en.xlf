@@ -292,11 +292,11 @@
             </trans-unit>
             <trans-unit id="E66DXJx">
                 <source>narration.guided_step_gallery_trash_delete</source>
-                <target>Take one off the site. The button asks first, then moves the gallery to the trash: its media, its files and its address are all kept, and only its own page answers gone from then on.</target>
+                <target>Take one off the site. "Move to trash" asks first, then moves the gallery to the trash: its media, its files and its address are all kept, and only its own page answers gone from then on. Tick several galleries to move them together.</target>
             </trans-unit>
             <trans-unit id="jkS92Sw">
                 <source>narration.guided_step_gallery_trash_done</source>
-                <target>Nothing is lost in one click. Dropping a gallery for good is the other button of the trash, held at the administrator: it is the only one removing the files from the server.</target>
+                <target>Nothing is lost in one click. Dropping a gallery for good is the other button of the trash, held at the administrator: it is the only one removing the files from the server. Tick several to empty the trash at once.</target>
             </trans-unit>
             <trans-unit id="WBdp.7G">
                 <source>narration.guided_step_gallery_trash_open</source>

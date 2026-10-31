@@ -18,10 +18,6 @@
                 <source>action.apply_rights_reserved</source>
                 <target>Apply rights reserved</target>
             </trans-unit>
-            <trans-unit id="sSgetpg">
-                <source>action.delete_permanently</source>
-                <target>Delete permanently</target>
-            </trans-unit>
             <trans-unit id="GeDA.v_">
                 <source>action.download_highres</source>
                 <target>Download high resolution</target>
@@ -45,10 +41,6 @@
             <trans-unit id="FN9Jswr">
                 <source>action.move_selection</source>
                 <target>Move selection</target>
-            </trans-unit>
-            <trans-unit id="vUjYe27">
-                <source>action.move_to_trash</source>
-                <target>Move to trash</target>
             </trans-unit>
             <trans-unit id="pyWTZUc">
                 <source>action.print_certificates</source>
@@ -416,11 +408,11 @@
             </trans-unit>
             <trans-unit id="vZywfgl">
                 <source>description.guided_step_gallery_trash_delete</source>
-                <target>The button asks first, then moves the gallery to the trash: its media, its files and its address are all kept, and only its own page answers "gone" from then on.</target>
+                <target>"Move to trash" asks first, then moves the gallery to the trash: its media, its files and its address are all kept, and only its own page answers "gone" from then on. Tick several galleries to move them together.</target>
             </trans-unit>
             <trans-unit id="Pkkkoh1">
                 <source>description.guided_step_gallery_trash_done</source>
-                <target>Dropping a gallery for good is the other button of the trash, held at the administrator: it is the only one that removes the files from the server.</target>
+                <target>Dropping a gallery for good is the other button of the trash, held at the administrator: it is the only one that removes the files from the server. Tick several to empty the trash at once.</target>
             </trans-unit>
             <trans-unit id="KaOuqrH">
                 <source>description.guided_step_gallery_trash_open</source>
@@ -493,6 +485,10 @@
             <trans-unit id="XcWUcOA">
                 <source>flash.gallery_category_restored</source>
                 <target>Gallery restored</target>
+            </trans-unit>
+            <trans-unit id="LvG.6xE">
+                <source>flash.gallery_category_uncategorized_kept</source>
+                <target>The "Uncategorized" gallery stays in place: it receives the uploads made without a gallery.</target>
             </trans-unit>
             <trans-unit id="jEF1Zc.">
                 <source>flash.print_catalogue_imported</source>

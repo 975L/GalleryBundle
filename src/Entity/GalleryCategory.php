@@ -31,7 +31,7 @@ use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 class GalleryCategory implements HasBlocksInterface, TrashableInterface, \Stringable
 {
     use HasBlocksTrait;
-    // A category deleted from the back-office only lands here, its medias and their files untouched - what actually removes them is deletePermanently() (see GalleryCategoryCrudController), the only path left that reaches the cascade below
+    // A category deleted from the back-office only lands here, its medias and their files untouched - what actually removes them is the trash's own permanent deletion, row button or batch (see GalleryCategoryCrudController::removeForGood), the only path left that reaches the cascade below
     use TrashableTrait;
 
     // The kinds of automatic gallery, each answered by a provider of the same name (see GalleryAutomaticProvider). Stored strings and not an enum, so a site adding a kind of its own has nothing of this bundle's to extend

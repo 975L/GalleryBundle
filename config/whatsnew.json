@@ -1,5 +1,15 @@
 [
     {
+        "date": "2026-10-31",
+        "description": [
+            {
+                "en": "Several galleries can now be moved to the trash at once, and the trash emptied of a selection in one go",
+                "fr": "Plusieurs galeries peuvent désormais être mises à la corbeille en une fois, et la corbeille vidée d'une sélection d'un coup",
+                "es": "Ahora se pueden mover varias galerías a la papelera a la vez, y vaciar la papelera de una selección de una sola vez"
+            }
+        ]
+    },
+    {
         "date": "2026-10-29",
         "description": [
             {

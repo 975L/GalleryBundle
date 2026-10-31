@@ -128,7 +128,7 @@
                         data-action-confirmation-message="{{ ('label.gallery_medias_delete_permanently_confirm'|trans({}, 'gallery')) }}"
                         data-action-confirmation-content="{{ ('delete_modal.content'|trans({}, 'EasyAdminBundle')) }}"
                         data-gallery-media-selection-target="submit"
-                        icon="fa fa-trash">{{ ('action.delete_permanently'|trans({}, 'gallery')) }}</twig:ea:Modal:Trigger>
+                        icon="fa fa-trash">{{ ('action.delete_permanently'|trans({}, 'config')) }}</twig:ea:Modal:Trigger>
 
                     {{ macros.download_buttons(ea_url().setAction('downloadMedias')) }}
                 {% else %}

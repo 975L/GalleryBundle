@@ -292,11 +292,11 @@
             </trans-unit>
             <trans-unit id="E66DXJx">
                 <source>narration.guided_step_gallery_trash_delete</source>
-                <target>Retire una del sitio. El botón pide confirmación y luego mueve la galería a la papelera: sus medios, sus archivos y su dirección se conservan, y solo su página responde a partir de entonces que ya no existe.</target>
+                <target>Retire una del sitio. «Mover a la papelera» pide confirmación y luego mueve la galería a la papelera: sus medios, sus archivos y su dirección se conservan, y solo su página responde a partir de entonces que ya no existe. Marque varias galerías para moverlas juntas.</target>
             </trans-unit>
             <trans-unit id="jkS92Sw">
                 <source>narration.guided_step_gallery_trash_done</source>
-                <target>Nada se pierde con un clic. Tirar una galería definitivamente es el otro botón de la papelera, reservado al administrador: es el único que retira los archivos del servidor.</target>
+                <target>Nada se pierde con un clic. Tirar una galería definitivamente es el otro botón de la papelera, reservado al administrador: es el único que retira los archivos del servidor. Marque varias para vaciar la papelera de una vez.</target>
             </trans-unit>
             <trans-unit id="WBdp.7G">
                 <source>narration.guided_step_gallery_trash_open</source>

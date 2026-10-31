@@ -66,7 +66,7 @@ Add GalleryBundle on top of [c975L/CoreBundle](https://github.com/975L/CoreBundl
 
 - PHP >= 8.4
 - Symfony ^8.0
-- [c975L/CoreBundle](https://github.com/975L/CoreBundle) in `^1.72.2` — ConfigBundle and UiBundle ship as the single `c975l/core-bundle` package, so requiring this bundle pulls both (Vich naming/resizing, EasyAdmin form-theme conventions, stylesheet registry, page layout fallback, menu provider, scaffold, sitemap and health checks). `^1.25` is what overrides VichUploader 3.0's storage and namer, without which the derivatives are named by Vich's own rule, `^1.26` what ships the `Image:Zoom` the media page opens its high resolution with, `^1.31` what places PaymentBundle's basket bar once on every page, the print offer drawing none of its own, `^1.38` what ships the `QrCodeGenerator` the qr code of a certificate and of a gallery is drawn with, and `^1.72.2` what ships `EasyAdminActionHelper::iconOnlyDefaults()`, the back-office row buttons being drawn as icons with their label as the title
+- [c975L/CoreBundle](https://github.com/975L/CoreBundle) in `^1.83.0` — ConfigBundle and UiBundle ship as the single `c975l/core-bundle` package, so requiring this bundle pulls both (Vich naming/resizing, EasyAdmin form-theme conventions, stylesheet registry, page layout fallback, menu provider, scaffold, sitemap and health checks). `^1.25` is what overrides VichUploader 3.0's storage and namer, without which the derivatives are named by Vich's own rule, `^1.26` what ships the `Image:Zoom` the media page opens its high resolution with, `^1.31` what places PaymentBundle's basket bar once on every page, the print offer drawing none of its own, `^1.38` what ships the `QrCodeGenerator` the qr code of a certificate and of a gallery is drawn with, `^1.72.2` what ships `EasyAdminActionHelper::iconOnlyDefaults()`, the back-office row buttons being drawn as icons with their label as the title, and `^1.83.0` what ships `EasyAdminActionHelper::trashBatchDelete()` and the `action.move_to_trash` / `action.delete_permanently` labels of the `config` catalog
 - Doctrine ORM
 - EasyAdmin in `^5.7` — the back-office templates are drawn with its Twig components and its `ea()` function
 - VichUploader Bundle in `^3.0`
@@ -334,6 +334,13 @@ is the one that removes the row, its medias, its heading blocks, their three der
 original — and the directory the category grouped its files under, in `public/` and in `private/`, once
 it is actually empty. That one is held at `site-role-admin`, the rest of the gallery sitting at
 `site-role-editor`: it is the only irreversible action of the screen.
+
+**Both steps also work on a selection.** The listing's batch action reads **Mettre à la corbeille** on
+the galleries and **Supprimer définitivement** in the trash, where it is offered to `site-role-admin`
+alone and refused before the first row is touched otherwise. Which of the two runs is decided by the
+screen, never by the row: a selection posted twice from the galleries leaves what is already in the trash
+there, and one from the trash leaves alone a category restored meanwhile. "Non classé" is skipped by a
+selection, with a warning saying why.
 
 **Exporting still works from the trash**, deliberately: a category can be carried to another site, or
 kept aside as an archive with all of its files, before it is dropped for good (see *Export / import

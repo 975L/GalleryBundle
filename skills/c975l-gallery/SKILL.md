@@ -79,9 +79,14 @@ simply never reached.
   screen does the same for its medias with `mediasTrash`. A media has a trash of its own, so a photo is
   taken off a gallery that stays online, and restoring a category gives back exactly the medias that
   were showing when it left.
-- Only `GalleryCategoryCrudController::deletePermanently()` (and `deleteMediasPermanently()` for a
-  selection) ever removes a row and reaches its files. Those two sit behind the `site-role-admin`
+- Only `GalleryCategoryCrudController::removeForGood()` — reached from the trash's row button
+  `deletePermanently()` and from the trash's batch "Delete" — and `deleteMediasPermanently()` for a
+  selection of medias ever remove a row and reach its files. They sit behind the `site-role-admin`
   setting; the rest of the gallery back office sits behind `site-role-editor`.
+- The batch "Delete" runs `deleteEntity()`, which trashes on the galleries and removes for good in the
+  trash: `isTrash()` decides, the row's `isDeleted()` only guards against a stale view, and
+  `batchDelete()` checks the admin role before the first row when in the trash. `deletePermanently()`
+  ignores a category that is not in the trash.
 - A trashed category or media answers **410 Gone** on its public url, not 404, straight from the row.
   That 410 lasts only as long as the entity can be restored: the permanent deletion is what writes the
   "gone" `Redirect` rows that outlive it, and restoring releases any such row left under the url.
@@ -91,7 +96,7 @@ simply never reached.
   unfiltered, the front-office needing the row in hand to answer 410.
 - The export/import carries the flag both ways: a category archived out of the trash comes back to it.
 - **The likes go with the permanent deletion, never with the trash.** A rating names its owner
-  (`gallery_media` + id) rather than relating to it, so no foreign key cascades it: `deletePermanently()`,
+  (`gallery_media` + id) rather than relating to it, so no foreign key cascades it: `removeForGood()`,
   `deleteMediasPermanently()` and `GalleryImportProvider::import()` (which replaces a category's whole
   collection) each call `RatingRepository::deleteForOwners()` themselves, once for the whole set and only
   after the flush that actually removed the rows. A trashed media keeps its likes — it can come back.
