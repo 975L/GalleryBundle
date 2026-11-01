@@ -29,9 +29,9 @@
 {% block content %}
     <twig:c975LGallery:Gallery:Navigation category="{{ category }}" categoriesCount="{{ categoriesCount }}"/>
     {# The category's own lead-in, before any block: it is the one text every category is meant to have, where the blocks below are whatever an editor chose to compose on top of it #}
-    {# Trix markup, printed as typed - no nl2br, Trix having encoded its own line breaks #}
+    {# Trix markup through the sanitizer - no nl2br, Trix having encoded its own line breaks #}
     {% if category.summarySocialNetwork is not empty %}
-        <div class="gallery-category-description">{{ category.summarySocialNetwork|raw }}</div>
+        <div class="gallery-category-description">{{ category.summarySocialNetwork|sanitize_html('c975l.rich') }}</div>
     {% endif %}
     {# Editorial heading composed in the back-office, with any of UiBundle's block kinds - renders nothing when the category has none #}
     <twig:c975LUi:Blocks:Blocks blocks="{{ category.blocks }}"/>

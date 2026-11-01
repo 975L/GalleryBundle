@@ -17,9 +17,22 @@ use c975L\UiBundle\Video\VideoPlatform;
 use Doctrine\ORM\Mapping\Column;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\Validator\Validation;
 
 class GalleryMediaTest extends TestCase
 {
+    // Refused at the entity whichever form writes it, the setter only dropping what is not http(s) at all
+    public function testTheExternalUrlIsAnAbsoluteWebAddress(): void
+    {
+        $validator = Validation::createValidatorBuilder()->enableAttributeMapping()->getValidator();
+
+        $this->assertCount(0, $validator->validatePropertyValue(GalleryMedia::class, 'externalUrl', 'https://www.youtube-nocookie.com/embed/abc'));
+        $this->assertCount(0, $validator->validatePropertyValue(GalleryMedia::class, 'externalUrl', 'http://peertube/videos/embed/abc'));
+        $this->assertCount(0, $validator->validatePropertyValue(GalleryMedia::class, 'externalUrl', null));
+        $this->assertCount(1, $validator->validatePropertyValue(GalleryMedia::class, 'externalUrl', 'javascript:alert(1)'));
+        $this->assertCount(1, $validator->validatePropertyValue(GalleryMedia::class, 'externalUrl', '/videos/abc'));
+    }
+
     // Drives UiBundle's VichImageResizeListener::processMultiSizeDerivatives() - see VichMultiSizeImageInterface
     public function testMultiSizeImageContractExposesTheDeclaredTargetSizes(): void
     {

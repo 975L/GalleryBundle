@@ -145,11 +145,10 @@ class GalleryMedia implements TrashableInterface, VichMultiSizeImageInterface, V
     #[ORM\Column(length: 20, options: ['default' => self::MEDIA_TYPE_IMAGE])]
     private string $mediaType = self::MEDIA_TYPE_IMAGE;
 
-    // The url the player is framed from, stored whole rather than as an id: it is what lets a gallery hold a video from a platform this ecosystem never declared - an instance of one's own among them - where an id alone is only meaningful next to a scheme somebody wrote down
-    // What is stored is always the canonical embed url of whatever was pasted, normalized once on the way in (see setExternalUrl): the privacy-first host is picked there, so nothing downstream has to remember to ask for it
-    // The length is doubled by a constraint so an url longer than the column - tracking parameters make that ordinary - comes back as a form error instead of a "Data too long" the visitor reads as a 500
+    // The url the player is framed from, stored whole rather than as an id: it is what lets a gallery hold a video from a platform this ecosystem never declared - an instance of one's own among them - where an id alone is only meaningful next to a scheme somebody wrote down. What is stored is always the canonical embed url of whatever was pasted, normalized once on the way in (see setExternalUrl): the privacy-first host is picked there, so nothing downstream has to remember to ask for it. The length is doubled by a constraint so an url longer than the column - tracking parameters make that ordinary - comes back as a form error instead of a "Data too long" the visitor reads as a 500. No top-level domain demanded, as the field's own constraint (see GalleryMediaCrudController): a self-hosted platform may answer on an internal name
     #[ORM\Column(length: 500, nullable: true)]
     #[Assert\Length(max: 500)]
+    #[Assert\Url(protocols: ['http', 'https'], requireTld: false)]
     private ?string $externalUrl = null;
 
     #[ORM\Column(options: ['default' => false])]

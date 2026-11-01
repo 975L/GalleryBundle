@@ -66,7 +66,7 @@ Add GalleryBundle on top of [c975L/CoreBundle](https://github.com/975L/CoreBundl
 
 - PHP >= 8.4
 - Symfony ^8.0
-- [c975L/CoreBundle](https://github.com/975L/CoreBundle) in `^1.84.0` — ConfigBundle and UiBundle ship as the single `c975l/core-bundle` package, so requiring this bundle pulls both (Vich naming/resizing, EasyAdmin form-theme conventions, stylesheet registry, page layout fallback, menu provider, scaffold, sitemap and health checks). `^1.25` is what overrides VichUploader 3.0's storage and namer, without which the derivatives are named by Vich's own rule, `^1.26` what ships the `Image:Zoom` the media page opens its high resolution with, `^1.31` what places PaymentBundle's basket bar once on every page, the print offer drawing none of its own, `^1.38` what ships the `QrCodeGenerator` the qr code of a certificate and of a gallery is drawn with, `^1.72.2` what ships `EasyAdminActionHelper::iconOnlyDefaults()`, the back-office row buttons being drawn as icons with their label as the title, `^1.83.0` what ships `EasyAdminActionHelper::trashBatchDelete()` and the `action.move_to_trash` / `action.delete_permanently` labels of the `config` catalog, and `^1.84.0` what ships `TrashBatchDeleteTrait`, the trash's batch posted with `trash=1` and counted in one message
+- [c975L/CoreBundle](https://github.com/975L/CoreBundle) in `^1.85.0` — ConfigBundle and UiBundle ship as the single `c975l/core-bundle` package, so requiring this bundle pulls both (Vich naming/resizing, EasyAdmin form-theme conventions, stylesheet registry, page layout fallback, menu provider, scaffold, sitemap and health checks). `^1.25` is what overrides VichUploader 3.0's storage and namer, without which the derivatives are named by Vich's own rule, `^1.26` what ships the `Image:Zoom` the media page opens its high resolution with, `^1.31` what places PaymentBundle's basket bar once on every page, the print offer drawing none of its own, `^1.38` what ships the `QrCodeGenerator` the qr code of a certificate and of a gallery is drawn with, `^1.72.2` what ships `EasyAdminActionHelper::iconOnlyDefaults()`, the back-office row buttons being drawn as icons with their label as the title, `^1.83.0` what ships `EasyAdminActionHelper::trashBatchDelete()` and the `action.move_to_trash` / `action.delete_permanently` labels of the `config` catalog, and `^1.84.0` what ships `TrashBatchDeleteTrait`, the trash's batch posted with `trash=1` and counted in one message, and `^1.85.0` what declares the `c975l.rich` sanitizer a category's summary is printed through
 - Doctrine ORM
 - EasyAdmin in `^5.7` — the back-office templates are drawn with its Twig components and its `ea()` function
 - VichUploader Bundle in `^3.0`
@@ -393,6 +393,11 @@ url that answers 404. A block or a menu item already pointing at it simply rende
 again the day it is shown. The export/import carries the flag both ways: a gallery archived masked comes
 back masked, a sync mirroring the source rather than publishing what it had taken down.
 
+**Masking is not privacy.** It takes a gallery or a photograph off the site's pages and nothing more: the
+files stay under `public/medias/`, where the web server hands them to whoever has their address, a link
+already shared or an old search result among them. A photograph that must not be seen has to be deleted
+from the server, not masked.
+
 ### Selling prints
 
 **A photograph can be sold as a print, and the lab ships it to the customer directly** — nothing transits
@@ -573,6 +578,10 @@ A lab is a `Contract\PrintFulfilmentInterface`. Write the class, and there is no
 implementation is collected through `gallery.print_fulfilment` and picked by name from
 `gallery-print-provider`. `Service\Fulfilment\ProdigiFulfilment` ships, `ManualFulfilment` is the fallback
 for a site printing at home or at the shop on the corner.
+
+An order can be sent more than once: a double click on the release button, or an answer lost after the lab
+created it. `ProdigiFulfilment` sends an `idempotencyKey` stable per order and per site, so the lab hands the
+existing order back rather than printing it twice. A lab of your own has to settle this on its side.
 
 ### The whole library at once
 
@@ -921,7 +930,7 @@ Three cases decline the entry and render live instead, a cache entry never expir
 
 `GalleryCategory::$summarySocialNetwork` is the category's own lead-in: rich text typed in its EasyAdmin
 form (UiBundle's Trix editor, so **Donovan**'s rephrase button sits under it like under any other rich-text
-field of the ecosystem), printed above the grid by `gallery/category.html.twig` and, stripped of its
+field of the ecosystem), printed above the grid by `gallery/category.html.twig` through the `c975l.rich` sanitizer and, stripped of its
 markup, reused as the page's `description` / `og:description` metas — named after SiteBundle's
 `Page::$summarySocialNetwork` and ConfigBundle's `UrlMetadata::$summarySocialNetwork`, which hold the
 same text in the same role, so a site meets one name for it rather than one per bundle. A category left

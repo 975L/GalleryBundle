@@ -520,7 +520,7 @@
             </trans-unit>
             <trans-unit id="Xb8nkRY">
                 <source>help.gallery_category_hidden</source>
-                <target>The gallery stays in the back-office but leaves every public page - the index, the blocks, the menus, the sitemap - and its photographs leave the automatic galleries with it.</target>
+                <target>The gallery stays in the back-office but leaves every public page - the index, the blocks, the menus, the sitemap - and its photographs leave the automatic galleries with it. This masks it and does not protect it: the files stay in public/ and whoever knows their address can still open them.</target>
             </trans-unit>
             <trans-unit id="IUk.lVu">
                 <source>help.gallery_license</source>
@@ -532,7 +532,7 @@
             </trans-unit>
             <trans-unit id="DmyK2yX">
                 <source>help.gallery_media_hidden</source>
-                <target>The photograph stays in the back-office but leaves every public page. Better than deleting what is worth keeping and not worth showing.</target>
+                <target>The photograph stays in the back-office but leaves every public page. Better than deleting what is worth keeping and not worth showing. This masks it and does not protect it: the file stays in public/ and whoever knows its address can still open it.</target>
             </trans-unit>
             <trans-unit id="G2NQ1TB">
                 <source>help.gallery_media_printable</source>

@@ -37,6 +37,8 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGeneratorInterface;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 use Symfony\Contracts\Translation\TranslatableInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
@@ -50,6 +52,9 @@ class GalleryPrintFormatCrudController extends AbstractCrudController
     // The switch opening the print sale to the public, off while this screen is set up and tested (see _gallery_print_sale_notice.html.twig)
     private const string SWITCH_SLUG = 'gallery-print-enabled';
 
+    // The import is reached by a GET, so its token travels in the url the button carries
+    public const string IMPORT_CSRF_TOKEN = 'gallery_print_catalogue_import';
+
     public function __construct(
         private readonly AdminContextProviderInterface $adminContextProvider,
         private readonly AdminUrlGeneratorInterface $adminUrlGenerator,
@@ -57,6 +62,7 @@ class GalleryPrintFormatCrudController extends AbstractCrudController
         private readonly ConfigRepository $configRepository,
         private readonly ConfigServiceInterface $configService,
         private readonly ContentLocaleScreen $contentLocaleScreen,
+        private readonly CsrfTokenManagerInterface $csrfTokenManager,
         private readonly GalleryTranslator $galleryTranslator,
         private readonly PrintCatalogueImporter $printCatalogueImporter,
         private readonly TranslatorInterface $translator,
@@ -103,7 +109,11 @@ class GalleryPrintFormatCrudController extends AbstractCrudController
         }
 
         $importAction = Action::new('importPrintCatalogue', t('action.import_print_catalogue', [], 'gallery'), 'fas fa-download')
-            ->linkToCrudAction('importPrintCatalogue')
+            ->linkToUrl(fn (): string => $this->adminUrlGenerator
+                ->setController(self::class)
+                ->setAction('importPrintCatalogue')
+                ->set('token', $this->csrfTokenManager->getToken(self::IMPORT_CSRF_TOKEN)->getValue())
+                ->generateUrl())
             ->createAsGlobalAction()
         ;
 
@@ -115,8 +125,15 @@ class GalleryPrintFormatCrudController extends AbstractCrudController
 
     // Writes the lines the lab confirms it prints, and says what it did - run again after a bundle update, it adds what the catalogue has gained and brings the rows still as shipped up to date, nothing else
     #[AdminRoute('/import-catalogue')]
-    public function importPrintCatalogue(): RedirectResponse
+    public function importPrintCatalogue(Request $request): RedirectResponse
     {
+        $this->denyAccessUnlessGranted($this->roleNeeded());
+
+        // A GET writing to the catalogue: the token alone tells a click on the button from a request forged elsewhere
+        if (!$this->isCsrfTokenValid(self::IMPORT_CSRF_TOKEN, $request->query->getString('token'))) {
+            return $this->redirect($this->indexUrl());
+        }
+
         $report = $this->printCatalogueImporter->import();
 
         if ($report->imported > 0) {
@@ -138,7 +155,17 @@ class GalleryPrintFormatCrudController extends AbstractCrudController
             $this->addFlash('warning', $this->translator->trans('flash.print_catalogue_unknown_skus', ['%skus%' => implode(', ', $report->unknownSkus)], 'gallery'));
         }
 
-        return $this->redirect($this->adminUrlGenerator->setController(self::class)->setAction(Action::INDEX)->generateUrl());
+        return $this->redirect($this->indexUrl());
+    }
+
+    // The listing the import comes back to, whether it ran or was refused - the generator starts from the current query string, which would carry the token along
+    private function indexUrl(): string
+    {
+        return $this->adminUrlGenerator
+            ->setController(self::class)
+            ->setAction(Action::INDEX)
+            ->unset('token')
+            ->generateUrl();
     }
 
     #[\Override]

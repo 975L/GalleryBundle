@@ -1,5 +1,18 @@
 # ChangeLog
 
+## v1.28.9
+
+Print actions guarded, category summary sanitized
+
+- `GalleryPrintFormatCrudController::importPrintCatalogue()`: the editor role and a CSRF token checked, the button sending it (01/11/2026)
+- `GalleryPrintOrderCrudController::releaseToLab()`, `printCertificates()`: the same guard (01/11/2026)
+- `GalleryPrintOrderCrudController::releaseToLab()`, `printCertificates()`: an `#[AdminRoute]` each, the list of orders failing without them (01/11/2026)
+- `gallery/category.html.twig`: the summary printed through `sanitize_html('c975l.rich')` rather than `|raw` (01/11/2026)
+- README and help of the "hidden" fields: masking keeps the files in `public/`, it is no privacy (01/11/2026)
+- `GalleryMedia::$externalUrl`: `Assert\Url` http and https on the entity, whichever form writes it (01/11/2026)
+- `ProdigiFulfilment::createOrder()`: an `idempotencyKey` per order and per site, an order sent twice printed once (01/11/2026)
+- Requires `c975l/core-bundle` ^1.85.0 (01/11/2026)
+
 ## v1.28.8
 
 Trash emptied in a batch for real

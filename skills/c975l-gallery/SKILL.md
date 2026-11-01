@@ -48,7 +48,7 @@ There is **no gallery entity**. A site's galleries *are* its categories — `Gal
 top-level unit, and each holds its `GalleryMedia`.
 
 - `GalleryCategory` — `slug` (the url segment), `title`, `summarySocialNetwork` (rich text, printed
-  above the grid and reused as the page's description metas, the `text.meta_category` sentence standing
+  above the grid through `|sanitize_html('c975l.rich')`, never `|raw`, and reused as the page's description metas, the `text.meta_category` sentence standing
   in when empty, or closing a summary shorter than 50 characters), `position`, `coverMedia`,
   `uncategorized` (the lazily-created catch-all), `automaticKind` (which automatic gallery it is, null
   for an ordinary one, see below), `hidden` (kept out of every public page without being deleted, see
@@ -120,6 +120,8 @@ not worth showing — a gallery being prepared, one taken down for a season, a p
   reached without ever going through the page that would have said so).
 - Masking a category marks none of its medias, exactly as trashing one marks none of them — so showing
   it again gives back precisely what was showing before.
+- Masking is not privacy: the files stay under `public/medias/`, served to whoever has their address. Never
+  present `hidden` as a way to keep a photograph confidential.
 - The export/import carries both flags: a gallery archived masked comes back masked.
 
 ## Public routes and the renamable prefix
@@ -705,6 +707,8 @@ publishes no graph for a media with neither a file to name nor a player to frame
 - **Do not move an order's state with a read-then-write either.** Go through
   `GalleryPrintOrderTracker::apply()`, whose `GalleryPrintOrderRepository::claim()` is the same single
   conditional `UPDATE` — a replayed callback would otherwise post the shipping letter twice.
+- **Do not write a lab driver that creates an order twice when sent twice.** `ProdigiFulfilment` sends an
+  `idempotencyKey` stable per order and per site; the release button or a lost answer can send one again.
 - **Do not print a price with a hardcoded currency.** Read `shop-currency`, as
   `templates/print/_offer.html.twig` and PaymentBundle's own basket templates do.
 - **Do not render `<twig:c975LPayment:Basket:Navbar/>` in a gallery template.** UiBundle's layout places it

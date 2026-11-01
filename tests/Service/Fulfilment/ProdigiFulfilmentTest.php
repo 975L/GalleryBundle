@@ -49,6 +49,33 @@ class ProdigiFulfilmentTest extends TestCase
         $this->assertSame(self::CALLBACK_URL, $this->payloads[0]['callbackUrl']);
     }
 
+    // Sent again after a double click or a lost answer, an order carries the same key, and the lab answers with the order it already holds
+    public function testAnOrderSentTwiceCarriesTheSameKeyAndGetsTheExistingOrderBack(): void
+    {
+        $order = $this->order();
+        $fulfilment = $this->fulfilment(['outcome' => 'AlreadyExists', 'order' => ['id' => 'pro-8891']]);
+
+        $this->assertSame('pro-8891', $fulfilment->createOrder($order));
+        $fulfilment->createOrder($order);
+
+        $this->assertSame($this->payloads[0]['idempotencyKey'], $this->payloads[1]['idempotencyKey']);
+    }
+
+    // The lab keeps its keys for good and per account: neither another order nor another site on that account may meet one already used
+    public function testTheKeyDiffersFromOneOrderAndOneSiteToTheNext(): void
+    {
+        $order = $this->order();
+        $this->fulfilment()->createOrder($order);
+        $this->fulfilment(callbackUrl: 'https://another.example.org/gallery-print-callback/prodigi')->createOrder($order);
+
+        $other = $this->order();
+        new \ReflectionProperty(GalleryPrintOrder::class, 'id')->setValue($other, 5);
+        new \ReflectionProperty(GalleryPrintOrder::class, 'createdAt')->setValue($other, $order->getCreatedAt());
+        $this->fulfilment()->createOrder($other);
+
+        $this->assertCount(3, array_unique(array_column($this->payloads, 'idempotencyKey')));
+    }
+
     // A copy printed as nothing at all is worse than an order refused: the whole thing comes back to the admin instead
     public function testAnOrderWhoseFileCannotBeReachedIsRefused(): void
     {
@@ -109,7 +136,7 @@ class ProdigiFulfilmentTest extends TestCase
         return new GalleryPrintOrder()->setBasket($basket)->setProvider('prodigi')->addCopy($copy);
     }
 
-    private function fulfilment(?array $response = null, ?string $fileUrl = 'https://example.org/gallery-print-file/1?signature=x'): ProdigiFulfilment
+    private function fulfilment(?array $response = null, ?string $fileUrl = 'https://example.org/gallery-print-file/1?signature=x', string $callbackUrl = self::CALLBACK_URL): ProdigiFulfilment
     {
         $httpClient = new MockHttpClient(function (string $method, string $url, array $options) use ($response): MockResponse {
             $this->payloads[] = json_decode($options['body'] ?? '{}', true) ?? [];
@@ -126,7 +153,7 @@ class ProdigiFulfilmentTest extends TestCase
         $fileUrlGenerator->method('generate')->willReturn($fileUrl);
 
         $urlGenerator = $this->createStub(UrlGeneratorInterface::class);
-        $urlGenerator->method('generate')->willReturn(self::CALLBACK_URL);
+        $urlGenerator->method('generate')->willReturn($callbackUrl);
 
         return new ProdigiFulfilment($httpClient, $environment, $fileUrlGenerator, $urlGenerator);
     }

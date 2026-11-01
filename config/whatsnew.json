@@ -1,5 +1,25 @@
 [
     {
+        "date": "2026-11-01",
+        "description": [
+            {
+                "en": "The list of print orders opens again with an order to release or certificates to print, and both buttons work.",
+                "fr": "La liste des commandes de tirages s'ouvre de nouveau avec une commande à relancer ou des certificats à imprimer, et ces deux boutons fonctionnent.",
+                "es": "La lista de pedidos de copias vuelve a abrirse con un pedido por reenviar o certificados por imprimir, y ambos botones funcionan."
+            },
+            {
+                "en": "The help of the \"Hidden\" switches now says it plainly: masking takes a gallery or a photograph off the pages, but its files can still be opened by whoever knows their address.",
+                "fr": "L'aide des interrupteurs « Masquée » le dit désormais clairement : masquer retire une galerie ou une photographie des pages, mais ses fichiers restent ouverts à qui connaît leur adresse.",
+                "es": "La ayuda de los interruptores «Oculta» lo dice ahora claramente: ocultar retira una galería o una fotografía de las páginas, pero sus archivos siguen abiertos a quien conozca su dirección."
+            },
+            {
+                "en": "An order released twice to Prodigi, or released again after a lost answer, is no longer printed and invoiced twice.",
+                "fr": "Une commande relancée deux fois vers Prodigi, ou de nouveau après une réponse perdue, n'est plus imprimée ni facturée deux fois.",
+                "es": "Un pedido reenviado dos veces a Prodigi, o de nuevo tras una respuesta perdida, ya no se imprime ni se factura dos veces."
+            }
+        ]
+    },
+    {
         "date": "2026-10-31",
         "description": [
             {

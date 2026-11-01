@@ -520,7 +520,7 @@
             </trans-unit>
             <trans-unit id="Xb8nkRY">
                 <source>help.gallery_category_hidden</source>
-                <target>La galerie reste en back-office mais disparaît de toutes les pages publiques — l'index, les blocks, les menus, le plan du site — et ses photographies quittent les galeries automatiques avec elle.</target>
+                <target>La galerie reste en back-office mais disparaît de toutes les pages publiques — l'index, les blocks, les menus, le plan du site — et ses photographies quittent les galeries automatiques avec elle. Masquer n'est pas protéger : les fichiers restent dans public/ et quiconque connaît leur adresse peut toujours les ouvrir.</target>
             </trans-unit>
             <trans-unit id="IUk.lVu">
                 <source>help.gallery_license</source>
@@ -532,7 +532,7 @@
             </trans-unit>
             <trans-unit id="DmyK2yX">
                 <source>help.gallery_media_hidden</source>
-                <target>La photographie reste en back-office mais disparaît des pages publiques. À préférer à la suppression pour ce qui mérite d'être conservé sans être montré.</target>
+                <target>La photographie reste en back-office mais disparaît des pages publiques. À préférer à la suppression pour ce qui mérite d'être conservé sans être montré. Masquer n'est pas protéger : le fichier reste dans public/ et quiconque connaît son adresse peut toujours l'ouvrir.</target>
             </trans-unit>
             <trans-unit id="G2NQ1TB">
                 <source>help.gallery_media_printable</source>

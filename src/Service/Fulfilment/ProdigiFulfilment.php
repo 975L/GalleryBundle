@@ -79,10 +79,13 @@ class ProdigiFulfilment implements PrintFulfilmentInterface
             throw new PrintFulfilmentException('The order carries no copy to print.');
         }
 
+        $callbackUrl = $this->urlGenerator->generate('gallery_print_callback', ['provider' => $this->getName()], UrlGeneratorInterface::ABSOLUTE_URL);
+
         $response = $this->request('POST', '/Orders', [
+            'idempotencyKey' => $this->idempotencyKey($order, $callbackUrl),
             'shippingMethod' => 'Standard',
             // Told per order rather than left to the lab's dashboard: a site is developed in the sandbox and opened in production without anybody going to set an address there, and the two are not the same site
-            'callbackUrl' => $this->urlGenerator->generate('gallery_print_callback', ['provider' => $this->getName()], UrlGeneratorInterface::ABSOLUTE_URL),
+            'callbackUrl' => $callbackUrl,
             'recipient' => [
                 'name' => $basket->getName(),
                 'email' => $basket->getEmail(),
@@ -103,6 +106,12 @@ class ProdigiFulfilment implements PrintFulfilmentInterface
         }
 
         return $reference;
+    }
+
+    // The same on every sending of an order, so the lab answers a second one with the order it already holds rather than printing it twice. The lab keeps its keys for good and per account: the callback url tells two sites on one account apart, the date a database restarted from an id already used
+    private function idempotencyKey(GalleryPrintOrder $order, string $callbackUrl): string
+    {
+        return substr(hash('sha256', sprintf('%s|%d|%d', $callbackUrl, (int) $order->getId(), (int) $order->getCreatedAt()?->getTimestamp())), 0, 32);
     }
 
     public function getState(string $reference): string

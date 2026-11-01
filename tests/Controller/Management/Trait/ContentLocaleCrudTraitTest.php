@@ -29,6 +29,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Dto\EntityDto;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGeneratorInterface;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 class ContentLocaleCrudTraitTest extends TestCase
@@ -95,6 +96,7 @@ class ContentLocaleCrudTraitTest extends TestCase
             configRepository: $this->createStub(ConfigRepository::class),
             configService: $configService,
             contentLocaleScreen: $contentLocaleScreen,
+            csrfTokenManager: $this->createStub(CsrfTokenManagerInterface::class),
             galleryTranslator: $galleryTranslator,
             printCatalogueImporter: $this->createStub(PrintCatalogueImporter::class),
             translator: $this->createStub(TranslatorInterface::class),

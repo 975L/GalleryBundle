@@ -520,7 +520,7 @@
             </trans-unit>
             <trans-unit id="Xb8nkRY">
                 <source>help.gallery_category_hidden</source>
-                <target>La galería permanece en el back-office pero desaparece de todas las páginas públicas — el índice, los bloques, los menús, el mapa del sitio — y sus fotografías salen de las galerías automáticas con ella.</target>
+                <target>La galería permanece en el back-office pero desaparece de todas las páginas públicas — el índice, los bloques, los menús, el mapa del sitio — y sus fotografías salen de las galerías automáticas con ella. Ocultar no es proteger: los archivos permanecen en public/ y quien conozca su dirección aún puede abrirlos.</target>
             </trans-unit>
             <trans-unit id="IUk.lVu">
                 <source>help.gallery_license</source>
@@ -532,7 +532,7 @@
             </trans-unit>
             <trans-unit id="DmyK2yX">
                 <source>help.gallery_media_hidden</source>
-                <target>La fotografía permanece en la administración pero desaparece de las páginas públicas. Preferible a eliminar lo que merece conservarse sin mostrarse.</target>
+                <target>La fotografía permanece en la administración pero desaparece de las páginas públicas. Preferible a eliminar lo que merece conservarse sin mostrarse. Ocultar no es proteger: el archivo permanece en public/ y quien conozca su dirección aún puede abrirlo.</target>
             </trans-unit>
             <trans-unit id="G2NQ1TB">
                 <source>help.gallery_media_printable</source>

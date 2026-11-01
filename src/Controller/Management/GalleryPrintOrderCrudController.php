@@ -19,6 +19,7 @@ use c975L\GalleryBundle\Message\GalleryPrintOrderMessage;
 use c975L\GalleryBundle\Service\GalleryCertificateService;
 use c975L\UiBundle\Service\ConfigEditUrlResolver;
 use Doctrine\ORM\EntityManagerInterface;
+use EasyCorp\Bundle\EasyAdminBundle\Attribute\AdminRoute;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
@@ -32,8 +33,10 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\TextareaField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGeneratorInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Messenger\MessageBusInterface;
+use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 use function Symfony\Component\Translation\t;
@@ -60,6 +63,9 @@ class GalleryPrintOrderCrudController extends AbstractCrudController
     // The switch opening the print sale to the public, off while this screen is set up and tested (see _gallery_print_sale_notice.html.twig)
     private const string SWITCH_SLUG = 'gallery-print-enabled';
 
+    // Both row actions are reached by a GET, so their token travels in the url the buttons carry
+    public const string ACTION_CSRF_TOKEN = 'gallery_print_order_action';
+
     public function __construct(
         private readonly ConfigServiceInterface $configService,
         private readonly GalleryCertificateService $certificateService,
@@ -69,6 +75,7 @@ class GalleryPrintOrderCrudController extends AbstractCrudController
         private readonly ConfigRepository $configRepository,
         private readonly ConfigEditUrlResolver $configEditUrlResolver,
         private readonly TranslatorInterface $translator,
+        private readonly CsrfTokenManagerInterface $csrfTokenManager,
     ) {
     }
 
@@ -112,14 +119,14 @@ class GalleryPrintOrderCrudController extends AbstractCrudController
     public function configureActions(Actions $actions): Actions
     {
         // Each action is built twice, the list carrying an icon whose label is kept as the title and the detail page the labelled button
-        $certificate = static fn (): Action => Action::new('printCertificates', t('action.print_certificates', [], 'gallery'), 'fa fa-certificate')
-            ->linkToCrudAction('printCertificates')
+        $certificate = fn (): Action => Action::new('printCertificates', t('action.print_certificates', [], 'gallery'), 'fa fa-certificate')
+            ->linkToUrl(fn (GalleryPrintOrder $order): string => $this->actionUrl('printCertificates', $order))
             // Nothing to certify on an open edition, so the action is not offered there rather than being offered and refused
             ->displayIf(static fn (GalleryPrintOrder $order): bool => $order->hasLimitedEdition())
         ;
 
-        $release = static fn (): Action => Action::new('releaseToLab', t('action.release_to_lab', [], 'gallery'), 'fa fa-paper-plane')
-            ->linkToCrudAction('releaseToLab')
+        $release = fn (): Action => Action::new('releaseToLab', t('action.release_to_lab', [], 'gallery'), 'fa fa-paper-plane')
+            ->linkToUrl(fn (GalleryPrintOrder $order): string => $this->actionUrl('releaseToLab', $order))
             ->displayIf(static fn (GalleryPrintOrder $order): bool => $order->needsAttention())
         ;
 
@@ -171,8 +178,14 @@ class GalleryPrintOrderCrudController extends AbstractCrudController
     }
 
     // Hands the order back to the queue that talks to the lab. The same path a paid open edition takes on its own, which is why nothing is sent from here directly: one road to the lab, one place a failure is recorded
-    public function releaseToLab(AdminContext $context): RedirectResponse
+    #[AdminRoute('/{entityId}/release-to-lab')]
+    public function releaseToLab(AdminContext $context, Request $request): RedirectResponse
     {
+        $refused = $this->refused($request);
+        if (null !== $refused) {
+            return $refused;
+        }
+
         $order = $context->getEntity()->getInstance();
 
         if ($order instanceof GalleryPrintOrder && $order->needsAttention()) {
@@ -187,18 +200,44 @@ class GalleryPrintOrderCrudController extends AbstractCrudController
         return $this->redirect($this->indexUrl());
     }
 
-    // The listing every action comes back to, whether it ran or was refused
+    // The url of a row button, its csrf token in the query string
+    private function actionUrl(string $action, GalleryPrintOrder $order): string
+    {
+        return $this->adminUrlGenerator
+            ->setController(self::class)
+            ->setAction($action)
+            ->setEntityId($order->getId())
+            ->set('token', $this->csrfTokenManager->getToken(self::ACTION_CSRF_TOKEN)->getValue())
+            ->generateUrl();
+    }
+
+    // What both row actions check first: the role denied outright, the answer back to the listing on a token that does not hold, null when the action may run
+    private function refused(Request $request): ?RedirectResponse
+    {
+        $this->denyAccessUnlessGranted($this->roleNeeded());
+
+        return $this->isCsrfTokenValid(self::ACTION_CSRF_TOKEN, $request->query->getString('token')) ? null : $this->redirect($this->indexUrl());
+    }
+
+    // The listing every action comes back to, whether it ran or was refused - the generator starts from the current query string, which would carry the token along
     private function indexUrl(): string
     {
         return $this->adminUrlGenerator
             ->setController(self::class)
             ->setAction(Action::INDEX)
+            ->unset('token')
             ->generateUrl();
     }
 
     // The certificates of an order, as one pdf per numbered copy would be one download per copy - an order of three prints is three sheets to sign, and they are wanted together
-    public function printCertificates(AdminContext $context): Response
+    #[AdminRoute('/{entityId}/print-certificates')]
+    public function printCertificates(AdminContext $context, Request $request): Response
     {
+        $refused = $this->refused($request);
+        if (null !== $refused) {
+            return $refused;
+        }
+
         $order = $context->getEntity()->getInstance();
 
         if (!$order instanceof GalleryPrintOrder) {

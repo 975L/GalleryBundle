@@ -14,6 +14,7 @@ use c975L\ConfigBundle\Entity\Config;
 use c975L\ConfigBundle\Management\ContentLocaleScreen;
 use c975L\ConfigBundle\Repository\ConfigRepository;
 use c975L\ConfigBundle\Service\ConfigServiceInterface;
+use c975L\GalleryBundle\Contract\PrintCatalogueProviderInterface;
 use c975L\GalleryBundle\Controller\Management\GalleryPrintFormatCrudController;
 use c975L\GalleryBundle\Model\PrintCatalogueImportReport;
 use c975L\GalleryBundle\Service\GalleryTranslator;
@@ -23,6 +24,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Config\KeyValueStore;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Option\EA;
 use EasyCorp\Bundle\EasyAdminBundle\Contracts\Provider\AdminContextProviderInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGeneratorInterface;
 use PHPUnit\Framework\TestCase;
@@ -32,6 +34,8 @@ use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\HttpFoundation\Session\Storage\MockArraySessionStorage;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
+use Symfony\Component\Security\Core\Exception\AccessDeniedException;
+use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 // What the import action says out loud: the rows written are counted, and everything the report is unsure of is stated rather than left to surface on the first order
@@ -82,7 +86,48 @@ class GalleryPrintFormatCrudControllerTest extends TestCase
     {
         $controller = $this->createController(new PrintCatalogueImportReport(1, 0, [], false), $this->createSession());
 
-        $this->assertSame('/management/print-formats', $controller->importPrintCatalogue()->getTargetUrl());
+        $this->assertSame('/management/print-formats', $controller->importPrintCatalogue(new Request(['token' => 'token']))->getTargetUrl());
+    }
+
+    // A member without the role writes nothing to the catalogue, whatever the token
+    public function testAMemberWithoutTheRoleIsDenied(): void
+    {
+        $importer = $this->createMock(PrintCatalogueImporter::class);
+        $importer->expects($this->never())->method('import');
+
+        $this->expectException(AccessDeniedException::class);
+        $this->createController(new PrintCatalogueImportReport(0, 0, [], false), $this->createSession(), editor: false, importer: $importer)->importPrintCatalogue(new Request(['token' => 'token']));
+    }
+
+    // The action is reached by a GET: nothing but the token tells a click on the button from a request an <img> fired on a logged-in editor
+    public function testAForgedRequestImportsNothing(): void
+    {
+        $importer = $this->createMock(PrintCatalogueImporter::class);
+        $importer->expects($this->never())->method('import');
+
+        $response = $this->createController(new PrintCatalogueImportReport(0, 0, [], false), $this->createSession(), validToken: false, importer: $importer)->importPrintCatalogue(new Request());
+
+        $this->assertSame('/management/print-formats', $response->getTargetUrl());
+    }
+
+    // What a click does: the url the global button really carries reaches the action through EasyAdmin's router, with a token the action accepts
+    public function testTheImportButtonReachesItsAction(): void
+    {
+        $flow = new RealAdminFlow(GalleryPrintFormatCrudController::class);
+        $importer = $this->createMock(PrintCatalogueImporter::class);
+        $importer->method('getCatalogue')->willReturn($this->createStub(PrintCatalogueProviderInterface::class));
+        $importer->expects($this->once())->method('import')->willReturn(new PrintCatalogueImportReport(1, 0, [], false));
+        $controller = $this->createController(new PrintCatalogueImportReport(1, 0, [], false), $this->createSession(), importer: $importer, flow: $flow);
+
+        $action = $controller->configureActions(Actions::new()->add(Crud::PAGE_INDEX, Action::EDIT)->add(Crud::PAGE_INDEX, Action::DELETE))->getAsDto(Crud::PAGE_INDEX)->getAction(Crud::PAGE_INDEX, 'importPrintCatalogue');
+        $url = ($action->getUrl())();
+
+        $this->assertSame('importPrintCatalogue', $flow->routeOf($url)[EA::CRUD_ACTION] ?? null);
+
+        $response = $controller->importPrintCatalogue($flow->arriveOn($url));
+
+        // The generator starts from the current query string: what comes back must not carry the token along
+        $this->assertStringNotContainsString('token=', $response->getTargetUrl());
     }
 
     // The language screen is opened from the list whether or not the lab publishes a range, a site printing by hand naming its formats too (see ContentLocaleCrudTrait::translateAction())
@@ -144,15 +189,17 @@ class GalleryPrintFormatCrudControllerTest extends TestCase
     private function import(PrintCatalogueImportReport $report): Session
     {
         $session = $this->createSession();
-        $this->createController($report, $session)->importPrintCatalogue();
+        $this->createController($report, $session)->importPrintCatalogue(new Request(['token' => 'token']));
 
         return $session;
     }
 
-    private function createController(PrintCatalogueImportReport $report, Session $session, bool $printEnabled = true, bool $admin = false): GalleryPrintFormatCrudController
+    private function createController(PrintCatalogueImportReport $report, Session $session, bool $printEnabled = true, bool $admin = false, bool $editor = true, bool $validToken = true, ?PrintCatalogueImporter $importer = null, ?RealAdminFlow $flow = null): GalleryPrintFormatCrudController
     {
-        $importer = $this->createStub(PrintCatalogueImporter::class);
-        $importer->method('import')->willReturn($report);
+        if (null === $importer) {
+            $importer = $this->createStub(PrintCatalogueImporter::class);
+            $importer->method('import')->willReturn($report);
+        }
 
         $translator = $this->createStub(TranslatorInterface::class);
         $translator->method('trans')->willReturnArgument(0);
@@ -160,23 +207,34 @@ class GalleryPrintFormatCrudControllerTest extends TestCase
         $adminUrlGenerator = $this->createStub(AdminUrlGeneratorInterface::class);
         $adminUrlGenerator->method('setController')->willReturnSelf();
         $adminUrlGenerator->method('setAction')->willReturnSelf();
+        $adminUrlGenerator->method('unset')->willReturnSelf();
         $adminUrlGenerator->method('generateUrl')->willReturn('/management/print-formats');
 
         $request = new Request();
         $request->setSession($session);
 
+        // One choice between the real flow and its doubles, rather than a "??" per collaborator
+        $csrfTokenManager = $this->createStub(CsrfTokenManagerInterface::class);
+        $csrfTokenManager->method('isTokenValid')->willReturn($validToken);
+        [$csrfTokenManager, $requestStack, $adminUrlGenerator] = null === $flow
+            ? [$csrfTokenManager, new RequestStack([$request]), $adminUrlGenerator]
+            : [$flow->csrfTokenManager, $flow->requestStack, $flow->urlGenerator];
+
         $container = new Container();
-        $container->set('request_stack', new RequestStack([$request]));
+        $container->set('request_stack', $requestStack);
 
         $authorizationChecker = $this->createStub(AuthorizationCheckerInterface::class);
-        $authorizationChecker->method('isGranted')->willReturnCallback(static fn (mixed $role): bool => $admin && 'ROLE_ADMIN' === $role);
+        $authorizationChecker->method('isGranted')->willReturnCallback(static fn (mixed $role): bool => ($admin && 'ROLE_ADMIN' === $role) || ($editor && 'ROLE_EDITOR' === $role));
         $container->set('security.authorization_checker', $authorizationChecker);
+
+        $container->set('security.csrf.token_manager', $csrfTokenManager);
 
         $configService = $this->createStub(ConfigServiceInterface::class);
         $configService->method('get')->willReturnCallback(
             static fn (string $slug): mixed => match ($slug) {
                 'gallery-print-enabled' => $printEnabled,
                 'site-role-admin' => 'ROLE_ADMIN',
+                'site-role-editor' => 'ROLE_EDITOR',
                 default => null,
             },
         );
@@ -200,6 +258,7 @@ class GalleryPrintFormatCrudControllerTest extends TestCase
             configRepository: $configRepository,
             configService: $configService,
             contentLocaleScreen: $contentLocaleScreen,
+            csrfTokenManager: $csrfTokenManager,
             galleryTranslator: $this->createStub(GalleryTranslator::class),
             printCatalogueImporter: $importer,
             translator: $translator,
