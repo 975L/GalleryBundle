@@ -77,6 +77,20 @@ class GalleryAutomaticProvider implements ResetInterface
             : null;
     }
 
+    // The automatic gallery a url names, created on the way as the index does: its link can be opened before the index ever was, and a demo's throwaway copy forgets what the index created. Only the slug a kind is created under gets that far, any other url answering 404 without writing or reading anything more, and a row since renamed no longer answers to it
+    public function findAutomaticBySlug(string $slug): ?GalleryCategory
+    {
+        foreach (array_keys($this->galleries) as $kind) {
+            if ($slug === $this->galleryCategoryRepository->automaticSlug($kind)) {
+                $category = $this->ensureCategory($kind);
+
+                return $slug === $category?->getSlug() ? $category : null;
+            }
+        }
+
+        return null;
+    }
+
     // The same for every kind installed, for the screens that list the galleries rather than render one
     public function ensureCategories(): void
     {

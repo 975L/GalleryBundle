@@ -195,6 +195,8 @@ window catches nothing, so the gallery is never empty as long as the site holds 
 
 - `getMedias(GalleryCategory $category)` — what that category's kind gathers.
 - `ensureCategory(string $kind)` / `ensureCategories()` — the rows written for the kinds available.
+- `findAutomaticBySlug(string $slug)` — the automatic gallery a url names, its row written on the way; null,
+  and nothing written, for any other slug and for a kind turned off.
 - `findPreviousAndNext(GalleryMedia $media, GalleryCategory $category)` — the neighbours **within** the
   automatic gallery being browsed, which are not the ones the media's own category files it next to.
 - `prepare(array $categories)` — hands back the listed categories with the automatic ones among them,

@@ -53,6 +53,47 @@ class GalleryAutomaticProviderTest extends TestCase
         return $category;
     }
 
+    // Opened by its url before anyone read the index: it is created then, under the slug the link named
+    public function testAnAutomaticGalleryIsFoundByItsSlugAndCreatedOnTheWay(): void
+    {
+        $category = new GalleryCategory()->setSlug('latest');
+        $categoryRepository = $this->createMock(GalleryCategoryRepository::class);
+        $categoryRepository->method('automaticSlug')->willReturnArgument(0);
+        $categoryRepository->expects($this->once())->method('findOrCreateAutomatic')->with('latest')->willReturn($category);
+
+        $provider = $this->createProvider([$this->createGallery('latest'), $this->createGallery('prints')], $categoryRepository);
+
+        $this->assertSame($category, $provider->findAutomaticBySlug('latest'));
+    }
+
+    // Any other url stays a 404 and writes nothing, and a kind the site turned off is not created because someone typed its url
+    public function testAnotherSlugOrAKindTurnedOffFindsNothingAndCreatesNothing(): void
+    {
+        $categoryRepository = $this->createMock(GalleryCategoryRepository::class);
+        $categoryRepository->method('automaticSlug')->willReturnArgument(0);
+        $categoryRepository->expects($this->never())->method('findOrCreateAutomatic');
+
+        $provider = $this->createProvider(
+            [$this->createGallery('latest'), $this->createGallery('prints', available: false)],
+            $categoryRepository
+        );
+
+        $this->assertNull($provider->findAutomaticBySlug('wp-login'));
+        $this->assertNull($provider->findAutomaticBySlug('prints'));
+    }
+
+    // An admin renamed it: the slug it was created under no longer answers, its old url belonging to the redirect the rename recorded
+    public function testARenamedAutomaticGalleryNoLongerAnswersToItsFirstSlug(): void
+    {
+        $categoryRepository = $this->createStub(GalleryCategoryRepository::class);
+        $categoryRepository->method('automaticSlug')->willReturnArgument(0);
+        $categoryRepository->method('findOrCreateAutomatic')->willReturn(new GalleryCategory()->setSlug('derniers-ajouts'));
+
+        $provider = $this->createProvider([$this->createGallery('latest')], $categoryRepository);
+
+        $this->assertNull($provider->findAutomaticBySlug('latest'));
+    }
+
     // One call for the two kinds of category, which is the whole reason every screen goes through it: none of them has to know which of the two it is rendering
     public function testTheMediasOfAnOrdinaryGalleryAreReadOffTheCategoryItself(): void
     {

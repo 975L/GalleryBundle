@@ -231,8 +231,8 @@ navbar.
 arranged by subject - Animaux, Arbres, Fleurs - so an upload session is dispatched across a dozen
 categories at once, and nothing on the site says a single photo has arrived. **Derniers ajouts** is the one
 screen that shows them all: `GalleryCategoryRepository::findOrCreateAutomatic()` writes it the first time
-the galleries are listed - the back-office listing, the public index or a categories block, whichever comes
-first - and it is a normal category from then on, flagged `GalleryCategory::$automaticKind`. Rename it,
+the galleries are listed or its url opened - the back-office listing, the public index, a categories block
+or its own page, whichever comes first - and it is a normal category from then on, flagged `GalleryCategory::$automaticKind`. Rename it,
 describe it, give it a heading: it takes everything a gallery takes. Where it sits is the one thing it does
 not take - it is shown apart, in a row of its own above the alphabetical grid (see below). It is
 never an option carried by one of your own galleries, which ticking a box on *Animaux* would turn into

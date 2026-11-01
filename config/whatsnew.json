@@ -16,6 +16,11 @@
                 "en": "An order released twice to Prodigi, or released again after a lost answer, is no longer printed and invoiced twice.",
                 "fr": "Une commande relancée deux fois vers Prodigi, ou de nouveau après une réponse perdue, n'est plus imprimée ni facturée deux fois.",
                 "es": "Un pedido reenviado dos veces a Prodigi, o de nuevo tras una respuesta perdida, ya no se imprime ni se factura dos veces."
+            },
+            {
+                "en": "The link to the last additions or to the prints on offer now opens straight away, even before anyone has visited the galleries page.",
+                "fr": "Le lien vers les derniers ajouts ou vers les tirages proposés s'ouvre désormais tout de suite, même avant toute visite de la page des galeries.",
+                "es": "El enlace a las últimas novedades o a las copias disponibles se abre ahora directamente, incluso antes de cualquier visita a la página de galerías."
             }
         ]
     },

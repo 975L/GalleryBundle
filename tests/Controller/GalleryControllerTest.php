@@ -272,6 +272,20 @@ class GalleryControllerTest extends TestCase
         $this->assertSame($latest, iterator_to_array($capturedParameters['medias']));
     }
 
+    // Its link opened before any listing wrote its row: the slug no row holds yet is asked of the automatic galleries, which create it on the way
+    public function testCategoryOfAnAutomaticGalleryWithoutARowYetIsServed(): void
+    {
+        $categoryRepository = $this->createStub(GalleryCategoryRepository::class);
+        $categoryRepository->method('findOneBySlug')->willReturn(null);
+
+        $automaticProvider = $this->createAutomaticProvider();
+        $automaticProvider->method('findAutomaticBySlug')->willReturn(new GalleryCategory()->setSlug('latest'));
+
+        $response = $this->createController($categoryRepository, null, $automaticProvider)->category('latest', new Request());
+
+        $this->assertSame(Response::HTTP_OK, $response->getStatusCode());
+    }
+
     // Opened from the last additions, a photo is walked among them: the neighbours come from that list and the trail leads back to it, the url staying the media's own
     public function testMediaBrowsedFromTheLatestGalleryWalksItsList(): void
     {

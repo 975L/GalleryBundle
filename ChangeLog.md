@@ -1,5 +1,11 @@
 # ChangeLog
 
+## v1.28.10
+
+An automatic gallery answers at its own url
+
+- `GalleryAutomaticProvider::findAutomaticBySlug()`: an automatic gallery created when opened by its url (01/11/2026)
+
 ## v1.28.9
 
 Print actions guarded, category summary sanitized

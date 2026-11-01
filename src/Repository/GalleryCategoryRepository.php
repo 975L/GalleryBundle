@@ -99,7 +99,13 @@ class GalleryCategoryRepository extends ServiceEntityRepository implements Reset
         ;
     }
 
-    // An automatic gallery of the asked kind, which nobody has to create: it is a gallery of its own, not an option carried by one of the site's - so it is written the first time the galleries are listed and is a normal category from then on, renamed, described, arranged and given a heading like any other (see GalleryAutomaticProvider for what each kind shows)
+    // The slug an automatic gallery of that kind is created under. A kind the bundle doesn't ship names its own url and heading (see AutomaticGalleryInterface): the constants above only hold the two it does, and a site's own kind is a perfectly good slug and a title an admin renames on the spot
+    public function automaticSlug(string $kind): string
+    {
+        return self::AUTOMATIC_SLUGS[$kind] ?? $kind;
+    }
+
+    // An automatic gallery of the asked kind, which nobody has to create: it is a gallery of its own, not an option carried by one of the site's - so it is written the first time the galleries are listed or its url opened and is a normal category from then on, renamed, described, arranged and given a heading like any other (see GalleryAutomaticProvider for what each kind shows)
     // Unlike the catch-all below, one left in the trash is left there: it is the only way to say "this site does not want that gallery", and lifting it back out would give an admin no way at all to be rid of it
     public function findOrCreateAutomatic(string $kind): GalleryCategory
     {
@@ -108,8 +114,7 @@ class GalleryCategoryRepository extends ServiceEntityRepository implements Reset
             return $category;
         }
 
-        // A kind the bundle doesn't ship names its own url and heading (see AutomaticGalleryInterface): the constants above only hold the two it does, and a site's own kind is a perfectly good slug and a title an admin renames on the spot
-        $slug = self::AUTOMATIC_SLUGS[$kind] ?? $kind;
+        $slug = $this->automaticSlug($kind);
 
         // The gallery a lost flag left behind is taken back rather than doubled (see orphanOf())
         $orphan = $this->orphanOf($kind, $slug);
@@ -138,7 +143,7 @@ class GalleryCategoryRepository extends ServiceEntityRepository implements Reset
     /** @return ?array{GalleryCategory, GalleryCategory} */
     public function findAutomaticDuplicate(string $kind): ?array
     {
-        $slug = self::AUTOMATIC_SLUGS[$kind] ?? $kind;
+        $slug = $this->automaticSlug($kind);
         $duplicate = $this->findOneBy(['automaticKind' => $kind]);
         if (null === $duplicate || $slug === $duplicate->getSlug()) {
             return null;
