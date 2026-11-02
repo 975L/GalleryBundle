@@ -1,5 +1,13 @@
 # ChangeLog
 
+## v1.28.11
+
+bin/ci.sh replays the CI's lizard, stale wording corrected
+
+- Corrected `bin/ci.sh` comment and message: vendor frozen on composer.lock, no symlinks (02/11/2026)
+- `bin/ci.sh`: lizard unpinned, as in the CI (02/11/2026)
+- `ci.yml`: lizard comment corrected (02/11/2026)
+
 ## v1.28.10
 
 An automatic gallery answers at its own url
