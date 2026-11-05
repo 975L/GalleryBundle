@@ -120,7 +120,7 @@
 
                     {# The one button of the whole gallery that loses files, so it asks first - EasyAdmin's own modal, as the move to trash does below #}
                     <twig:ea:Modal:Trigger type="submit"
-                        variant="danger"
+                        color="danger"
                         disabled
                         target="#modal-action-confirmation"
                         data-action-confirmation="true"
@@ -270,7 +270,7 @@
 
                 {# Disabled until something is checked, the controller above enabling it on the first box ticked. The confirmation is EasyAdmin's own modal, the one its delete actions open: app.js submits this form once confirmed (its "standalone button inside a form" case), so nothing here has to ask on its own - which only holds for a button carrying no formaction: one that does is posted through EasyAdmin's own hidden form, without the selection or its token #}
                 <twig:ea:Modal:Trigger type="submit"
-                    variant="danger"
+                    color="danger"
                     disabled
                     target="#modal-action-confirmation"
                     data-action-confirmation="true"

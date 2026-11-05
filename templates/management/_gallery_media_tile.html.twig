@@ -43,19 +43,19 @@
                 <twig:ea:Badge>{{ ('label.gallery_media_hidden'|trans({}, 'gallery')) }}</twig:ea:Badge>
             {% endif %}
             {% if media.printable %}
-                <twig:ea:Badge variant="success">{{ ('label.gallery_media_on_sale'|trans({}, 'gallery')) }}</twig:ea:Badge>
+                <twig:ea:Badge color="success">{{ ('label.gallery_media_on_sale'|trans({}, 'gallery')) }}</twig:ea:Badge>
             {% endif %}
             {# Only a numbered edition has a size to show, an open one printing without end (see GalleryMedia::$editionSize) #}
             {% if media.printable and media.editionSize %}
-                <twig:ea:Badge variant="light">{{ ('label.gallery_media_edition_of'|trans({'%count%': media.editionSize}, 'gallery')) }}</twig:ea:Badge>
+                <twig:ea:Badge color="light">{{ ('label.gallery_media_edition_of'|trans({'%count%': media.editionSize}, 'gallery')) }}</twig:ea:Badge>
             {% endif %}
             {% if likes|default(0) > 0 %}
-                <twig:ea:Badge variant="light" aria-label="{{ ('label.gallery_media_likes'|trans({'%count%': likes}, 'gallery')) }}">
+                <twig:ea:Badge color="light" aria-label="{{ ('label.gallery_media_likes'|trans({'%count%': likes}, 'gallery')) }}">
                     <i class="fa fa-heart" aria-hidden="true"></i> {{ likes }}
                 </twig:ea:Badge>
             {% endif %}
             {% if social|default(null) %}
-                <twig:ea:Badge variant="{{ social.published ? 'success' : 'warning' }}">{{ social.label }}</twig:ea:Badge>
+                <twig:ea:Badge color="{{ social.published ? 'success' : 'warning' }}">{{ social.label }}</twig:ea:Badge>
             {% endif %}
         </p>
     {% endif %}

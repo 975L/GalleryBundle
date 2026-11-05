@@ -1,5 +1,11 @@
 # ChangeLog
 
+## v1.28.14
+
+Buttons and badges colored through EasyAdmin 5.9's color prop
+
+- Changed the buttons' and badges' colors to EasyAdmin 5.9's `color` prop, EasyAdmin required in ^5.9 (05/11/2026)
+
 ## v1.28.13
 
 Composer states why a PHP version failed to resolve
