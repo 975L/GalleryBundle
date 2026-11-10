@@ -17,6 +17,8 @@ use c975L\GalleryBundle\Entity\GalleryPrintFormat;
 use c975L\GalleryBundle\Model\PrintOffer;
 use c975L\GalleryBundle\Service\GallerySnippetBuilder;
 use c975L\GalleryBundle\Twig\Extension\GalleryJsonLdExtension;
+use c975L\PaymentBundle\Service\OfferSnippetBuilder;
+use c975L\PaymentBundle\Service\ShippingRateResolverInterface;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
@@ -127,7 +129,7 @@ class GalleryJsonLdExtensionTest extends TestCase
 
         $requestStack = new RequestStack([Request::create('https://example.org/galerie/montagne/lac')]);
 
-        return new GalleryJsonLdExtension(new GallerySnippetBuilder(), $configService, new UrlHelper($requestStack));
+        return new GalleryJsonLdExtension(new GallerySnippetBuilder(new OfferSnippetBuilder($this->createStub(ConfigServiceInterface::class), $this->createStub(ShippingRateResolverInterface::class))), $configService, new UrlHelper($requestStack));
     }
 
     private function media(): GalleryMedia

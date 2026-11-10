@@ -1,5 +1,15 @@
 # ChangeLog
 
+## v1.29.0
+
+Prints publish shipping, returns, brand and sku to merchant listings
+
+- `GallerySnippetBuilder::buildPrint()`: offers carry `sku`, `shippingDetails` and `hasMerchantReturnPolicy` (10/11/2026)
+- `GallerySnippetBuilder::buildPrint()`: product carries a `brand`, the credit or `shop-name` (10/11/2026)
+- `GallerySnippetBuilder::buildPrint()`: `description` falls back on the gallery's summary (10/11/2026)
+- `GallerySnippetBuilder` takes PaymentBundle's `OfferSnippetBuilder` (10/11/2026) [BC-Break]
+- `c975l/payment-bundle` required in ^6.24 (10/11/2026)
+
 ## v1.28.14
 
 Buttons and badges colored through EasyAdmin 5.9's color prop

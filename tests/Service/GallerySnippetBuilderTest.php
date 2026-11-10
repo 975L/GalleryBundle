@@ -10,11 +10,14 @@
 
 namespace c975L\GalleryBundle\Tests\Service;
 
+use c975L\ConfigBundle\Service\ConfigServiceInterface;
 use c975L\GalleryBundle\Entity\GalleryCategory;
 use c975L\GalleryBundle\Entity\GalleryMedia;
 use c975L\GalleryBundle\Entity\GalleryPrintFormat;
 use c975L\GalleryBundle\Model\PrintOffer;
 use c975L\GalleryBundle\Service\GallerySnippetBuilder;
+use c975L\PaymentBundle\Service\OfferSnippetBuilder;
+use c975L\PaymentBundle\Service\ShippingRateResolverInterface;
 use PHPUnit\Framework\TestCase;
 
 // What an image search reads of a photograph: the four properties a licence rests on, and the type a video is published under
@@ -265,7 +268,7 @@ class GallerySnippetBuilderTest extends TestCase
     {
         $media = new GalleryMedia()->setTitle('Lac d\'Annecy');
         $offers = [
-            new PrintOffer($media, new GalleryPrintFormat()->setLabel('30 x 40 cm')->setPrice(4500)),
+            new PrintOffer($media, new GalleryPrintFormat()->setLabel('30 x 40 cm')->setSlug('30x40')->setPrice(4500)),
             new PrintOffer($media, new GalleryPrintFormat()->setLabel('50 x 70 cm')->setPrice(8900)),
         ];
 
@@ -273,7 +276,7 @@ class GallerySnippetBuilderTest extends TestCase
 
         $this->assertSame('Product', $snippet['@type']);
         $this->assertCount(2, $snippet['offers']);
-        $this->assertSame(['@type' => 'Offer', 'name' => '30 x 40 cm', 'price' => '45.00', 'priceCurrency' => 'EUR', 'availability' => 'https://schema.org/InStock', 'itemCondition' => 'https://schema.org/NewCondition', 'url' => 'https://example.org/galerie/lac'], $snippet['offers'][0]);
+        $this->assertSame(['@type' => 'Offer', 'name' => '30 x 40 cm', 'sku' => '0:30x40', 'price' => '45.00', 'priceCurrency' => 'EUR', 'availability' => 'https://schema.org/InStock', 'itemCondition' => 'https://schema.org/NewCondition', 'url' => 'https://example.org/galerie/lac'], $snippet['offers'][0]);
     }
 
     // A numbered edition with none left is sold out, not in stock
@@ -293,9 +296,43 @@ class GallerySnippetBuilderTest extends TestCase
         $this->assertSame([], $this->builder()->buildPrint($media, [new PrintOffer($media, new GalleryPrintFormat()->setPrice(4500))], ''));
     }
 
-    private function builder(): GallerySnippetBuilder
+    // The prints of a shop posting to France, returns accepted for 14 days, its grid charging 9.50 for the format's weight
+    public function testThePrintsCarryTheShopsShippingReturnsAndBrand(): void
     {
-        return new GallerySnippetBuilder();
+        $media = new GalleryMedia()->setTitle('Lac d\'Annecy')->setCredits('Author');
+        $offers = [new PrintOffer($media, new GalleryPrintFormat()->setLabel('A3')->setSlug('a3')->setPrice(4500)->setWeight(300))];
+
+        $snippet = $this->builder(['shop-shipping-country' => 'fr', 'shop-currency' => 'eur', 'shop-return-days' => 14], 950)->buildPrint($media, $offers, 'EUR');
+
+        $this->assertSame(['@type' => 'Brand', 'name' => 'Author'], $snippet['brand']);
+        $this->assertSame('9.50', $snippet['offers'][0]['shippingDetails']['shippingRate']['value']);
+        $this->assertSame('FR', $snippet['offers'][0]['shippingDetails']['shippingDestination']['addressCountry']);
+        $this->assertSame(14, $snippet['offers'][0]['hasMerchantReturnPolicy']['merchantReturnDays']);
+    }
+
+    // A photograph without a caption is described by its gallery's summary, the shop's name standing for the photographer nobody credited
+    public function testAnUncaptionedPrintIsDescribedByItsGallery(): void
+    {
+        $media = new GalleryMedia()->setTitle('Lac d\'Annecy')->setCategory($this->category()->setSummarySocialNetwork('<p>Summary</p>'));
+
+        $snippet = $this->builder(['shop-name' => 'Catalog'])->buildPrint($media, [new PrintOffer($media, new GalleryPrintFormat()->setLabel('A3')->setPrice(4500))], 'EUR');
+
+        $this->assertSame('Summary', $snippet['description']);
+        $this->assertSame(['@type' => 'Brand', 'name' => 'Catalog'], $snippet['brand']);
+        $this->assertArrayNotHasKey('shippingDetails', $snippet['offers'][0]);
+        $this->assertArrayNotHasKey('hasMerchantReturnPolicy', $snippet['offers'][0]);
+    }
+
+    // PaymentBundle's settings as given, its grid answering $rate for any parcel
+    private function builder(array $config = [], ?int $rate = null): GallerySnippetBuilder
+    {
+        $configService = $this->createStub(ConfigServiceInterface::class);
+        $configService->method('get')->willReturnCallback(static fn (string $key): mixed => $config[$key] ?? null);
+
+        $resolver = $this->createStub(ShippingRateResolverInterface::class);
+        $resolver->method('resolve')->willReturn($rate);
+
+        return new GallerySnippetBuilder(new OfferSnippetBuilder($configService, $resolver));
     }
 
     private function media(): GalleryMedia

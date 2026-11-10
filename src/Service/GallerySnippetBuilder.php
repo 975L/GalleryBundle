@@ -14,13 +14,17 @@ use c975L\GalleryBundle\Entity\GalleryCategory;
 use c975L\GalleryBundle\Entity\GalleryMedia;
 use c975L\GalleryBundle\Model\GalleryLicense;
 use c975L\GalleryBundle\Model\PrintOffer;
+use c975L\PaymentBundle\Service\OfferSnippetBuilder;
 use c975L\UiBundle\Service\JsonLdBuilder;
 
 // Builds the schema.org graph a photograph's, a gallery's and the index's page publish as JSON-LD, out of the fields they already show: a photograph is an ImageObject (a video a VideoObject) carrying the four properties Google's "Licensable" badge is drawn from, and its prints a Product of their own (see buildPrint()).
 class GallerySnippetBuilder
 {
-    public function __construct(private readonly JsonLdBuilder $jsonLdBuilder = new JsonLdBuilder())
-    {
+    // Shipping, returns and brand are PaymentBundle's settings, which the checkout of a print applies
+    public function __construct(
+        private readonly OfferSnippetBuilder $offerSnippetBuilder,
+        private readonly JsonLdBuilder $jsonLdBuilder = new JsonLdBuilder(),
+    ) {
     }
 
     // The urls ($contentUrl, $thumbnailUrl, $url, $licenseUrl from config "gallery-license-url") come absolute from the caller. $printAvailable is the offer the page itself prints (see gallery_print_available()), handed over rather than asked again so the graph answers what the visitor is looking at
@@ -98,16 +102,23 @@ class GallerySnippetBuilder
             '@type' => 'Product',
             'name' => $name,
             'image' => trim((string) $imageUrl),
-            'description' => $this->jsonLdBuilder->plainText($media->getDescription()),
+            'description' => $this->printDescription($media),
+            // What stands for a global identifier on a print nobody gave a barcode to: the photographer credited under it, the shop's own name otherwise
+            'brand' => $this->offerSnippetBuilder->brand($media->getCredits()),
             'offers' => array_map(fn (PrintOffer $offer): array => $this->clean([
                 '@type' => 'Offer',
                 'name' => trim((string) $offer->format->getLabel()),
+                // The key the basket holds the print on, which is the reference the shop knows it by
+                'sku' => $offer->getId(),
                 // Prices are stored in cents, schema.org expects the amount as it is charged
                 'price' => number_format((int) $offer->format->getPrice() / 100, 2, '.', ''),
                 'priceCurrency' => $currency,
                 'availability' => $availability,
                 'itemCondition' => 'https://schema.org/NewCondition',
                 'url' => trim((string) $url),
+                // Priced on the grid for the format's packed weight, as GalleryPrintBasketItemProvider weighs the basket line
+                'shippingDetails' => $this->offerSnippetBuilder->shippingDetails($offer->format->getWeight()),
+                'hasMerchantReturnPolicy' => $this->offerSnippetBuilder->returnPolicy(),
             ]), $offers),
         ]);
     }
@@ -143,6 +154,14 @@ class GallerySnippetBuilder
             'license' => GalleryLicense::deedUrl($media->getCategory()?->getLicense() ?? GalleryLicense::RESERVED) ?? $licenseUrl,
             'acquireLicensePage' => $printAvailable ? trim((string) $url) : $licenseUrl,
         ];
+    }
+
+    // The photograph's own caption, and failing that the summary of its gallery: a merchant listing is flagged without a description, and most photographs carry none
+    private function printDescription(GalleryMedia $media): string
+    {
+        $description = $this->jsonLdBuilder->plainText($media->getDescription());
+
+        return '' === $description ? $this->jsonLdBuilder->plainText($media->getCategory()?->getSummarySocialNetwork()) : $description;
     }
 
     // The photograph's own title, and failing that its gallery's: an image search prints the name, and a photograph left untitled would be published as a nameless one

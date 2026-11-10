@@ -1,5 +1,15 @@
 [
     {
+        "date": "2026-11-10",
+        "description": [
+            {
+                "en": "The prints now tell Google their shipping cost, return window, photographer and a description, as configured in the shop settings.",
+                "fr": "Les tirages indiquent désormais à Google leurs frais de port, leur délai de retour, leur photographe et une description, d'après les réglages de la boutique.",
+                "es": "Las copias indican ahora a Google sus gastos de envío, su plazo de devolución, su fotógrafo y una descripción, según los ajustes de la tienda."
+            }
+        ]
+    },
+    {
         "date": "2026-11-01",
         "description": [
             {
