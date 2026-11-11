@@ -85,6 +85,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 use Symfony\Component\String\Slugger\SluggerInterface;
+use Symfony\Component\Translation\TranslatableMessage;
 use Symfony\Component\Validator\Constraints\All;
 use Symfony\Component\Validator\Constraints\Image;
 use Symfony\Contracts\Translation\TranslatableInterface;
@@ -302,13 +303,23 @@ class GalleryCategoryCrudController extends AbstractCrudController
         );
     }
 
+    // A confirmation naming the row it acts on, EasyAdmin handing the closure that row - one saved without a title is named by its id
+    private static function titledConfirmation(string $key): \Closure
+    {
+        return static function (GalleryCategory $category) use ($key): TranslatableMessage {
+            $title = (string) $category->getTitle();
+
+            return t($key, ['%title%' => '' !== $title ? $title : '#' . $category->getId()], 'gallery');
+        };
+    }
+
     // The one action that actually deletes - only shown once already in the trash, so it always takes two deliberate steps to lose a gallery
     private function deletePermanentlyAction(): Action
     {
         return EasyAdminActionHelper::toIconOnly(
             Action::new('deletePermanently', t('action.delete_permanently', [], 'config'), 'fa fa-trash')
                 ->linkToUrl(fn (GalleryCategory $category): string => $this->trashActionUrl('deletePermanently', $category, self::DELETE_PERMANENTLY_CSRF_TOKEN))
-                ->askConfirmation(t('confirm.delete_permanently', [], 'gallery')),
+                ->askConfirmation(self::titledConfirmation('confirm.delete_permanently')),
             $this->translator->trans('action.delete_permanently', [], 'config'),
         );
     }

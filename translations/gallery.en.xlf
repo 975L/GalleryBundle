@@ -84,7 +84,7 @@
             </trans-unit>
             <trans-unit id="X4j.TeG">
                 <source>confirm.delete_permanently</source>
-                <target>This gallery will be permanently deleted, with its medias and all of their files. This cannot be undone. Continue?</target>
+                <target>The gallery "%title%" will be permanently deleted, with its medias and all of their files. This cannot be undone. Continue?</target>
             </trans-unit>
             <trans-unit id="tu7Zw96">
                 <source>confirm.media_slug_change</source>

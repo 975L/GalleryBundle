@@ -68,7 +68,7 @@ Add GalleryBundle on top of [c975L/CoreBundle](https://github.com/975L/CoreBundl
 - Symfony ^8.0
 - [c975L/CoreBundle](https://github.com/975L/CoreBundle) in `^1.85.0` — ConfigBundle and UiBundle ship as the single `c975l/core-bundle` package, so requiring this bundle pulls both (Vich naming/resizing, EasyAdmin form-theme conventions, stylesheet registry, page layout fallback, menu provider, scaffold, sitemap and health checks). `^1.25` is what overrides VichUploader 3.0's storage and namer, without which the derivatives are named by Vich's own rule, `^1.26` what ships the `Image:Zoom` the media page opens its high resolution with, `^1.31` what places PaymentBundle's basket bar once on every page, the print offer drawing none of its own, `^1.38` what ships the `QrCodeGenerator` the qr code of a certificate and of a gallery is drawn with, `^1.72.2` what ships `EasyAdminActionHelper::iconOnlyDefaults()`, the back-office row buttons being drawn as icons with their label as the title, `^1.83.0` what ships `EasyAdminActionHelper::trashBatchDelete()` and the `action.move_to_trash` / `action.delete_permanently` labels of the `config` catalog, and `^1.84.0` what ships `TrashBatchDeleteTrait`, the trash's batch posted with `trash=1` and counted in one message, and `^1.85.0` what declares the `c975l.rich` sanitizer a category's summary is printed through
 - Doctrine ORM
-- EasyAdmin in `^5.7` — the back-office templates are drawn with its Twig components and its `ea()` function
+- EasyAdmin in `^5.10` — the back-office templates are drawn with its Twig components and its `ea()` function, `^5.10` what resolves an action's confirmation row by row, the permanent delete naming the gallery it removes
 - VichUploader Bundle in `^3.0`
 - `symfony/expression-language`, which the public routes' condition is evaluated with (see [public routes](#public-routes)) — pulled in by Composer
 - [c975L/PaymentBundle](https://github.com/975L/PaymentBundle) in `^6.18` — the one basket a print is bought through. Required rather than suggested so the print shop is there to be switched on, instead of being a feature nobody knows exists
@@ -333,7 +333,8 @@ actions of its own: **Restaurer**, which puts it back untouched, and **Supprimer
 is the one that removes the row, its medias, its heading blocks, their three derivatives and any kept
 original — and the directory the category grouped its files under, in `public/` and in `private/`, once
 it is actually empty. That one is held at `site-role-admin`, the rest of the gallery sitting at
-`site-role-editor`: it is the only irreversible action of the screen.
+`site-role-editor`: it is the only irreversible action of the screen. Its confirmation names the gallery it
+removes, by its id when it was saved without a title.
 
 **Both steps also work on a selection.** The listing's batch action reads **Mettre à la corbeille** on
 the galleries and **Supprimer définitivement** in the trash, where it is offered to `site-role-admin`

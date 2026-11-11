@@ -1,5 +1,12 @@
 # ChangeLog
 
+## v1.29.1
+
+Permanent delete confirmation names the gallery
+
+- Permanent delete confirmation names the gallery it acts on (11/11/2026)
+- `easycorp/easyadmin-bundle` required in ^5.10 (11/11/2026)
+
 ## v1.29.0
 
 Prints publish shipping, returns, brand and sku to merchant listings

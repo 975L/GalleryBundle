@@ -1,5 +1,15 @@
 [
     {
+        "date": "2026-11-11",
+        "description": [
+            {
+                "en": "Before deleting a gallery for good, the confirmation now names it, so you know at a glance which one you are about to remove.",
+                "fr": "Avant de supprimer définitivement une galerie, la confirmation la nomme désormais, pour savoir d'un coup d'œil laquelle vous allez effacer.",
+                "es": "Antes de eliminar definitivamente una galería, la confirmación la nombra ahora, para saber de un vistazo cuál va a borrar."
+            }
+        ]
+    },
+    {
         "date": "2026-11-10",
         "description": [
             {

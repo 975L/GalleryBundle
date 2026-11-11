@@ -2950,4 +2950,18 @@ class GalleryCategoryCrudControllerTest extends TestCase
 
         return $repository;
     }
+
+    // A confirmation names the row it acts on, resolved row by row, and a row saved without a title by its id
+    public function testTheDeleteConfirmationNamesTheGallery(): void
+    {
+        $confirmation = new \ReflectionMethod(GalleryCategoryCrudController::class, 'titledConfirmation')->invoke(null, 'confirm.delete_permanently');
+        $untitled = new GalleryCategory()->setTitle('');
+        new \ReflectionProperty(GalleryCategory::class, 'id')->setValue($untitled, 7);
+
+        $this->assertSame(['%title%' => 'item-1'], $confirmation(new GalleryCategory()->setTitle('item-1'))->getParameters());
+        $this->assertSame(['%title%' => 'item-2'], $confirmation(new GalleryCategory()->setTitle('item-2'))->getParameters());
+        $this->assertSame(['%title%' => '#7'], $confirmation($untitled)->getParameters());
+        $this->assertSame('confirm.delete_permanently', $confirmation($untitled)->getMessage());
+        $this->assertSame('gallery', $confirmation($untitled)->getDomain());
+    }
 }

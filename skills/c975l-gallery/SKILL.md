@@ -83,6 +83,8 @@ simply never reached.
   `deletePermanently()` and from the trash's batch "Delete" — and `deleteMediasPermanently()` for a
   selection of medias ever remove a row and reach its files. They sit behind the `site-role-admin`
   setting; the rest of the gallery back office sits behind `site-role-editor`.
+- The row button's confirmation names the category through `titledConfirmation()`, a closure EasyAdmin
+  (`^5.10`) resolves per row, an untitled category being named `#<id>`.
 - The batch "Delete" runs `deleteEntity()`, which trashes on the galleries and removes for good in the
   trash: `isTrash()` decides, the row's `isDeleted()` only guards against a stale view, and
   ConfigBundle's `TrashBatchDeleteTrait::batchDelete()` checks the admin role before the first row
