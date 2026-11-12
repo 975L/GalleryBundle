@@ -152,13 +152,14 @@ class GalleryControllerTest extends TestCase
 
     public function testCategoryRendersItsMediasGrid(): void
     {
-        $category = new GalleryCategory()->setSlug('voyages');
+        $category = new GalleryCategory()->setSlug('voyages')->setListingSummary(2, null);
         $medias = [new GalleryMedia(), new GalleryMedia()];
 
         $categoryRepository = $this->createMock(GalleryCategoryRepository::class);
         $categoryRepository->expects($this->once())->method('findOneBySlug')->with('voyages')->willReturn($category);
         $categoryRepository->method('countVisible')->willReturn(4);
         $mediaRepository = $this->createStub(GalleryMediaRepository::class);
+        $mediaRepository->method('findVisiblePage')->willReturn($medias);
 
         $twig = $this->createStub(Environment::class);
         $capturedParameters = null;
@@ -170,8 +171,8 @@ class GalleryControllerTest extends TestCase
             }
         );
 
-        // An ordinary gallery's medias come from the coordinator too, which reads them off the category itself (see GalleryAutomaticProvider::getMedias)
-        $controller = $this->createController($categoryRepository, $mediaRepository, $this->createAutomaticProvider($medias));
+        // An ordinary gallery's page is read in SQL, its count summarized beforehand (see GalleryAutomaticProvider::hydrate)
+        $controller = $this->createController($categoryRepository, $mediaRepository);
         $container = new Container();
         $container->set('twig', $twig);
         $controller->setContainer($container);
@@ -184,13 +185,20 @@ class GalleryControllerTest extends TestCase
         $this->assertSame($medias, iterator_to_array($capturedParameters['medias']));
     }
 
-    // The grid is served one page at a time and grows as the visitor scrolls: the page asked for is the slice handed over, the total still counting the whole gallery
+    // The grid is served one page at a time and grows as the visitor scrolls: the page asked for is read alone, at its offset, the total still counting the whole gallery
     public function testCategoryServesThePageOfMediasItIsAskedFor(): void
     {
-        $medias = array_map(static fn (): GalleryMedia => new GalleryMedia(), range(1, GalleryController::MEDIAS_PER_PAGE + 5));
+        $medias = array_map(static fn (): GalleryMedia => new GalleryMedia(), range(1, 5));
 
         $categoryRepository = $this->createStub(GalleryCategoryRepository::class);
-        $categoryRepository->method('findOneBySlug')->willReturn(new GalleryCategory()->setSlug('voyages'));
+        $categoryRepository->method('findOneBySlug')->willReturn(new GalleryCategory()->setSlug('voyages')->setListingSummary(GalleryController::MEDIAS_PER_PAGE + 5, null));
+
+        $mediaRepository = $this->createMock(GalleryMediaRepository::class);
+        $mediaRepository->expects($this->once())
+            ->method('findVisiblePage')
+            ->with($this->anything(), GalleryController::MEDIAS_PER_PAGE, GalleryController::MEDIAS_PER_PAGE)
+            ->willReturn($medias)
+        ;
 
         $twig = $this->createStub(Environment::class);
         $capturedParameters = null;
@@ -202,7 +210,7 @@ class GalleryControllerTest extends TestCase
             }
         );
 
-        $controller = $this->createController($categoryRepository, null, $this->createAutomaticProvider($medias));
+        $controller = $this->createController($categoryRepository, $mediaRepository);
         $container = new Container();
         $container->set('twig', $twig);
         $controller->setContainer($container);
@@ -210,19 +218,21 @@ class GalleryControllerTest extends TestCase
         $controller->category('voyages', new Request(['p' => '2']));
 
         $this->assertSame(2, $capturedParameters['medias']->getCurrentPageNumber());
-        $this->assertSame(array_slice($medias, GalleryController::MEDIAS_PER_PAGE), iterator_to_array($capturedParameters['medias']));
+        $this->assertSame($medias, iterator_to_array($capturedParameters['medias']));
         $this->assertSame(GalleryController::MEDIAS_PER_PAGE + 5, $capturedParameters['medias']->getTotalItemCount());
     }
 
     // An old link to a page the gallery no longer reaches answers 404, rather than an empty grid a crawler would index
     public function testCategoryAnswersNotFoundPastItsLastPage(): void
     {
-        $medias = array_map(static fn (): GalleryMedia => new GalleryMedia(), range(1, GalleryController::MEDIAS_PER_PAGE + 5));
-
         $categoryRepository = $this->createStub(GalleryCategoryRepository::class);
-        $categoryRepository->method('findOneBySlug')->willReturn(new GalleryCategory()->setSlug('voyages'));
+        $categoryRepository->method('findOneBySlug')->willReturn(new GalleryCategory()->setSlug('voyages')->setListingSummary(GalleryController::MEDIAS_PER_PAGE + 5, null));
 
-        $controller = $this->createController($categoryRepository, null, $this->createAutomaticProvider($medias));
+        // Refused before anything is read
+        $mediaRepository = $this->createMock(GalleryMediaRepository::class);
+        $mediaRepository->expects($this->never())->method('findVisiblePage');
+
+        $controller = $this->createController($categoryRepository, $mediaRepository);
 
         $this->expectException(NotFoundHttpException::class);
         $controller->category('voyages', new Request(['p' => '3']));

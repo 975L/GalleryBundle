@@ -726,6 +726,10 @@
                 <source>label.gallery_home</source>
                 <target>Galería</target>
             </trans-unit>
+            <trans-unit id="fCjEmNO">
+                <source>label.gallery_import_edition_refused</source>
+                <target>La galería «%slug%» contiene una edición limitada o una copia vendida: no se ha importado.</target>
+            </trans-unit>
             <trans-unit id="t8zInxp">
                 <source>label.gallery_keep_originals</source>
                 <target>Conservar los originales</target>
@@ -1042,6 +1046,10 @@
                 <source>label.gallery_summary_social_network_help</source>
                 <target>Se muestra encima de la cuadrícula y se reutiliza como descripción de la página para los motores de búsqueda y las redes sociales (truncada a 150 caracteres para estas últimas).</target>
             </trans-unit>
+            <trans-unit id="3QNGGIe">
+                <source>label.gallery_text_too_long</source>
+                <target>Texto demasiado largo (%max% caracteres como máximo): no se ha modificado nada.</target>
+            </trans-unit>
             <trans-unit id="K_aPgsR">
                 <source>label.gallery_title_root</source>
                 <target>Raíz de los títulos</target>
@@ -1057,6 +1065,10 @@
             <trans-unit id="GppscvJ">
                 <source>label.gallery_upload_batch_too_large</source>
                 <target>La selección pesa %size% MB, el límite es de %limit% MB en total.</target>
+            </trans-unit>
+            <trans-unit id="3CJb_xX">
+                <source>label.gallery_upload_category_refused</source>
+                <target>Esta galería no recibe fotos: es automática o está en la papelera.</target>
             </trans-unit>
             <trans-unit id="VE8m6HQ">
                 <source>label.gallery_upload_file_too_large</source>
@@ -1666,6 +1678,14 @@
                 <source>label.print_order_reference</source>
                 <target>Referencia del laboratorio</target>
             </trans-unit>
+            <trans-unit id="8YK9CzQ">
+                <source>label.print_order_refunded</source>
+                <target>Pedido reembolsado antes de llegar al laboratorio: cancelado, sus números devueltos a la edición.</target>
+            </trans-unit>
+            <trans-unit id="in9WvOA">
+                <source>label.print_order_refunded_at_lab</source>
+                <target>Pedido reembolsado tras llegar al laboratorio: hay que cancelarlo con el laboratorio.</target>
+            </trans-unit>
             <trans-unit id="EKXMnK8">
                 <source>label.print_order_released</source>
                 <target>El pedido ha vuelto a salir hacia el laboratorio.</target>
@@ -1681,6 +1701,10 @@
             <trans-unit id="rYNTtHr">
                 <source>label.print_order_state</source>
                 <target>Estado</target>
+            </trans-unit>
+            <trans-unit id="tQ04eC0">
+                <source>label.print_order_test_mode</source>
+                <target>Pedido de prueba: no se imprime ni se numera nada.</target>
             </trans-unit>
             <trans-unit id="VyMGZKs">
                 <source>label.print_orders</source>
@@ -1709,6 +1733,10 @@
             <trans-unit id="Lh2qFEJ">
                 <source>label.print_unavailable</source>
                 <target>Esta copia ya no se ofrece.</target>
+            </trans-unit>
+            <trans-unit id="N5_e4XX">
+                <source>label.print_unavailable_after_payment</source>
+                <target>Una copia pagada ya no está a la venta (foto retirada o formato eliminado): este pedido debe tratarse a mano.</target>
             </trans-unit>
             <trans-unit id="uPsqmgW">
                 <source>label.qrcode</source>

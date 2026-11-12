@@ -15,19 +15,20 @@ use c975L\GalleryBundle\Entity\GalleryCategory;
 use c975L\GalleryBundle\Entity\GalleryMedia;
 use c975L\GalleryBundle\Entity\GalleryPrintCopy;
 use c975L\GalleryBundle\Entity\GalleryPrintFormat;
+use c975L\GalleryBundle\Entity\GalleryPrintOrder;
 use c975L\GalleryBundle\Model\PrintOffer;
 use c975L\GalleryBundle\Repository\GalleryPrintCopyRepository;
 use c975L\GalleryBundle\Repository\GalleryPrintFormatRepository;
+use c975L\GalleryBundle\Repository\GalleryPrintOrderRepository;
 use c975L\GalleryBundle\Service\GalleryPrintBasketItemProvider;
-use c975L\GalleryBundle\Service\GalleryPrintEmailInterface;
+use c975L\GalleryBundle\Service\GalleryPrintOrderSender;
 use c975L\GalleryBundle\Service\GalleryPrintService;
 use c975L\GalleryBundle\Service\PrintFulfilmentRegistry;
 use c975L\PaymentBundle\Entity\Basket;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
-use Symfony\Component\Messenger\Envelope;
-use Symfony\Component\Messenger\MessageBusInterface;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
@@ -161,13 +162,14 @@ class GalleryPrintBasketItemProviderTest extends TestCase
             $services['printService'],
             $services['copyRepository'],
             $services['formatRepository'],
+            $services['orderRepository'],
             $this->createStub(PrintFulfilmentRegistry::class),
-            $services['printEmail'],
+            $services['orderSender'],
             $services['configService'],
-            $this->createStub(EntityManagerInterface::class),
-            $services['messageBus'],
+            $services['entityManager'],
             $translator,
             $services['urlGenerator'],
+            $this->createStub(LoggerInterface::class),
         );
     }
 
@@ -180,105 +182,176 @@ class GalleryPrintBasketItemProviderTest extends TestCase
         $configService = $this->createStub(ConfigServiceInterface::class);
         $configService->method('get')->willReturn('Galerie');
 
-        $messageBus = $this->createStub(MessageBusInterface::class);
-        $messageBus->method('dispatch')->willReturn(new Envelope(new \stdClass()));
-
         return [
             'printService' => $printService,
             'copyRepository' => $this->createStub(GalleryPrintCopyRepository::class),
             'formatRepository' => $this->createStub(GalleryPrintFormatRepository::class),
-            'printEmail' => $this->createStub(GalleryPrintEmailInterface::class),
+            'orderRepository' => $this->createStub(GalleryPrintOrderRepository::class),
+            'orderSender' => $this->createStub(GalleryPrintOrderSender::class),
             'configService' => $configService,
-            'messageBus' => $messageBus,
+            'entityManager' => $this->createStub(EntityManagerInterface::class),
             'urlGenerator' => $this->createStub(UrlGeneratorInterface::class),
         ];
     }
 
-    // The copy is claimed by an UPDATE and the order's own collection stays empty until it is read back, so asking the order whether it holds a numbered copy answered no on every sale: the certificate was never asked for and the print went to the lab unsigned
-    public function testAPaidNumberedEditionWaitsForItsCertificateInsteadOfGoingToTheLab(): void
+    // The copy is claimed by an UPDATE and the order's own collection stays empty until it is read back, so the provider tells the sender itself that the order holds a numbered copy - asking the order answered no on every sale, and the print went to the lab unsigned
+    public function testAPaidNumberedEditionIsQueuedAsALimitedEdition(): void
     {
         $offer = $this->createOffer(true);
 
         $copyRepository = $this->createStub(GalleryPrintCopyRepository::class);
         $copyRepository->method('claimNumber')->willReturn(new GalleryPrintCopy()->setNumber(1));
 
-        $printEmail = $this->createMock(GalleryPrintEmailInterface::class);
-        $printEmail->expects($this->once())->method('editionSold');
-        $printEmail->expects($this->once())->method('editionAwaitingSignature');
-
-        $messageBus = $this->createMock(MessageBusInterface::class);
-        $messageBus->expects($this->never())->method('dispatch');
+        $orderSender = $this->createMock(GalleryPrintOrderSender::class);
+        $orderSender->expects($this->once())->method('defer')->with($this->anything(), true);
 
         $this->createProvider($offer, [
             'copyRepository' => $copyRepository,
-            'printEmail' => $printEmail,
-            'messageBus' => $messageBus,
+            'orderSender' => $orderSender,
         ])->onBasketPaid(new Basket(), [$offer->getId() => ['quantity' => 1]], []);
     }
 
-    // A shop that issues its certificates on its own turns the hold off: the number is still claimed and the sale still announced, but the print leaves for the lab with the open editions and nobody is asked to release an order that is already gone
-    public function testANumberedEditionGoesToTheLabWhenTheHoldIsOff(): void
-    {
-        $offer = $this->createOffer(true);
-
-        $copyRepository = $this->createStub(GalleryPrintCopyRepository::class);
-        $copyRepository->method('claimNumber')->willReturn(new GalleryPrintCopy()->setNumber(1));
-
-        $configService = $this->createStub(ConfigServiceInterface::class);
-        $configService->method('get')->willReturnCallback(
-            static fn (string $slug): mixed => 'gallery-print-edition-hold' === $slug ? false : 'Galerie',
-        );
-
-        $printEmail = $this->createMock(GalleryPrintEmailInterface::class);
-        $printEmail->expects($this->once())->method('editionSold');
-        $printEmail->expects($this->never())->method('editionAwaitingSignature');
-
-        $messageBus = $this->createMock(MessageBusInterface::class);
-        $messageBus->expects($this->once())->method('dispatch')->willReturn(new Envelope(new \stdClass()));
-
-        $this->createProvider($offer, [
-            'copyRepository' => $copyRepository,
-            'configService' => $configService,
-            'printEmail' => $printEmail,
-            'messageBus' => $messageBus,
-        ])->onBasketPaid(new Basket(), [$offer->getId() => ['quantity' => 1]], []);
-    }
-
-    // An open edition has nothing to sign, so it is sent as soon as it is paid
-    public function testAPaidOpenEditionGoesStraightToTheLab(): void
+    // An open edition has nothing to sign, so it is queued as an ordinary print
+    public function testAPaidOpenEditionIsQueuedAsAnOrdinaryPrint(): void
     {
         $offer = $this->createOffer(false);
 
-        $printEmail = $this->createMock(GalleryPrintEmailInterface::class);
-        $printEmail->expects($this->never())->method('editionSold');
+        $orderSender = $this->createMock(GalleryPrintOrderSender::class);
+        $orderSender->expects($this->once())->method('defer')->with($this->anything(), false);
 
-        $messageBus = $this->createMock(MessageBusInterface::class);
-        $messageBus->expects($this->once())->method('dispatch')->willReturn(new Envelope(new \stdClass()));
-
-        $this->createProvider($offer, [
-            'printEmail' => $printEmail,
-            'messageBus' => $messageBus,
-        ])->onBasketPaid(new Basket(), [$offer->getId() => ['quantity' => 1]], []);
+        $this->createProvider($offer, ['orderSender' => $orderSender])
+            ->onBasketPaid(new Basket(), [$offer->getId() => ['quantity' => 1]], []);
     }
 
-    // The race validateCheckout() cannot close: the edition sold out between the checkout and the payment. The customer has paid, so the order is kept and flagged rather than lost - and nothing is sent, neither to the lab nor to him
-    public function testAnEditionSoldOutAfterPaymentSendsNothing(): void
+    // The race validateCheckout() cannot close: the edition sold out between the checkout and the payment. The customer has paid, so the order is kept and flagged rather than lost - and nothing is queued
+    public function testAnEditionSoldOutAfterPaymentQueuesNothing(): void
     {
         $offer = $this->createOffer(true);
 
         $copyRepository = $this->createStub(GalleryPrintCopyRepository::class);
         $copyRepository->method('claimNumber')->willReturn(null);
 
-        $printEmail = $this->createMock(GalleryPrintEmailInterface::class);
-        $printEmail->expects($this->never())->method('editionSold');
-
-        $messageBus = $this->createMock(MessageBusInterface::class);
-        $messageBus->expects($this->never())->method('dispatch');
+        $orderSender = $this->createMock(GalleryPrintOrderSender::class);
+        $orderSender->expects($this->never())->method('defer');
 
         $this->createProvider($offer, [
             'copyRepository' => $copyRepository,
-            'printEmail' => $printEmail,
-            'messageBus' => $messageBus,
+            'orderSender' => $orderSender,
         ])->onBasketPaid(new Basket(), [$offer->getId() => ['quantity' => 1]], []);
+    }
+
+    // A print withdrawn between the checkout and the payment used to be skipped in silence: the order is now flagged for a human and nothing is queued
+    public function testAPrintWithdrawnBeforeThePaymentFlagsTheOrder(): void
+    {
+        $offer = $this->createOffer(false);
+
+        $printService = $this->createStub(GalleryPrintService::class);
+        $printService->method('findOffer')->willReturn(null);
+
+        $orderSender = $this->createMock(GalleryPrintOrderSender::class);
+        $orderSender->expects($this->never())->method('defer');
+
+        $persisted = [];
+        $entityManager = $this->createStub(EntityManagerInterface::class);
+        $entityManager->method('persist')->willReturnCallback(static function (object $entity) use (&$persisted): void {
+            $persisted[] = $entity;
+        });
+
+        $this->createProvider($offer, [
+            'printService' => $printService,
+            'orderSender' => $orderSender,
+            'entityManager' => $entityManager,
+        ])->onBasketPaid(new Basket(), [$offer->getId() => ['quantity' => 1]], []);
+
+        $this->assertInstanceOf(GalleryPrintOrder::class, $persisted[0]);
+        $this->assertSame('label.print_unavailable_after_payment', $persisted[0]->getLastError());
+    }
+
+    // A rehearsal burns no number, sends no letter and orders nothing from the lab: the order is written cancelled, as the trace of the checkout tried
+    public function testATestBasketProducesNothingReal(): void
+    {
+        $offer = $this->createOffer(true);
+
+        $copyRepository = $this->createMock(GalleryPrintCopyRepository::class);
+        $copyRepository->expects($this->never())->method('claimNumber');
+
+        $orderSender = $this->createMock(GalleryPrintOrderSender::class);
+        $orderSender->expects($this->never())->method('defer');
+
+        $persisted = [];
+        $entityManager = $this->createStub(EntityManagerInterface::class);
+        $entityManager->method('persist')->willReturnCallback(static function (object $entity) use (&$persisted): void {
+            $persisted[] = $entity;
+        });
+
+        $this->createProvider($offer, [
+            'copyRepository' => $copyRepository,
+            'orderSender' => $orderSender,
+            'entityManager' => $entityManager,
+        ])->onBasketPaid(new Basket()->setTestMode(true), [$offer->getId() => ['quantity' => 1]], []);
+
+        $this->assertCount(1, $persisted);
+        $this->assertSame(GalleryPrintOrder::STATE_CANCELLED, $persisted[0]->getState());
+        $this->assertSame('label.print_order_test_mode', $persisted[0]->getLastError());
+    }
+
+    // A refund before the lab was told cancels the order and hands its numbers back to the edition
+    public function testARefundCancelsAnOrderThatNeverLeftAndFreesItsNumbers(): void
+    {
+        $order = new GalleryPrintOrder();
+
+        $orderRepository = $this->createStub(GalleryPrintOrderRepository::class);
+        $orderRepository->method('findBy')->willReturn([$order]);
+
+        $copyRepository = $this->createMock(GalleryPrintCopyRepository::class);
+        $copyRepository->expects($this->once())->method('releaseNumbers')->with($order)->willReturn(1);
+
+        $this->createProvider($this->createOffer(true), [
+            'orderRepository' => $orderRepository,
+            'copyRepository' => $copyRepository,
+        ])->onBasketRefunded(new Basket(), []);
+
+        $this->assertSame(GalleryPrintOrder::STATE_CANCELLED, $order->getState());
+        $this->assertSame('label.print_order_refunded', $order->getLastError());
+    }
+
+    // A print the lab already holds is not the bundle's to stop: its numbers stay sold, and the order is flagged for a cancellation by hand
+    #[DataProvider('provideStatesPastTheLab')]
+    public function testARefundAfterTheLabFlagsTheOrderAndKeepsItsNumbers(string $state): void
+    {
+        $order = new GalleryPrintOrder()->setState($state);
+
+        $orderRepository = $this->createStub(GalleryPrintOrderRepository::class);
+        $orderRepository->method('findBy')->willReturn([$order]);
+
+        $copyRepository = $this->createMock(GalleryPrintCopyRepository::class);
+        $copyRepository->expects($this->never())->method('releaseNumbers');
+
+        $this->createProvider($this->createOffer(true), [
+            'orderRepository' => $orderRepository,
+            'copyRepository' => $copyRepository,
+        ])->onBasketRefunded(new Basket(), []);
+
+        $this->assertSame($state, $order->getState());
+        $this->assertSame('label.print_order_refunded_at_lab', $order->getLastError());
+    }
+
+    // Every state an order reaches once the lab has it
+    /** @return iterable<string, array{string}> */
+    public static function provideStatesPastTheLab(): iterable
+    {
+        yield 'sent' => [GalleryPrintOrder::STATE_SENT];
+        yield 'producing' => [GalleryPrintOrder::STATE_PRODUCING];
+        yield 'shipped' => [GalleryPrintOrder::STATE_SHIPPED];
+    }
+
+    // A test basket produced nothing, so its refund takes nothing back
+    public function testARefundedTestBasketTouchesNothing(): void
+    {
+        $orderRepository = $this->createMock(GalleryPrintOrderRepository::class);
+        $orderRepository->expects($this->never())->method('findBy');
+
+        $this->createProvider($this->createOffer(true), ['orderRepository' => $orderRepository])
+            ->onBasketRefunded(new Basket()->setTestMode(true), []);
     }
 }

@@ -75,6 +75,29 @@ class GalleryPrintServiceTest extends TestCase
         $this->assertFalse($this->service(formats: [$this->square()])->isPrintable($media));
     }
 
+    // A photograph in the trash, or filed in a gallery that is, is withdrawn - often over its rights - and never printed from a basket line or a forged POST
+    public function testATrashedPhotographIsNotForSale(): void
+    {
+        $media = $this->printableMedia('square.webp', 4000, 4000)->setIsDeleted(true);
+
+        $this->assertFalse($this->service(formats: [$this->square()])->isPrintable($media));
+    }
+
+    public function testAPhotographOfATrashedGalleryIsNotForSale(): void
+    {
+        $media = $this->printableMedia('square.webp', 4000, 4000);
+        $media->getCategory()?->setIsDeleted(true);
+
+        $this->assertFalse($this->service(formats: [$this->square()])->isPrintable($media));
+    }
+
+    public function testABasketLineNamingATrashedPhotographResolvesToNothing(): void
+    {
+        $media = $this->printableMedia('square.webp', 4000, 4000)->setIsDeleted(true);
+
+        $this->assertNull($this->service(media: $media, formats: [$this->square()])->findOffer('12:30x30'));
+    }
+
     public function testAVideoIsNotForSale(): void
     {
         $media = $this->printableMedia('square.webp', 4000, 4000)->setVideoFilename('clip.mp4');

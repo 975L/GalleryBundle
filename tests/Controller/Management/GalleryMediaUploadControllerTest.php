@@ -26,6 +26,7 @@ use c975L\UiBundle\Service\UploadProgress;
 use Doctrine\ORM\EntityManagerInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGeneratorInterface;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\DependencyInjection\Container;
 use Symfony\Component\Form\FormFactoryInterface;
@@ -205,6 +206,32 @@ class GalleryMediaUploadControllerTest extends TestCase
         ]));
 
         $controller->upload(Request::create('/gallery-upload'));
+    }
+
+    // An automatic gallery holds no media of its own and a trashed one is off the site: an url naming either is turned back with a flash, nothing being uploaded
+    #[DataProvider('provideRefusedCategories')]
+    public function testUploadRefusesAnAutomaticOrTrashedGallery(GalleryCategory $category): void
+    {
+        [$requestStack, $session] = $this->createSessionRequestStack();
+
+        $controller = $this->createController($this->createCategoryRepository($category));
+        $controller->setContainer($this->createContainer([
+            'security.authorization_checker' => $this->createAuthorizationChecker(true),
+            'request_stack' => $requestStack,
+        ]));
+
+        $response = $controller->upload(Request::create('/gallery-upload?category=5'));
+
+        $this->assertSame(302, $response->getStatusCode());
+        $this->assertSame(['label.gallery_upload_category_refused'], $session->getFlashBag()->get('danger'));
+    }
+
+    // The two galleries a media must never be added to
+    /** @return iterable<string, array{GalleryCategory}> */
+    public static function provideRefusedCategories(): iterable
+    {
+        yield 'automatic' => [new GalleryCategory()->setSlug('latest')->setAutomaticKind(GalleryCategory::AUTOMATIC_LATEST)];
+        yield 'trashed' => [new GalleryCategory()->setSlug('voyages')->setIsDeleted(true)];
     }
 
     // Past post_max_size php drops $_POST and $_FILES together, csrf token included: the form is never "submitted", so without this the screen would silently redisplay itself and the batch would look like it was never sent

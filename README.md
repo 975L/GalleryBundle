@@ -481,12 +481,13 @@ simply offers nothing.
 to a whole selection from the medias toolbar. Left empty, the photograph is an open edition and sells
 without a count.
 
-Filling it announces a limited edition, and the register is written on the spot: one row per copy
+Filling it announces a limited edition of at most 100 copies (`GalleryMedia::EDITION_MAX_SIZE`), and the register is written on the spot: one row per copy
 (`GalleryPrintCopy`, through `GalleryPrintCopyRepository::openEdition()`). **The number can't be changed
 afterwards** — `GalleryMediaCrudController::settleEdition()` refuses it, raising an announced edition of
 10 to one of 50 being a forgery against every certificate already signed. Selling a copy claims the lowest
 free row with a single conditional `UPDATE`, so two customers checking out on the last copy cannot both
-win it.
+win it. A photograph in the trash, or filed in a gallery that is, is never for sale, whatever a basket still
+names.
 
 #### The certificate of authenticity
 
@@ -516,6 +517,13 @@ format, and `WeighableBasketItemProviderInterface`, a line weighing its format's
 - A **limited edition** stops and waits: two e-mails go out — the buyer's, naming the numbers they bought,
   and the admin's *sign these* — and the order leaves for the lab only when the admin releases it from the
   orders screen, certificates printed and signed.
+
+Both wait for the payment's commit (`Service\GalleryPrintOrderSender`): nothing reaches the lab or the
+customer for a payment rolled back. A **test-mode basket** produces nothing real — its order is written
+cancelled, with no number, no letter and no print. A **full refund** (PaymentBundle's
+`RefundableBasketItemProviderInterface`) cancels an order that has not reached the lab and hands its numbers
+back to the edition; one the lab already holds is flagged on its row and logged, to cancel with the lab by
+hand.
 
 An order a lab refuses is left **failed with the reason on the row**, not retried: the customer has paid,
 so what matters is that a human sees why it didn't leave. A lab that refused a file would only refuse it
@@ -1307,6 +1315,9 @@ That import needs its importmap entry in the consuming app, which `c975l:config:
 
 ### Export / import categories
 
+**A category holding a limited edition or a print already sold is never replaced by an import**: it is left
+as it is, with a warning on the import screen, its edition and its register staying whole.
+
 Selected categories can be exported as a zip (title/slug/blocks/medias, files bundled in) via the category
 index's "Export selection" batch action, meant to be re-uploaded on another site/environment through
 ConfigBundle's **Import content** dashboard screen (see `GalleryImportProvider`). Ids never need to
@@ -1332,8 +1343,9 @@ matters for urls that are shared and cached — and it also means importing a ca
 copies files instead of resizing three hundred images.
 
 A name coming out of an archive is only honoured under `public/medias/gallery/` (and `private/` for the
-original), as a plain relative name: anything climbing out of it is refused and the file named by Vich
-instead, as an archive exported before the names travelled is. Such an archive also has its thumbnail and
+original), as a plain relative name carrying a media extension (`webp`, `jpg`, `jpeg`, `png`, `gif`, `mp4`,
+`webm`, `ogv`): anything else is refused and the file named by Vich instead, and every file the manifest
+points at is read only from inside the extracted archive (ConfigBundle's `ArchivePath::resolve()`), as an archive exported before the names travelled is. Such an archive also has its thumbnail and
 high resolution recomputed from the stored file — which is why they travel now: the high resolution came
 back at the stored file's own width, and each round-trip re-encoded the webp once more.
 

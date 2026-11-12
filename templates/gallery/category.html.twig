@@ -61,13 +61,13 @@
     </div>
 
     {# The gallery as the collection it is, listing the photographs this page was served with - the next page publishes its own, numbering them from where this one stopped (see GallerySnippetBuilder). Each entry is addressed under the gallery filing it rather than the one being walked through: an automatic gallery shows photographs of other categories, and GalleryController::media resolves a media within the category its url names #}
-    {% set jsonLd = gallery_json_ld(
+    {% set jsonLd %}{{ gallery_json_ld(
         category,
         medias|map(media => {name: media.title|default(category.title), url: absolute_url(localized_path('gallery_media', {category: media.category.slug, slug: media.slug}))}),
         absolute_url(localized_path('gallery_category', {category: category.slug})),
         (medias.getCurrentPageNumber - 1) * medias.getItemNumberPerPage
-    ) %}
+    ) }}{% endset %}
     {% if jsonLd %}
-        <script type="application/ld+json">{{ jsonLd|raw }}</script>
+        <script type="application/ld+json">{{ jsonLd }}</script>
     {% endif %}
 {% endblock %}

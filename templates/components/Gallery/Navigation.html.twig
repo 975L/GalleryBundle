@@ -30,8 +30,8 @@
             {name: current, url: absolute_url(app.request.pathinfo)}
         ]) %}
     {% endif %}
-    {% set breadcrumbJsonLd = breadcrumb_json_ld(trail) %}
+    {% set breadcrumbJsonLd %}{{ breadcrumb_json_ld(trail) }}{% endset %}
     {% if breadcrumbJsonLd %}
-        <script type="application/ld+json">{{ breadcrumbJsonLd|raw }}</script>
+        <script type="application/ld+json">{{ breadcrumbJsonLd }}</script>
     {% endif %}
 {% endif %}

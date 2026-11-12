@@ -55,6 +55,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Dto\BatchActionDto;
 use EasyCorp\Bundle\EasyAdminBundle\Dto\EntityDto;
 use EasyCorp\Bundle\EasyAdminBundle\Dto\FieldDto;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\DependencyInjection\Container;
@@ -857,6 +858,26 @@ class GalleryCategoryCrudControllerTest extends TestCase
         $this->assertSame('/management/gallery-categories', $response->getTargetUrl());
     }
 
+    // Credits longer than their column are refused with a flash rather than met by a database error
+    public function testEditMediasRefusesCreditsLongerThanTheirColumn(): void
+    {
+        $category = $this->createCategoryWithMedias(7);
+
+        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $entityManager->expects($this->never())->method('flush');
+
+        $controller = $this->createController();
+        $controller->setContainer($this->createContainer([
+            'security.authorization_checker' => $this->createAuthorizationChecker(true),
+            'security.csrf.token_manager' => $this->createCsrfTokenManager(true),
+            'request_stack' => $this->createRequestStackWithSession(),
+        ]));
+
+        $controller->editMedias($this->createAdminContext($category), $this->createEditMediasRequest([7], 'credits', ['credits' => str_repeat('a', 256)]), $entityManager);
+
+        $this->assertNull($category->getMedias()->first()->getCredits());
+    }
+
     // An empty box clears the credits rather than being ignored - the only way to blank them on a whole selection
     public function testEditMediasClearsTheCreditsWhenTheBoxIsEmpty(): void
     {
@@ -1190,6 +1211,37 @@ class GalleryCategoryCrudControllerTest extends TestCase
 
         $categories = $category->getMedias()->map(static fn (GalleryMedia $media): ?string => $media->getCategory()?->getSlug())->toArray();
         $this->assertSame(['calandres-volvo', 'calandres-volvo'], array_values($categories));
+    }
+
+    // A title root, or the title of a gallery created on the spot, longer than its column is refused before anything moves
+    #[DataProvider('provideOverlongMoveTexts')]
+    public function testMoveMediasRefusesATextLongerThanItsColumn(string $titleRoot, string $newCategoryTitle): void
+    {
+        $category = $this->createCategoryWithMedias(7);
+
+        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $entityManager->expects($this->never())->method('flush');
+        $entityManager->expects($this->never())->method('persist');
+
+        $controller = $this->createController(galleryCategoryRepository: $this->createCreationRepository(ordered: []));
+        $controller->setContainer($this->createContainer([
+            'security.authorization_checker' => $this->createAuthorizationChecker(true),
+            'security.csrf.token_manager' => $this->createCsrfTokenManager(true),
+            'request_stack' => $this->createRequestStackWithSession(),
+            'router' => $this->createRouter(),
+        ]));
+
+        $controller->moveMedias($this->createAdminContext($category), $this->createMoveMediasRequest([7], 'new', $titleRoot, newCategoryTitle: $newCategoryTitle), $entityManager);
+
+        $this->assertSame($category, $category->getMedias()->first()->getCategory());
+    }
+
+    // The title root past its room under the title, and a new gallery's title past the slug's 100
+    /** @return iterable<string, array{string, string}> */
+    public static function provideOverlongMoveTexts(): iterable
+    {
+        yield 'title root' => [str_repeat('a', GalleryMedia::TITLE_ROOT_MAX_LENGTH + 1), 'Volvo'];
+        yield 'new gallery title' => ['', str_repeat('a', 101)];
     }
 
     // A category's slug is its natural key, so a collision is refused rather than suffixed - exactly what the category form answers

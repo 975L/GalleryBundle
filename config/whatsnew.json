@@ -1,5 +1,30 @@
 [
     {
+        "date": "2026-11-12",
+        "description": [
+            {
+                "en": "A refunded print order is cancelled before it reaches the lab and its edition numbers are freed; one already at the lab is flagged so you can cancel it there.",
+                "fr": "Une commande de tirages remboursée est annulée avant de partir au labo et ses numéros d'édition sont libérés ; si elle y est déjà, elle est signalée pour que vous l'annuliez auprès du labo.",
+                "es": "Un pedido de copias reembolsado se cancela antes de llegar al laboratorio y sus números de edición quedan libres; si ya está allí, se señala para que lo cancele con el laboratorio."
+            },
+            {
+                "en": "A test order no longer prints anything nor uses an edition number, and a photograph in the trash can no longer be bought as a print.",
+                "fr": "Une commande de test n'imprime plus rien et ne consomme plus de numéro d'édition, et une photo à la corbeille ne peut plus être achetée en tirage.",
+                "es": "Un pedido de prueba ya no imprime nada ni consume número de edición, y una foto en la papelera ya no puede comprarse como copia."
+            },
+            {
+                "en": "A limited edition is capped at 100 copies, print prices are entered in the shop's currency, and photos can no longer be uploaded into an automatic gallery or one in the trash.",
+                "fr": "Une édition limitée est plafonnée à 100 exemplaires, les prix des tirages se saisissent dans la devise de la boutique, et on ne peut plus envoyer de photos dans une galerie automatique ou à la corbeille.",
+                "es": "Una edición limitada tiene un máximo de 100 ejemplares, los precios de las copias se introducen en la moneda de la tienda y ya no se pueden subir fotos a una galería automática o en la papelera."
+            },
+            {
+                "en": "Importing galleries skips a gallery holding a limited edition or a sold print, and says so.",
+                "fr": "L'import de galeries laisse de côté une galerie contenant une édition limitée ou un tirage vendu, et le signale.",
+                "es": "La importación de galerías deja de lado una galería que contiene una edición limitada o una copia vendida, y lo indica."
+            }
+        ]
+    },
+    {
         "date": "2026-11-11",
         "description": [
             {

@@ -62,6 +62,12 @@ class GalleryMedia implements TrashableInterface, VichMultiSizeImageInterface, V
     // The three formats every browser's <video> can play, which is also what the upload field accepts - the same list UiBundle's own "video" block declares
     public const VIDEO_MIME_TYPES = ['video/mp4', 'video/webm', 'video/ogg'];
 
+    // The longest title root a batch or a move numbers its medias from, the rank and its space fitting under the title's 255
+    public const int TITLE_ROOT_MAX_LENGTH = 240;
+
+    // The largest limited edition a photograph can announce, each number being a row written when the edition opens
+    public const int EDITION_MAX_SIZE = 100;
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -81,12 +87,14 @@ class GalleryMedia implements TrashableInterface, VichMultiSizeImageInterface, V
     private ?File $file = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Assert\Length(max: 255)]
     private ?string $filename = null;
 
     #[ORM\Column(nullable: true)]
     private ?int $size = null;
 
     #[ORM\Column(length: 100, nullable: true)]
+    #[Assert\Length(max: 100)]
     private ?string $mimeType = null;
 
     // The site's own copy of the video, played by the browser instead of framed from a third party. Same mapping as the image above, which is what puts it in the same folder under the same name root - UiMediaNamer only forces the webp extension on the image formats, so a video keeps its own (see determineExtension)
@@ -100,12 +108,14 @@ class GalleryMedia implements TrashableInterface, VichMultiSizeImageInterface, V
     private ?File $videoFile = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Assert\Length(max: 255)]
     private ?string $videoFilename = null;
 
     #[ORM\Column(nullable: true)]
     private ?int $videoSize = null;
 
     #[ORM\Column(length: 100, nullable: true)]
+    #[Assert\Length(max: 100)]
     private ?string $videoMimeType = null;
 
     #[ORM\Column(nullable: true)]
@@ -116,6 +126,7 @@ class GalleryMedia implements TrashableInterface, VichMultiSizeImageInterface, V
 
     // One field for three jobs: what the media is called on screen, its alt text, and what its slug is built from - an admin retouching it retouches all three at once, where a separate alt would be the one nobody thinks of filling in
     #[ORM\Column(length: 255, nullable: true)]
+    #[Assert\Length(max: 255)]
     private ?string $title = null;
 
     // The caption a photograph carries under it, free text and as long as it needs to be - the title names the media in a grid, this one says what there is to say about it. Nothing writes it but an admin, and a media without one renders no caption at all
@@ -124,16 +135,19 @@ class GalleryMedia implements TrashableInterface, VichMultiSizeImageInterface, V
 
     // Posed once, when the media is created, and never recomputed from the title afterwards: it is a public url, and a title is retouched precisely because the first one was a placeholder - having the url follow it made every such correction cost a redirect, and made naming the batch right the first time a problem it never had to be. Only an admin editing the slug field itself moves it now, and that one is recorded as a redirect (see GalleryMediaCrudController::updateEntity)
     #[ORM\Column(length: 255, nullable: true)]
+    #[Assert\Length(max: 255)]
     private ?string $slug = null;
 
     // Path of the kept original under ORIGINAL_DIRECTORY, null when none was kept - written back by UiBundle's VichImageResizeListener, which is the only place the untouched upload still exists. Doubles as the answer to "does this media have an original", no separate flag being needed
     #[ORM\Column(length: 255, nullable: true)]
+    #[Assert\Length(max: 255)]
     private ?string $originalFilename = null;
 
     // Not a column: what the upload screen's checkbox asks for, carried to the listener that acts on it. What deserves to be stored is whether an original was actually kept, which originalFilename already says - a media whose file is later replaced keeps whatever it had (see getOriginalDirectory)
     private bool $keepOriginal = false;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Assert\Length(max: 255)]
     private ?string $credits = null;
 
     // The fields this site adds to a media and no other site has, held as one JSON payload rather than a column each - same reasoning as UiBundle's Block::$data: what a single site needs is then a form type it declares (see GalleryCustomizationProviderInterface::getMediaDataFormType()), no schema migration for every app running this bundle. Anything the database itself has to filter, sort or join on stays a real column
@@ -143,6 +157,7 @@ class GalleryMedia implements TrashableInterface, VichMultiSizeImageInterface, V
 
     // Not an admin's choice but a reading of the url below, posed by setExternalUrl() alone - one of UiBundle's declared platforms, "embed" for a player nobody declared, "image" for an entry carrying no url at all
     #[ORM\Column(length: 20, options: ['default' => self::MEDIA_TYPE_IMAGE])]
+    #[Assert\Length(max: 20)]
     private string $mediaType = self::MEDIA_TYPE_IMAGE;
 
     // The url the player is framed from, stored whole rather than as an id: it is what lets a gallery hold a video from a platform this ecosystem never declared - an instance of one's own among them - where an id alone is only meaningful next to a scheme somebody wrote down. What is stored is always the canonical embed url of whatever was pasted, normalized once on the way in (see setExternalUrl): the privacy-first host is picked there, so nothing downstream has to remember to ask for it. The length is doubled by a constraint so an url longer than the column - tracking parameters make that ordinary - comes back as a form error instead of a "Data too long" the visitor reads as a 500. No top-level domain demanded, as the field's own constraint (see GalleryMediaCrudController): a self-hosted platform may answer on an internal name
@@ -164,6 +179,7 @@ class GalleryMedia implements TrashableInterface, VichMultiSizeImageInterface, V
 
     // Size of the limited edition, null for an open one. Carried by the photograph and not by a format, the edition being announced as a number of prints "all sizes and mountings combined": a 30 sold as 30x45 is a 30 that can no longer be sold as 40x60. Once prints have been sold it is frozen - raising an announced edition is a forgery, and GalleryPrintCopy's rows are what proves the announcement was kept
     #[ORM\Column(nullable: true)]
+    #[Assert\Range(min: 1, max: self::EDITION_MAX_SIZE)]
     private ?int $editionSize = null;
 
     // Whether the site's signature is stamped into this media's derivatives, and in which corner. Not columns, same as keepOriginal above: the signature is laid by the pipeline that stores a file (see UiBundle's VichImageResizeListener), so the question is only ever asked when a file is being stored - by the batch that uploads it, and by the edit form when it is replaced (see GalleryMediaCrudController). Once stamped it lives in the derivatives' own pixels, and a rebuilt thumbnail carries it down with them (see GalleryThumbnailRebuilder), nothing being left for a stored flag to answer

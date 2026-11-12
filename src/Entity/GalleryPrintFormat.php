@@ -12,6 +12,7 @@ namespace c975L\GalleryBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * One line of the print catalogue: a size, a paper, a price, and the reference the lab knows it by.
@@ -38,42 +39,53 @@ class GalleryPrintFormat implements \Stringable
 
     // What a basket line and an old order name this format by, so a renamed label never orphans what was already sold
     #[ORM\Column(length: 50, unique: true)]
+    #[Assert\Length(max: 50)]
     private ?string $slug = null;
 
     // What the customer reads - "30 x 45 cm, Hahnemühle Photo Rag" - written by the admin rather than translated: a catalogue is a shop's own words, and a paper has one name
     #[ORM\Column(length: 255)]
+    #[Assert\Length(max: 255)]
     private ?string $label = null;
 
     #[ORM\Column]
+    #[Assert\Positive]
     private ?int $widthCm = null;
 
     #[ORM\Column]
+    #[Assert\Positive]
     private ?int $heightCm = null;
 
     #[ORM\Column(options: ['default' => self::DEFAULT_DPI])]
+    #[Assert\Positive]
     private int $dpi = self::DEFAULT_DPI;
 
     // VAT included, in cents, as everywhere in this ecosystem (see PaymentBundle's VatCalculator)
     #[ORM\Column]
+    #[Assert\PositiveOrZero]
     private ?int $price = null;
 
     #[ORM\Column]
+    #[Assert\Range(min: 0, max: 100)]
     private float $vat = 20.0;
 
     // What the print weighs once packed, in grams, whole - as prices are held in cents. Null on a format nobody weighed, which the basket adds up as nothing rather than as zero. Read by PaymentBundle through WeighableBasketItemProviderInterface, the tariff grid and the zones being its business
     #[ORM\Column(nullable: true)]
+    #[Assert\PositiveOrZero]
     private ?int $weight = null;
 
     // What the lab calls this product. The only field here that belongs to the lab and not to the shop - changing lab rewrites this column and nothing else
     #[ORM\Column(length: 100, nullable: true)]
+    #[Assert\Length(max: 100)]
     private ?string $sku = null;
 
     // The paper alone, as its own field and not only inside the label: a catalogue of four papers across three sizes is twelve lines a visitor reads as one flat list, where the same three sizes under four headings is a choice he can make
     #[ORM\Column(length: 100, nullable: true)]
+    #[Assert\Length(max: 100)]
     private ?string $paper = null;
 
     // The sentence under that heading - what this paper is for, written by the import in the site's language and the shop's to rewrite. A visitor asked to pay half again for cotton has to be told what the cotton does
     #[ORM\Column(length: 255, nullable: true)]
+    #[Assert\Length(max: 255)]
     private ?string $paperDescription = null;
 
     #[ORM\Column(options: ['default' => 0])]

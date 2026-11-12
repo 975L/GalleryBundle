@@ -15,6 +15,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 // One shipment a lab is asked to print, holding the copies it carries. Written once the basket is paid and never before: a basket that is never paid for leaves nothing behind
 // Deliberately not merged with the basket it comes from - a basket is what a customer bought, this is what a printer was told, and the two part ways as soon as an order is refused, retried or sent to a different lab than the one configured today
@@ -53,13 +54,16 @@ class GalleryPrintOrder implements \Stringable
 
     // The driver this went through, stored rather than read from configuration: a site that changes lab still has to ask the previous one about the orders it is already printing
     #[ORM\Column(length: 50)]
+    #[Assert\Length(max: 50)]
     private ?string $provider = null;
 
     // What the lab calls this order, null until it has accepted it. Every later exchange - status, callback, cancellation - is keyed on it
     #[ORM\Column(length: 100, nullable: true)]
+    #[Assert\Length(max: 100)]
     private ?string $reference = null;
 
     #[ORM\Column(length: 20, options: ['default' => self::STATE_PENDING])]
+    #[Assert\Length(max: 20)]
     private string $state = self::STATE_PENDING;
 
     // What the lab said when it refused, kept verbatim for the admin who has to decide whether to retry or to reprice - a refusal is nearly always about the file or the format, and the message is what says which

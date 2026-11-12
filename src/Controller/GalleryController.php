@@ -19,6 +19,7 @@ use c975L\GalleryBundle\Routing\GalleryRoutePrefix;
 use c975L\GalleryBundle\Service\GalleryAutomaticProvider;
 use c975L\GalleryBundle\Service\GalleryTranslatedLocales;
 use c975L\GalleryBundle\Service\GalleryTranslator;
+use c975L\UiBundle\Model\Pagination;
 use c975L\UiBundle\Service\Paginator;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -93,17 +94,7 @@ class GalleryController extends AbstractController
         // An automatic gallery is rendered by this very template, from this very route: it is a category like the others, only its list is gathered instead of being read from a relation it has none of (see GalleryAutomaticProvider)
         $this->automaticProvider->hydrate([$category]);
 
-        // Cut into the pages the grid grows by as the visitor scrolls (see category.html.twig) - read whole all the same, an automatic gallery's list being gathered rather than queried
-        $medias = $this->paginator->paginate(
-            $this->automaticProvider->getMedias($category),
-            $this->paginator->getPage($request->query),
-            self::MEDIAS_PER_PAGE
-        );
-
-        // A page past the last one is a link that outlived the photographs it listed, not an empty page to serve
-        if ($medias->getCurrentPageNumber() > $medias->getPageCount()) {
-            throw $this->createNotFoundException();
-        }
+        $medias = $this->pageOfMedias($category, $this->paginator->getPage($request->query));
 
         // The gallery and the photographs this page shows, in the language being read (see GalleryTranslator::apply)
         $this->galleryTranslator->apply([$category]);
@@ -153,6 +144,28 @@ class GalleryController extends AbstractController
             'media' => $media,
             'previousNext' => $previousNext ?? $this->mediaRepository->findPreviousAndNext($media),
         ]));
+    }
+
+    // One page of the grid the visitor scrolls through (see category.html.twig): an ordinary gallery reads it in SQL, its count already summarized, where an automatic one's gathered list is cut in memory
+    /** @return Pagination<GalleryMedia> */
+    private function pageOfMedias(GalleryCategory $category, int $page): Pagination
+    {
+        $total = $category->isAutomatic() ? null : $category->getMediasCount();
+
+        // A page past the last one is a link that outlived the photographs it listed, not an empty page to serve - refused before anything is read, so a huge "?p=" never reaches the offset
+        if (null !== $total && $page > max(1, (int) ceil($total / self::MEDIAS_PER_PAGE))) {
+            throw $this->createNotFoundException();
+        }
+
+        $medias = null === $total
+            ? $this->paginator->paginate($this->automaticProvider->getMedias($category), $page, self::MEDIAS_PER_PAGE)
+            : $this->paginator->paginateSlice($this->mediaRepository->findVisiblePage($category, ($page - 1) * self::MEDIAS_PER_PAGE, self::MEDIAS_PER_PAGE), $page, self::MEDIAS_PER_PAGE, $total);
+
+        if ($medias->getCurrentPageNumber() > $medias->getPageCount()) {
+            throw $this->createNotFoundException();
+        }
+
+        return $medias;
     }
 
     // The gallery named by the "from" parameter, and only when it is the automatic one: every other category holds its medias, so browsing one of them is already what the url says

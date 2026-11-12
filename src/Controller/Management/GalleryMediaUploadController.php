@@ -60,6 +60,13 @@ class GalleryMediaUploadController extends AbstractController
             throw $this->createNotFoundException('Gallery category not found');
         }
 
+        // An automatic gallery holds no media of its own and a trashed one is off the site: photographs added to either would vanish from every grid
+        if ($category->isAutomatic() || $category->isDeleted()) {
+            $this->addFlash('danger', $this->translator->trans('label.gallery_upload_category_refused', [], 'gallery'));
+
+            return $this->redirect($this->categoryUrl($category));
+        }
+
         // A batch php threw away for being over post_max_size, which arrives as an empty POST (see UploadLimits::isTruncatedRequest)
         if ($this->uploadLimits->isTruncatedRequest($request)) {
             // Translated here rather than left as a key for the flash to resolve: the dashboard renders flashes in its own domain, not this bundle's

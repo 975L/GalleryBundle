@@ -14,6 +14,7 @@ use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Validator\Constraints\Positive;
 
 class GalleryCategoriesBlockType extends AbstractType
 {
@@ -24,6 +25,7 @@ class GalleryCategoriesBlockType extends AbstractType
                 'label' => 'label.block_max_categories',
                 'required' => false,
                 'attr' => ['min' => 1],
+                'constraints' => [new Positive()],
             ])
         ;
     }

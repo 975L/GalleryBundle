@@ -12,7 +12,7 @@ namespace c975L\GalleryBundle\Service;
 
 use c975L\ConfigBundle\Service\ConfigServiceInterface;
 use c975L\GalleryBundle\Entity\GalleryPrintCopy;
-use c975L\GalleryBundle\Entity\GalleryPrintFormat;
+use c975L\GalleryBundle\Repository\GalleryPrintFormatRepository;
 use c975L\UiBundle\Contract\VichWatermarkableInterface;
 use Imagine\Gd\Imagine;
 use Imagine\Image\Box;
@@ -41,6 +41,7 @@ class GalleryPrintFileBuilder
     public function __construct(
         private readonly ConfigServiceInterface $configService,
         private readonly GalleryPrintService $printService,
+        private readonly GalleryPrintFormatRepository $formatRepository,
         private readonly Filesystem $filesystem,
         #[Autowire(param: 'kernel.project_dir')]
         private readonly string $projectDir,
@@ -75,11 +76,8 @@ class GalleryPrintFileBuilder
             return null;
         }
 
-        // The size sold, read back from the catalogue by the slug the copy kept - a format withdrawn since leaves the print unbuildable, which is a refusal and not a fallback to another size
-        $format = array_find(
-            $this->printService->getFormats(),
-            static fn (GalleryPrintFormat $candidate): bool => $candidate->getSlug() === $copy->getFormat(),
-        );
+        // The size sold, read back by the slug the copy kept, published or not: a format taken off the catalogue after the sale is still owed to the customer who paid for it
+        $format = $this->formatRepository->findBySlug((string) $copy->getFormat());
 
         if (null === $format) {
             return null;

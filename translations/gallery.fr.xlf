@@ -726,6 +726,10 @@
                 <source>label.gallery_home</source>
                 <target>Galerie</target>
             </trans-unit>
+            <trans-unit id="fCjEmNO">
+                <source>label.gallery_import_edition_refused</source>
+                <target>La galerie « %slug% » contient une édition limitée ou un tirage vendu : elle n'a pas été importée.</target>
+            </trans-unit>
             <trans-unit id="t8zInxp">
                 <source>label.gallery_keep_originals</source>
                 <target>Conserver les originaux</target>
@@ -1042,6 +1046,10 @@
                 <source>label.gallery_summary_social_network_help</source>
                 <target>Affichée au-dessus de la grille, et reprise comme description de la page pour les moteurs de recherche et les réseaux sociaux (tronquée à 150 caractères pour ces derniers).</target>
             </trans-unit>
+            <trans-unit id="3QNGGIe">
+                <source>label.gallery_text_too_long</source>
+                <target>Texte trop long (%max% caractères au plus) : rien n'a été modifié.</target>
+            </trans-unit>
             <trans-unit id="K_aPgsR">
                 <source>label.gallery_title_root</source>
                 <target>Racine des titres</target>
@@ -1057,6 +1065,10 @@
             <trans-unit id="GppscvJ">
                 <source>label.gallery_upload_batch_too_large</source>
                 <target>La sélection pèse %size% Mo, la limite est de %limit% Mo au total.</target>
+            </trans-unit>
+            <trans-unit id="3CJb_xX">
+                <source>label.gallery_upload_category_refused</source>
+                <target>Cette galerie ne reçoit pas de photos : elle est automatique ou à la corbeille.</target>
             </trans-unit>
             <trans-unit id="VE8m6HQ">
                 <source>label.gallery_upload_file_too_large</source>
@@ -1666,6 +1678,14 @@
                 <source>label.print_order_reference</source>
                 <target>Référence laboratoire</target>
             </trans-unit>
+            <trans-unit id="8YK9CzQ">
+                <source>label.print_order_refunded</source>
+                <target>Commande remboursée avant l'envoi au labo : annulée, ses numéros rendus à l'édition.</target>
+            </trans-unit>
+            <trans-unit id="in9WvOA">
+                <source>label.print_order_refunded_at_lab</source>
+                <target>Commande remboursée après l'envoi au labo : à annuler auprès du labo.</target>
+            </trans-unit>
             <trans-unit id="EKXMnK8">
                 <source>label.print_order_released</source>
                 <target>La commande est repartie vers le laboratoire.</target>
@@ -1681,6 +1701,10 @@
             <trans-unit id="rYNTtHr">
                 <source>label.print_order_state</source>
                 <target>État</target>
+            </trans-unit>
+            <trans-unit id="tQ04eC0">
+                <source>label.print_order_test_mode</source>
+                <target>Commande de test : rien n'est imprimé ni numéroté.</target>
             </trans-unit>
             <trans-unit id="VyMGZKs">
                 <source>label.print_orders</source>
@@ -1709,6 +1733,10 @@
             <trans-unit id="Lh2qFEJ">
                 <source>label.print_unavailable</source>
                 <target>Ce tirage n'est plus proposé.</target>
+            </trans-unit>
+            <trans-unit id="N5_e4XX">
+                <source>label.print_unavailable_after_payment</source>
+                <target>Un tirage payé n'est plus en vente (photo retirée ou format supprimé) : la commande est à traiter à la main.</target>
             </trans-unit>
             <trans-unit id="uPsqmgW">
                 <source>label.qrcode</source>

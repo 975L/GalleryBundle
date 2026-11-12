@@ -174,25 +174,24 @@ class GalleryAutomaticProvider implements ResetInterface
         return null === $kind ? null : ($this->galleries[$kind] ?? null);
     }
 
-    // Hands the categories the medias their tile is drawn from, in one query for all of them: the relation is lazy, so a page listing the galleries read it category by category, one query each
-    // Every listed category is a candidate, cover or not: the tile falls back on the medias when the cover is missing or trashed (see GalleryCategory::getCoverOrRandomMedia), and the media count printed next to it reads that same collection whatever the cover
-    // Done here rather than in the repository, which the sitemap and the menu link picker also read: neither of them draws a tile, and neither has to pay for the medias of every gallery of the site
+    // Hands the ordinary categories of a listing or a page their visible count and a media drawn at random, counted by the database in two queries for all of them: neither the index, the blocks, the back-office listing nor a gallery's page ever loads a whole lazy relation
+    // Done here rather than in the repository, which the sitemap and the menu link picker also read: neither of them draws a tile
     /** @param list<GalleryCategory> $categories */
     private function handCoverCandidates(array $categories): void
     {
         $candidates = array_values(array_filter(
             $categories,
-            static fn (GalleryCategory $category): bool => !$category->isAutomatic()
+            static fn (GalleryCategory $category): bool => !$category->isAutomatic() && null !== $category->getId()
         ));
 
-        // A single category saves nothing - the lazy relation reads it in the one query this would run anyway, and a block showing one gallery has no reason to read the medias of all the others
-        if (count($candidates) < 2) {
+        if ([] === $candidates) {
             return;
         }
 
-        $medias = $this->galleryMediaRepository->findVisibleByCategories($candidates);
+        $summaries = $this->galleryMediaRepository->summarizeVisibleByCategories($candidates);
         foreach ($candidates as $category) {
-            $category->setLoadedMedias($medias[(int) $category->getId()] ?? []);
+            $summary = $summaries[(int) $category->getId()] ?? ['count' => 0, 'media' => null];
+            $category->setListingSummary($summary['count'], $summary['media']);
         }
     }
 

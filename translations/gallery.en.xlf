@@ -726,6 +726,10 @@
                 <source>label.gallery_home</source>
                 <target>Gallery</target>
             </trans-unit>
+            <trans-unit id="fCjEmNO">
+                <source>label.gallery_import_edition_refused</source>
+                <target>The gallery "%slug%" holds a limited edition or a sold print: it was not imported.</target>
+            </trans-unit>
             <trans-unit id="t8zInxp">
                 <source>label.gallery_keep_originals</source>
                 <target>Keep the originals</target>
@@ -1042,6 +1046,10 @@
                 <source>label.gallery_summary_social_network_help</source>
                 <target>Displayed above the grid, and reused as the page's description for search engines and social networks (truncated to 150 characters for the latter).</target>
             </trans-unit>
+            <trans-unit id="3QNGGIe">
+                <source>label.gallery_text_too_long</source>
+                <target>Text too long (%max% characters at most): nothing was changed.</target>
+            </trans-unit>
             <trans-unit id="K_aPgsR">
                 <source>label.gallery_title_root</source>
                 <target>Title root</target>
@@ -1057,6 +1065,10 @@
             <trans-unit id="GppscvJ">
                 <source>label.gallery_upload_batch_too_large</source>
                 <target>The selection weighs %size% MB, the limit is %limit% MB in total.</target>
+            </trans-unit>
+            <trans-unit id="3CJb_xX">
+                <source>label.gallery_upload_category_refused</source>
+                <target>This gallery takes no photographs: it is automatic or in the trash.</target>
             </trans-unit>
             <trans-unit id="VE8m6HQ">
                 <source>label.gallery_upload_file_too_large</source>
@@ -1666,6 +1678,14 @@
                 <source>label.print_order_reference</source>
                 <target>Lab reference</target>
             </trans-unit>
+            <trans-unit id="8YK9CzQ">
+                <source>label.print_order_refunded</source>
+                <target>Order refunded before reaching the lab: cancelled, its numbers handed back to the edition.</target>
+            </trans-unit>
+            <trans-unit id="in9WvOA">
+                <source>label.print_order_refunded_at_lab</source>
+                <target>Order refunded after reaching the lab: to cancel with the lab.</target>
+            </trans-unit>
             <trans-unit id="EKXMnK8">
                 <source>label.print_order_released</source>
                 <target>The order is on its way to the lab again.</target>
@@ -1681,6 +1701,10 @@
             <trans-unit id="rYNTtHr">
                 <source>label.print_order_state</source>
                 <target>State</target>
+            </trans-unit>
+            <trans-unit id="tQ04eC0">
+                <source>label.print_order_test_mode</source>
+                <target>Test order: nothing is printed or numbered.</target>
             </trans-unit>
             <trans-unit id="VyMGZKs">
                 <source>label.print_orders</source>
@@ -1709,6 +1733,10 @@
             <trans-unit id="Lh2qFEJ">
                 <source>label.print_unavailable</source>
                 <target>This print is no longer offered.</target>
+            </trans-unit>
+            <trans-unit id="N5_e4XX">
+                <source>label.print_unavailable_after_payment</source>
+                <target>A paid print is no longer for sale (photograph withdrawn or format removed): this order has to be handled by hand.</target>
             </trans-unit>
             <trans-unit id="uPsqmgW">
                 <source>label.qrcode</source>

@@ -40,32 +40,14 @@ class GalleryPrintCopyRepository extends ServiceEntityRepository
         ;
     }
 
-    /**
-     * Claims the lowest unsold number of an edition for an order, or returns null when there is none left.
-     *
-     * Written as one UPDATE and not as a read followed by a write: between reading "number 7 is free" and writing it,
-     * another customer's checkout can have taken it, and both would then be told they own 7. Here the database decides
-     * - the statement either updates one row or updates none, and none means the edition is out.
-     *
-     * The whole snapshot is written by that one statement rather than set afterwards through the orm. The update is not
-     * inside the caller's flush - it commits on its own, the moment it runs - so a row claimed here and completed by a
-     * later write is a row that can end up sold and blank if anything fails in between.
-     */
+    // Claims the lowest unsold number of an edition for an order in one UPDATE, or returns null when none is left: the database decides between two payments settling at once, and the snapshot travels in the same statement, which runs inside the caller's transaction (see PaymentBundle's BasketService::deliver)
     public function claimNumber(GalleryMedia $media, GalleryPrintOrder $order, PrintCopySnapshot $snapshot): ?GalleryPrintCopy
     {
-        $connection = $this->getEntityManager()->getConnection();
+        // Drawn before the statement, so the row it wins can be read back by it
+        $certificate = \bin2hex(\random_bytes(16));
 
-        $id = $connection->fetchOne(
-            'SELECT id FROM gallery_print_copy WHERE media_id = :media AND order_id IS NULL ORDER BY number ASC LIMIT 1',
-            ['media' => $media->getId()],
-        );
-
-        if (false === $id || null === $id) {
-            return null;
-        }
-
-        $claimed = $connection->executeStatement(
-            'UPDATE gallery_print_copy SET order_id = :order, format = :format, format_label = :formatLabel, sku = :sku, price = :price, work_title = :workTitle, credits = :credits, issuer = :issuer, certificate = :certificate, sold_at = :soldAt WHERE id = :id AND order_id IS NULL',
+        $claimed = $this->getEntityManager()->getConnection()->executeStatement(
+            'UPDATE gallery_print_copy SET order_id = :order, format = :format, format_label = :formatLabel, sku = :sku, price = :price, work_title = :workTitle, credits = :credits, issuer = :issuer, certificate = :certificate, sold_at = :soldAt WHERE media_id = :media AND order_id IS NULL ORDER BY number ASC LIMIT 1',
             [
                 'order' => $order->getId(),
                 'format' => $snapshot->format,
@@ -75,18 +57,17 @@ class GalleryPrintCopyRepository extends ServiceEntityRepository
                 'workTitle' => $snapshot->workTitle,
                 'credits' => $snapshot->credits,
                 'issuer' => $snapshot->issuer,
-                'certificate' => \bin2hex(\random_bytes(16)),
+                'certificate' => $certificate,
                 'soldAt' => new \DateTimeImmutable()->format('Y-m-d H:i:s'),
-                'id' => $id,
+                'media' => $media->getId(),
             ],
         );
 
-        // Somebody else took it between the two statements - the edition may still have others, so the caller asks again rather than being told it is out
         if (1 !== $claimed) {
-            return $this->claimNumber($media, $order, $snapshot);
+            return null;
         }
 
-        $copy = $this->find($id);
+        $copy = $this->findOneBy(['certificate' => $certificate]);
 
         // The row was written by SQL, so an instance the unit of work is already holding still carries the values it had before the claim
         if (null !== $copy) {
@@ -94,6 +75,15 @@ class GalleryPrintCopyRepository extends ServiceEntityRepository
         }
 
         return $copy;
+    }
+
+    // Hands the numbers of an order back to its edition, blank again as they were before the sale, and answers how many were freed - an order refunded before it ever reached the lab (see GalleryPrintBasketItemProvider::onBasketRefunded)
+    public function releaseNumbers(GalleryPrintOrder $order): int
+    {
+        return $this->getEntityManager()->getConnection()->executeStatement(
+            'UPDATE gallery_print_copy SET order_id = NULL, format = NULL, format_label = NULL, sku = NULL, price = NULL, work_title = NULL, credits = NULL, issuer = NULL, certificate = NULL, sold_at = NULL WHERE order_id = :order AND number IS NOT NULL',
+            ['order' => $order->getId()],
+        );
     }
 
     /**
@@ -120,6 +110,24 @@ class GalleryPrintCopyRepository extends ServiceEntityRepository
         }
 
         return $copies;
+    }
+
+    // Whether any of these medias has a print sold, open edition or numbered - what keeps an import from replacing them (see GalleryImportProvider)
+    /** @param list<int> $mediaIds */
+    public function hasSoldCopyAmong(array $mediaIds): bool
+    {
+        if ([] === $mediaIds) {
+            return false;
+        }
+
+        return 0 < (int) $this->createQueryBuilder('c')
+            ->select('COUNT(c.id)')
+            ->andWhere('c.media IN (:medias)')
+            ->andWhere('c.order IS NOT NULL')
+            ->setParameter('medias', $mediaIds)
+            ->getQuery()
+            ->getSingleScalarResult()
+        ;
     }
 
     // The certificate's public page, which resolves on the token alone - a copy nobody bought has none, so an unsold number cannot be reached

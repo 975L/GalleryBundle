@@ -81,6 +81,14 @@ class GalleryBlockCacheTagProviderTest extends TestCase
         $this->assertSame([GalleryBlockCacheInvalidator::CACHE_TAG_GALLERIES], $resolvers['gallery_categories'](new Block()));
     }
 
+    // A masked cover is no cover: the tile falls back on a random draw, which a cached entry would freeze
+    public function testTheListingDeclinesItsEntryWhileACoverIsHidden(): void
+    {
+        $resolvers = $this->resolvers(false, $this->category('bois')->setCoverMedia(new GalleryMedia()->setHidden(true)));
+
+        $this->assertNull($resolvers['gallery_categories'](new Block()));
+    }
+
     // An automatic gallery shows its newest photograph rather than one taken at random, and carries no cover to pick
     public function testAnAutomaticGalleryWithoutACoverLeavesTheListingCached(): void
     {

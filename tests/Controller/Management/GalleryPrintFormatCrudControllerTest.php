@@ -25,7 +25,9 @@ use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Config\KeyValueStore;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Option\EA;
+use EasyCorp\Bundle\EasyAdminBundle\Contracts\Field\FieldInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Contracts\Provider\AdminContextProviderInterface;
+use EasyCorp\Bundle\EasyAdminBundle\Field\MoneyField;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGeneratorInterface;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\DependencyInjection\Container;
@@ -186,6 +188,16 @@ class GalleryPrintFormatCrudControllerTest extends TestCase
         $this->assertNull($parameters->get('print_switch_url'));
     }
 
+    // The price is typed in the currency the site charges, shows and publishes, never in a hard-coded euro
+    public function testThePriceIsEnteredInTheShopCurrency(): void
+    {
+        $fields = iterator_to_array($this->createController(new PrintCatalogueImportReport(0, 0, [], false), $this->createSession())->configureFields(Crud::PAGE_EDIT), false);
+        $price = array_find($fields, static fn (FieldInterface $field): bool => 'price' === $field->getAsDto()->getProperty());
+
+        $this->assertNotNull($price);
+        $this->assertSame('CHF', $price->getAsDto()->getCustomOption(MoneyField::OPTION_CURRENCY));
+    }
+
     private function import(PrintCatalogueImportReport $report): Session
     {
         $session = $this->createSession();
@@ -235,6 +247,7 @@ class GalleryPrintFormatCrudControllerTest extends TestCase
                 'gallery-print-enabled' => $printEnabled,
                 'site-role-admin' => 'ROLE_ADMIN',
                 'site-role-editor' => 'ROLE_EDITOR',
+                'shop-currency' => 'chf',
                 default => null,
             },
         );

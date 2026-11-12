@@ -270,8 +270,8 @@ class GalleryAutomaticProviderTest extends TestCase
         $this->assertCount(1, $categories);
     }
 
-    // Every listed category draws its tile and prints its count from the same collection, and reading it category by category is a query each on the very page that lists them all
-    public function testPrepareReadsTheMediasOfEveryListedCategoryInOneQuery(): void
+    // Every listed category draws its tile and prints its count from what the database counted and drew for the whole listing, never from its lazy relation
+    public function testPrepareSummarizesEveryListedCategoryInOneRead(): void
     {
         $withoutCover = $this->category(1);
         $withCover = $this->category(2)->setCoverMedia(new GalleryMedia());
@@ -279,9 +279,9 @@ class GalleryAutomaticProviderTest extends TestCase
 
         $mediaRepository = $this->createMock(GalleryMediaRepository::class);
         $mediaRepository->expects($this->once())
-            ->method('findVisibleByCategories')
+            ->method('summarizeVisibleByCategories')
             ->with([$withoutCover, $withCover])
-            ->willReturn([1 => [$media]])
+            ->willReturn([1 => ['count' => 1, 'media' => $media]])
         ;
 
         $this->createProvider(mediaRepository: $mediaRepository)->prepare([$withoutCover, $withCover]);
@@ -291,29 +291,32 @@ class GalleryAutomaticProviderTest extends TestCase
         $this->assertSame(0, $withCover->getMediasCount());
     }
 
-    // A cover an admin put in the trash is no cover: the category falls back on its medias, so it needs the list just as much as one that never had a cover at all
-    public function testPrepareAlsoReadsTheMediasOfACategoryWhoseCoverIsTrashed(): void
+    // A cover an admin put in the trash is no cover: the category falls back on the media drawn for it
+    public function testACategoryWhoseCoverIsTrashedFallsBackOnItsDraw(): void
     {
         $trashedCover = new GalleryMedia();
         $trashedCover->setIsDeleted(true);
         $category = $this->category(1)->setCoverMedia($trashedCover);
-        $other = $this->category(2);
 
-        $mediaRepository = $this->createMock(GalleryMediaRepository::class);
-        $mediaRepository->expects($this->once())->method('findVisibleByCategories')->with([$category, $other])->willReturn([]);
+        $mediaRepository = $this->createStub(GalleryMediaRepository::class);
+        $mediaRepository->method('summarizeVisibleByCategories')->willReturn([]);
 
-        $this->createProvider(mediaRepository: $mediaRepository)->prepare([$category, $other]);
+        $this->createProvider(mediaRepository: $mediaRepository)->prepare([$category]);
 
         $this->assertNull($category->getCoverOrRandomMedia());
     }
 
-    // The block showing one gallery goes through prepare() too: reading it ahead saves no query at all, the lazy relation running exactly the one this would
-    public function testPrepareAsksNothingAheadForASingleCategory(): void
+    // The block showing one gallery and a gallery's own page are summarized as well: their lazy relation would load every photograph to count them
+    public function testASingleCategoryIsSummarizedToo(): void
     {
-        $mediaRepository = $this->createMock(GalleryMediaRepository::class);
-        $mediaRepository->expects($this->never())->method('findVisibleByCategories');
+        $category = $this->category(1);
 
-        $this->createProvider(mediaRepository: $mediaRepository)->prepare([$this->category(1)]);
+        $mediaRepository = $this->createMock(GalleryMediaRepository::class);
+        $mediaRepository->expects($this->once())->method('summarizeVisibleByCategories')->with([$category])->willReturn([1 => ['count' => 3000, 'media' => null]]);
+
+        $this->createProvider(mediaRepository: $mediaRepository)->hydrate([$category]);
+
+        $this->assertSame(3000, $category->getMediasCount());
     }
 
     public function testHydrateOnlyFillsTheAutomaticCategories(): void
@@ -331,7 +334,7 @@ class GalleryAutomaticProviderTest extends TestCase
     }
 
     // The back-office rows show a thumbnail and a media count, both read from the relation - one query per row without this
-    public function testHydrateReadsTheMediasOfTheRowsItIsHandedInOneQuery(): void
+    public function testHydrateSummarizesTheOrdinaryRowsItIsHandedInOneRead(): void
     {
         $automatic = new GalleryCategory()->setAutomaticKind(GalleryCategory::AUTOMATIC_LATEST);
         $first = $this->category(1);
@@ -340,9 +343,9 @@ class GalleryAutomaticProviderTest extends TestCase
 
         $mediaRepository = $this->createMock(GalleryMediaRepository::class);
         $mediaRepository->expects($this->once())
-            ->method('findVisibleByCategories')
+            ->method('summarizeVisibleByCategories')
             ->with([$first, $second])
-            ->willReturn([2 => [$media]])
+            ->willReturn([2 => ['count' => 1, 'media' => $media]])
         ;
 
         $this->createProvider([$this->createGallery(GalleryCategory::AUTOMATIC_LATEST)], mediaRepository: $mediaRepository)

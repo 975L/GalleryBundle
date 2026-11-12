@@ -13,6 +13,7 @@ namespace c975L\GalleryBundle\Repository;
 use c975L\GalleryBundle\Entity\GalleryCategory;
 use c975L\GalleryBundle\Entity\GalleryMedia;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\DBAL\ArrayParameterType;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -40,33 +41,86 @@ class GalleryMediaRepository extends ServiceEntityRepository
         return $this->visibleMediasOf([$category]);
     }
 
-    // The same list for several categories at once, grouped by category id - what GalleryCategoryRepository hands to the categories left without a cover, so a page listing them costs one query rather than one per category
+    // One page of a category's public grid, read in SQL rather than cut out of the whole list - a gallery of thousands of photographs reads sixty of them per page scrolled
+    /** @return list<GalleryMedia> */
+    public function findVisiblePage(GalleryCategory $category, int $offset, int $limit): array
+    {
+        return $this->visibleQueryBuilder([$category])
+            ->setFirstResult(max(0, $offset))
+            ->setMaxResults(max(1, $limit))
+            ->getQuery()
+            ->getResult()
+        ;
+    }
+
+    // What a tile is drawn from, for several categories at once: how many medias each shows and one of them drawn at random, keyed by category id - two queries whatever the size of the library, a category showing nothing being absent
     /**
      * @param list<GalleryCategory> $categories
      *
-     * @return array<int, list<GalleryMedia>>
+     * @return array<int, array{count: int, media: ?GalleryMedia}>
      */
-    public function findVisibleByCategories(array $categories): array
+    public function summarizeVisibleByCategories(array $categories): array
     {
         if ([] === $categories) {
             return [];
         }
 
-        $grouped = [];
-        foreach ($this->visibleMediasOf($categories) as $media) {
-            $grouped[(int) $media->getCategory()?->getId()][] = $media;
+        $rows = $this->visibleSummaryRows(array_map(static fn (GalleryCategory $category): int => (int) $category->getId(), $categories));
+
+        // The drawn medias read in one go, then handed back under their category
+        $medias = [];
+        foreach ($this->findMediasById(array_map(static fn (array $row): int => (int) $row['media'], $rows)) as $media) {
+            $medias[(int) $media->getId()] = $media;
         }
 
-        return $grouped;
+        $summaries = [];
+        foreach ($rows as $row) {
+            $summaries[(int) $row['category']] = ['count' => (int) $row['total'], 'media' => $medias[(int) $row['media']] ?? null];
+        }
+
+        return $summaries;
     }
 
-    // The read itself, apart from the grouping above so a test exercises one without going through the other (same shape as latestMedias() below)
+    // One row per category: its visible count and one visible media drawn at random, both counted by the database (window functions, MariaDB 10.2 / MySQL 8)
+    /**
+     * @param list<int> $categoryIds
+     *
+     * @return list<array<string, int|string>>
+     */
+    protected function visibleSummaryRows(array $categoryIds): array
+    {
+        return $this->getEntityManager()->getConnection()->fetchAllAssociative(
+            'SELECT category, media, total FROM (SELECT category_id AS category, id AS media, COUNT(*) OVER (PARTITION BY category_id) AS total, ROW_NUMBER() OVER (PARTITION BY category_id ORDER BY RAND()) AS draw FROM gallery_media WHERE category_id IN (:categories) AND is_deleted = 0 AND hidden = 0) drawn WHERE draw = 1',
+            ['categories' => $categoryIds],
+            ['categories' => ArrayParameterType::INTEGER],
+        );
+    }
+
+    // The medias of a list of ids, in no particular order
+    /**
+     * @param list<int> $ids
+     *
+     * @return list<GalleryMedia>
+     */
+    protected function findMediasById(array $ids): array
+    {
+        return [] === $ids ? [] : $this->findBy(['id' => $ids]);
+    }
+
+    // The read itself, apart from findVisibleByCategory() so a test hands the rows over without a database (same shape as latestMedias() below)
     /**
      * @param list<GalleryCategory> $categories
      *
      * @return list<GalleryMedia>
      */
     protected function visibleMediasOf(array $categories): array
+    {
+        return $this->visibleQueryBuilder($categories)->getQuery()->getResult();
+    }
+
+    // The public grid's medias of some categories, in its order
+    /** @param list<GalleryCategory> $categories */
+    private function visibleQueryBuilder(array $categories): QueryBuilder
     {
         return $this->createQueryBuilder('m')
             ->andWhere('m.category IN (:categories)')
@@ -77,8 +131,6 @@ class GalleryMediaRepository extends ServiceEntityRepository
             ->orderBy('m.position', \SortDirection::Ascending)
             // Ties broken by id, as findAdjacent() and findEdge() do: each page of the grid is a read of its own, and a tie left to the database could list a photograph twice and another never
             ->addOrderBy('m.id', \SortDirection::Ascending)
-            ->getQuery()
-            ->getResult()
         ;
     }
 

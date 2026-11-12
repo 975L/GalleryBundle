@@ -1,6 +1,6 @@
 ---
 name: c975l-gallery
-description: "Use this skill when working with photo galleries in a Symfony application built on the c975L ecosystem with c975l/gallery-bundle. Covers categories and medias, the admin-renamable url prefix, the two-step trash, batch upload and the three image derivatives, videos and embeds, the two gallery blocks, theming, and every extension point the bundle offers. Triggers on: GalleryCategory, GalleryMedia, gallery-route-prefix, gallery_index, gallery_category, gallery_media, gallery_categories, gallery_medias, c975l:gallery:rebuild-thumbnails, c975l:gallery:fill-slugs, c975l:gallery:automatic:dedupe, photo gallery, thumbnail, lightbox, Image:Zoom, image-zoom__image, batch upload, upload progress, passe-partout, trash, restore, delete permanently, 410 Gone, download highres, download originals, GalleryMediaArchiver, move medias, move selection, GalleryMediaMover, moveMedias, files-gallery, health check, automatic gallery, latest additions, GalleryLatestProvider, findOrCreateAutomatic, findLatest, gallery-latest-days, gallery-latest-max, gallery-rating, likes, like a photo, heart, rating, findVisibleByCategories, setLoadedMedias, media caption, media description, GalleryCustomizationProviderInterface, gallery.customization_provider, GalleryDataField, getDataValue, gallery-video-self-hosted-max-height, self-hosted video, portrait video., GallerySampleCatalog, GalleryDemoFixtureProvider, DemoFixtureProviderInterface, demo gallery, ReplacingFile, DemoFixtureMediaCopier, hidden, hide a gallery, masking, sell prints, print shop, limited edition, editionSize, printable, certificate of authenticity, gallery_print_certificate, gallery_print_file, gallery_print_callback, c975l:gallery:print:sync, GalleryPrintOrderTracker, GalleryMaintenanceTaskProvider, callbackUrl, gallery-print-enabled, gallery-printable-max, gallery-print-provider, gallery-print-sandbox, gallery-print-signature, GalleryPrintFormat, GalleryPrintOrder, GalleryPrintCopy, PrintCopySnapshot, PrintFulfilmentInterface, ProdigiFulfilment, ManualFulfilment, gallery.print_fulfilment, PrintCatalogueProviderInterface, PrintCatalogueImporter, ProdigiCatalogue, import print catalogue, GalleryPrintOrderRepository, claim, findForUser, AccountDataProvider, AccountDataProviderInterface, data export, gallery-print-edition-hold, shop-currency, gallery-print-setup, gallery-print-order, c975lStimulusApp, BasketItemProviderInterface, CatalogueBasketItemProviderInterface, getCatalogueUrl, continue shopping, ShippingBasketItemProviderInterface, shipsParcels, WeighableBasketItemProviderInterface, getWeight, print weight, AutomaticGalleryInterface, gallery.automatic_gallery, GalleryAutomaticProvider, GalleryPrintableProvider, automaticKind, qr code, GalleryShowcaseProvider, ui-showcase-demo-url, block showcase, block-thumbs, block picker silhouette, ui.management_stylesheet, getManagementStylesheets, GallerySnippetBuilder, GalleryJsonLdExtension, gallery_media_json_ld, gallery_json_ld, gallery_index_json_ld, gallery_print_json_ld, buildPrint, Product, Offer, merchant listing, OfferSnippetBuilder, shippingDetails, hasMerchantReturnPolicy, brand, sku, BreadcrumbList, breadcrumb_json_ld, JsonLdBuilder, ImageObject, VideoObject, ImageGallery, acquireLicensePage, license, gallery-license-url, GalleryLicense, Creative Commons, licence icons, gallery-license-icon, tdm-reservation, TDMRep, Licensable, creditText, copyrightNotice, embedUrl, GalleryBlockCacheTagProvider, GalleryBlockCacheInvalidator, GalleryCacheInvalidationListener, BlockCacheTagProviderInterface, block cache, cacheable, invalidateTags, gallery-thumbnail-whole, translation, translate a gallery, multilingual gallery, GalleryTranslator, GalleryTranslatedLocales, GalleryLinkLocalizer, GalleryTranslationPurgeListener, ContentLocaleCrudTrait, ContentLocaleScreen, contenu, language tabs, localized_path, gallery_index_localized, gallery_category_localized, gallery_media_localized, gallery-translation, site_translation, infinite scroll, load more, MEDIAS_PER_PAGE, Pagination, social networks, GallerySocialContentSource, SocialContentSourceInterface, ScopedSocialContentSourceInterface, getScopes, series, GalleryPickableMediaProvider, PickableMediaProviderInterface, findPickable, Ajouter depuis le site, gallery-social-order, gallery-social, BrowsableSocialContentSourceInterface, findContents, getContentScope, Changer le contenu, SocialContentStatusProviderInterface, social badge, GalleryFeedProvider, FeedProviderInterface, Atom feed, /feed/gallery.xml, LinkableRouteCacheTagsInterface, meta description, text.meta_gallery, text.meta_category, text.meta_media, c975l_gallery.print_dir, print directory."
+description: "Use this skill when working with photo galleries in a Symfony application built on the c975L ecosystem with c975l/gallery-bundle. Covers categories and medias, the admin-renamable url prefix, the two-step trash, batch upload and the three image derivatives, videos and embeds, the two gallery blocks, theming, and every extension point the bundle offers. Triggers on: GalleryCategory, GalleryMedia, gallery-route-prefix, gallery_index, gallery_category, gallery_media, gallery_categories, gallery_medias, c975l:gallery:rebuild-thumbnails, c975l:gallery:fill-slugs, c975l:gallery:automatic:dedupe, photo gallery, thumbnail, lightbox, Image:Zoom, image-zoom__image, batch upload, upload progress, passe-partout, trash, restore, delete permanently, 410 Gone, download highres, download originals, GalleryMediaArchiver, move medias, move selection, GalleryMediaMover, moveMedias, files-gallery, health check, automatic gallery, latest additions, GalleryLatestProvider, findOrCreateAutomatic, findLatest, gallery-latest-days, gallery-latest-max, gallery-rating, likes, like a photo, heart, rating, summarizeVisibleByCategories, setListingSummary, findVisiblePage, onBasketRefunded, RefundableBasketItemProviderInterface, isTestMode, GalleryPrintOrderSender, ArchivePath, media caption, media description, GalleryCustomizationProviderInterface, gallery.customization_provider, GalleryDataField, getDataValue, gallery-video-self-hosted-max-height, self-hosted video, portrait video., GallerySampleCatalog, GalleryDemoFixtureProvider, DemoFixtureProviderInterface, demo gallery, ReplacingFile, DemoFixtureMediaCopier, hidden, hide a gallery, masking, sell prints, print shop, limited edition, editionSize, printable, certificate of authenticity, gallery_print_certificate, gallery_print_file, gallery_print_callback, c975l:gallery:print:sync, GalleryPrintOrderTracker, GalleryMaintenanceTaskProvider, callbackUrl, gallery-print-enabled, gallery-printable-max, gallery-print-provider, gallery-print-sandbox, gallery-print-signature, GalleryPrintFormat, GalleryPrintOrder, GalleryPrintCopy, PrintCopySnapshot, PrintFulfilmentInterface, ProdigiFulfilment, ManualFulfilment, gallery.print_fulfilment, PrintCatalogueProviderInterface, PrintCatalogueImporter, ProdigiCatalogue, import print catalogue, GalleryPrintOrderRepository, claim, findForUser, AccountDataProvider, AccountDataProviderInterface, data export, gallery-print-edition-hold, shop-currency, gallery-print-setup, gallery-print-order, c975lStimulusApp, BasketItemProviderInterface, CatalogueBasketItemProviderInterface, getCatalogueUrl, continue shopping, ShippingBasketItemProviderInterface, shipsParcels, WeighableBasketItemProviderInterface, getWeight, print weight, AutomaticGalleryInterface, gallery.automatic_gallery, GalleryAutomaticProvider, GalleryPrintableProvider, automaticKind, qr code, GalleryShowcaseProvider, ui-showcase-demo-url, block showcase, block-thumbs, block picker silhouette, ui.management_stylesheet, getManagementStylesheets, GallerySnippetBuilder, GalleryJsonLdExtension, gallery_media_json_ld, gallery_json_ld, gallery_index_json_ld, gallery_print_json_ld, buildPrint, Product, Offer, merchant listing, OfferSnippetBuilder, shippingDetails, hasMerchantReturnPolicy, brand, sku, BreadcrumbList, breadcrumb_json_ld, JsonLdBuilder, ImageObject, VideoObject, ImageGallery, acquireLicensePage, license, gallery-license-url, GalleryLicense, Creative Commons, licence icons, gallery-license-icon, tdm-reservation, TDMRep, Licensable, creditText, copyrightNotice, embedUrl, GalleryBlockCacheTagProvider, GalleryBlockCacheInvalidator, GalleryCacheInvalidationListener, BlockCacheTagProviderInterface, block cache, cacheable, invalidateTags, gallery-thumbnail-whole, translation, translate a gallery, multilingual gallery, GalleryTranslator, GalleryTranslatedLocales, GalleryLinkLocalizer, GalleryTranslationPurgeListener, ContentLocaleCrudTrait, ContentLocaleScreen, contenu, language tabs, localized_path, gallery_index_localized, gallery_category_localized, gallery_media_localized, gallery-translation, site_translation, infinite scroll, load more, MEDIAS_PER_PAGE, Pagination, social networks, GallerySocialContentSource, SocialContentSourceInterface, ScopedSocialContentSourceInterface, getScopes, series, GalleryPickableMediaProvider, PickableMediaProviderInterface, findPickable, Ajouter depuis le site, gallery-social-order, gallery-social, BrowsableSocialContentSourceInterface, findContents, getContentScope, Changer le contenu, SocialContentStatusProviderInterface, social badge, GalleryFeedProvider, FeedProviderInterface, Atom feed, /feed/gallery.xml, LinkableRouteCacheTagsInterface, meta description, text.meta_gallery, text.meta_category, text.meta_media, c975l_gallery.print_dir, print directory."
 ---
 
 # c975L GalleryBundle
@@ -101,7 +101,7 @@ simply never reached.
 - **The likes go with the permanent deletion, never with the trash.** A rating names its owner
   (`gallery_media` + id) rather than relating to it, so no foreign key cascades it: `removeForGood()`,
   `deleteMediasPermanently()` and `GalleryImportProvider::import()` (which replaces a category's whole
-  collection) each call `RatingRepository::deleteForOwners()` themselves, once for the whole set and only
+  collection, and refuses a category holding a limited edition or a sold print, with a warning) each call `RatingRepository::deleteForOwners()` themselves, once for the whole set and only
   after the flush that actually removed the rows. A trashed media keeps its likes — it can come back.
 
 ## Masking is not deleting
@@ -142,7 +142,8 @@ the other is never read by a visitor.
 
 `gallery_category` serves its grid `GalleryController::MEDIAS_PER_PAGE` (60) medias at a time, read from
 `?p=`: `category.html.twig` receives `medias` as UiBundle's `Pagination` — countable and iterable, plus
-`getCurrentPageNumber()`, `getPageCount()`, `getTotalItemCount()`, `route` and `query()` — and UiBundle's
+`getCurrentPageNumber()`, `getPageCount()`, `getTotalItemCount()`, `route` and `query()`, an ordinary
+gallery's page read in SQL (`GalleryMediaRepository::findVisiblePage()`) — and UiBundle's
 `infinite-scroll.js` appends the next page as the visitor scrolls, into the grid
 `<twig:c975LGallery:Gallery:Medias … infinite="true"/>` marks. A page past the last one answers 404.
 
@@ -205,15 +206,16 @@ window catches nothing, so the gallery is never empty as long as the site holds 
   holding their medias. For a caller reading the list itself (the public index, the categories block).
 - `hydrate(iterable $categories)` — hands the automatic ones their lists, the others left alone. For a
   caller holding entities it did not read (the back-office listing, whose rows EasyAdmin paginates).
-- Both also hand **every other listed category** the medias its tile and its media count read, in one
-  `GalleryMediaRepository::findVisibleByCategories()` query for the whole list, posed through
-  `GalleryCategory::setLoadedMedias()` — the relation is lazy, so a listing otherwise reads it category by
-  category. A list of one is left alone, the lazy relation running the one query this would.
+- Both also hand **every other category** its visible count and one visible media drawn at random,
+  counted by the database for the whole list in two queries
+  (`GalleryMediaRepository::summarizeVisibleByCategories()`, window functions of MariaDB 10.2 / MySQL 8),
+  posed through `GalleryCategory::setListingSummary()` — no tile, count or page ever loads the lazy
+  relation. A list of one is summarized too: it is what a gallery's own page counts its grid with.
 `GalleryLatestProvider::getMediasByDay()` cuts that same list into the days its medias were added on —
 the back-office screen alone reads it, an upload session being what an admin credits or downloads in one go.
 
-`GalleryCategory::getMediasCount()` and `getCoverOrRandomMedia()` read that handed list rather than the
-relation, so a tile, a count and an `og:image` work without knowing which kind of category they hold —
+`GalleryCategory::getMediasCount()` and `getCoverOrRandomMedia()` read that summary (or the automatic
+gallery's handed list) rather than the relation, a cover in the trash or masked being no cover, so a tile, a count and an `og:image` work without knowing which kind of category they hold —
 the automatic one showing its **newest** photo rather than one at random.
 
 **Urls stay canonical.** A thumbnail of the automatic gallery links its photo under **its own**
@@ -489,10 +491,12 @@ printing by hand writing its formats itself.
 
 `GalleryMedia` carries `printable` (on offer), `hidden` (kept out of every public page without being
 deleted, filtered in the repository and 404 in the controller) and `editionSize` (null for an open
-edition). Announcing an edition writes its rows at once through `GalleryPrintCopyRepository::openEdition()`,
+edition, at most `GalleryMedia::EDITION_MAX_SIZE`, 100). Announcing an edition writes its rows at once through `GalleryPrintCopyRepository::openEdition()`,
 and `GalleryMediaCrudController::settleEdition()` refuses every later change to the number — raising an
 announced edition is a forgery. Selling one claims the lowest free row with a single
-`UPDATE … WHERE order_id IS NULL`, so two checkouts on the last copy cannot both win.
+`UPDATE … WHERE order_id IS NULL ORDER BY number LIMIT 1`, so two checkouts on the last copy cannot both win.
+A photograph or gallery in the trash is never for sale, and a format unpublished after a sale still
+builds the print it sold (`GalleryPrintFileBuilder` reads it by slug, published or not).
 
 A format is only offered for a photograph whose original actually has the pixels and the proportions
 (±3 %, `GalleryPrintService::getOffers()`) — nothing is ever cropped to fit a size.
@@ -505,7 +509,16 @@ the renamable gallery prefix because it is printed on paper.
 
 An open edition goes straight to the lab through Messenger. A limited one stops and waits: two e-mails
 go out (the buyer's numbers, and the admin's "sign this"), and the admin releases it from the orders
-screen.
+screen. Both wait for the payment's commit: `GalleryPrintOrderSender` queues the order and sends once no
+transaction is open (a flush after it, or the end of the request, command or message), an order the
+rollback took away sending nothing.
+
+A **test-mode basket** (`Basket::isTestMode()`) produces nothing real: its order is written cancelled,
+with no copy, no number, no letter and nothing sent to the lab.
+
+A **full refund** (`RefundableBasketItemProviderInterface::onBasketRefunded()`) cancels an order that has
+not reached the lab and hands its numbers back to the edition (`GalleryPrintCopyRepository::releaseNumbers()`);
+one the lab already holds is flagged and logged for a cancellation by hand.
 
 A lab is a `PrintFulfilmentInterface`; every implementation is tagged on sight by `TaggedInterfacePass`,
 so a site adding its own printer wires nothing. `ProdigiFulfilment` ships, `ManualFulfilment` throws on
@@ -568,8 +581,9 @@ number tying it to the `orders` part. An account with no print order adds no key
   already taken, the latter first taking back an empty ordinary gallery left under `latest`),
   `findAutomaticDuplicate()` (the `latest-2` and that leftover, for `c975l:gallery:automatic:dedupe`);
   `GalleryMediaRepository::findByCategory()`, `findOneBySlugInCategory()`,
-  `findPreviousAndNext()`, `findLatest()` (what the automatic gallery shows), `findVisibleByCategories()`
-  (the same list for several categories at once, grouped by category id), `findWithFilename()`
+  `findPreviousAndNext()`, `findLatest()` (what the automatic gallery shows), `findVisiblePage()` (one page of
+  the public grid), `summarizeVisibleByCategories()` (each category's count and random media, by category
+  id), `findWithFilename()`
   (the rows naming a file, for the files health check).
   `findAllOrdered()` is memoized for the request (`ResetInterface`), its callers knowing nothing of
   each other.

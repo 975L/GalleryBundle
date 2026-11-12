@@ -15,6 +15,7 @@ use c975L\GalleryBundle\Entity\GalleryMedia;
 use c975L\GalleryBundle\Management\GalleryExportProvider;
 use c975L\GalleryBundle\Management\GalleryImportProvider;
 use c975L\GalleryBundle\Repository\GalleryCategoryRepository;
+use c975L\GalleryBundle\Repository\GalleryPrintCopyRepository;
 use c975L\GalleryBundle\Service\GalleryMediaSlugger;
 use c975L\UiBundle\Entity\Block;
 use c975L\UiBundle\Management\BlockDataExporter;
@@ -23,9 +24,15 @@ use c975L\UiBundle\Registry\FormBlockDependencyRegistry;
 use c975L\UiBundle\Repository\RatingRepository;
 use c975L\UiBundle\Video\VideoPlatform;
 use Doctrine\ORM\EntityManagerInterface;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\HttpFoundation\Session\Session;
+use Symfony\Component\HttpFoundation\Session\Storage\MockArraySessionStorage;
 use Symfony\Component\String\Slugger\AsciiSlugger;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 class GalleryImportProviderTest extends TestCase
 {
@@ -80,14 +87,23 @@ class GalleryImportProviderTest extends TestCase
         rmdir($dir);
     }
 
-    private function createProvider(EntityManagerInterface $em, ?GalleryCategory $existingCategory = null, ?string $projectDir = null, ?GalleryCategory $automaticCategory = null, ?RatingRepository $ratingRepository = null): GalleryImportProvider
+    private function createProvider(EntityManagerInterface $em, ?GalleryCategory $existingCategory = null, ?string $projectDir = null, ?GalleryCategory $automaticCategory = null, ?RatingRepository $ratingRepository = null, bool $soldCopies = false, ?RequestStack $requestStack = null): GalleryImportProvider
     {
+        $copyRepository = $this->createStub(GalleryPrintCopyRepository::class);
+        $copyRepository->method('hasSoldCopyAmong')->willReturn($soldCopies);
+
+        $translator = $this->createStub(TranslatorInterface::class);
+        $translator->method('trans')->willReturnArgument(0);
+
         return new GalleryImportProvider(
             $em,
             $this->createCategoryRepository($existingCategory, $automaticCategory),
             new GalleryMediaSlugger(new AsciiSlugger()),
             new BlockDataImporter($em, $this->createStub(FormBlockDependencyRegistry::class), $this->createStub(ValidatorInterface::class)),
             $ratingRepository ?? $this->createStub(RatingRepository::class),
+            $copyRepository,
+            $requestStack ?? new RequestStack(),
+            $translator,
             $projectDir ?? sys_get_temp_dir(),
         );
     }
@@ -636,6 +652,82 @@ class GalleryImportProviderTest extends TestCase
 
         $this->removeDir($projectDir);
         $this->removeDir($filesDir);
+    }
+
+    // A manifest path walking out of the extracted archive, or naming a file it does not hold, hands Vich nothing - an ".env.local" is never copied under public/
+    #[DataProvider('provideEscapingEntries')]
+    public function testImportIgnoresAFileEntryOutsideTheArchive(string $entry): void
+    {
+        $filesDir = $this->createFilesDir(['ab12_p1.webp' => 'stored-bytes']);
+        $projectDir = sys_get_temp_dir() . '/gallery_import_project_' . bin2hex(random_bytes(4));
+
+        $media = $this->importSingleMedia(['title' => 'Media 1', 'slug' => 'media-1', 'file' => $entry, 'thumbFile' => $entry], $filesDir, $projectDir);
+
+        $this->assertNull($media->getFile());
+        // The stand-in for Vich names only a media that was handed a file
+        $this->assertSame('uploads/p1.webp', $media->getFilename());
+        $this->assertFileDoesNotExist($projectDir . '/public/uploads/p1.webp');
+
+        $this->removeDir($filesDir);
+    }
+
+    // Entries a manifest could name to reach outside the extraction directory
+    /** @return iterable<string, array{string}> */
+    public static function provideEscapingEntries(): iterable
+    {
+        yield 'parent segment' => ['../files/ab12_p1.webp'];
+        yield 'absolute path' => ['/etc/hostname'];
+        yield 'missing file' => ['files/nothing.webp'];
+    }
+
+    // A stored name carrying an extension a media is never stored under would be served from the site's own origin: refused, Vich naming the file instead
+    public function testImportRefusesAFilenameWithAnExtensionAMediaNeverCarries(): void
+    {
+        $filesDir = $this->createFilesDir(['ab12_p1.webp' => 'stored-bytes']);
+        $projectDir = sys_get_temp_dir() . '/gallery_import_project_' . bin2hex(random_bytes(4));
+
+        $media = $this->importSingleMedia([
+            'title' => 'Media 1',
+            'slug' => 'media-1',
+            'filename' => 'medias/gallery/films/escaped.php',
+            'file' => 'files/ab12_p1.webp',
+        ], $filesDir, $projectDir);
+
+        $this->assertSame('uploads/p1.webp', $media->getFilename());
+
+        $this->removeDir($projectDir);
+        $this->removeDir($filesDir);
+    }
+
+    // A gallery holding a limited edition, or a print already sold, is refused whole with a warning: replacing its medias would turn an announced edition into an open one
+    #[DataProvider('provideEditionStates')]
+    public function testImportRefusesAGalleryHoldingAnEdition(?int $editionSize, bool $soldCopies): void
+    {
+        $existing = new GalleryCategory()->setSlug('voyages')->setTitle('Voyages');
+        $existing->addMedia(new GalleryMedia()->setEditionSize($editionSize));
+
+        $session = new Session(new MockArraySessionStorage());
+        $request = new Request();
+        $request->setSession($session);
+
+        $em = $this->createMock(EntityManagerInterface::class);
+        $em->expects($this->never())->method('persist');
+
+        $result = $this->createProvider($em, $existing, soldCopies: $soldCopies, requestStack: new RequestStack([$request]))
+            ->import([['slug' => 'voyages', 'title' => 'Renamed', 'medias' => []]]);
+
+        $this->assertSame(['created' => 0, 'updated' => 0], $result);
+        $this->assertSame('Voyages', $existing->getTitle());
+        $this->assertCount(1, $existing->getMedias());
+        $this->assertSame(['label.gallery_import_edition_refused'], $session->getFlashBag()->get('warning'));
+    }
+
+    // A numbered edition, and an open one with prints already sold
+    /** @return iterable<string, array{?int, bool}> */
+    public static function provideEditionStates(): iterable
+    {
+        yield 'limited edition' => [30, false];
+        yield 'sold open print' => [null, true];
     }
 
     // An archive from before the stored files were converted holds a jpeg, where the name it would be restored under says webp - the recomputed file stands rather than being overwritten by bytes it doesn't describe

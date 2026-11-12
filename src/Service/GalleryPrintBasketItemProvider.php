@@ -13,36 +13,38 @@ namespace c975L\GalleryBundle\Service;
 use c975L\ConfigBundle\Service\ConfigServiceInterface;
 use c975L\GalleryBundle\Entity\GalleryPrintCopy;
 use c975L\GalleryBundle\Entity\GalleryPrintOrder;
-use c975L\GalleryBundle\Message\GalleryPrintOrderMessage;
 use c975L\GalleryBundle\Model\PrintCopySnapshot;
 use c975L\GalleryBundle\Model\PrintOffer;
 use c975L\GalleryBundle\Repository\GalleryPrintCopyRepository;
 use c975L\GalleryBundle\Repository\GalleryPrintFormatRepository;
+use c975L\GalleryBundle\Repository\GalleryPrintOrderRepository;
 use c975L\PaymentBundle\Contract\BasketItemProviderInterface;
 use c975L\PaymentBundle\Contract\CatalogueBasketItemProviderInterface;
+use c975L\PaymentBundle\Contract\RefundableBasketItemProviderInterface;
 use c975L\PaymentBundle\Contract\ShippingBasketItemProviderInterface;
 use c975L\PaymentBundle\Contract\WeighableBasketItemProviderInterface;
 use c975L\PaymentBundle\Entity\Basket;
 use c975L\PaymentBundle\Service\VatCalculator;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\Messenger\MessageBusInterface;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 // Plugs prints into PaymentBundle's basket and checkout (see BasketItemProviderInterface). What is sold is a photograph at one size, which is why every id here names both
-class GalleryPrintBasketItemProvider implements BasketItemProviderInterface, CatalogueBasketItemProviderInterface, ShippingBasketItemProviderInterface, WeighableBasketItemProviderInterface
+class GalleryPrintBasketItemProvider implements BasketItemProviderInterface, CatalogueBasketItemProviderInterface, RefundableBasketItemProviderInterface, ShippingBasketItemProviderInterface, WeighableBasketItemProviderInterface
 {
     public function __construct(
         private readonly GalleryPrintService $printService,
         private readonly GalleryPrintCopyRepository $copyRepository,
         private readonly GalleryPrintFormatRepository $formatRepository,
+        private readonly GalleryPrintOrderRepository $orderRepository,
         private readonly PrintFulfilmentRegistry $fulfilmentRegistry,
-        private readonly GalleryPrintEmailInterface $printEmail,
+        private readonly GalleryPrintOrderSender $orderSender,
         private readonly ConfigServiceInterface $configService,
         private readonly EntityManagerInterface $entityManager,
-        private readonly MessageBusInterface $messageBus,
         private readonly TranslatorInterface $translator,
         private readonly UrlGeneratorInterface $urlGenerator,
+        private readonly LoggerInterface $logger,
     ) {
     }
 
@@ -210,20 +212,22 @@ class GalleryPrintBasketItemProvider implements BasketItemProviderInterface, Cat
         return [];
     }
 
-    // Writes what was sold and numbers it where the edition demands it
-    // Every print of the order, answering whether an edition ran out on the way and whether any numbered copy was claimed
+    // Writes every print of the order, numbered where the edition demands it, and answers the error that keeps it from leaving (an edition sold out on the way, a print withdrawn since the checkout) and whether a numbered copy was claimed
     // Counted here rather than asked of the order afterwards: a number is claimed by an UPDATE (see GalleryPrintCopyRepository::claimNumber) and an open copy only sets its owning side, so the order's own collection stays empty until it is read back from the base
     /**
-     * @return array{0: bool, 1: bool}
+     * @return array{0: ?string, 1: bool}
      */
     private function addCopies(array $itemsOfThisKind, GalleryPrintOrder $order): array
     {
-        $soldOut = false;
+        $error = null;
         $hasLimitedEdition = false;
 
         foreach ($itemsOfThisKind as $id => $itemContent) {
+            // A photograph trashed or a format withdrawn between the checkout and the payment: the customer has paid, so the order is kept and flagged for a human
             $offer = $this->printService->findOffer($id);
             if (null === $offer) {
+                $error = 'label.print_unavailable_after_payment';
+
                 continue;
             }
 
@@ -231,12 +235,12 @@ class GalleryPrintBasketItemProvider implements BasketItemProviderInterface, Cat
 
             for ($unit = 0; $unit < (int) $itemContent['quantity']; ++$unit) {
                 $claimed = $this->addCopy($offer, $order, $snapshot);
-                $soldOut = $soldOut || false === $claimed;
+                $error = false === $claimed ? 'label.print_edition_sold_out_after_payment' : $error;
                 $hasLimitedEdition = $hasLimitedEdition || true === $claimed;
             }
         }
 
-        return [$soldOut, $hasLimitedEdition];
+        return [$error, $hasLimitedEdition];
     }
 
     // One print added to the order, answering true for a numbered copy actually claimed, false for an edition that ran out between the checkout and the payment, and null for an open print, which nothing can exhaust
@@ -258,13 +262,7 @@ class GalleryPrintBasketItemProvider implements BasketItemProviderInterface, Cat
         return null;
     }
 
-    /**
-     * Writes what was sold, numbers it where the edition demands it, and sends it to the lab.
-     *
-     * Reached from the payment provider's webhook as well as from the customer's return, so it reads nothing off the
-     * current request. It also runs once and once only, which is what lets it claim numbers: a second run would burn a
-     * second set.
-     */
+    // Writes what was sold and numbers it where the edition demands it, then queues it for the lab once the payment is committed (see GalleryPrintOrderSender). Reached from the webhook as well as from the customer's return, and run once only, which is what lets it claim numbers
     public function onBasketPaid(Basket $basket, array $itemsOfThisKind, array $checkoutData): void
     {
         if ([] === $itemsOfThisKind) {
@@ -276,35 +274,68 @@ class GalleryPrintBasketItemProvider implements BasketItemProviderInterface, Cat
             ->setProvider($this->fulfilmentRegistry->get()?->getName() ?? 'manual')
         ;
 
+        // A rehearsal produces nothing real: no number burnt, no letter, no print ordered and billed by the lab - the order stays as the trace of the checkout tried
+        if ($basket->isTestMode()) {
+            $order
+                ->setState(GalleryPrintOrder::STATE_CANCELLED)
+                ->setLastError($this->translator->trans('label.print_order_test_mode', [], 'gallery'))
+            ;
+            $this->entityManager->persist($order);
+            $this->entityManager->flush();
+
+            return;
+        }
+
         // Flushed before any copy is claimed, the claim being an UPDATE that needs the order's id - and needing it is what keeps the claim a single statement
         $this->entityManager->persist($order);
         $this->entityManager->flush();
 
-        [$soldOut, $hasLimitedEdition] = $this->addCopies($itemsOfThisKind, $order);
+        [$error, $hasLimitedEdition] = $this->addCopies($itemsOfThisKind, $order);
 
-        if ($soldOut) {
-            $order->setLastError($this->translator->trans('label.print_edition_sold_out_after_payment', [], 'gallery'));
+        if (null !== $error) {
+            $order->setLastError($this->translator->trans($error, [], 'gallery'));
         }
 
         $this->entityManager->flush();
 
-        if ($soldOut) {
+        if (null === $error) {
+            $this->orderSender->defer((int) $order->getId(), $hasLimitedEdition);
+        }
+    }
+
+    // A full refund takes the prints back where nothing has left yet: an order still waiting is cancelled and its numbers handed back to the edition, one the lab already holds is flagged and logged for a cancellation by hand. A test basket produced nothing to take back
+    public function onBasketRefunded(Basket $basket, array $itemsOfThisKind): void
+    {
+        if ($basket->isTestMode()) {
             return;
         }
 
-        // An art edition is announced whatever happens next: a number is gone, and the shop is told at the sale
-        if ($hasLimitedEdition) {
-            $this->printEmail->editionSold($order);
+        foreach ($this->orderRepository->findBy(['basket' => $basket]) as $order) {
+            $this->takeBack($order);
         }
 
-        // And it stops here by default: its certificate has to be signed and posted, so the admin releases the order in the back-office and the sending happens then. A shop that issues its certificates on its own turns "gallery-print-edition-hold" off and the print leaves like any other - which is why the letter asking for a pen only goes out when the order really is waiting for one
-        if ($hasLimitedEdition && false !== $this->configService->get('gallery-print-edition-hold')) {
-            $this->printEmail->editionAwaitingSignature($order);
+        $this->entityManager->flush();
+    }
+
+    // One order of a refunded basket, cancelled when it never reached the lab and flagged otherwise
+    private function takeBack(GalleryPrintOrder $order): void
+    {
+        if (GalleryPrintOrder::STATE_CANCELLED === $order->getState()) {
+            return;
+        }
+
+        if (\in_array($order->getState(), [...GalleryPrintOrder::STATES_HELD_BY_LAB, GalleryPrintOrder::STATE_SHIPPED], true)) {
+            $order->setLastError($this->translator->trans('label.print_order_refunded_at_lab', [], 'gallery'));
+            $this->logger->warning('Print order {id} refunded after it reached the lab {provider}: to cancel by hand', ['id' => $order->getId(), 'provider' => $order->getProvider(), 'reference' => $order->getReference()]);
 
             return;
         }
 
-        $this->messageBus->dispatch(new GalleryPrintOrderMessage((int) $order->getId()));
+        $this->copyRepository->releaseNumbers($order);
+        $order
+            ->setState(GalleryPrintOrder::STATE_CANCELLED)
+            ->setLastError($this->translator->trans('label.print_order_refunded', [], 'gallery'))
+        ;
     }
 
     /**

@@ -255,37 +255,47 @@ class GalleryCategoryTest extends TestCase
         $this->assertSame(0, $category->getMediasCount());
     }
 
-    // The medias read in bulk with the listing the category came from: the relation is never touched at all, so the tile and the count both come from the handed list
-    public function testACategoryHandedItsMediasReadsThemRatherThanItsRelation(): void
+    // A summarized listing: the relation is never touched at all, so the tile and the count both come from what the database counted and drew
+    public function testACategoryHandedItsSummaryReadsItRatherThanItsRelation(): void
     {
         $category = new GalleryCategory();
         $category->addMedia(new GalleryMedia());
-        $handed = new GalleryMedia();
+        $drawn = new GalleryMedia();
 
-        $category->setLoadedMedias([$handed]);
+        $category->setListingSummary(42, $drawn);
 
-        $this->assertSame(1, $category->getMediasCount());
-        $this->assertSame($handed, $category->getCoverOrRandomMedia());
+        $this->assertSame(42, $category->getMediasCount());
+        $this->assertSame($drawn, $category->getCoverOrRandomMedia());
     }
 
-    // An empty handed list is not "nobody handed anything over": a category preloaded and found empty must not go back to the relation to be told so again
-    public function testACategoryHandedAnEmptyListDoesNotFallBackOnItsRelation(): void
+    // A count of zero is not "nobody handed anything over": a category summarized and found empty must not go back to the relation to be told so again
+    public function testACategoryHandedAnEmptySummaryDoesNotFallBackOnItsRelation(): void
     {
         $category = new GalleryCategory();
         $category->addMedia(new GalleryMedia());
 
-        $category->setLoadedMedias([]);
+        $category->setListingSummary(0, null);
 
         $this->assertSame(0, $category->getMediasCount());
         $this->assertNull($category->getCoverOrRandomMedia());
     }
 
-    // The automatic gallery holds no media of its own: what it is handed as the last additions comes first, whatever a listing preloaded for its tile
-    public function testAnAutomaticCategoryPrefersItsOwnListOverAPreloadedOne(): void
+    // A masked cover is a 404: the tile and the og:image fall back on a visible media
+    public function testAHiddenCoverIsNotTheFaceOfItsCategory(): void
+    {
+        $drawn = new GalleryMedia();
+        $category = new GalleryCategory()->setCoverMedia(new GalleryMedia()->setHidden(true));
+        $category->setListingSummary(1, $drawn);
+
+        $this->assertSame($drawn, $category->getCoverOrRandomMedia());
+    }
+
+    // The automatic gallery holds no media of its own: what it is handed as the last additions comes first, whatever a listing summarized for its tile
+    public function testAnAutomaticCategoryPrefersItsOwnListOverASummary(): void
     {
         $newest = new GalleryMedia();
         $category = new GalleryCategory()->setAutomaticKind(GalleryCategory::AUTOMATIC_LATEST);
-        $category->setLoadedMedias([new GalleryMedia(), new GalleryMedia()]);
+        $category->setListingSummary(2, new GalleryMedia());
         $category->setAutomaticMedias([$newest]);
 
         $this->assertSame(1, $category->getMediasCount());

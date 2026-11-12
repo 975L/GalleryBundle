@@ -93,6 +93,17 @@ class GalleryBlockExtensionTest extends TestCase
         $this->assertCount(1, $result['medias']);
     }
 
+    // A maximum of zero or below, stored before the form bounded it, keeps the whole list rather than emptying it or cutting its end
+    public function testANonPositiveMaxIsNoMaximum(): void
+    {
+        $category = new GalleryCategory()->setSlug('summer');
+        $medias = [new GalleryMedia(), new GalleryMedia(), new GalleryMedia()];
+
+        $this->assertCount(3, $this->extension($category, $medias)->getMedias('summer', -2)['medias']);
+        $this->assertCount(3, $this->extension($category, $medias)->getMedias('summer', 0)['medias']);
+        $this->assertCount(2, $this->extension(null, [], [new GalleryCategory()->setSlug('one'), new GalleryCategory()->setSlug('two')])->getCategories(0));
+    }
+
     // The draw covers the whole category, not only the medias the maximum would have kept in the stored order
     public function testGetMediasDrawsAtRandomFromTheWholeCategory(): void
     {

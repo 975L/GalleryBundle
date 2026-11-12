@@ -10,10 +10,12 @@
 
 namespace c975L\GalleryBundle\Management;
 
+use c975L\ConfigBundle\Management\ArchivePath;
 use c975L\ConfigBundle\Management\ImportProviderInterface;
 use c975L\GalleryBundle\Entity\GalleryCategory;
 use c975L\GalleryBundle\Entity\GalleryMedia;
 use c975L\GalleryBundle\Repository\GalleryCategoryRepository;
+use c975L\GalleryBundle\Repository\GalleryPrintCopyRepository;
 use c975L\GalleryBundle\Service\GalleryMediaLikeCounter;
 use c975L\GalleryBundle\Service\GalleryMediaSlugger;
 use c975L\UiBundle\Management\BlockDataImporter;
@@ -22,12 +24,19 @@ use c975L\UiBundle\Video\VideoPlatform;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\HttpFoundation\Exception\SessionNotFoundException;
+use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\HttpFoundation\Session\FlashBagAwareSessionInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 use Vich\UploaderBundle\FileAbstraction\ReplacingFile;
 
 // Imports a "gallery_category" content export (see GalleryCategoryCrudController::exportSelection/ContentExporter) - the export unit is the GalleryCategory with its Medias, which is the granularity the admin actually checks boxes for. Matches the category by slug; Medias have no natural key of their own, so the category's whole media collection is replaced, same principle as PageImportProvider replacing a Page's Blocks
 class GalleryImportProvider implements ImportProviderInterface
 {
     public const KIND = 'gallery_category';
+
+    // The only extensions a stored or archived media file is written under, a manifest naming anything else (.php, .html, .svg) being ignored
+    public const array ALLOWED_EXTENSIONS = ['webp', 'jpg', 'jpeg', 'png', 'gif', 'mp4', 'webm', 'ogv'];
 
     private readonly Filesystem $filesystem;
 
@@ -37,6 +46,9 @@ class GalleryImportProvider implements ImportProviderInterface
         private readonly GalleryMediaSlugger $mediaSlugger,
         private readonly BlockDataImporter $blockDataImporter,
         private readonly RatingRepository $ratingRepository,
+        private readonly GalleryPrintCopyRepository $copyRepository,
+        private readonly RequestStack $requestStack,
+        private readonly TranslatorInterface $translator,
         #[Autowire(param: 'kernel.project_dir')]
         private readonly string $projectDir,
     ) {
@@ -66,6 +78,13 @@ class GalleryImportProvider implements ImportProviderInterface
         foreach ($items as $item) {
             $category = $this->categoryRepository->findOneBySlug($item['slug']);
             $isNew = null === $category;
+
+            // Refused whole, before anything of it is touched: replacing its medias would turn an edition already announced or sold into an open one, its register pointing at nothing
+            if (!$isNew && $this->holdsAnEdition($category)) {
+                $this->warn('label.gallery_import_edition_refused', ['%slug%' => htmlspecialchars((string) $item['slug'])]);
+
+                continue;
+            }
             $category ??= new GalleryCategory();
 
             $this->fillCategory($category, $item, $automatic);
@@ -143,6 +162,34 @@ class GalleryImportProvider implements ImportProviderInterface
         $automatic[$kind] = $category;
 
         return $kind;
+    }
+
+    // Whether a category holds a limited edition or a print already sold, which an import must never replace
+    private function holdsAnEdition(GalleryCategory $category): bool
+    {
+        $ids = [];
+        foreach ($category->getMedias() as $media) {
+            if (null !== $media->getEditionSize()) {
+                return true;
+            }
+            $ids[] = (int) $media->getId();
+        }
+
+        return $this->copyRepository->hasSoldCopyAmong($ids);
+    }
+
+    // Tells the admin what an import left aside, through the flash the import screen shows - nothing to tell where no session is open (a command)
+    private function warn(string $key, array $parameters): void
+    {
+        try {
+            $session = $this->requestStack->getSession();
+        } catch (SessionNotFoundException) {
+            return;
+        }
+
+        if ($session instanceof FlashBagAwareSessionInterface) {
+            $session->getFlashBag()->add('warning', $this->translator->trans($key, $parameters, 'gallery'));
+        }
     }
 
     // Empties the category of the medias it held, and answers the ids they were stored under
@@ -264,7 +311,7 @@ class GalleryImportProvider implements ImportProviderInterface
         $media->setFile(null);
     }
 
-    // Only ever restored for a media that kept its exported name: the other way round Vich has stored the video itself, under a name of its own, and removed the archived copy on the way (see buildMedia)
+    // Laid under the name the stored video carries, the media's exported one or Vich's own - in the latter case over the very file Vich stored from it (see attachFiles)
     private function restoreVideo(GalleryMedia $media, array $mediaData, string $filesDir): void
     {
         $videoPath = $this->restoreFile($filesDir, $mediaData['videoFile'] ?? null, $media->getVideoFilename(), 'public');
@@ -281,12 +328,9 @@ class GalleryImportProvider implements ImportProviderInterface
     // Only when the two carry the same extension though: an archive from before the stored files were converted holds a jpeg, where the name it would be restored under says webp - that would serve a file as something it is not, where the recomputed one is merely softer
     private function restoreFile(string $filesDir, ?string $archiveEntry, ?string $targetFilename, string $root): ?string
     {
-        if (null === $archiveEntry || null === $targetFilename) {
-            return null;
-        }
-
-        $archivedPath = $filesDir . '/' . $archiveEntry;
-        if (!is_file($archivedPath) || pathinfo($archivedPath, \PATHINFO_EXTENSION) !== pathinfo($targetFilename, \PATHINFO_EXTENSION)) {
+        // Only a file inside the extracted archive, never a path a manifest walks out of it with (see ArchivePath)
+        $archivedPath = ArchivePath::resolve($filesDir, $archiveEntry);
+        if (null === $archivedPath || null === $targetFilename || pathinfo($archivedPath, \PATHINFO_EXTENSION) !== pathinfo($targetFilename, \PATHINFO_EXTENSION)) {
             return null;
         }
 
@@ -299,13 +343,15 @@ class GalleryImportProvider implements ImportProviderInterface
     // Named apart from the three above: the original is the one file whose name is not the stored one's, it carries the upload's own extension where the others carry the forced webp one - hence no extension to match, and a name to build rather than to derive
     private function restoreOriginal(string $filesDir, ?string $archiveEntry, GalleryMedia $media, string $filename): void
     {
-        if (null === $archiveEntry || !is_file($filesDir . '/' . $archiveEntry)) {
+        $archivedPath = ArchivePath::resolve($filesDir, $archiveEntry);
+        $extension = strtolower(pathinfo((string) $archivedPath, \PATHINFO_EXTENSION));
+        if (null === $archivedPath || !\in_array($extension, self::ALLOWED_EXTENSIONS, true)) {
             return;
         }
 
         // Same naming as UiBundle's listener does its own: the stored file's name, suffixed and carrying the original's extension rather than the forced webp one
-        $originalFilename = preg_replace('/\.[^.\/]+$/', '-original.' . pathinfo($archiveEntry, \PATHINFO_EXTENSION), $filename);
-        $this->filesystem->copy($filesDir . '/' . $archiveEntry, $this->projectDir . '/' . GalleryMedia::ORIGINAL_DIRECTORY . '/' . $originalFilename, true);
+        $originalFilename = preg_replace('/\.[^.\/]+$/', '-original.' . $extension, $filename);
+        $this->filesystem->copy($archivedPath, $this->projectDir . '/' . GalleryMedia::ORIGINAL_DIRECTORY . '/' . $originalFilename, true);
         $media->setOriginalFilename($originalFilename);
     }
 
@@ -383,23 +429,37 @@ class GalleryImportProvider implements ImportProviderInterface
         }
 
         // Unnamed: Vich stores and names the files anew, on the same ReplacingFile technique as PageImportProvider/FontImportProvider - see PageCrudController::cloneMedia() for why a plain File won't do
-        // The still is left on disk once stored, where the video is removed: the very same file is copied back over what the pipeline made of it (see restoreArchivedFiles), so it has to outlive the flush. Nothing is leaked by it, ContentImportController removing the whole extraction directory in a finally
-        $media->setFile(new ReplacingFile($filesDir . '/' . $mediaData['file'], true, false, false));
+        // Both files are left on disk once stored, never moved: the still is copied back over what the pipeline made of it (see restoreArchivedFiles), and ContentImportController removes the whole extraction directory in a finally
+        $file = $this->archivedEntry($filesDir, $mediaData['file']);
+        if (null === $file) {
+            return;
+        }
 
-        if (isset($mediaData['videoFile'])) {
-            $media->setVideoFile(new ReplacingFile($filesDir . '/' . $mediaData['videoFile'], true, true, true));
+        $media->setFile(new ReplacingFile($file, true, false, false));
+
+        $videoFile = $this->archivedEntry($filesDir, $mediaData['videoFile'] ?? null);
+        if (null !== $videoFile) {
+            $media->setVideoFile(new ReplacingFile($videoFile, true, false, false));
         }
     }
 
-    // The name an archive says a file was served under, or null for anything this bundle would refuse to write. What comes out of an archive is a path an admin uploaded, so it is only honoured under this bundle's own media directory, and only as a plain relative name: a "../" or an absolute path would have an import lay files anywhere the process can write, and a null byte would have PHP stop reading the name where C does
+    // The real path of a file the manifest names inside the extracted archive, or null for one outside it (see ArchivePath) or carrying an extension a media is never stored under
+    private function archivedEntry(string $filesDir, mixed $entry): ?string
+    {
+        $path = ArchivePath::resolve($filesDir, $entry);
+
+        return null !== $path && \in_array(strtolower(pathinfo($path, \PATHINFO_EXTENSION)), self::ALLOWED_EXTENSIONS, true) ? $path : null;
+    }
+
+    // The name an archive says a file was served under, or null for anything this bundle would refuse to write - an extension a media is never stored under included, a ".php" or ".svg" being served from the site's own origin. What comes out of an archive is a path an admin uploaded, so it is only honoured under this bundle's own media directory, and only as a plain relative name: a "../" or an absolute path would have an import lay files anywhere the process can write, and a null byte would have PHP stop reading the name where C does
     // Null falls the caller back on Vich naming the file itself, which is also what an archive exported before the names travelled gets
     private function archivedFilename(?string $filename): ?string
     {
-        if (null === $filename || !str_starts_with($filename, GalleryMedia::MEDIA_DIRECTORY . '/')) {
+        if (null === $filename || !str_starts_with($filename, GalleryMedia::MEDIA_DIRECTORY . '/') || !\in_array(strtolower(pathinfo($filename, \PATHINFO_EXTENSION)), self::ALLOWED_EXTENSIONS, true)) {
             return null;
         }
 
-        return !str_contains($filename, "\0") && !in_array('..', explode('/', $filename), true) ? $filename : null;
+        return !str_contains($filename, "\0") && !\in_array('..', explode('/', $filename), true) ? $filename : null;
     }
 
     // Rebuilds the url of an archive that predates it, from the platform name and the id it stored side by side - null for anything else, which imports as the image every entry already carries

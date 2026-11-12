@@ -1,5 +1,36 @@
 # ChangeLog
 
+## v1.30.0
+
+Print orders taken back on refund, nothing real made in test mode
+
+- `GalleryPrintBasketItemProvider` implements `RefundableBasketItemProviderInterface`: a refunded order not yet at the lab is cancelled and its numbers freed, one at the lab flagged and logged (12/11/2026)
+- A test-mode basket writes a cancelled order, with no copy, no edition number, no letter and nothing sent to the lab (12/11/2026)
+- `GalleryPrintOrderSender` sends the edition letters and the lab message once the payment's transaction is committed, dropping a rolled-back order (12/11/2026)
+- `GalleryPrintBasketItemProvider` takes `GalleryPrintOrderRepository`, `GalleryPrintOrderSender` and a logger in place of the mailer and the bus (12/11/2026) [BC-Break]
+- A print withdrawn between checkout and payment flags its order instead of being skipped (12/11/2026)
+- `GalleryPrintCopyRepository::claimNumber()` claims in one `UPDATE … LIMIT 1`, no longer recursing (12/11/2026)
+- `GalleryPrintCopyRepository::releaseNumbers()` and `hasSoldCopyAmong()` (12/11/2026)
+- A trashed photograph or gallery is no longer for sale, `findOffer()` answering null for a trashed media (12/11/2026)
+- `GalleryPrintFileBuilder` reads the sold format by slug, published or not, and takes `GalleryPrintFormatRepository` (12/11/2026) [BC-Break]
+- Gallery index, blocks and pages count and draw their tiles in SQL, a gallery's page reading only its own medias (12/11/2026)
+- `GalleryMediaRepository::summarizeVisibleByCategories()` and `findVisiblePage()` replace `findVisibleByCategories()` (12/11/2026) [BC-Break]
+- `GalleryCategory::setListingSummary()` replaces `setLoadedMedias()` (12/11/2026) [BC-Break]
+- A hidden cover is no longer a gallery's tile nor its og:image, and keeps the categories block uncached (12/11/2026)
+- Every string column carries an `Assert\Length` of its size, prices, VAT, weight and sizes their bounds (12/11/2026)
+- A limited edition is capped at 100 copies (`GalleryMedia::EDITION_MAX_SIZE`) (12/11/2026)
+- Credits, title root and new gallery title longer than their column are refused with a flash in the media toolbar (12/11/2026)
+- Batch upload bounds its title root and credits (12/11/2026)
+- The upload screen refuses an automatic or trashed gallery (12/11/2026)
+- Block maximums are bounded server side, a stored zero or negative one meaning no maximum (12/11/2026)
+- Print format prices are entered in `shop-currency` (12/11/2026)
+- Import refuses a category holding a limited edition or a sold print, with a warning (12/11/2026)
+- Import reads every manifest path through `ArchivePath::resolve()` and only stores media extensions, Vich never moving an archived file (12/11/2026)
+- `GalleryImportProvider` takes `GalleryPrintCopyRepository`, `RequestStack` and the translator (12/11/2026) [BC-Break]
+- JSON-LD printed from a `set` capture instead of `|raw` (12/11/2026)
+- `tests/CodeRulesTest.php` replays the audit rules (12/11/2026)
+- `c975l/core-bundle` required in ^1.90 and `c975l/payment-bundle` in ^6.26 (12/11/2026)
+
 ## v1.29.1
 
 Permanent delete confirmation names the gallery

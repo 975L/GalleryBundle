@@ -19,6 +19,7 @@ use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\NotBlank;
+use Symfony\Component\Validator\Constraints\Positive;
 
 class GalleryMediasBlockType extends AbstractType
 {
@@ -43,6 +44,7 @@ class GalleryMediasBlockType extends AbstractType
                 'label' => 'label.block_max_medias',
                 'required' => false,
                 'attr' => ['min' => 1],
+                'constraints' => [new Positive()],
             ])
             // Only meaningful together with a maximum: it decides which medias of the category that maximum keeps, the block being uncached so the draw is renewed at every render
             ->add('random', CheckboxType::class, [

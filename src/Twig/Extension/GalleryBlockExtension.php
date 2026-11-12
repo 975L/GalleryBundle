@@ -44,7 +44,8 @@ class GalleryBlockExtension implements ResetInterface
         $ordinary = array_values(array_filter($categories, static fn (GalleryCategory $category): bool => !$category->isAutomatic()));
         $categories = [...$automatic, ...$ordinary];
 
-        $categories = null !== $max ? \array_slice($categories, 0, $max) : $categories;
+        // A maximum of zero or below, stored before the form bounded it, means no maximum rather than an emptied or truncated list
+        $categories = null !== $max && $max > 0 ? \array_slice($categories, 0, $max) : $categories;
 
         // The language being read laid over the galleries' own names: these are the very rows a page of the site draws its rails from, and without this a gallery rail on "/en/" stayed in the writing language while everything around it turned (see GalleryTranslator::apply)
         $this->galleryTranslator->apply($categories);
@@ -74,7 +75,7 @@ class GalleryBlockExtension implements ResetInterface
             shuffle($medias);
         }
 
-        $medias = null !== $max ? \array_slice($medias, 0, $max) : $medias;
+        $medias = null !== $max && $max > 0 ? \array_slice($medias, 0, $max) : $medias;
 
         $this->galleryTranslator->apply([$category, ...$medias]);
 

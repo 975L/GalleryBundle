@@ -76,14 +76,14 @@
     </div>
 
     {# The same prices, said to a search engine as the Product a merchant listing is drawn from #}
-    {% set printJsonLd = gallery_print_json_ld(
+    {% set printJsonLd %}{{ gallery_print_json_ld(
         media,
         offersByPaper,
         remaining,
         media.filename ? absolute_url(asset(media.filename)) : null,
         absolute_url(app.request.pathinfo)
-    ) %}
+    ) }}{% endset %}
     {% if printJsonLd %}
-        <script type="application/ld+json">{{ printJsonLd|raw }}</script>
+        <script type="application/ld+json">{{ printJsonLd }}</script>
     {% endif %}
 {% endif %}

@@ -47,7 +47,8 @@ class GalleryPrintService
     public function isPrintable(GalleryMedia $media): bool
     {
         // The gallery filing it answers as well: a masked gallery is off the site whole, and the basket is reached without ever going through the page that would have said so (see GalleryPrintBasketItemProvider)
-        if (!$this->isEnabled() || !$media->isPrintable() || $media->isHidden() || true === $media->getCategory()?->isHidden()) {
+        // The trash too, the media's or its gallery's: a photograph withdrawn, often over its rights, is never printed from a line left in a basket or a forged POST
+        if (!$this->isEnabled() || !$media->isPrintable() || $media->isHidden() || true === $media->getCategory()?->isHidden() || $media->isDeleted() || true === $media->getCategory()?->isDeleted()) {
             return false;
         }
 
@@ -139,7 +140,8 @@ class GalleryPrintService
         $media = $this->mediaRepository->find($mediaId);
         $format = $this->formatRepository->findBySlug($formatSlug);
 
-        if (null === $media || null === $format) {
+        // A trashed photograph is no longer sold, whatever basket still names it
+        if (null === $media || null === $format || $media->isDeleted()) {
             return null;
         }
 

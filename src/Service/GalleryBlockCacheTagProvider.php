@@ -47,7 +47,7 @@ class GalleryBlockCacheTagProvider implements BlockCacheTagProviderInterface
         foreach ($this->galleryCategoryRepository->findAllOrdered() as $category) {
             $cover = $category->getCoverMedia();
 
-            if (!$category->isAutomatic() && (null === $cover || $cover->isDeleted())) {
+            if (!$category->isAutomatic() && (null === $cover || $cover->isDeleted() || $cover->isHidden())) {
                 return null;
             }
         }

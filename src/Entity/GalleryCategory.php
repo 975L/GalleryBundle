@@ -21,6 +21,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Symfony\Component\Validator\Constraints as Assert;
 
 // The category is the top-level unit of the gallery - a site's galleries are its categories, there is no container above them
 // The slug is the category's natural key: the front-office url resolves on it (see GalleryController::resolveCategory) and the import matches on it (see GalleryImportProvider), so it can't be allowed to collide
@@ -44,9 +45,11 @@ class GalleryCategory implements HasBlocksInterface, TrashableInterface, \String
     private ?int $id = null;
 
     #[ORM\Column(length: 100, unique: true)]
+    #[Assert\Length(max: 100)]
     private ?string $slug = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\Length(max: 255)]
     private ?string $title = null;
 
     // The category's own lead-in, rich text typed in the back-office (see GalleryCategoryCrudController) - printed above the grid and, stripped of its markup, used as the page's description/og:description meta. One field for both: what introduces a gallery to a reader is what introduces it to a search engine, and an admin having to type the same sentence twice would leave one of them stale
@@ -61,6 +64,7 @@ class GalleryCategory implements HasBlocksInterface, TrashableInterface, \String
 
     // What the gallery's photographs may be used for, each photograph following the gallery it is filed in - including where an automatic gallery shows it among others (see GalleryLicense). A real column rather than a key of $data below, which is what a site adds and the bundle never reads
     #[ORM\Column(length: 20, options: ['default' => GalleryLicense::RESERVED])]
+    #[Assert\Length(max: 20)]
     private string $license = GalleryLicense::RESERVED;
 
     // The fields this site adds to a gallery and no other site has, held as one JSON payload rather than a column each - same reasoning as UiBundle's Block::$data: what a single site needs is then a form type it declares (see GalleryCustomizationProviderInterface::getCategoryDataFormType()), no schema migration for every app running this bundle. Anything the database itself has to filter, sort or join on stays a real column
@@ -81,16 +85,16 @@ class GalleryCategory implements HasBlocksInterface, TrashableInterface, \String
     // It is a real row rather than a category built on the fly, so it is arranged, described, given a heading, linked from a menu and declared in the sitemap like any other gallery, without a single screen having to learn a second kind of category
     // Wide enough for a kind a site names itself, the column being what the category is found back by: a value cut down on the way in would never match the lookup again, and a fresh category would be written at every render
     #[ORM\Column(length: 50, nullable: true)]
+    #[Assert\Length(max: 50)]
     private ?string $automaticKind = null;
 
     // Not a column: an automatic gallery's medias belong to other categories, so they are handed over at read time rather than held by the relation below - everything reading a category's medias (its index tile, its count, its og:image) then works on it without knowing which kind it has in hand
     /** @var list<GalleryMedia> */
     private array $automaticMedias = [];
 
-    // Not a column either: the visible medias read in bulk for a category that has no cover, so a listing draws every tile from one query instead of initializing the lazy relation below category by category (see GalleryCategoryRepository::findAllOrdered)
-    // Null means "nobody handed anything over", which is not the same as an empty list: a category preloaded and found empty has no media at all, and must not go back to the database to be told so again
-    /** @var ?list<GalleryMedia> */
-    private ?array $loadedMedias = null;
+    // Not columns either: how many medias the category shows and one of them drawn at random, counted in SQL for a whole listing (see GalleryMediaRepository::summarizeVisibleByCategories) so neither a tile nor a page ever loads the lazy relation below. A null count means nobody handed one over, which is not the same as zero
+    private ?int $listingCount = null;
+    private ?GalleryMedia $listingMedia = null;
 
     #[ORM\OneToMany(mappedBy: 'category', targetEntity: GalleryMedia::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
     #[ORM\OrderBy(['position' => \SortDirection::Ascending])]
@@ -287,11 +291,11 @@ class GalleryCategory implements HasBlocksInterface, TrashableInterface, \String
         return $this;
     }
 
-    // Posed by GalleryCategoryRepository alone, on the categories it read the medias of - the list is the whole visible one, so the count read next to a tile stays the count the grid shows
-    /** @param list<GalleryMedia> $medias */
-    public function setLoadedMedias(array $medias): self
+    // Posed by GalleryAutomaticProvider on the categories of a listing or a page: the count the grid shows and the media a tile without a cover is drawn from
+    public function setListingSummary(int $count, ?GalleryMedia $media): self
     {
-        $this->loadedMedias = $medias;
+        $this->listingCount = $count;
+        $this->listingMedia = $media;
 
         return $this;
     }
@@ -306,8 +310,14 @@ class GalleryCategory implements HasBlocksInterface, TrashableInterface, \String
     // A trashed media is never drawn, nor kept as a cover: it is a photo an admin took off the site, and having it stand for the whole category on the index would put it back on the very page it was removed from
     public function getCoverOrRandomMedia(): ?GalleryMedia
     {
-        if (null !== $this->coverMedia && !$this->coverMedia->isDeleted()) {
+        // A masked cover is off the site as well, a 404 drawn as the tile and the og:image
+        if (null !== $this->coverMedia && !$this->coverMedia->isDeleted() && !$this->coverMedia->isHidden()) {
             return $this->coverMedia;
+        }
+
+        // Drawn by the database for an ordinary gallery whose listing was summarized
+        if (!$this->isAutomatic() && null !== $this->listingCount) {
+            return $this->listingMedia;
         }
 
         $medias = $this->visibleMedias();
@@ -323,7 +333,7 @@ class GalleryCategory implements HasBlocksInterface, TrashableInterface, \String
     // Counts what the site shows, not what the table holds: the number is read next to the category everywhere, and one that kept counting the trash would never match the grid it names
     public function getMediasCount(): int
     {
-        return count($this->visibleMedias());
+        return !$this->isAutomatic() && null !== $this->listingCount ? $this->listingCount : count($this->visibleMedias());
     }
 
     /** @return list<GalleryMedia> */
@@ -334,12 +344,7 @@ class GalleryCategory implements HasBlocksInterface, TrashableInterface, \String
             return $this->automaticMedias;
         }
 
-        // Read in bulk with the listing this category came from, the relation then never being touched at all
-        if (null !== $this->loadedMedias) {
-            return $this->loadedMedias;
-        }
-
-        // Hidden left out as well as the trash, exactly as the bulk read above leaves it out (see GalleryMediaRepository::findVisibleByCategories) - the cover and the count this feeds are public, and the two paths have to answer the same list
+        // Hidden left out as well as the trash, exactly as the public reads leave it out (see GalleryMediaRepository::findVisibleByCategory) - the cover and the count this feeds are public, and the two paths have to answer the same list
         return array_values(array_filter(
             $this->medias->toArray(),
             static fn (GalleryMedia $media): bool => !$media->isDeleted() && !$media->isHidden()

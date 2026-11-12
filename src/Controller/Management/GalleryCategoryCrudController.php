@@ -1136,6 +1136,9 @@ class GalleryCategoryCrudController extends AbstractCrudController
 
         // An empty credits box clears the credits rather than being ignored, as an unchecked box unsets the rights - the field is applied as the toolbar shows it, which is also the only way to blank it on a whole selection
         $credits = $request->request->getString('credits') ?: null;
+        if (!$this->fitsColumn($credits, 255)) {
+            return $this->redirect($url);
+        }
 
         $medias = $this->selectedMedias($category, $request);
         foreach ($medias as $media) {
@@ -1173,6 +1176,11 @@ class GalleryCategoryCrudController extends AbstractCrudController
         // Read before the arrival gallery is settled: creating one on the spot for a selection that turns out to be empty would leave an empty gallery behind
         $medias = $this->selectedMedias($category, $request, deleted: false);
         if ($medias->isEmpty()) {
+            return $this->redirect($url);
+        }
+
+        // The title root numbers each media under the title's column, so a longer one is refused before anything moves
+        if (!$this->fitsColumn($request->request->getString('titleRoot'), GalleryMedia::TITLE_ROOT_MAX_LENGTH)) {
             return $this->redirect($url);
         }
 
@@ -1233,6 +1241,11 @@ class GalleryCategoryCrudController extends AbstractCrudController
             return null;
         }
 
+        // The columns' lengths, which the category form's constraints check and this shortcut has to check itself
+        if (!$this->fitsColumn($title, 255) || !$this->fitsColumn($slug, 100)) {
+            return null;
+        }
+
         if ($this->galleryCategoryRepository->findOneBySlug($slug) instanceof GalleryCategory) {
             $this->addFlash('danger', $this->translator->trans('label.gallery_medias_move_slug_taken', ['%slug%' => $slug], 'gallery'));
 
@@ -1248,6 +1261,18 @@ class GalleryCategoryCrudController extends AbstractCrudController
         $entityManager->persist($target);
 
         return $target;
+    }
+
+    // Whether a posted text fits the column it is written to, the admin being told otherwise rather than met by a database error
+    private function fitsColumn(?string $value, int $max): bool
+    {
+        if (mb_strlen((string) $value) <= $max) {
+            return true;
+        }
+
+        $this->addFlash('danger', $this->translator->trans('label.gallery_text_too_long', ['%max%' => $max], 'gallery'));
+
+        return false;
     }
 
     // Hands the files of the checked medias back as one zip - their high resolution version, or the untouched originals kept at upload, the button pressed naming which (see GalleryMediaArchiver)

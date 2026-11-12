@@ -169,37 +169,31 @@ class GalleryMediaRepositoryTest extends TestCase
         $this->assertContains($old, $repository->findRecent(10));
     }
 
-    // One read for the whole listing, handed back under the id of the category each media belongs to - a caller then poses each list on its own category without going back to the database
-    public function testFindVisibleByCategoriesGroupsTheMediasUnderTheirCategory(): void
+    // Each category's count and drawn media, handed back under the category's id - a caller then poses each summary on its own category without going back to the database
+    public function testSummarizeVisibleByCategoriesHandsEachCategoryItsCountAndItsDraw(): void
     {
         $first = $this->createCategory(1);
         $second = $this->createCategory(2);
-        $one = $this->createMediaOf($first);
-        $two = $this->createMediaOf($first);
-        $three = $this->createMediaOf($second);
+        $drawn = $this->createMediaWithId(10);
 
-        $grouped = new GalleryMediaRepositoryVisibleFixture([$one, $two, $three])->findVisibleByCategories([$first, $second]);
+        $repository = new GalleryMediaRepositorySummaryFixture(
+            [['category' => '1', 'media' => '10', 'total' => '3'], ['category' => '2', 'media' => '11', 'total' => '1']],
+            [$drawn],
+        );
 
-        $this->assertSame([1 => [$one, $two], 2 => [$three]], $grouped);
-    }
+        $summaries = $repository->summarizeVisibleByCategories([$first, $second]);
 
-    // A category the read brought nothing back for is simply absent, the caller reading it as the empty list it is
-    public function testFindVisibleByCategoriesLeavesOutACategoryWithoutASingleMedia(): void
-    {
-        $first = $this->createCategory(1);
-        $second = $this->createCategory(2);
-
-        $grouped = new GalleryMediaRepositoryVisibleFixture([$this->createMediaOf($first)])->findVisibleByCategories([$first, $second]);
-
-        $this->assertSame([1], array_keys($grouped));
+        $this->assertSame(['count' => 3, 'media' => $drawn], $summaries[1]);
+        // A drawn media gone between the two reads leaves the count standing and the tile without a face
+        $this->assertSame(['count' => 1, 'media' => null], $summaries[2]);
     }
 
     // Nothing to read for nobody: the IN clause would be handed an empty set, which no database answers the same way
-    public function testFindVisibleByCategoriesAsksNothingForAnEmptyList(): void
+    public function testSummarizeVisibleByCategoriesAsksNothingForAnEmptyList(): void
     {
-        $repository = new GalleryMediaRepositoryVisibleFixture([]);
+        $repository = new GalleryMediaRepositorySummaryFixture([], []);
 
-        $this->assertSame([], $repository->findVisibleByCategories([]));
+        $this->assertSame([], $repository->summarizeVisibleByCategories([]));
         $this->assertSame(0, $repository->reads);
     }
 
@@ -211,9 +205,12 @@ class GalleryMediaRepositoryTest extends TestCase
         return $category;
     }
 
-    private function createMediaOf(GalleryCategory $category): GalleryMedia
+    private function createMediaWithId(int $id): GalleryMedia
     {
-        return new GalleryMedia()->setCategory($category);
+        $media = new GalleryMedia();
+        new \ReflectionProperty(GalleryMedia::class, 'id')->setValue($media, $id);
+
+        return $media;
     }
 
     // Relative to the day the test runs on, the window findLatest() opens being counted from today
@@ -226,22 +223,30 @@ class GalleryMediaRepositoryTest extends TestCase
     }
 }
 
-// visibleMediasOf() reads the table through Doctrine's own QueryBuilder, which has no in-memory equivalent to stub without a real EntityManager - the rows are handed over here instead, parent constructor never invoked, so findVisibleByCategories()' own grouping is exercised for real
-class GalleryMediaRepositoryVisibleFixture extends GalleryMediaRepository
+// visibleSummaryRows() and findMediasById() read the table through the connection and the ORM, which have no in-memory equivalent without a real EntityManager - the rows are handed over here instead, parent constructor never invoked, so summarizeVisibleByCategories()' own pairing is exercised for real
+class GalleryMediaRepositorySummaryFixture extends GalleryMediaRepository
 {
     public int $reads = 0;
 
-    /** @param list<GalleryMedia> $medias */
-    public function __construct(private readonly array $medias)
+    /**
+     * @param list<array<string, string>> $rows
+     * @param list<GalleryMedia>          $medias
+     */
+    public function __construct(private readonly array $rows, private readonly array $medias)
     {
     }
 
-    /** @return list<GalleryMedia> */
     #[\Override]
-    protected function visibleMediasOf(array $categories): array
+    protected function visibleSummaryRows(array $categoryIds): array
     {
         ++$this->reads;
 
+        return $this->rows;
+    }
+
+    #[\Override]
+    protected function findMediasById(array $ids): array
+    {
         return $this->medias;
     }
 }

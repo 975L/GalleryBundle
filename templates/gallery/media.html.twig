@@ -71,15 +71,15 @@
     {# A video framed from a platform has no file of the site's own: it names the player instead (see GalleryMedia::getEmbedUrl()), which is what schema.org reads of a video it cannot fetch #}
     {% set contentFile = media.video ? media.videoFilename : media.filename %}
     {% set thumbnailFile = media.video ? media.filename : media.thumbnailFilename %}
-    {% set jsonLd = gallery_media_json_ld(
+    {% set jsonLd %}{{ gallery_media_json_ld(
         media,
         contentFile ? absolute_url(asset(contentFile)) : null,
         thumbnailFile ? absolute_url(asset(thumbnailFile)) : null,
         absolute_url(localized_path('gallery_media', {category: category.slug, slug: media.slug})),
         printAvailable,
         media.embedUrl
-    ) %}
+    ) }}{% endset %}
     {% if jsonLd %}
-        <script type="application/ld+json">{{ jsonLd|raw }}</script>
+        <script type="application/ld+json">{{ jsonLd }}</script>
     {% endif %}
 {% endblock %}

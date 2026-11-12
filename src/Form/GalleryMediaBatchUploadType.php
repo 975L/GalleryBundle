@@ -10,6 +10,7 @@
 
 namespace c975L\GalleryBundle\Form;
 
+use c975L\GalleryBundle\Entity\GalleryMedia;
 use c975L\GalleryBundle\Service\UploadLimits;
 use c975L\UiBundle\Contract\VichWatermarkableInterface;
 use c975L\UiBundle\Service\UploadProgress;
@@ -22,6 +23,7 @@ use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\All;
 use Symfony\Component\Validator\Constraints\Image;
+use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 // Not bound to any single entity (data_class null): one GalleryMedia is built per uploaded file by GalleryMediaUploadController, with the credits and rights applied to the whole batch - anything that varies media by media is retouched afterwards in the media edit screen
@@ -64,11 +66,14 @@ class GalleryMediaBatchUploadType extends AbstractType
                 'label' => 'label.gallery_title_root',
                 'help' => 'label.gallery_batch_title_root_help',
                 'required' => false,
+                // Room left under the title's column for the rank each media is numbered with
+                'constraints' => [new Length(max: GalleryMedia::TITLE_ROOT_MAX_LENGTH)],
             ])
             ->add('credits', TextType::class, [
                 'label' => 'label.credits',
                 'help' => 'label.gallery_batch_credits_help',
                 'required' => false,
+                'constraints' => [new Length(max: 255)],
             ])
             ->add('rightsReserved', CheckboxType::class, [
                 'label' => 'label.rights_reserved',

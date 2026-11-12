@@ -12,6 +12,7 @@ namespace c975L\GalleryBundle\Entity;
 
 use c975L\GalleryBundle\Model\PrintCopySnapshot;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * One print, and for a limited edition one number of it. This is the register: what an edition of thirty means is thirty
@@ -50,30 +51,38 @@ class GalleryPrintCopy implements \Stringable
 
     // The format key from the print catalogue, and what it cost, both frozen at the sale: the catalogue is an admin's to reprice, and a certificate issued last year has to keep saying what was actually bought
     #[ORM\Column(length: 50, nullable: true)]
+    #[Assert\Length(max: 50)]
     private ?string $format = null;
 
     #[ORM\Column(nullable: true)]
+    #[Assert\PositiveOrZero]
     private ?int $price = null;
 
     // What the certificate prints, all five read once at the sale and never looked up again (see PrintCopySnapshot). The paper is signed by hand and posted, so from that day the buyer holds the document - retitling the photograph, renaming the format or renaming the site must not make the site's own copy of it say something else
     // Each as wide as what it copies, never narrower: these are written by the statement that claims a number, which runs once the customer has already paid, and a value too long for its column would fail there of all places
     #[ORM\Column(length: 255, nullable: true)]
+    #[Assert\Length(max: 255)]
     private ?string $formatLabel = null;
 
     #[ORM\Column(length: 100, nullable: true)]
+    #[Assert\Length(max: 100)]
     private ?string $sku = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Assert\Length(max: 255)]
     private ?string $workTitle = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Assert\Length(max: 255)]
     private ?string $credits = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Assert\Length(max: 255)]
     private ?string $issuer = null;
 
     // What the certificate's public page resolves on and what its QR code carries. Posed at the sale and not at publication, so the certificate of a copy nobody has bought cannot be reached by guessing a number
     #[ORM\Column(length: 36, unique: true, nullable: true)]
+    #[Assert\Length(max: 36)]
     private ?string $certificate = null;
 
     #[ORM\Column(nullable: true)]

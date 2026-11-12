@@ -202,8 +202,9 @@ class GalleryPrintFormatCrudController extends AbstractCrudController
             ->hideOnIndex()
         ;
 
+        // Entered in the one currency the site charges, shows and publishes
         yield MoneyField::new('price', t('label.print_format_price', [], 'gallery'))
-            ->setCurrency('EUR')
+            ->setCurrency(strtoupper((string) ($this->configService->get('shop-currency') ?: 'EUR')))
             ->setStoredAsCents()
         ;
 
