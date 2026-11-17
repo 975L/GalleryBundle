@@ -13,6 +13,11 @@ namespace c975L\GalleryBundle\Tests\Repository;
 use c975L\GalleryBundle\Entity\GalleryCategory;
 use c975L\GalleryBundle\Entity\GalleryMedia;
 use c975L\GalleryBundle\Repository\GalleryMediaRepository;
+use Doctrine\DBAL\Platforms\AbstractPlatform;
+use Doctrine\DBAL\Platforms\MariaDBPlatform;
+use Doctrine\DBAL\Platforms\MySQLPlatform;
+use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
+use Doctrine\DBAL\Platforms\SQLitePlatform;
 use PHPUnit\Framework\TestCase;
 
 class GalleryMediaRepositoryTest extends TestCase
@@ -197,6 +202,15 @@ class GalleryMediaRepositoryTest extends TestCase
         $this->assertSame(0, $repository->reads);
     }
 
+    // The draw speaks each platform's dialect: SQLite has no RAND(), which broke the gallery index of a demo site
+    public function testRandomFunctionFollowsThePlatform(): void
+    {
+        $this->assertSame('RAND()', GalleryMediaRepositorySummaryFixture::random(new MariaDBPlatform()));
+        $this->assertSame('RAND()', GalleryMediaRepositorySummaryFixture::random(new MySQLPlatform()));
+        $this->assertSame('RANDOM()', GalleryMediaRepositorySummaryFixture::random(new SQLitePlatform()));
+        $this->assertSame('RANDOM()', GalleryMediaRepositorySummaryFixture::random(new PostgreSQLPlatform()));
+    }
+
     private function createCategory(int $id): GalleryCategory
     {
         $category = new GalleryCategory();
@@ -234,6 +248,12 @@ class GalleryMediaRepositorySummaryFixture extends GalleryMediaRepository
      */
     public function __construct(private readonly array $rows, private readonly array $medias)
     {
+    }
+
+    // Exposes the protected platform switch to the test
+    public static function random(AbstractPlatform $platform): string
+    {
+        return static::randomFunction($platform);
     }
 
     #[\Override]

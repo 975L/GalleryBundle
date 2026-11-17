@@ -208,7 +208,7 @@ window catches nothing, so the gallery is never empty as long as the site holds 
   caller holding entities it did not read (the back-office listing, whose rows EasyAdmin paginates).
 - Both also hand **every other category** its visible count and one visible media drawn at random,
   counted by the database for the whole list in two queries
-  (`GalleryMediaRepository::summarizeVisibleByCategories()`, window functions of MariaDB 10.2 / MySQL 8),
+  (`GalleryMediaRepository::summarizeVisibleByCategories()`, window functions of MariaDB 10.2 / MySQL 8 / SQLite 3.25, drawn with `RAND()` or `RANDOM()` by platform),
   posed through `GalleryCategory::setListingSummary()` — no tile, count or page ever loads the lazy
   relation. A list of one is summarized too: it is what a gallery's own page counts its grid with.
 `GalleryLatestProvider::getMediasByDay()` cuts that same list into the days its medias were added on —

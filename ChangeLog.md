@@ -1,5 +1,11 @@
 # ChangeLog
 
+## v1.30.2
+
+Gallery index drawn on SQLite too
+
+- `GalleryMediaRepository::visibleSummaryRows()` draws with `RANDOM()` outside MariaDB / MySQL, SQLite having no `RAND()` (17/11/2026)
+
 ## v1.30.1
 
 CI replay runs the other PHP versions in parallel

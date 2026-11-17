@@ -14,6 +14,8 @@ use c975L\GalleryBundle\Entity\GalleryCategory;
 use c975L\GalleryBundle\Entity\GalleryMedia;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\DBAL\ArrayParameterType;
+use Doctrine\DBAL\Platforms\AbstractMySQLPlatform;
+use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -81,7 +83,7 @@ class GalleryMediaRepository extends ServiceEntityRepository
         return $summaries;
     }
 
-    // One row per category: its visible count and one visible media drawn at random, both counted by the database (window functions, MariaDB 10.2 / MySQL 8)
+    // One row per category: its visible count and one visible media drawn at random, both counted by the database (window functions, MariaDB 10.2 / MySQL 8 / SQLite 3.25)
     /**
      * @param list<int> $categoryIds
      *
@@ -89,11 +91,19 @@ class GalleryMediaRepository extends ServiceEntityRepository
      */
     protected function visibleSummaryRows(array $categoryIds): array
     {
-        return $this->getEntityManager()->getConnection()->fetchAllAssociative(
-            'SELECT category, media, total FROM (SELECT category_id AS category, id AS media, COUNT(*) OVER (PARTITION BY category_id) AS total, ROW_NUMBER() OVER (PARTITION BY category_id ORDER BY RAND()) AS draw FROM gallery_media WHERE category_id IN (:categories) AND is_deleted = 0 AND hidden = 0) drawn WHERE draw = 1',
+        $connection = $this->getEntityManager()->getConnection();
+
+        return $connection->fetchAllAssociative(
+            'SELECT category, media, total FROM (SELECT category_id AS category, id AS media, COUNT(*) OVER (PARTITION BY category_id) AS total, ROW_NUMBER() OVER (PARTITION BY category_id ORDER BY ' . static::randomFunction($connection->getDatabasePlatform()) . ') AS draw FROM gallery_media WHERE category_id IN (:categories) AND is_deleted = 0 AND hidden = 0) drawn WHERE draw = 1',
             ['categories' => $categoryIds],
             ['categories' => ArrayParameterType::INTEGER],
         );
+    }
+
+    // The SQL random function of the platform: RAND() on MariaDB / MySQL, RANDOM() on SQLite and PostgreSQL (a demo database, a test suite)
+    protected static function randomFunction(AbstractPlatform $platform): string
+    {
+        return $platform instanceof AbstractMySQLPlatform ? 'RAND()' : 'RANDOM()';
     }
 
     // The medias of a list of ids, in no particular order
