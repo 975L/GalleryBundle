@@ -1,5 +1,15 @@
 [
     {
+        "date": "2026-11-21",
+        "description": [
+            {
+                "en": "An AI agent holding an agent token of an account editing the galleries can list the galleries and their photos, add a hidden gallery and write the titles, summaries, captions and credits, a renamed gallery keeping its old links redirected as on the back office; uploading photos, showing a gallery and deleting stay yours, from the back office.",
+                "fr": "Un agent IA muni d'un jeton d'agent d'un compte qui édite les galeries peut lister les galeries et leurs photos, ajouter une galerie masquée et rédiger les titres, résumés, légendes et crédits, une galerie renommée gardant ses anciens liens redirigés comme au back-office ; l'envoi des photos, la mise en ligne d'une galerie et la suppression restent les vôtres, depuis le back-office.",
+                "es": "Un agente de IA con un token de agente de una cuenta que edita las galerías puede listar las galerías y sus fotos, añadir una galería oculta y redactar los títulos, resúmenes, leyendas y créditos, y una galería renombrada conserva sus antiguos enlaces redirigidos como en el back-office; subir fotos, publicar una galería y eliminar siguen siendo cosa suya, desde el back-office."
+            }
+        ]
+    },
+    {
         "date": "2026-11-12",
         "description": [
             {

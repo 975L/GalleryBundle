@@ -23,6 +23,7 @@ use c975L\GalleryBundle\Management\GalleryExportProvider;
 use c975L\GalleryBundle\Repository\GalleryCategoryRepository;
 use c975L\GalleryBundle\Repository\GalleryMediaRepository;
 use c975L\GalleryBundle\Service\GalleryAutomaticProvider;
+use c975L\GalleryBundle\Service\GalleryCategoryUrls;
 use c975L\GalleryBundle\Service\GalleryCustomizationRegistry;
 use c975L\GalleryBundle\Service\GalleryLatestProvider;
 use c975L\GalleryBundle\Service\GalleryMediaArchiver;
@@ -195,6 +196,7 @@ class GalleryCategoryCrudControllerTest extends TestCase
             csrfTokenManager: $this->createCsrfTokenManager(true),
             automaticProvider: $services['automaticProvider'],
             galleryCategoryRepository: $services['categoryRepository'],
+            categoryUrls: new GalleryCategoryUrls(new GalleryUrlRedirector($services['redirectRepository']), $this->createRouter(), new AsciiSlugger()),
             customizationRegistry: $services['customizationRegistry'],
             galleryExportProvider: $services['exportProvider'],
             latestProvider: $services['latestProvider'],
@@ -213,7 +215,6 @@ class GalleryCategoryCrudControllerTest extends TestCase
             // The recording double rather than a bare stub, so a test reads back which likes a permanent deletion dropped
             ratingRepository: $this->createRatingRepository(),
             requestStack: $services['requestStack'],
-            slugger: new AsciiSlugger(),
             translator: $translator,
             uploadLimits: new UploadLimits(),
         );

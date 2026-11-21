@@ -12,7 +12,7 @@ namespace c975L\GalleryBundle\Command;
 
 use c975L\GalleryBundle\Entity\GalleryCategory;
 use c975L\GalleryBundle\Repository\GalleryCategoryRepository;
-use c975L\GalleryBundle\Service\GalleryUrlRedirector;
+use c975L\GalleryBundle\Service\GalleryCategoryUrls;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -20,7 +20,6 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
-use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 // One-off, for a site updated before findOrCreateAutomatic() took back the gallery a lost v1.12 flag left behind, which wrote a "latest-2" beside it: the original keeps its url, indexed and linked from menus for longest, and takes the flag back, the duplicate is removed and its url redirected there
 #[AsCommand(
@@ -32,8 +31,7 @@ class GalleryAutomaticDedupeCommand extends Command
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
         private readonly GalleryCategoryRepository $categoryRepository,
-        private readonly GalleryUrlRedirector $urlRedirector,
-        private readonly UrlGeneratorInterface $urlGenerator,
+        private readonly GalleryCategoryUrls $categoryUrls,
     ) {
         parent::__construct();
     }
@@ -67,11 +65,8 @@ class GalleryAutomaticDedupeCommand extends Command
             return Command::SUCCESS;
         }
 
-        // Same pair of rows as a rename (see GalleryCategoryCrudController::redirectSlugChange): the category url, then every media url below it
-        $oldUrl = $this->urlGenerator->generate('gallery_category', ['category' => $duplicate->getSlug()]);
-        $newUrl = $this->urlGenerator->generate('gallery_category', ['category' => $orphan->getSlug()]);
-        $this->urlRedirector->record($this->entityManager, $oldUrl, $newUrl);
-        $this->urlRedirector->record($this->entityManager, $oldUrl . '/*', $newUrl);
+        // Same pair of rows as a rename: the category url, then every media url below it
+        $this->categoryUrls->redirectRename($this->entityManager, (string) $duplicate->getSlug(), (string) $orphan->getSlug());
 
         $this->entityManager->remove($duplicate);
         $orphan->setAutomaticKind(GalleryCategory::AUTOMATIC_LATEST);

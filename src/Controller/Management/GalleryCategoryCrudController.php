@@ -27,6 +27,7 @@ use c975L\GalleryBundle\Model\GalleryMediaBatch;
 use c975L\GalleryBundle\Repository\GalleryCategoryRepository;
 use c975L\GalleryBundle\Repository\GalleryMediaRepository;
 use c975L\GalleryBundle\Service\GalleryAutomaticProvider;
+use c975L\GalleryBundle\Service\GalleryCategoryUrls;
 use c975L\GalleryBundle\Service\GalleryCustomizationRegistry;
 use c975L\GalleryBundle\Service\GalleryLatestProvider;
 use c975L\GalleryBundle\Service\GalleryMediaArchiver;
@@ -84,7 +85,6 @@ use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
-use Symfony\Component\String\Slugger\SluggerInterface;
 use Symfony\Component\Translation\TranslatableMessage;
 use Symfony\Component\Validator\Constraints\All;
 use Symfony\Component\Validator\Constraints\Image;
@@ -125,6 +125,7 @@ class GalleryCategoryCrudController extends AbstractCrudController
         private readonly CsrfTokenManagerInterface $csrfTokenManager,
         private readonly GalleryAutomaticProvider $automaticProvider,
         private readonly GalleryCategoryRepository $galleryCategoryRepository,
+        private readonly GalleryCategoryUrls $categoryUrls,
         private readonly GalleryCustomizationRegistry $customizationRegistry,
         private readonly GalleryExportProvider $galleryExportProvider,
         private readonly GalleryLatestProvider $latestProvider,
@@ -137,7 +138,6 @@ class GalleryCategoryCrudController extends AbstractCrudController
         private readonly GalleryUrlRedirector $urlRedirector,
         private readonly RatingRepository $ratingRepository,
         private readonly RequestStack $requestStack,
-        private readonly SluggerInterface $slugger,
         private readonly TranslatorInterface $translator,
         private readonly UploadLimits $uploadLimits,
     ) {
@@ -413,9 +413,7 @@ class GalleryCategoryCrudController extends AbstractCrudController
 
         // Same pair persistEntity() lifts for a category created under a freed slug: a "gone" row an earlier permanent deletion left on that path would shadow the gallery for good, RedirectSubscriber running before the router
         if (\is_string($category->getSlug())) {
-            $url = $this->generateUrl('gallery_category', ['category' => $category->getSlug()]);
-            $this->urlRedirector->release($entityManager, $url);
-            $this->urlRedirector->release($entityManager, $url . '/*');
+            $this->categoryUrls->release($entityManager, $category);
             $entityManager->flush();
         }
 
@@ -550,7 +548,7 @@ class GalleryCategoryCrudController extends AbstractCrudController
                 return;
             }
 
-            $data['slug'] = strtolower($this->slugger->slug($data['slug'])->toString());
+            $data['slug'] = $this->categoryUrls->slug($data['slug']);
             $event->setData($data);
         });
 
@@ -601,7 +599,7 @@ class GalleryCategoryCrudController extends AbstractCrudController
     public function persistEntity(EntityManagerInterface $entityManager, object $entityInstance): void
     {
         if ($entityInstance instanceof GalleryCategory && \is_string($entityInstance->getSlug())) {
-            $this->releaseCategoryUrl($entityManager, $entityInstance);
+            $this->categoryUrls->release($entityManager, $entityInstance);
 
             foreach ($entityInstance->getMedias() as $media) {
                 if (\is_string($media->getSlug())) {
@@ -616,16 +614,6 @@ class GalleryCategoryCrudController extends AbstractCrudController
         parent::persistEntity($entityManager, $entityInstance);
     }
 
-    // The url a created category answers on, and the wildcard covering every media url below it - both freed of the "gone" row an earlier permanent deletion left there, ConfigBundle's RedirectSubscriber running before the router
-    // Shared with the gallery the move toolbar creates on the spot (see createMoveTarget), which never goes through persistEntity()
-    private function releaseCategoryUrl(EntityManagerInterface $entityManager, GalleryCategory $category): void
-    {
-        $url = $this->generateUrl('gallery_category', ['category' => $category->getSlug()]);
-
-        $this->urlRedirector->release($entityManager, $url);
-        $this->urlRedirector->release($entityManager, $url . '/*');
-    }
-
     // Updated category - a rename moves its public url (see addSlugNormalizer), so the old one is redirected to the new one rather than left to 404 on every link and search result already pointing at it, exactly as SiteBundle's PageCrudController does for a page
     #[\Override]
     public function updateEntity(EntityManagerInterface $entityManager, object $entityInstance): void
@@ -633,22 +621,10 @@ class GalleryCategoryCrudController extends AbstractCrudController
         $originalSlug = $entityManager->getUnitOfWork()->getOriginalEntityData($entityInstance)['slug'] ?? null;
 
         if ($entityInstance instanceof GalleryCategory && \is_string($originalSlug) && $originalSlug !== $entityInstance->getSlug()) {
-            $this->redirectSlugChange($entityManager, $originalSlug, (string) $entityInstance->getSlug());
+            $this->categoryUrls->redirectRename($entityManager, $originalSlug, (string) $entityInstance->getSlug());
         }
 
         parent::updateEntity($entityManager, $entityInstance);
-    }
-
-    // Both urls are generated rather than concatenated, the first segment being the configured route prefix (see GalleryRoutePrefix) - the row itself is written by GalleryUrlRedirector, shared with the media CRUD, which moves a url the same way
-    private function redirectSlugChange(EntityManagerInterface $entityManager, string $oldSlug, string $newSlug): void
-    {
-        $oldUrl = $this->generateUrl('gallery_category', ['category' => $oldSlug]);
-        $newUrl = $this->generateUrl('gallery_category', ['category' => $newSlug]);
-
-        $this->urlRedirector->record($entityManager, $oldUrl, $newUrl);
-
-        // The category's slug is also the segment above each of its medias (see GalleryController::media), so renaming it moves every media url under it - a second row, wildcarded (ConfigBundle's own convention, see RedirectSubscriber::resolve), sends them to the category rather than leaving each to 404
-        $this->urlRedirector->record($entityManager, $oldUrl . '/*', $newUrl);
     }
 
     // What this site adds to a gallery and no other site has, rendered from the form type it declares - a site declaring none gets no field at all (see c975L\GalleryBundle\Contract\GalleryCustomizationProviderInterface)
@@ -1234,7 +1210,7 @@ class GalleryCategoryCrudController extends AbstractCrudController
     private function createMoveTarget(EntityManagerInterface $entityManager, string $title): ?GalleryCategory
     {
         $title = trim($title);
-        $slug = '' === $title ? '' : strtolower($this->slugger->slug($title)->toString());
+        $slug = '' === $title ? '' : $this->categoryUrls->slug($title);
         if ('' === $slug) {
             $this->addFlash('danger', $this->translator->trans('label.gallery_medias_move_refused', [], 'gallery'));
 
@@ -1257,7 +1233,7 @@ class GalleryCategoryCrudController extends AbstractCrudController
             ->setTitle($title)
         ;
 
-        $this->releaseCategoryUrl($entityManager, $target);
+        $this->categoryUrls->release($entityManager, $target);
         $entityManager->persist($target);
 
         return $target;

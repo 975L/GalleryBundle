@@ -23,7 +23,7 @@ Add GalleryBundle on top of [c975L/CoreBundle](https://github.com/975L/CoreBundl
 
 - **Setup** — [requirements](#requirements) · [installation](#installation) · [configuration](#load-the-configuration) · [routes](#enable-routes) · [assets](#install-assets) · [theme](#install-the-theme)
 - **Using it** — [public routes](#public-routes) · [linking from a menu](#linking-a-gallery-from-a-menu) · [the automatic galleries](#the-automatic-galleries) · [renaming a category](#renaming-a-category) · [deleting a gallery](#deleting-a-gallery) · [masking a gallery](#masking-a-gallery) · [selling prints](#selling-prints) · [the whole library at once](#the-whole-library-at-once) · [uploading a batch](#uploading-a-batch) · [renaming a media](#renaming-a-media) · [a media's caption](#a-medias-caption) · [fields of your own](#fields-of-your-own) · [browsing and the lightbox](#browsing-and-the-lightbox) · [editing from the public pages](#editing-from-the-public-pages) · [blocks](#blocks-defined-by-this-bundle) · [category summary](#a-categorys-summary) · [share image](#the-image-a-shared-page-carries) · [category headings](#composing-a-categorys-heading) · [theme tokens](#theme) · [videos](#videos) · [trashing a selection](#trashing-a-selection-of-medias) · [credits / rights on a selection](#applying-credits-or-rights-to-a-selection) · [moving a selection](#moving-a-selection-to-another-gallery) · [downloading a selection](#downloading-a-selections-files) · [export / import categories](#export--import-categories) · [publishing on the social networks](#publishing-on-the-social-networks) · [sitemap and health check](#sitemap-and-health-check) · [describing the gallery index](#describing-the-gallery-index) · [backup](#backup) · [what's new](#whats-new) · [translating a gallery](#translating-a-gallery) · [guided projects](#guided-projects)
-- **Operating** — [likes on a photo](#likes-on-a-photo) · [seeding a demo gallery](#seeding-a-demo-gallery) · [bringing an existing gallery in](#bringing-an-existing-gallery-in) · [upload ceilings](#upload-ceilings) · [AI agent skills](#ai-agent-skills)
+- **Operating** — [likes on a photo](#likes-on-a-photo) · [seeding a demo gallery](#seeding-a-demo-gallery) · [bringing an existing gallery in](#bringing-an-existing-gallery-in) · [upload ceilings](#upload-ceilings) · [MCP tools](#mcp-tools) · [AI agent skills](#ai-agent-skills)
 
 ## Features
 
@@ -1747,6 +1747,20 @@ files are originals and which are an old gallery's derivatives — has no answer
 to the next, and getting it wrong imports blurry duplicates that then have to be found and deleted by
 hand. Photos already managed by this bundle on *another* c975L site are a different matter: they move
 across with [export / import categories](#export--import-categories), files and all.
+
+## MCP tools
+
+The galleries bring their tools to the site's MCP endpoint, `/api/mcp`, which c975l/core-bundle serves and opens (see its README, "Opening the site to AI agents"): `Mcp\GalleryMcpProvider`, under the `gallery` key of the agent tokens, for an account holding `site-role-editor` as on the back office.
+
+| Tool | Does |
+| --- | --- |
+| `gallery_list` | The galleries whose title holds the `search` words, every gallery without them, hidden ones included, with their visible media count and summary |
+| `gallery_medias` | The medias of a `gallery`, or of every gallery, whose title holds the `search` words, hidden ones included, the latest first |
+| `gallery_create` | A hidden gallery added with its `title` and an optional `summary`, its slug built from the title and refused when taken, as the category form does; uploading and showing it stay a human's |
+| `gallery_edit` | Only the `title` or `summary` given of a `gallery` changed; a new title rebuilds the slug and redirects the old url and the media urls below it, as [renaming a category](#renaming-a-category) does on the back office |
+| `gallery_media_edit` | Only the `title` (also the alt text), `description` or `credits` given of a `media` changed, its slug kept as on the back office |
+
+The writes follow the back office's rules through the same `Service\GalleryCategoryUrls` the category screen uses: a text longer than its column is refused, never cut. The trash is left aside by every tool; nothing an agent does uploads a file, shows a hidden gallery or media, touches the prints or deletes.
 
 ## AI agent skills
 

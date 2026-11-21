@@ -1,5 +1,15 @@
 # ChangeLog
 
+## v1.31.0
+
+Gallery tools on the site's MCP endpoint
+
+- `GalleryMcpProvider`: an agent lists the galleries and their medias, adds a hidden gallery and writes the titles, summaries, captions and credits, with the rights of its token's account and the back office's own rules (21/11/2026)
+- `GalleryCategoryUrls` builds a gallery's slug and settles its url on creation, restore and rename, for the category screen, the dedupe command and the MCP tools (21/11/2026)
+- `GalleryCategoryCrudController` takes `GalleryCategoryUrls` in place of the slugger (21/11/2026) [BC-Break]
+- `GalleryAutomaticDedupeCommand` takes `GalleryCategoryUrls` in place of `GalleryUrlRedirector` and the url generator (21/11/2026) [BC-Break]
+- `php-http/discovery` plugin allowed in `allow-plugins`, so `composer qa` no longer stops on its prompt (21/11/2026)
+
 ## v1.30.2
 
 Gallery index drawn on SQLite too

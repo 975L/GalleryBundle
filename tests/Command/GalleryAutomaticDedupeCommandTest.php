@@ -13,6 +13,7 @@ namespace c975L\GalleryBundle\Tests\Command;
 use c975L\GalleryBundle\Command\GalleryAutomaticDedupeCommand;
 use c975L\GalleryBundle\Entity\GalleryCategory;
 use c975L\GalleryBundle\Repository\GalleryCategoryRepository;
+use c975L\GalleryBundle\Service\GalleryCategoryUrls;
 use c975L\GalleryBundle\Service\GalleryUrlRedirector;
 use c975L\UiBundle\Entity\Block;
 use Doctrine\ORM\EntityManagerInterface;
@@ -20,6 +21,7 @@ use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Tester\CommandTester;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Symfony\Component\String\Slugger\AsciiSlugger;
 
 class GalleryAutomaticDedupeCommandTest extends TestCase
 {
@@ -43,8 +45,7 @@ class GalleryAutomaticDedupeCommandTest extends TestCase
         return new CommandTester(new GalleryAutomaticDedupeCommand(
             $entityManager,
             $categoryRepository,
-            $urlRedirector ?? $this->createStub(GalleryUrlRedirector::class),
-            $urlGenerator,
+            new GalleryCategoryUrls($urlRedirector ?? $this->createStub(GalleryUrlRedirector::class), $urlGenerator, new AsciiSlugger()),
         ));
     }
 
