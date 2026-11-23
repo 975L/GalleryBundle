@@ -1,5 +1,11 @@
 # ChangeLog
 
+## v1.31.2
+
+README opened on a short overview for humans
+
+- README opened on a short overview for humans, the reference folded below it (23/11/2026)
+
 ## v1.31.1
 
 Agents told their gallery edits are live

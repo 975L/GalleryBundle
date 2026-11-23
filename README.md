@@ -1,29 +1,61 @@
 # GalleryBundle
 
-Symfony bundle providing photo galleries on the c975L core — categories and medias (photos and videos from any platform UiBundle declares), with batch upload, automatic thumb/medium/highres derivatives and a public viewer.
-
 [![GitHub](https://img.shields.io/github/license/975L/GalleryBundle)](https://github.com/975L/GalleryBundle/blob/main/LICENSE)
 [![Packagist Version](https://img.shields.io/packagist/v/c975l/gallery-bundle)](https://packagist.org/packages/c975l/gallery-bundle)
 [![PHP Version](https://img.shields.io/packagist/php-v/c975l/gallery-bundle)](https://packagist.org/packages/c975l/gallery-bundle)
 [![Codacy Grade](https://app.codacy.com/project/badge/Grade/afc2cddbc52444d99c991da76354d622)](https://app.codacy.com/gh/975L/GalleryBundle/dashboard)
 
-**[Bundle page](https://bundles.975l.com/en/pages/gallery-bundle) · [Tutorials](https://bundles.975l.com/en/tutoriels/gallery-bundle) · [Block kinds](https://bundles.975l.com/en/pages/blocks/Gallery) · [Live demo](https://bundles.975l.com/demo/) · [Demo back-office](https://bundles.975l.com/demo/login)**
-
-## Why GalleryBundle
-
 ![GalleryBundle](.github/images/GalleryBundle.svg)
 
-Add GalleryBundle on top of [c975L/CoreBundle](https://github.com/975L/CoreBundle) (ConfigBundle + UiBundle, one package) and get a photo gallery — no dependency on [SiteBundle](https://github.com/975L/SiteBundle), [ShopBundle](https://github.com/975L/ShopBundle) or any other satellite bundle, so it drops into any c975L site that needs one. Multi-size derivatives reuse UiBundle's own `VichMultiSizeImageInterface` pattern rather than duplicating it.
+**Photo and video galleries on your site, uploaded in batches and resized automatically, with a public viewer.**
 
----
+**[Bundle page](https://bundles.975l.com/en/pages/gallery-bundle) · [Tutorials](https://bundles.975l.com/en/tutoriels/gallery-bundle) · [Block kinds](https://bundles.975l.com/en/pages/blocks/Gallery) · [Live demo](https://bundles.975l.com/demo/) · [Demo back-office](https://bundles.975l.com/demo/login)**
 
-> **TL;DR** — Photo galleries as `GalleryCategory` → `GalleryMedia`, managed from EasyAdmin, with bulk upload and automatic thumb/medium/highres derivatives. The category is the top-level unit: a site's galleries are its categories. Depends only on CoreBundle.
+> **TL;DR** — GalleryBundle adds photo and video galleries to a c975L site, managed from the back office, where a whole batch of files is uploaded at once and each image is resized automatically. It rests only on CoreBundle, so it drops into any c975L site without SiteBundle, ShopBundle or any other satellite bundle. Install it with Composer, then follow the installation steps below.
 
-## Contents
+## What you get
+
+- Galleries of photos and videos, managed from their own section of the back office
+- A whole batch of files uploaded at once, each image turned into three sizes automatically
+- A public viewer with previous/next navigation and a lightbox for the high resolution
+- Galleries shown on any page through blocks, or linked from a menu
+- Galleries and photographs translated into every language the site declares
+- A gallery or a photograph hidden from the public pages without being deleted
+- Photographs sold as prints, printed and shipped by a lab, behind one setting
+- A sitemap, an Atom feed and structured data for every photograph
+
+## Quick start
+
+```bash
+composer require c975l/gallery-bundle
+```
+
+The full [installation](#installation) section below walks through the remaining steps.
+
+## For AI agents
+
+- **Skills** — read straight from `vendor/` by the coding agent of the site installing this bundle (see [AI agent skills](#ai-agent-skills)):
+  - [c975l-gallery](skills/c975l-gallery/SKILL.md) — the url prefix, the settings, the image sizes and the video platforms, with the routes, entities, blocks and components
+- **MCP** — an AI agent works with the galleries through the site's MCP endpoint (CoreBundle's `/api/mcp`), with the rights of its token's account: `gallery_list`, `gallery_medias`, `gallery_create`, `gallery_edit`, `gallery_media_edit` (see [MCP tools](#mcp-tools)).
+
+## Reference
+
+> **For developers** — Photo galleries as `GalleryCategory` → `GalleryMedia`, managed from EasyAdmin, with bulk upload and automatic thumb/medium/highres derivatives. The category is the top-level unit: a site's galleries are its categories. Depends only on CoreBundle.
+
+<details>
+<summary>Contents</summary>
 
 - **Setup** — [requirements](#requirements) · [installation](#installation) · [configuration](#load-the-configuration) · [routes](#enable-routes) · [assets](#install-assets) · [theme](#install-the-theme)
 - **Using it** — [public routes](#public-routes) · [linking from a menu](#linking-a-gallery-from-a-menu) · [the automatic galleries](#the-automatic-galleries) · [renaming a category](#renaming-a-category) · [deleting a gallery](#deleting-a-gallery) · [masking a gallery](#masking-a-gallery) · [selling prints](#selling-prints) · [the whole library at once](#the-whole-library-at-once) · [uploading a batch](#uploading-a-batch) · [renaming a media](#renaming-a-media) · [a media's caption](#a-medias-caption) · [fields of your own](#fields-of-your-own) · [browsing and the lightbox](#browsing-and-the-lightbox) · [editing from the public pages](#editing-from-the-public-pages) · [blocks](#blocks-defined-by-this-bundle) · [category summary](#a-categorys-summary) · [share image](#the-image-a-shared-page-carries) · [category headings](#composing-a-categorys-heading) · [theme tokens](#theme) · [videos](#videos) · [trashing a selection](#trashing-a-selection-of-medias) · [credits / rights on a selection](#applying-credits-or-rights-to-a-selection) · [moving a selection](#moving-a-selection-to-another-gallery) · [downloading a selection](#downloading-a-selections-files) · [export / import categories](#export--import-categories) · [publishing on the social networks](#publishing-on-the-social-networks) · [sitemap and health check](#sitemap-and-health-check) · [describing the gallery index](#describing-the-gallery-index) · [backup](#backup) · [what's new](#whats-new) · [translating a gallery](#translating-a-gallery) · [guided projects](#guided-projects)
 - **Operating** — [likes on a photo](#likes-on-a-photo) · [seeding a demo gallery](#seeding-a-demo-gallery) · [bringing an existing gallery in](#bringing-an-existing-gallery-in) · [upload ceilings](#upload-ceilings) · [MCP tools](#mcp-tools) · [AI agent skills](#ai-agent-skills)
+
+</details>
+
+## Why GalleryBundle
+
+Add GalleryBundle on top of [c975L/CoreBundle](https://github.com/975L/CoreBundle) (ConfigBundle + UiBundle, one package) and get a photo gallery — no dependency on [SiteBundle](https://github.com/975L/SiteBundle), [ShopBundle](https://github.com/975L/ShopBundle) or any other satellite bundle, so it drops into any c975L site that needs one. Multi-size derivatives reuse UiBundle's own `VichMultiSizeImageInterface` pattern rather than duplicating it.
+
+---
 
 ## Features
 
