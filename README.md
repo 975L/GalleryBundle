@@ -5,11 +5,15 @@
 [![PHP Version](https://img.shields.io/packagist/php-v/c975l/gallery-bundle)](https://packagist.org/packages/c975l/gallery-bundle)
 [![Codacy Grade](https://app.codacy.com/project/badge/Grade/afc2cddbc52444d99c991da76354d622)](https://app.codacy.com/gh/975L/GalleryBundle/dashboard)
 
-![GalleryBundle](.github/images/GalleryBundle.svg)
+<p align="center"><img src=".github/images/GalleryBundle.svg" alt="GalleryBundle"></p>
 
 **Photo and video galleries on your site, uploaded in batches and resized automatically, with a public viewer.**
 
 **[Bundle page](https://bundles.975l.com/en/pages/gallery-bundle) · [Tutorials](https://bundles.975l.com/en/tutoriels/gallery-bundle) · [Block kinds](https://bundles.975l.com/en/pages/blocks/Gallery) · [Live demo](https://bundles.975l.com/demo/) · [Demo back-office](https://bundles.975l.com/demo/login)**
+
+[![Watch the GalleryBundle film](.github/images/showcase.jpg)](https://youtu.be/zkNNlCEO8Hc)
+
+▶ [Watch the film](https://youtu.be/zkNNlCEO8Hc) · [GalleryBundle's page](https://bundles.975l.com/en/pages/gallery-bundle)
 
 > **TL;DR** — GalleryBundle adds photo and video galleries to a c975L site, managed from the back office, where a whole batch of files is uploaded at once and each image is resized automatically. It rests only on CoreBundle, so it drops into any c975L site without SiteBundle, ShopBundle or any other satellite bundle. Install it with Composer, then follow the installation steps below.
 
@@ -42,18 +46,23 @@ The full [installation](#installation) section below walks through the remaining
 
 > **For developers** — Photo galleries as `GalleryCategory` → `GalleryMedia`, managed from EasyAdmin, with bulk upload and automatic thumb/medium/highres derivatives. The category is the top-level unit: a site's galleries are its categories. Depends only on CoreBundle.
 
-<details>
-<summary>Contents</summary>
+### Contents
 
 - **Setup** — [requirements](#requirements) · [installation](#installation) · [configuration](#load-the-configuration) · [routes](#enable-routes) · [assets](#install-assets) · [theme](#install-the-theme)
 - **Using it** — [public routes](#public-routes) · [linking from a menu](#linking-a-gallery-from-a-menu) · [the automatic galleries](#the-automatic-galleries) · [renaming a category](#renaming-a-category) · [deleting a gallery](#deleting-a-gallery) · [masking a gallery](#masking-a-gallery) · [selling prints](#selling-prints) · [the whole library at once](#the-whole-library-at-once) · [uploading a batch](#uploading-a-batch) · [renaming a media](#renaming-a-media) · [a media's caption](#a-medias-caption) · [fields of your own](#fields-of-your-own) · [browsing and the lightbox](#browsing-and-the-lightbox) · [editing from the public pages](#editing-from-the-public-pages) · [blocks](#blocks-defined-by-this-bundle) · [category summary](#a-categorys-summary) · [share image](#the-image-a-shared-page-carries) · [category headings](#composing-a-categorys-heading) · [theme tokens](#theme) · [videos](#videos) · [trashing a selection](#trashing-a-selection-of-medias) · [credits / rights on a selection](#applying-credits-or-rights-to-a-selection) · [moving a selection](#moving-a-selection-to-another-gallery) · [downloading a selection](#downloading-a-selections-files) · [export / import categories](#export--import-categories) · [publishing on the social networks](#publishing-on-the-social-networks) · [sitemap and health check](#sitemap-and-health-check) · [describing the gallery index](#describing-the-gallery-index) · [backup](#backup) · [what's new](#whats-new) · [translating a gallery](#translating-a-gallery) · [guided projects](#guided-projects)
 - **Operating** — [likes on a photo](#likes-on-a-photo) · [seeding a demo gallery](#seeding-a-demo-gallery) · [bringing an existing gallery in](#bringing-an-existing-gallery-in) · [upload ceilings](#upload-ceilings) · [MCP tools](#mcp-tools) · [AI agent skills](#ai-agent-skills)
 
-</details>
-
 ## Why GalleryBundle
 
 Add GalleryBundle on top of [c975L/CoreBundle](https://github.com/975L/CoreBundle) (ConfigBundle + UiBundle, one package) and get a photo gallery — no dependency on [SiteBundle](https://github.com/975L/SiteBundle), [ShopBundle](https://github.com/975L/ShopBundle) or any other satellite bundle, so it drops into any c975L site that needs one. Multi-size derivatives reuse UiBundle's own `VichMultiSizeImageInterface` pattern rather than duplicating it.
+
+> [!TIP]
+> If this project **helps you save development time**:
+>
+> - [**star** it on GitHub](https://github.com/975L/GalleryBundle) — helps others find it
+> - [**open an issue**](https://github.com/975L/GalleryBundle/issues/new) to share how you use it — genuinely useful feedback
+>
+> And if you'd like to support the work directly, the **Sponsor** button at the top of the GitHub page is there for that. Thank you!
 
 ---
 
@@ -1820,13 +1829,3 @@ ln -s ../../vendor/c975l/gallery-bundle/skills/c975l-gallery .claude/skills/c975
 `Tests\SkillsTest` keeps the file honest: every path, route, config slug, command, class member,
 Twig function, block kind and component it quotes is checked against the sources, so renaming any of
 them fails the build rather than leaving an agent confidently wrong.
-
----
-
-> [!TIP]
-> If this project **helps you save development time**:
->
-> - [**star** it on GitHub](https://github.com/975L/GalleryBundle) — helps others find it
-> - [**open an issue**](https://github.com/975L/GalleryBundle/issues/new) to share how you use it — genuinely useful feedback
->
-> And if you'd like to support the work directly, the **Sponsor** button at the top of the GitHub page is there for that. Thank you!
