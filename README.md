@@ -1750,7 +1750,7 @@ across with [export / import categories](#export--import-categories), files and 
 
 ## MCP tools
 
-The galleries bring their tools to the site's MCP endpoint, `/api/mcp`, which c975l/core-bundle serves and opens (see its README, "Opening the site to AI agents"): `Mcp\GalleryMcpProvider`, under the `gallery` key of the agent tokens, for an account holding `site-role-editor` as on the back office.
+The galleries bring their tools to the site's MCP endpoint, `/api/mcp`, which c975l/core-bundle serves and opens (see its README, "Opening the site to AI agents"): `Mcp\GalleryMcpProvider`, under the `gallery` key of the agent tokens, for an account holding `site-role-editor` as on the back office. An agent's edit of a gallery or media already visible shows on the site at once, as an editor's would; what it adds stays hidden until a human publishes it.
 
 | Tool | Does |
 | --- | --- |

@@ -1,5 +1,11 @@
 # ChangeLog
 
+## v1.31.1
+
+Agents told their gallery edits are live
+
+- The MCP instructions and the edit tools say an edit of a gallery or media already visible shows on the site at once (23/11/2026)
+
 ## v1.31.0
 
 Gallery tools on the site's MCP endpoint

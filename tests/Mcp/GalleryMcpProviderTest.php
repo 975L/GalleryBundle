@@ -34,6 +34,7 @@ class GalleryMcpProviderTest extends TestCase
         $tools = iterator_to_array($this->provider()->getMcpTools(), false);
 
         $this->assertSame('gallery', $this->provider()->getMcpKey());
+        $this->assertStringContainsString('at once', $this->provider()->getMcpInstructions());
         $this->assertSame(['gallery_list', 'gallery_medias', 'gallery_create', 'gallery_edit', 'gallery_media_edit'], array_map(static fn ($tool): string => $tool->name, $tools));
         $this->assertSame([false, false, true, true, true], array_map(static fn ($tool): bool => $tool->writes, $tools));
     }

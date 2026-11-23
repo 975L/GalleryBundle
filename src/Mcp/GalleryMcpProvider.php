@@ -45,7 +45,7 @@ class GalleryMcpProvider implements McpToolProviderInterface
 
     public function getMcpInstructions(): string
     {
-        return 'Galleries hold the medias (photos and videos) of the site. A gallery added by an agent is hidden: a human uploads its medias and shows it from the back office. A media title is also its alt text.';
+        return 'Galleries hold the medias (photos and videos) of the site. A gallery added by an agent is hidden: a human uploads its medias and shows it from the back office. A media title is also its alt text. An edit of a gallery or a media already shown is on the site at once.';
     }
 
     public function getMcpTools(): iterable
@@ -53,8 +53,8 @@ class GalleryMcpProvider implements McpToolProviderInterface
         yield new McpTool('gallery_list', 'Galleries', 'The galleries whose title holds the search words, every gallery without them, hidden ones included, in alphabetical order.', $this->list(...));
         yield new McpTool('gallery_medias', 'Medias', 'The medias of a gallery, or of every gallery, whose title holds the search words, hidden ones included, the latest first.', $this->medias(...));
         yield new McpTool('gallery_create', 'Add a hidden gallery', 'Adds a hidden gallery with its title and an optional summary, its slug made from the title.', $this->create(...), true);
-        yield new McpTool('gallery_edit', 'Write a gallery', 'Changes only the title or summary given of a gallery; a new title rebuilds its slug and redirects the old url, as the back office does.', $this->edit(...), true);
-        yield new McpTool('gallery_media_edit', 'Write a media', 'Changes only the title (also its alt text), description or credits given of a media, its url kept.', $this->editMedia(...), true);
+        yield new McpTool('gallery_edit', 'Write a gallery', 'Changes only the title or summary given of a gallery; a new title rebuilds its slug and redirects the old url, as the back office does; at once on the site when the gallery is shown.', $this->edit(...), true);
+        yield new McpTool('gallery_media_edit', 'Write a media', 'Changes only the title (also its alt text), description or credits given of a media, its url kept; at once on the site when it is shown.', $this->editMedia(...), true);
     }
 
     // The galleries whose title holds the words, every one without them, the trash left aside
